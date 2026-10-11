@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/drawer_proxy_on,@drawable/drawer_proxy_off,@drawable/fg_globe_24,@drawable/fg_server_24"
+    tools:shrinkMode="safe" />

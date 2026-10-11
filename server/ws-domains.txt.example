@@ -1,0 +1,35 @@
+# Площадки запасного пути: по имени на строку.
+#
+# Клиент читает этот файл с https://th3web.com/finegram/ws-domains.txt не чаще
+# раза в шесть часов и только тогда, когда запасной путь понадобился.
+#
+# Имя принимается в двух видах:
+#   pclead.co.uk   готовое
+#   virkgj.com     сдвинутое, как публикует tg-ws-proxy
+#
+# Клиент сам добавит поддомен датацентра: kws2.pclead.co.uk.
+# Строка, начинающаяся с решётки, пропускается.
+#
+# Проверить перед выкладкой:
+#   python scripts/probe-tgws.py 2 kws2.pclead.co.uk
+
+pclead.co.uk
+offshor.co.uk
+cakeisalie.co.uk
+noskomnadzor.co.uk
+lovetrue.co.uk
+sorokdva.co.uk
+pyatdesyatdva.co.uk
+kartoshka.co.uk
+sorokodin.co.uk
+pyatdesyatodin.co.uk
+notelega.co.uk
+ebally.co.uk
+nebally.co.uk
+havegreatday.co.uk
+pomogite.co.uk
+fixtelega.co.uk
+sadnews.co.uk
+onedaychamp.co.uk
+stopblocking.co.uk
+nothingthere.co.uk

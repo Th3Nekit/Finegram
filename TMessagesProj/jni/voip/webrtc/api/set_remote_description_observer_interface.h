@@ -1,0 +1,27 @@
+/*
+ *  Copyright 2017 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree. An additional intellectual property rights grant can be found
+ *  in the file PATENTS.  All contributing project authors may
+ *  be found in the AUTHORS file in the root of the source tree.
+ */
+
+#ifndef API_SET_REMOTE_DESCRIPTION_OBSERVER_INTERFACE_H_
+#define API_SET_REMOTE_DESCRIPTION_OBSERVER_INTERFACE_H_
+
+#include "api/ref_count.h"
+#include "api/rtc_error.h"
+
+namespace webrtc {
+
+class SetRemoteDescriptionObserverInterface : public webrtc::RefCountInterface {
+ public:
+
+  virtual void OnSetRemoteDescriptionComplete(RTCError error) = 0;
+};
+
+}
+
+#endif

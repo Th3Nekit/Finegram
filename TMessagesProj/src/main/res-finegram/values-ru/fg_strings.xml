@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="FG_FollowChannelTitle">Подписаться на официальный канал</string>
+    <string name="FG_FollowChannelInfo">Новости и обновления Finegram в официальном канале.</string>
+    <string name="FG_DoNotRemindAgain">Не напоминать</string>
+
+    
+    <string name="FG_SwitchedToAccount">Вы переключились на **%1$s**</string>
+
+    <string name="FG_JoinedDate">Вы присоединились к **%1$s** **%2$s**</string>
+    <string name="FG_CreatedDate">**%1$s** был создан **%2$s**</string>
+    <string name="FG_RegistrationDate">**%1$s** присоединился(ась) к Telegram **%2$s**</string>
+    <string name="FG_RegistrationDateNewer">позже, чем %s</string>
+    <string name="FG_RegistrationDateOlder">ранее, чем %s</string>
+    <string name="FG_RegistrationDateApproximately">приблизительно %s</string>
+    <string name="FG_RegistrationDateFailed">Дата регистрации недоступна</string>
+
+    
+    <string name="FG_QRLoginTitle">Вход по QR</string>
+    <string name="FG_QRLoginMessage">Отсканируйте QR-код с помощью другого устройства для входа в систему.</string>
+
+    <string name="FG_DidNotGetTheCode">Если вы не получили код или вы не входили в аккаунт Telegram на другом устройстве, воспользуйтесь официальным приложением Telegram, чтобы получить код.\n\nTelegram **отключил возможность авторизации через СМС** для альтернативных приложений. Согласно новым правилам, пользователи альтернативных клиентов больше не могут получить СМС-код для авторизации. Теперь для получения кода требуется использовать официальное приложение Telegram.\n\nЕсли у вас возникла проблема со входом в аккаунт, пожалуйста, обратитесь в службу поддержки Telegram.</string>
+    <string name="FG_ChangePhoneNumber">Телеграм **отключил возможность изменения номера** в сторонних приложениях. Пользователи могут сменить номер только через Telegram.</string>
+
+    <string name="FG_AddAccountWarning">Пять и больше аккаунтов сразу — тяжёлая нагрузка: на слабом устройстве клиент может тормозить и не запускаться. Доступ к аккаунтам при этом теряется без возможности восстановить его из клиента.</string>
+    
+
+    
+    <string name="FG_LastSeenNow">был(а) только что</string>
+
+    <string name="FG_LastSeenMinutes_one">был(а) %1$d минуту назад</string>
+    <string name="FG_LastSeenMinutes_few">был(а) %1$d минуты назад</string>
+    <string name="FG_LastSeenMinutes_many">был(а) %1$d минут назад</string>
+    <string name="FG_LastSeenMinutes_other">был(а) %1$d минут назад</string>
+
+    <string name="FG_LastSeenHours_one">был(а) %1$d час назад</string>
+    <string name="FG_LastSeenHours_few">был(а) %1$d часа назад</string>
+    <string name="FG_LastSeenHours_many">был(а) %1$d часов назад</string>
+    <string name="FG_LastSeenHours_other">был(а) %1$d часов назад</string>
+    
+
+    
+    <string name="FG_AndMoreTypingGroup_one">%1$s и еще %2$d</string>
+    <string name="FG_AndMoreTypingGroup_other">%1$s и еще %2$d</string>
+    
+
+    
+    <string name="FG_FoldersTypeTitles">Только названия</string>
+    <string name="FG_FoldersTypeIcons">Только иконки</string>
+    <string name="FG_FoldersTypeIconsTitles">Иконки с названиями</string>
+    <string name="FG_ChooseFolderIcon">Выберите иконку</string>
+    <string name="CP_NewTabs_NoCounter">Скрыть счетчик на вкладках</string>
+    <string name="FG_SwipeToUnarchive">Свайп влево для разархивации</string>
+    
+
+    
+    <string name="FG_PasskeyInfo2">Эта функция работает только с менеджерами паролей, которые позволяют пользователю управлять настройками доверия для привилегированных приложений, такими как **Bitwarden** и **KeePassDX**.</string>
+    <string name="FG_PasskeyUnsupportedTitle">Неподдерживаемый менеджер паролей</string>
+    <string name="FG_PasskeyUnsupportedMessage">Попробуйте другие менеджеры паролей. Например, Bitwarden или KeePassDX.</string>
+    <string name="FG_PasskeyNoCredentialAvailable">Нет действительных учётных данных.</string>
+    
+
+    
+    <string name="FG_JumpToBeginning">В начало</string>
+    <string name="FG_DeleteAllFromSelf">Удалить мои сообщения</string>
+    <string name="FG_DeleteAllFromSelfAlert">Все ваши сообщения в этой переписке удалятся у всех. Отменить нельзя.</string>
+    <string name="FG_DeleteAllFromSelfAlertBefore">Ваши сообщения в этой переписке до %s удалятся у всех. Отменить нельзя.</string>
+    <string name="FG_DeleteAllFromSelfBefore">Раньше...</string>
+    <string name="FG_DeleteAllFromSelfAdmin">С правами администратора</string>
+    <string name="FG_DeleteAllFromSelfDone">Ваши сообщения удалены</string>
+
+    <string name="FG_ClearFromCache">Удалить из кеша</string>
+    <string name="FG_ClearedFromCache">Удалено из кеша</string>
+    <string name="FG_ToSaved">Сохранить</string>
+
+    <string name="FG_CreateMention">Упомянуть</string>
+    <string name="FG_CreateCode">Создать код</string>
+    <string name="FG_CreateCodeLanguage">Язык</string>
+
+    <string name="FG_FwdMenu_Authorship">Имя отправителя</string>
+    <string name="FG_FwdMenu_Captions">Подписи</string>
+    <string name="FG_FwdMenu_Notify">Уведомить</string>
+
+    <string name="FG_Without_Authorship">без авторства</string>
+    <string name="FG_Without_Caption">без подписи</string>
+
+    <string name="FG_CopyTitle">Скопировать название</string>
+    <string name="FG_CopyCallback">Скопировать callback</string>
+    <string name="FG_CopyInlineQuery">Скопировать inline запрос</string>
+    <string name="FG_CopyID">Скопировать ID пользователя</string>
+
+    
+    <string name="FG_LocationPermission">Finegram нужен доступ к вашему местоположению, дабы вы смогли поделиться им с вашими друзьями. Сейчас будет запрос на разрешение использования вашего местоположения (пока приложение открыто).</string>
+    <string name="FG_LocationPermission_Desc">Для передачи местоположения в фоне включите трансляцию геопозиции в чате.</string>
+    <string name="FG_Copy_Coordinates">Координаты</string>
+    
+
+    
+    <string name="FG_SearchFilter">Фильтр по результатам поиска</string>
+    <string name="FG_SearchFilter_None">Не фильтровать</string>
+    <string name="FG_SearchFilter_Photos">Фото</string>
+    <string name="FG_SearchFilter_Videos">Видео</string>
+    <string name="FG_SearchFilter_VoiceMessages">Голосовые сообщения</string>
+    <string name="FG_SearchFilter_VideoMessages">Видеосообщения</string>
+    <string name="FG_SearchFilter_Files">Файлы/Документы</string>
+    <string name="FG_SearchFilter_Music">Музыка</string>
+    <string name="FG_SearchFilter_GIFs">GIF</string>
+    <string name="FG_SearchFilter_Geolocation">Геолокация</string>
+    <string name="FG_SearchFilter_Contacts">Контакты</string>
+    <string name="FG_SearchFilter_MyMentions">Мои упоминания</string>
+    
+    
+
+    
+    <string name="FG_SafeStars_buy">Купить через SafeStars</string>
+    <string name="FG_SafeStars_Desc">Мультичейн и без KYC</string>
+    <string name="FG_SafeStars_BuyPremiumButton">Проверить на сайте</string>
+    <string name="FG_SafeStars_buy_Telegram">Купить звезды через Telegram</string>
+    <string name="FG_Stars_TOS">Продолжая, вы автоматически принимаете **Условия покупки Telegram** и **Пользовательское соглашение Finegram**.</string>
+    <string name="FG_SafeSurf_TOS">Продолжая, вы автоматически принимаете **Пользовательское соглашение Finegram**.</string>
+
+    <string name="FG_SortByDate">Сортировка по дате сообщения</string>
+    <string name="FG_SortByUnread">Сортировка по непрочитанным</string>
+
+    <string name="FG_UnknownSettingsOption">Такого параметра Finegram нет.</string>
+    <string name="FG_Restart">Перезапустить приложение</string>
+    <string name="FG_RestartToApply">Перезапустите приложение</string>
+    <string name="FG_PushService">Сервис уведомлений Finegram.</string>
+    <string name="FG_Kaboom">Доступ к этой функции можно получить без пароля Finegram, через системные настройки. \n\nЭта функция **полностью удаляет все данные приложения**. Ее можно использовать в аварийных ситуациях.</string>
+    <string name="FG_AppCrashed">Что-то пошло не так</string>
+    <string name="FG_AppCrashedDesc">Finegram завершился с ошибкой. Отправьте журнал разработчику.</string>
+    <string name="FG_CopyReportDetails">Скопировать детали отчёта</string>
+    <string name="FG_ReportDetailsCopied">Отчёт скопирован</string>
+    <string name="FG_TranslationLanguage">Язык перевода</string>
+    <string name="FG_CopyPhoto">Скопировать фото</string>
+    <string name="FG_CopyPhotoAsSticker">Скопировать фото как стикер</string>
+    <string name="FG_SendPhotoAsSticker">Отправить как стикер</string>
+    <string name="FG_EnableMotionPhotos">Включить Motion-эффект</string>
+    <string name="FG_DisableMotionPhotos">Отключить Motion-эффект</string>
+    <string name="FG_PhotoCopied">Фото скопировано</string>
+    <string name="FG_SaveSticker">Сохранить стикер</string>
+    <string name="FG_StickerSavedHint">Стикер сохранён в загрузки</string>
+    <string name="FG_CopySetId">Скопировать ID набора</string>
+    <string name="FG_ExportSettings">Экспорт настроек</string>
+    <string name="FG_ImportSettings">Импорт настроек</string>
+    <string name="FG_ImportSettingsAlert">Настройки клиента будут заменены. Файл из чужих рук может сделать клиент непригодным для работы.</string>
+    <string name="FG_OpenStickerPack">Нажмите для открытия стикера</string>
+    <string name="FG_OpenEmojiPack">Нажмите для открытия эмодзи</string>
+
+    <string name="FG_ReplyContainsEmojiPack">В этом реплае эмодзи из набора **%s**</string>
+    <string name="FG_GetEmojiPack">Получить эмодзи</string>
+    <string name="FG_ProfileBackground">Применить фон профиля</string>
+    <string name="FG_MessageContainsCustomReactions_one">Реакции содержат кастомный эмодзи \nиз %1$d набора.</string>
+    <string name="FG_MessageContainsCustomReactions_other">Реакции содержат кастомные эмодзи \nиз %1$d наборов.</string>
+
+    <string name="FG_Sleep">Таймер сна</string>
+    <string name="FG_Sleep_Timer">Таймер сна установлен на **%s**</string>
+    <string name="FG_Sleep_Disabled">Таймер сна отключен</string>
+    <string name="FG_Sleep_Permission">Разрешите Finegram устанавливать точные будильники, чтобы таймер сна работал корректно.</string>
+
+    <string name="FG_QR_Hint">Нажмите, чтобы скопировать код. Удерживайте, чтобы сохранить его в галерею.</string>
+    <string name="FG_WifiConnect">Подключиться</string>
+    <string name="FG_WifiSuccess">Подключено к Wi-Fi</string>
+    <string name="FG_WifiFailed">Не удалось подключиться к Wi-Fi</string>
+    <string name="FG_WifiDisabled">Wi-Fi выключен.</string>
+    <string name="FG_AreYouSureToLogin">Вы уверены, что хотите войти в этот аккаунт на другом устройстве?</string>
+    <string name="FG_CreateQR">Создать QR-код</string>
+
+    
+    
+
+    
+
+    
+    <string name="FGP_AdvancedSettings">Настройки Finegram</string>
+    <string name="FGP_About_Desc">Модификация Telegram для Android. Нажмите, чтобы посмотреть список возможностей.</string>
+    <string name="FGP_Header_About">О Finegram</string>
+    <string name="FGP_Header_About_Desc">Обновления, исходный код и благодарности</string>
+    <string name="FGP_Links">Ссылки</string>
+    <string name="FGP_ToChannel">Новости и обновления</string>
+    <string name="FGP_ToBetaChannel">Бета-версии</string>
+    <string name="FGP_ToChat">Основной чат</string>
+    <string name="FGP_ToOfftopicChat">Чат для флуда</string>
+    <string name="FGP_Source">Исходный код</string>
+    <string name="FGP_Crowdin">Помогите нам с переводом</string>
+    <string name="FGP_General_Desc">Основные настройки клиента</string>
+    <string name="FGP_Appearance_Desc">Оформление и настройка интерфейса</string>
+    <string name="FGP_Folders_Desc">Вид и расположение панели папок</string>
+    <string name="FGP_BottomTabs_Desc">Состав и порядок нижних вкладок</string>
+    <string name="FGP_MessagesProfiles_Desc">Premium-эмодзи, ID и DC, дополнения в профилях и сообщениях</string>
+    <string name="FGP_Chats_Desc">Интерфейс переписок и сообщений</string>
+    <string name="FGP_Messages_Desc">Сообщения и меню действий</string>
+    <string name="FGP_MessagesFilter_Desc">Фильтр сообщений и защита от спама</string>
+    <string name="FGP_Camera_Desc">Камера, фотографии и видеосообщения</string>
+    <string name="FGP_Privacy_Desc">Блокировка, скрытие переписок и защита данных</string>
+
+    
+
+    
+    <string name="AP_Header_General">Основные</string>
+
+    <string name="FG_IgnoreMentions">Игнорирование упоминаний</string>
+    <string name="FG_IgnoreMentionsDesc">Отключает уведомления об упоминаниях и ответах в выбранных чатах, а также скрывает их значки в списке чатов и внутри диалогов.</string>
+    <string name="FG_IgnoreMentionsIgnoredChats">Игнорируемые чаты</string>
+    <string name="FG_IgnoreMentionsAutoRead">Автопрочтение при входе</string>
+    <string name="FG_IgnoreMentionsAutoReadDesc">Автоматически снимать метку упоминания при открытии чата.</string>
+    <string name="FG_IgnoreMentions_Destination_Sure">будет проигнорирован(о)</string>
+
+    <string name="FG_ResidentNotification">Держать соединение в фоне</string>
+    <string name="FG_PushStatusNoServices">Сервисов Google на телефоне нет, сообщения идут только через это соединение.</string>
+    <string name="FG_PushStatusNever">От Google ещё не пришло ни одного push. Без соединения сообщения придут, только пока клиент открыт.</string>
+    <string name="FG_PushStatusLast">Последний push от Google: %1$s. Соединение держит клиент в сети, пока он свёрнут, и висит уведомлением в шторке.</string>
+    
+
+    
+    <string name="AP_Header_Appearance">Внешний вид</string>
+    <string name="AP_Header">Заголовок</string>
+    <string name="AP_IconReplacements">Пакет иконок</string>
+    <string name="AP_Old_Notification_Icon">Стандартная иконка уведомлений (Telegram)</string>
+    <string name="AP_Tablet_Mode">Режим планшета</string>
+    <string name="AP_ChangeIcon_NewYear">Новогодняя</string>
+    <string name="AP_ChangeIcon_Dark">Тёмная</string>
+    <string name="AP_ChangeIcon_White">Белая</string>
+    <string name="AP_ChangeIcon_Laguna">Лагуна</string>
+    <string name="AP_ChangeIcon_Green">Зеленая</string>
+    <string name="AP_ChangeIcon_Lavanda">Лаванда</string>
+    <string name="AP_ChangeIcon_Sunset">Закат</string>
+    <string name="AP_ChangeIcon_Sunrise">Восход</string>
+    <string name="AP_IconReplacement_Solar">Иконки Solar от @Design480</string>
+    <string name="AP_OneUI_Switch_Style">Переключатели в стиле OneUI</string>
+    <string name="AP_SystemEmoji">Системные эмодзи</string>
+    <string name="AP_ShowPencilIcon">Иконка карандаша для изменённых сообщений</string>
+    <string name="CP_StrokeOnViews">Эффекты бликов</string>
+    <string name="AP_CenterTitle">Центрирование заголовка</string>
+    <string name="AP_CenterTitle_AdaptiveWidth">Адаптивная ширина пузыря</string>
+    <string name="AP_HideSearchBar">Скрыть поле поиска в чатах</string>
+    <string name="AP_DisableDividers">Отключить разделители</string>
+    <string name="AP_SystemFonts">Системный шрифт</string>
+
+    <string name="CP_Snowflakes_Header">Снежинки</string>
+
+    <string name="CP_ProfileReplyBackground">Сообщения и профили</string>
+    <string name="CP_CustomizeProfile">Настроить профиль</string>
+    <string name="CP_ProfileChannelPreview">Личный канал</string>
+    <string name="CP_ProfileBirthDatePreview">Дата рождения</string>
+    <string name="CP_ProfileBusinessPreview">Часы работы и адрес</string>
+    <string name="CP_ProfileBackgroundColor">Фон в профиле</string>
+    <string name="CP_ProfileBackgroundEmoji">Эмодзи в фоне профиля</string>
+    <string name="CP_CustomizeMessage">Настроить сообщение</string>
+    <string name="CP_ReplyBackground">Фон в ответах</string>
+    <string name="CP_ReplyCustomColors">Кастомные цвета в ответах и превью ссылок</string>
+    <string name="CP_ReplyBackgroundEmoji">Эмодзи в ответах и превью ссылок</string>
+    <string name="CP_HideStories">Скрыть Истории (локально)</string>
+    <string name="CP_HideStories_Desc">Скрывать истории в списке чатов и профилях.</string>
+    <string name="CP_ArchiveStories">Архивация историй</string>
+    <string name="CP_ArchiveStories_Desc">Автоматически перемещать новые истории в архив.</string>
+    <string name="CP_CustomWallpapers">Кастомный фон в чатах</string>
+    <string name="CP_CustomWallpapers_Desc">Показывать обои, установленные собеседником или администратором канала.</string>
+    <string name="CP_DisableReactionsOverlay">Отключить реакции</string>
+    <string name="CP_DisableReactionsOverlay_Desc">Не показывать список реакций над сообщением.</string>
+    <string name="CP_DisableReactionAnim">Отключить анимацию реакций</string>
+    <string name="CP_DisableReactionAnim_Desc">Не воспроизводить анимацию при добавлении реакции к сообщению.</string>
+    <string name="CP_DisablePremiumStatuses">Отключить Premium статусы</string>
+    <string name="CP_DisablePremiumStatuses_Desc">Скрывать эмодзи-статусы пользователей.</string>
+    <string name="CP_DisablePremStickAnim">Отключить нажатия на Premium стикеры</string>
+    <string name="CP_DisablePremStickAnim_Desc">Не воспроизводить эффект Premium-стикера при нажатии.</string>
+    <string name="CP_DisablePremStickAutoPlay">Отключить автовоспроизведение Premium стикеров</string>
+    <string name="CP_DisablePremStickAutoPlay_Desc">Не воспроизводить Premium-стикеры автоматически. Доступно, если включены эффекты при нажатии.</string>
+
+    <string name="CP_Filters_Header">Папки</string>
+    <string name="AP_FoldersAtBottom">Показывать папки снизу</string>
+    <string name="AP_FolderNameInHeader">Название папки вместо \"Finegram\"</string>
+    <string name="AP_FolderNameInHeader_Desc">Показывать название выбранной папки вместо названия приложения.</string>
+    <string name="CP_NewTabs_RemoveAllChats">Скрыть папку \"Все чаты\"</string>
+    <string name="AP_Tab_Style">Стиль папок</string>
+    <string name="AP_Tab_Style_Stroke">Добавить обводку</string>
+
+    <string name="CP_MainTabs_Header">Органайзер нижних вкладок</string>
+    <string name="CP_MainTabs_Layout">Вкладки</string>
+    <string name="CP_MainTabs_Order">Состав и порядок</string>
+    <string name="CP_MainTabs_ShowTabs">Показывать вкладки</string>
+    <string name="CP_MainTabs_OpenSettings">Открывать настройки свайпом</string>
+    <string name="CP_MainTabs_OpenSettings_Desc">Открывать настройки свайпом вправо из списка чатов, когда нижние вкладки отключены.</string>
+    <string name="CP_MainTabs_Layout_Desc">Нажмите, чтобы показать или скрыть вкладку. Удерживайте и перетаскивайте, чтобы изменить порядок.</string>
+    <string name="CP_MainTabs_KeepChats">Вкладку чатов выключить нельзя</string>
+    <string name="CP_MainTabs_DoubleTap_Desc">Двойное нажатие на вкладку чатов открывает «Избранное». На вкладке профиля — переключает аккаунт. Если профиль скрыт, используйте вкладку настроек.</string>
+    <string name="CP_MainTabs_ShowTabsTitle">Показывать названия вкладок</string>
+    <string name="CP_MainTabs_ForceOpenChats">Всегда искать в чатах</string>
+    <string name="CP_MainTabs_ForceOpenChats_Desc">Всегда открывать поиск по чатам вместо поиска в текущем разделе.</string>
+
+    <string name="AP_HideUserPhone_Show">Нажмите, чтобы показать</string>
+    <string name="AP_HideUserPhone_Copy">Зажмите, чтобы скопировать</string>
+    <string name="AP_MutualContacts_Description">Вы есть в контактах друг у друга.</string>
+    <string name="AP_ShowID">Показывать ID и DC в профиле</string>
+    
+
+    
+    <string name="CP_AutoQuoteReplies">Цитировать ответы</string>
+    <string name="CP_AutoQuoteReplies_Desc">Цитировать всё сообщение при ответе. Не применяется к темам.</string>
+    <string name="CP_WideMessagesLayout">Широкий пузырь сообщения</string>
+    <string name="CP_WideMessagesLayout_Desc">Растягивать сообщения в каналах на всю ширину и скрывать кнопку «Поделиться» рядом с ними.</string>
+    <string name="CP_TimeOnStick">Скрыть время отправки на стикерах</string>
+
+    <string name="CP_ChatMenuShortcuts">Действия в меню чата</string>
+    <string name="CP_AdminActions">Действия для админов</string>
+
+    <string name="CP_MessageMenu">Меню сообщения</string>
+    <string name="CP_MessageMenuItems">Элементы меню сообщения</string>
+    <string name="CP_BlurMessageMenu">Меню сообщений в стиле iOS</string>
+    <string name="CP_BlurMessageMenu_Desc">Размывать фон меню сообщения и показывать реакции над ним, как в Telegram для iOS. Недоступно на планшетах.</string>
+    <string name="CP_MessageMenuNativeBlur">Системный блюр</string>
+    <string name="CP_MessageMenuNativeBlur_Desc">Использовать системное размытие Android. Требуется Android 12 или новее.</string>
+    <string name="CP_MessageMenuCompactLayout">Компактная компоновка меню</string>
+    <string name="CP_MessageMenuCompactLayout_Desc">Размещать основные действия в компактной панели внизу меню сообщения.</string>
+    <string name="CP_MessageMenuCompactLayout_Dot">Точка рядом с кнопкой указывает, что у неё есть действие по зажатию.</string>
+
+    <string name="CP_UnreadBadgeOnBackButton">Показать счетчик непрочитанных</string>
+    <string name="CP_UnreadBadgeOnBackButton_Desc">Показывать число непрочитанных чатов на кнопке «Назад» в переписке.</string>
+    <string name="CP_UnreadBadgeOnBackButton_IOS">Счетчик в стиле iOS</string>
+    <string name="CP_Slider_RecentEmojisAndStickers">Количество недавних эмодзи и стикеров</string>
+    <string name="CP_DeleteForAll">Использовать \"Удалить для всех\" по умолчанию</string>
+    <string name="CP_DeleteForAll_Desc">Выбирать «Удалить для всех» по умолчанию.</string>
+    <string name="CP_ForwardMsgDate">Показывать дату пересланного сообщения</string>
+    <string name="CP_ShowSeconds">Показывать время с секундами</string>
+    <string name="CP_LeftBottomButtonAction">Действие левой кнопки</string>
+    <string name="CP_DoubleTapAction">Двойное нажатие</string>
+    <string name="FG_MsgSlideAction">Свайп по сообщению</string>
+    <string name="CP_DisableSwipeToNext">Отключить переход на следующий канал</string>
+    <string name="CP_DisableSwipeToNext_Desc">Не открывать следующий канал при прокрутке до конца.</string>
+    <string name="CP_BottomBar">Нижняя панель</string>
+    <string name="CP_iOSMessageInputField">Панель в стиле iOS</string>
+    <string name="CP_iOSMessageInputField_Desc">Располагать кнопку вложений слева и показывать отдельные кнопки ввода, как в Telegram для iOS.</string>
+    <string name="CP_HideMuteUnmuteButton">Скрыть нижнюю панель в каналах</string>
+    <string name="CP_HideKbdOnScroll">Интенсивность скролла для скрытия клавиатуры при прокрутке</string>
+    <string name="CP_HideSendAsChannel">Скрыть \"Отправить как канал\"</string>
+    <string name="CP_HideSendAsChannelDesc">Меню откроется долгим нажатием на кнопку эмодзи, стикеров или GIF.</string>
+
+    <string name="CP_GeminiAI_API_Key">API ключ Gemini</string>
+    <string name="CP_GeminiAI_API_Key_Desc">Посетите <![CDATA[<a href="https://aistudio.google.com/apikey">https://aistudio.google.com</a>]]>, чтобы получить API ключ.</string>
+    <string name="CP_GeminiAI_Model">Код модели Gemini</string>
+    <string name="CP_GeminiAI_Model_Desc">Посетите <![CDATA[<a href="https://ai.google.dev/gemini-api/docs/models/gemini#model-variations">https://ai.google.dev/gemini-api/docs/models/gemini</a>]]>, чтобы получить список доступных моделей.</string>
+    <string name="CP_GeminiAI_Model_Selector">Список моделей Gemini</string>
+    <string name="CP_GeminiAI_Model_Selector_Desc">Нажмите, чтобы выбрать доступную модель. Требуется действующий API-ключ.</string>
+    <string name="CP_GeminiAI_Sample">Например:</string>
+    <string name="CP_GeminiAI_System_Prompt">Системный промпт</string>
+    <string name="CP_GeminiAI_System_Prompt_Desc">Инструкция, которая определяет стиль и формат ответов модели.</string>
+    <string name="CP_GeminiAI_Temperature">Температура</string>
+    <string name="CP_GeminiAI_Temperature_Desc">Низкое значение делает ответы более предсказуемыми, высокое — более разнообразными.</string>
+    <string name="CP_GeminiAI_ExtractText">Извлечь текст (OCR)</string>
+    <string name="CP_GeminiAI_Summarize">Сводка (кратко)</string>
+    <string name="CP_GeminiAI_VoiceTranscriptionProvider">Поставщик транскрипции</string>
+
+    <string name="CP_Header_Record">Медиа</string>
+    <string name="CP_Messages_Size">Размер пузыря сообщений</string>
+
+    <string name="CP_Message_Filtering">Фильтрация сообщений</string>
+    <string name="CP_Message_Filtering_Filter">Включить фильтр</string>
+    <string name="CP_Message_Filtering_Filter_Desc">Скрывать совпадения с фильтром под спойлером. Нажмите на спойлер, чтобы прочитать текст.</string>
+    <string name="CP_Message_Filtering_Field">Введите слова для фильтрации</string>
+    <string name="CP_Message_Filtering_Field_Desc">Разделяйте слова запятой, пробелом или новой строкой. Используйте скобки, чтобы объединять несколько слов в словосочетание. Регистр не имеет значения.
+\nПример: слово, другое, (несколько слов вместе).
+</string>
+    <string name="CP_Message_Filtering_Translit">Обнаружение транслита</string>
+    <string name="CP_Message_Filtering_Translit_Desc">Учитывать слова, написанные латиницей: «test» соответствует «тест». Может увеличить нагрузку на устройство.</string>
+    <string name="CP_Message_Filtering_Exact_Words">Точное совпадение слов</string>
+    <string name="CP_Message_Filtering_Exact_Words_Desc">Искать только целые слова, без совпадений внутри других слов.</string>
+    <string name="CP_Message_Filtering_Exclusions">Исключения</string>
+    <string name="CP_Message_Filtering_Exclude_Destination">для добавления в список исключений</string>
+    <string name="CP_Message_Filtering_Exclude_Sure">будет исключен(о)</string>
+    <string name="CP_Message_Filtering_Entities">Фильтр по ссылкам</string>
+    <string name="CP_Message_Filtering_EntitiesDesc">Проверять текст и адреса ссылок в сообщении. Может увеличить нагрузку на устройство.</string>
+    <string name="CP_Message_Filtering_FilterBlocked">Фильтровать сообщения от заблокированных пользователей</string>
+    <string name="CP_Message_Filtering_FilterBlockedDesc">Если включено, все сообщения и пересланные сообщения от заблокированных пользователей будут автоматически фильтроваться.</string>
+    <string name="CP_Message_Filtering_HideAll">Спойлер на все сообщение</string>
+    <string name="CP_Message_Filtering_HideAllDesc">Скрывает весь текст и медиа сообщения под спойлером, если в нем есть слово из фильтра.</string>
+    <string name="CP_Message_Filtering_Collapse">Сворачивать сообщения</string>
+    <string name="CP_Message_Filtering_Collapse_Desc">Сворачивать сообщения, которые совпадают с фильтром. Нажмите, чтобы раскрыть сообщение.</string>
+    <string name="FG_MsgFilterExpand">Показать</string>
+    <string name="CP_Message_Filtering_Transparent">Прозрачность сообщения</string>
+    <string name="CP_Message_Filtering_Transparent_Desc">Показывать сообщения, которые совпадают с фильтром, полупрозрачными.</string>
+
+    <string name="CP_Slider_MediaAmplifier">Фото и видео</string>
+    <string name="CP_Slider_MediaAmplifier_Hint">Не работает с альбомами</string>
+    <string name="CP_LargeVoiceMessages">Адаптивная длина аудиосообщений</string>
+    <string name="CP_LargeVoiceMessages_Desc">Изменять ширину голосового сообщения в зависимости от длительности записи.</string>
+
+    <string name="CP_VoiceMessagesAutoPlay">Автовоспроизведение голосовых сообщений</string>
+    <string name="CP_PlayVideo">Воспроизводить видео по нажатию на кнопку громкости</string>
+    <string name="CP_PlayVideo_Desc">Включать звук видео в чате кнопками громкости устройства.</string>
+    <string name="CP_AutoPauseVideo">Останавливать видео</string>
+    <string name="CP_AutoPauseVideo_Desc">Приостанавливать видео при выключении экрана или сворачивании приложения.</string>
+    <string name="CP_DisableVibration">Отключить вибрацию</string>
+    <string name="CP_OpenLinksInIV">Открывать ссылки в Instant View</string>
+    <string name="CP_VideoSeekDuration">Дабл-тап для перемотки видео (секунды)</string>
+
+    <string name="CP_VibrateInChats">Вибрация в чатах</string>
+    <string name="CP_VibrateInChats_Desc">Вибрировать при получении сообщения в открытом чате.</string>
+    <string name="CP_SilenceNonContacts">Заглушить не-контакты</string>
+    <string name="CP_SilenceNonContacts_Desc">Отключать звук уведомлений от пользователей, которых нет в контактах. Добавить пользователя в контакты можно из его профиля без номера телефона.</string>
+    
+
+    
+    <string name="CP_Category_Camera">Камера</string>
+    <string name="CP_CameraType">Тип камеры</string>
+    <string name="CP_LensSwitcher">Переключатель объективов</string>
+    <string name="CP_LensSwitcher_Desc">Показывать кнопки переключения между доступными объективами.</string>
+    <string name="CP_CameraUW">Начинать со сверхширокого объектива</string>
+    <string name="CP_CameraUW_Desc">Начинать запись видеосообщений со сверхширокого объектива, если он доступен.</string>
+    <string name="CP_CameraDualCamera">Двойная камера</string>
+    <string name="CP_CameraDualCamera_Desc">Использовать обе камеры при записи видеосообщений для быстрого переключения между ними. Увеличивает расход заряда.</string>
+    <string name="CP_CategoryEnhancements">Улучшения</string>
+    <string name="CP_EnhancementsNote">Улучшения камеры работают не на всех устройствах одинаково. Включённые одновременно, они могут ухудшить результат.</string>
+    <string name="CP_OpticalStabilisation">Оптическая стабилизация (OIS)</string>
+    <string name="CP_VideoStabilisation">Видео стабилизация (EIS)</string>
+    <string name="CP_ContinuousAutofocus">Непрерывная автофокусировка</string>
+    <string name="CP_NoiseReduction">Шумоподавление</string>
+    <string name="CP_FaceDetection">Обнаружение лиц</string>
+    <string name="CP_CameraQuality">Качество камеры</string>
+    <string name="CP_CameraTypeSystem">Системная</string>
+
+    <string name="CP_CameraAspectRatio">Соотношение сторон камеры</string>
+    <string name="CP_CenterCameraControlButtons">Центрировать кнопки управления</string>
+    <string name="CP_CenterCameraControlButtons_Desc">Располагать кнопки смены камеры и вспышки по центру.</string>
+    <string name="CP_RearCam">Использовать заднюю камеру</string>
+    <string name="CP_RearCam_Desc">Начинать запись видеосообщений с основной камеры.</string>
+    <string name="CP_DisableCam">Кнопка камеры внизу</string>
+    <string name="CP_DisableCam_Desc">Показывать кнопку камеры рядом с галереей. Нажатие открывает встроенную камеру, долгое нажатие — системную.</string>
+
+    <string name="CP_Header_Videomessages">Видеосообщения</string>
+    <string name="CP_ExposureSliderPosition">Расположение экспозиции (слайдер)</string>
+    <string name="CP_ZoomSliderPosition_Bottom">Снизу</string>
+    <string name="CP_ZoomSliderPosition_Right">Справа</string>
+    <string name="CP_ZoomSliderPosition_Left">Слева</string>
+    <string name="CP_Exposure">Экспозиция</string>
+    <string name="CP_Brightness">Яркость</string>
+    <string name="CP_Flash_Hint">Удерживайте кнопку вспышки, чтобы изменить цвет и яркость вспышки.</string>
+    <string name="CP_Flash_Hint_Rear">Удерживайте кнопку вспышки, чтобы изменить её яркость.</string>
+    
+
+    
+    <string name="EP_NavigationAnimation">Анимация навигации</string>
+    <string name="EP_NavigationAnimationBezier">Обычная</string>
+    <string name="EP_NavigationAnimationCrossfading">Эффект плавного затухания</string>
+    <string name="FG_PredictiveBackAnimation">Predictive-Back навигация</string>
+    <string name="EP_CustomChat">Пользовательский чат для Избранного</string>
+    <string name="EP_CustomChat_Desc">Выберите чат для быстрой пересылки из меню сообщения, по двойному нажатию или смахиванию.</string>
+    <string name="EP_CustomChat_Selected_Title">вместо</string>
+    <string name="EP_Network">Сеть</string>
+    <string name="EP_DownloadSpeedBoost">Увеличение скорости загрузки</string>
+    <string name="EP_DownloadSpeedBoostExtreme">Экстра</string>
+    <string name="EP_UploadloadSpeedBoost">Увеличение скорости отдачи</string>
+    <string name="EP_SlowNetworkMode">Режим медленной сети</string>
+    
+
+    
+    <string name="SP_AskBioToOpenChats_Desc">Запрашивать биометрию или системный пароль при открытии выбранных чатов.</string>
+
+    <string name="SP_LockedChats">Заблокированные чаты</string>
+    <string name="SP_LockedChats_Lock_Destination">для добавления в список заблокированных</string>
+    <string name="SP_LockedChats_Lock_Destination_Sure">будет заблокирован(о)</string>
+    <string name="SP_HideArchivedStories">Скрыть архивированные истории</string>
+    <string name="SP_HideArchivedStories_Desc">Убирает раздел архивированных историй из профиля.</string>
+    <string name="SP_HideArchive">Скрыть архив из списка чатов</string>
+    <string name="SP_HideArchive_Desc">Показывать архив как канал клиента. Открыть архив можно из бокового меню или долгим нажатием на поиск.</string>
+
+    <string name="SP_AskPin">Запрашивать пароль</string>
+    <string name="SP_DoNotAskPin">Не запрашивать пароль</string>
+
+    <string name="SP_AskPinBeforeDelete">Запрос биометрии для удаления чатов</string>
+    <string name="SP_AskPinBeforeDelete_Desc">Запрашивать биометрию перед удалением чата или очисткой истории. Настройте блокировку экрана и биометрию в системе.</string>
+
+    <string name="SP_AllowUseSystemPasscode">Использовать системный PIN/Граф. ключ</string>
+    <string name="SP_AllowUseSystemPasscode_Desc">Разрешить подтверждение системным PIN-кодом, паролем или графическим ключом вместо биометрии.</string>
+    <string name="SP_TestFingerprint">Протестировать отпечаток</string>
+    <string name="SP_TestFingerprint_Desc">Проверить доступность биометрии, если она настроена в системе, но не определяется клиентом.</string>
+    <string name="SP_BiometricUnavailable_Test_Fixed">Отпечаток обнаружен успешно!</string>
+    <string name="SP_BiometricUnavailable_Test_Wrong_Desc">Попробуйте перезагрузить устройство или проверить системные настройки.</string>
+
+    <string name="SP_DeleteAccount">Удаление аккаунта</string>
+    
+
+    
+    <string name="UP_Category_Updates">Обновления</string>
+    <string name="UP_LastCheck">Последняя проверка</string>
+    <string name="UP_CurrentVersion">Текущая версия</string>
+    <string name="UP_BuildType">Тип сборки</string>
+    <string name="UP_BTRelease">Стабильная</string>
+    <string name="UP_BTBeta">Бета</string>
+    <string name="UP_InstallBetas">Устанавливать бета-версии</string>
+    <string name="UP_Auto_OTA">Проверять при запуске</string>
+    <string name="UP_CheckForUpdates">Проверить обновления</string>
+    <string name="UP_UpdateAvailable">Доступно обновление!</string>
+    
+
+    
+    
+
+    
+    
+    
+
+    <string name="FG_HideBubbleTail">Пузыри без хвостика</string>
+    <string name="FG_Formulas">Показывать формулы</string>
+    <string name="FG_Formulas_Desc">Показывать текст между знаками доллара как формулу, например $E = mc^2$.</string>
+    <string name="FG_HideBubbleTail_Desc">Скруглять все углы сообщений и скрывать выступ у края.</string>
+    <string name="FG_IconPack_Install">Установить из файла…</string>
+    <string name="FG_IconPack_Installed">Набор значков «%1$s» установлен</string>
+    <string name="FG_IconPack_Failed">Файл не похож на набор значков</string>
+    <string name="FG_IconPack_Info">Автор: %1$s\nЗначков: %2$d\n\nУдерживайте строку набора, чтобы открыть это окно.</string>
+    <string name="FG_IconPack_Apply">Установить набор</string>
+    <string name="FG_IconPack_Coverage">%1$s · занимает %2$d мест из %3$d</string>
+    <string name="FG_IconPack_FilterAll">Все</string>
+    <string name="FG_IconPack_FilterCovered">В наборе</string>
+    <string name="FG_IconPack_FilterMissing">Не хватает</string>
+    <string name="FG_AvatarCorners">Форма аватарок</string>
+    <string name="FG_AvatarCorners_Desc">Скругление аватаров в списке чатов, профилях и меню.</string>
+    <string name="FG_AvatarCorners_Circle">Круг</string>
+    <string name="FG_AvatarCorners_Square">Квадрат</string>
+    <string name="FG_WeekdayNearDate">День недели рядом с датой</string>
+    <string name="FG_WeekdayNearDate_Desc">Показывать день недели рядом с датой в чате.</string>
+    <string name="FG_HideActionBarStatus">Скрыть статус в шапке чата</string>
+    <string name="FG_HideActionBarStatus_Desc">Скрывать время последнего посещения и число участников под названием чата.</string>
+    <string name="FG_HideSponsored">Скрывать рекламу в каналах</string>
+    <string name="FG_HideSponsored_Desc">Не запрашивать и не показывать спонсорские сообщения. Не скрывает рекламные чаты в списке и рекламу в видео.</string>
+    <string name="FG_HideMuteButton">Скрыть кнопку звука в каналах</string>
+    <string name="FG_HideMuteButton_Desc">Отключить звук по-прежнему можно через меню в шапке.</string>
+    <string name="FG_ForumAvatars">Аватарки форумов как у чатов</string>
+    <string name="FG_ForumAvatars_Desc">Аватарки форумов скругляются так же, как у обычных чатов.</string>
+    <string name="FG_CustomTitle">Заголовок в списке чатов</string>
+    <string name="FG_StrongerBlur">Плотнее размытие</string>
+    <string name="FG_MediaGlow">Свечение медиа</string>
+    <string name="FG_OnlineIndicator">Точка «в сети» в переписке</string>
+    <string name="FG_ComposerEffects">Живой набор текста</string>
+    <string name="FG_ComposerEffects_Desc">Подсветка символов при вводе и удалении.</string>
+    <string name="FG_OnlineIndicator_Desc">Отметка на аватарках собеседников, которые сейчас в сети.</string>
+    <string name="FG_MediaGlow_Desc">Поля вокруг фотографии заливаются её размытыми цветами.</string>
+    <string name="FG_StrongerBlur_Desc">Более плотное размытие за панелями и меню.</string>
+    <string name="FG_DisableSendHints">Скрыть подсказки при отправке</string>
+    <string name="FG_DisableSendHints_Desc">Отключает подсказки об отложенной отправке, беззвучном режиме и записи голоса.</string>
+    <string name="FG_Bypass">Обход блокировок</string>
+    <string name="FG_Bypass_Enable">Включить обход</string>
+    <string name="FG_Bypass_Desc">Подключение к Telegram через выбранный сервер обхода.</string>
+    <string name="FG_Bypass_Status_On">включён</string>
+    <string name="FG_Bypass_Status_Off">выключен</string>
+    <string name="FG_Quote_Create">Создать цитату</string>
+    <string name="FG_Quote_Title">Цитата</string>
+    <string name="FG_Quote_Send">Отправить</string>
+    <string name="FG_Quote_Save">Сохранить в галерею</string>
+    <string name="FG_Quote_Saved">Цитата сохранена</string>
+    <string name="FG_Quote_Failed">Не удалось собрать цитату</string>
+    <string name="FG_Quote_Setting">Цитата картинкой</string>
+    <string name="FG_Quote_Setting_Desc">Добавляет в меню сообщения пункт «Создать цитату». Сообщение сохраняется картинкой.</string>
+    <string name="FG_Plugins">Плагины</string>
+    <string name="FG_Plugins_Install">Установить из файла…</string>
+    <string name="FG_Plugins_Empty">Пока ничего не установлено. Загляните в магазин или откройте присланный файл.</string>
+    <string name="FG_Plugins_Installed">Установленные</string>
+    <string name="FG_Plugins_Desc">Плагины добавляют команды, кнопки и другие возможности. Установить плагин можно из магазина или открыв его файл.</string>
+    <string name="FG_Plugins_Hint">Нажмите на плагин, чтобы открыть его настройки. Удержите, чтобы поделиться, посмотреть журнал или удалить.</string>
+    <string name="FG_Plugins_Info">Идентификатор: %1$s</string>
+    <string name="FG_Plugins_Failed">Плагин «%1$s» не запустился</string>
+    <string name="FG_Plugins_BadFile">Это не похоже на плагин</string>
+    <string name="FG_Plugins_Installed_Toast">Плагин «%1$s» установлен</string>
+    <string name="FG_Plugin_Abilities">Что использует плагин</string>
+    <string name="FG_Plugin_Ability_Hooks">Меняет работу клиента</string>
+    <string name="FG_Plugin_Ability_Messages">Отправляет сообщения и файлы</string>
+    <string name="FG_Plugin_Ability_Network">Обращается к сети</string>
+    <string name="FG_Plugin_Ability_Files">Читает и пишет файлы</string>
+    <string name="FG_Plugin_Ability_Updates">Читает переписку и обновления</string>
+    <string name="FG_Plugin_Ability_Settings">Добавляет свои настройки</string>
+    <string name="FG_Plugin_NoAbilities">Обращений к клиенту в коде не найдено</string>
+    <string name="FG_Plugins_Enabled">Включён</string>
+    <string name="FG_Plugins_Disabled">Выключен</string>
+    <string name="FG_Plugins_DeleteConfirm">Удалить плагин вместе с его настройками?</string>
+    <string name="FG_Plugins_NoSettings">У плагина нет настроек</string>
+    <string name="FG_Plugins_NoReason">Плагин остановился без сообщения об ошибке</string>
+    <string name="FG_Plugins_Log">Журнал плагинов</string>
+    <string name="FG_Plugins_LogEmpty">Записей пока нет</string>
+    <string name="FG_Plugins_AskAuthor">Попросить автора</string>
+    <string name="FG_Plugins_ReportCopied">Отчёт скопирован. Отправьте его автору плагина.</string>
+    <string name="FG_Plugins_ReportHeader">Плагин «%1$s» %2$s не запускается в Finegram. Прошу добавить поддержку.</string>
+    <string name="FG_Plugins_Bundled">встроенный</string>
+    <string name="FG_Plugins_Bundled_Hint">Плагин включён в состав приложения и не может быть удалён.</string>
+    <string name="FG_Credits">Благодарности</string>
+    <string name="FG_Credits_Extera">Идея плагинов</string>
+    <string name="FG_Credits_Extera_Desc">Совместимость с плагинами exteraGram и отдельные возможности интерфейса.</string>
+    <string name="FG_Credits_Cherry">Основа клиента</string>
+    <string name="FG_Credits_Store">Каталог плагинов</string>
+    <string name="FG_Plugins_Open">Открыть</string>
+    <string name="FG_Plugins_Enable">Включить</string>
+    <string name="FG_Plugins_Disable">Выключить</string>
+    <string name="FG_Bypass_Connecting">подключение…</string>
+    <string name="FG_Plugins_BypassClash">Выключите встроенный обход блокировок, чтобы включить этот плагин</string>
+    <string name="FG_RoundWatermark">Метка на кружках</string>
+    <string name="FG_RoundWatermark_Desc">Добавлять небольшую метку в углу видеосообщения.</string>
+    <string name="FG_Plugins_Slow">Задерживает клиент, %1$d мс</string>
+    <string name="FG_OpenOfficialApp">Открыть официальное приложение</string>
+    <string name="EP_NavigationAnimationSpring">Пружинная</string>
+    <string name="AP_ChangeIcon_Violet_Sunset">Фиолетовый закат</string>
+    <string name="FG_SideDrawer">Боковое меню вместо нижней панели</string>
+    <string name="FG_SideDrawer_Desc">Открывать боковое меню свайпом вправо по списку чатов или кнопкой в верхнем углу. Нижние вкладки можно оставить включёнными отдельно.</string>
+    <string name="FG_DrawerItems">Пункты меню</string>
+    <string name="FG_DrawerItems_Desc">Удерживайте и перетаскивайте пункты, чтобы изменить порядок. Здесь же можно показать скрытые пункты.</string>
+    <string name="FG_DrawerItems_Reset">Вернуть как было</string>
+    <string name="FG_DrawerItems_KeepSettings">Настройки из меню не убрать: без нижней панели до них больше не дойти.</string>
+    <string name="FG_MainTabs_HiddenByDrawer">Пока включено боковое меню, нижней панели нет. Переключается в «Оформлении».</string>
+    <string name="FG_Plugins_Word_one">плагин</string>
+    <string name="FG_Plugins_Word_few">плагина</string>
+    <string name="FG_Plugins_Word_many">плагинов</string>
+    <string name="FG_Plugins_Word_other">плагина</string>
+    <string name="FG_Plugins_HeroEmpty">Пока ни одного. Загляните в магазин.</string>
+    <string name="FG_Plugins_HeroStats">Включено: %1$d</string>
+    <string name="FG_Plugins_HeroStatsUpdates">Включено: %1$d · обновлений: %2$d</string>
+    <string name="FG_Plugins_HeroFile">Из файла</string>
+    <string name="FG_Plugins_HeroUpdate">Проверить</string>
+    <string name="FG_Plugins_HeroUpdateCount">Обновить %1$d</string>
+    <string name="FG_Plugins_InstalledCount">Установлено: %1$d</string>
+    <string name="FG_Plugins_BadgeConflict">конфликт</string>
+    <string name="FG_Plugins_BadgeCrash">сбой</string>
+    <string name="FG_Plugins_BadgeUpdate">обновление</string>
+    <string name="FG_Plugins_Share">Поделиться</string>
+    <string name="FG_Plugins_Shared">Плагин отправлен</string>
+    <string name="FG_Plugins_ShareFailed">Не получилось собрать файл плагина</string>
+    <string name="FG_Plugins_LogShort">Журнал</string>
+    <string name="FG_Plugins_StateOn">работает</string>
+    <string name="FG_Plugins_StateOff">выключен</string>
+    <string name="FG_SideDrawer_Rounded">Скруглённый край меню</string>
+    <string name="FG_RoundCamera">Камера для кружков</string>
+    <string name="FG_RoundCamera_Front">Фронтальная</string>
+    <string name="FG_RoundCamera_Rear">Основная</string>
+    <string name="FG_RoundCamera_Last">Как в прошлый раз</string>
+    <string name="FG_SafeMode_Title">Безопасный режим</string>
+    <string name="FG_SafeMode_Crash">Клиент запущен без плагинов. Если вылет повторится и без них, дело не в плагинах.</string>
+    <string name="FG_SafeMode_Desc">Плагины отключены после сбоя. Восстановите их кнопкой выше или включайте по одному, чтобы определить причину.</string>
+    <string name="FG_SafeMode_TurnOff">Вернуть плагины</string>
+    <string name="FG_SafeMode_Started">Плагины вернулись</string>
+    <string name="FG_RoundCamera_Ask">Спрашивать при записи</string>
+    <string name="FG_RoundCamera_FrontFull">Фронтальная камера</string>
+    <string name="FG_RoundCamera_RearFull">Основная камера</string>
+    <string name="FG_SideDrawer_Phone">Показывать номер телефона</string>
+    <string name="FG_ForwardWoCaption">Переслать без подписи</string>
+    <string name="FG_GetCustomReactions">Забрать эти реакции</string>
+    <string name="FG_MenuExtras">Дополнительные пункты меню</string>
+    <string name="FG_MenuExtras_Desc">Добавляет пересылку медиа без подписи и сохранение эмодзи из реакций.</string>
+    <string name="FG_SafeStars_Switch">Покупки без Google Pay</string>
+    <string name="FG_SafeStars_Switch_Desc">Показывать покупку Premium и звёзд в сборках вне Google Play, включая переход на SafeStars.</string>
+    <string name="FG_NotificationReactions">Реакция из уведомления</string>
+    <string name="FG_NotificationReactions_Desc">Показывать кнопку реакции в уведомлении, чтобы отправить её без открытия чата.</string>
+    <string name="FG_NotificationReactionEmoji">Какую реакцию отправлять</string>
+    <string name="FG_PremiumReactionRequired">Реакция своим эмодзи доступна с Telegram Premium.</string>
+    <string name="FG_Menu_Reorder">Порядок пунктов меню</string>
+    <string name="FG_Menu_Reorder_Reset">Вернуть порядок Telegram</string>
+    <string name="FG_Menu_Reorder_Desc">Перетащите пункты в нужном порядке. Пункты, которые Telegram добавит позже, останутся в конце.</string>
+    <string name="FG_MessageMenuHaptic">Отклик при открытии меню</string>
+    <string name="FG_MF_UseRegex">Регулярные выражения</string>
+    <string name="FG_MF_UseRegex_Desc">Использовать регулярные выражения для поиска совпадений в сообщениях.</string>
+    <string name="FG_MF_RegexField">По одному выражению в строке</string>
+    <string name="FG_MF_RegexField_Desc">Поиск не учитывает регистр. Некорректные выражения пропускаются.</string>
+    <string name="FG_MF_Logic">Слова и выражения</string>
+    <string name="FG_MF_Logic_Or">Достаточно одного</string>
+    <string name="FG_MF_Logic_And">Нужны оба</string>
+    <string name="FG_RoundVideoBitrate">Качество кружков</string>
+    <string name="FG_RoundAudioBitrate">Звук в кружках</string>
+    <string name="FG_RoundBitrate_Desc">Более высокий битрейт повышает качество записи и увеличивает размер файла.</string>
+    <string name="FG_LocalPremiumEmojis">Премиум-эмодзи без Premium</string>
+    <string name="FG_LocalPremiumEmojis_Desc">Отправлять эмодзи как ссылку tg://emoji. Finegram показывает её как эмодзи; другие клиенты могут показывать ссылку.</string>
+    <string name="FG_Bypass_Status_Failed">Не удалось подключиться</string>
+    <string name="FG_Bypass_Status_Vpn">Пауза: включён VPN</string>
+    <string name="FG_Bypass_OpenProxy">Настройки прокси</string>
+    <string name="FG_Bypass_SuspendOnVpn">Отключать при VPN</string>
+    <string name="FG_Bypass_Location">Локация</string>
+    <string name="FG_Bypass_Location_Auto">Автоматически</string>
+    <string name="FG_Bypass_Location_Desc">Подключение начинается с выбранной страны. Остальные локации используются, если подключиться не удалось.</string>
+    <string name="FG_Bypass_Location_Current">Текущая локация</string>
+    <string name="FG_Bypass_Location_Ping">%1$d мс</string>
+    <string name="FG_Bypass_Location_Unreachable">Не отвечает</string>
+    <string name="FG_Bypass_Location_Measuring">Проверка…</string>
+    <string name="FG_Bypass_SuspendOnVpn_Desc">При подключении VPN встроенный обход приостанавливается и возобновляется после отключения VPN.</string>
+    <string name="FG_Bypass_Route">Сервер</string>
+    <string name="FG_Bypass_Route_Tgws">Flowseal</string>
+    <string name="FG_Bypass_Route_Relay">Наш сервер</string>
+    <string name="FG_Bypass_Route_Tgws_Desc">Серверы проекта tg-ws-proxy через Cloudflare. Если подключение недоступно, используется сервер Finegram.</string>
+    <string name="FG_Bypass_Route_Relay_Desc">Сервер Finegram в выбранной локации. Если подключение недоступно, используются серверы tg-ws-proxy.</string>
+    <string name="FG_Plugins_InstallConfirm">Установить</string>
+    <string name="FG_MessageMenuBehaviour">Поведение</string>
+    <string name="FG_MessageMenuUnifiedScroll">Сохранять размер меню</string>
+    <string name="FG_MessageMenuUnifiedScroll_Desc">Открывать подменю «Кто прочитал» внутри меню сообщения с общей прокруткой.</string>
+    <string name="FG_MessageMenuFixedHeight">Ограничивать высоту подменю</string>
+    <string name="FG_MessageMenuFixedHeight_Desc">Ограничивать высоту списка прочитавших и прокручивать его внутри меню.</string>
+    <string name="FG_ComposerCursorGlide">Скользящий курсор</string>
+    <string name="FG_ComposerCursorGlide_Desc">Плавное перемещение курсора при вводе текста.</string>
+    <string name="FG_LargePhotos">Крупные фото</string>
+    <string name="FG_LargePhotos_Desc">Отправлять фотографии с длинной стороной 2560 пикселей вместо 1280. Увеличивает размер файла.</string>
+    <string name="FG_LockedChatsRemember">Спрашивать снова</string>
+    <string name="FG_LockedChatsRemember_Always">Каждый раз</string>
+    <string name="FG_LockedChatsRemember_1Min">Через минуту</string>
+    <string name="FG_LockedChatsRemember_5Min">Через пять минут</string>
+    <string name="FG_LockedChatsRemember_15Min">Через пятнадцать минут</string>
+    <string name="FG_LockedChatsRemember_Restart">До перезапуска</string>
+    <string name="FG_MsgFilters_OnlyInChats">Фильтровать только в этих чатах</string>
+    <string name="FG_MsgFilters_OnlyInChats_Desc">Выберите чаты, в которых должен работать фильтр. Пустой список применяет фильтр ко всем чатам.</string>
+    <string name="FG_ComposerAppear">Проявление букв</string>
+    <string name="FG_ComposerAppear_Desc">Плавное появление символов при вводе. Не применяется к вставленному тексту.</string>
+    <string name="FG_PreReform">Дореформенная орфография</string>
+    <string name="FG_PreReform_Desc">Применять дореформенную орфографию к исходящим сообщениям на русском. Ссылки, код и упоминания остаются без изменений.</string>
+    <string name="FG_Plugins_CheckUpdates">Проверить обновления</string>
+    <string name="FG_Plugins_Checking">Проверка…</string>
+    <string name="FG_Plugins_NoUpdates">Обновлений нет</string>
+    <string name="FG_Plugins_UpdateAvailable">Доступна версия %s</string>
+    <string name="FG_Plugins_Update">Обновить</string>
+    <string name="FG_Plugins_Updated">Плагин обновлён</string>
+    <string name="FG_Plugins_UpdateFailed">Не удалось обновить плагин</string>
+    <string name="FG_Plugins_UpdatesFound_one">Можно обновить %1$d плагин</string>
+    <string name="FG_Plugins_UpdatesFound_few">Можно обновить %1$d плагина</string>
+    <string name="FG_Plugins_UpdatesFound_many">Можно обновить %1$d плагинов</string>
+    <string name="FG_Plugins_UpdatesFound_other">Можно обновить %1$d плагина</string>
+    <string name="FG_TextAnim">Анимация набора</string>
+    <string name="FG_TextAnim_On">Включена</string>
+    <string name="FG_TextAnim_Off">Выключена</string>
+    <string name="FG_TextAnim_Desc">Анимация появления символов, движения курсора и удаления текста.</string>
+    <string name="FG_TextAnim_Appear">Буквы</string>
+    <string name="FG_TextAnim_Appear_Hint">Символы появляются снизу с постепенным уменьшением размытия.</string>
+    <string name="FG_TextAnim_Cursor">Курсор</string>
+    <string name="FG_TextAnim_Erase">Стирание</string>
+    <string name="FG_TextAnim_Duration">Длительность: %1$d мс</string>
+    <string name="FG_TextAnim_Slide">Сдвиг: %1$d точек</string>
+    <string name="FG_TextAnim_Slide_Off">Без сдвига</string>
+    <string name="FG_TextAnim_Blur">Мягкость: %1$d</string>
+    <string name="FG_TextAnim_Blur_Off">Без мягкости</string>
+    <string name="FG_TextAnim_Speed">Скорость: %1$d</string>
+    <string name="FG_TextAnim_Particles">Частиц: %1$d</string>
+    <string name="FG_TextAnim_ParticleSpeed">Скорость частиц: %1$d%%</string>
+    <string name="FG_TextAnim_ParticleSize">Размер частиц: %1$d%%</string>
+    <string name="FG_TextAnim_Credit">Повадки взяты у плагина Text Animation, авторы @mihailkotovski и @mishabotov. В прежней версии он встроен в клиент с зашитыми числами; здесь те же числа стоят по умолчанию, и каждое можно поменять.</string>
+    <string name="FG_Cards_Title">Карточки</string>
+    <string name="FG_Cards_GeneralHeader">Основное</string>
+    <string name="FG_Cards_Enable">Включить</string>
+    <string name="FG_Cards_InfiniteScroll">Бесконечная прокрутка</string>
+    <string name="FG_Cards_AutoScroll">Автопрокрутка</string>
+    <string name="FG_Cards_ActiveHeader">Активные карточки</string>
+    <string name="FG_Cards_HiddenHeader">Скрытые карточки</string>
+    <string name="FG_Cards_GrantLocation">Дать доступ</string>
+    <string name="FG_Cards_NameWeather">Погода</string>
+    <string name="FG_Cards_NameGram">Gram</string>
+    <string name="FG_Cards_NameBitcoin">Биткоин</string>
+    <string name="FG_Cards_NameUsd">Доллар США</string>
+    <string name="FG_Cards_NameStorage">Хранилище</string>
+    <string name="FG_Cards_NameProxy">Прокси</string>
+    <string name="FG_Cards_Footer">Перетаскивайте для сортировки. Нажмите на карточку для настройки.</string>
+    <string name="FG_Cards_Desc">Полоса карточек над списком чатов: память, прокси, погода и курсы</string>
+    <string name="FG_Credits_TextAnim">Анимация набора</string>
+    <string name="FG_Cards_Colors">Цветные карточки</string>
+    <string name="FG_Cards_ColorsHint">Использовать отдельный цвет для каждой карточки. Если выключено, применяется цвет текущей темы.</string>
+    <string name="FG_Plugins_Crashed">Выключен после сбоя</string>
+    <string name="FG_Json_UseGson">Разбирать через GSON</string>
+    <string name="FG_Json_UseJackson">Разбирать через Jackson</string>
+    <string name="FG_Json_JacksonUnsupported">Jackson работает начиная с Android 8.</string>
+    <string name="FG_Json_Date">Дата: %1$s</string>
+    <string name="FG_Json_ForwardDate">Переслано %1$s</string>
+    <string name="FG_Json_NotForwarded">Сообщение не пересылали</string>
+    <string name="FG_Json_DcMediaOnly">DC: только у медиа</string>
+    <string name="CP_Bokeh">Размытие фона</string>
+    <string name="CP_Bokeh_Desc">Размывать фон средствами камеры. На некоторых устройствах может снижать скорость съёмки.</string>
+    <string name="FG_NoRestrictions">Ограничений нет.</string>
+    <string name="FG_Debug_Title">Отладка</string>
+    <string name="FG_Debug_Misc">Разное</string>
+    <string name="FG_Debug_ToastRpc">Показывать ошибки сервера</string>
+    <string name="FG_Debug_ToastRpc_Desc">Показывать ошибки запросов к Telegram в кратких уведомлениях.</string>
+    <string name="FG_Debug_OldTime">Простое время в чатах</string>
+    <string name="FG_Debug_OldTime_Desc">Время у сообщений без оформления, принятого в iOS и TDesktop.</string>
+    <string name="FG_Debug_PerfClass">Класс производительности</string>
+    <string name="FG_Debug_FixCallNotif">Починить уведомление о звонке</string>
+    <string name="FG_Debug_NewBlur">Новое размытие (GPU)</string>
+    <string name="FG_Debug_ForumTabs">Вкладки форумов принудительно</string>
+    <string name="FG_Debug_Punctuation">Заменять кавычки и тире</string>
+    <string name="FG_Debug_Punctuation_Desc">Кавычки-ёлочки и длинное тире, как это делает TDesktop.</string>
+    <string name="FG_Debug_EditFix">Починить поле ввода на Samsung</string>
+    <string name="FG_Debug_EditFix_Desc">Сохранять эмодзи и форматирование при выборе подсказки клавиатуры Samsung.</string>
+    <string name="FG_Debug_AudioSource">Источник звука микрофона</string>
+    <string name="FG_Debug_MaxQuality">Отправлять видео в высшем качестве</string>
+    <string name="FG_Debug_MaxQuality_Desc">Автоматически выбирать максимальное доступное качество.</string>
+    <string name="FG_Debug_GifAsVideo">Проигрывать GIF как видео</string>
+    <string name="FG_Debug_HideVideoProgress">Прятать отметку просмотра на видео</string>
+    <string name="FG_Debug_HideVideoProgress_Desc">Скрывать отметку позиции воспроизведения на превью видео.</string>
+    <string name="FG_Debug_OwnMark">* Возможность Finegram.</string>
+    <string name="FG_Debug_Desc">Технические переключатели и сведения о сборке.</string>
+    <string name="FG_Store">Магазин</string>
+    <string name="FG_Store_Desc">Плагины и наборы значков с сервера проекта</string>
+    <string name="FG_Store_Install">Установить</string>
+    <string name="FG_Store_Update">Обновить</string>
+    <string name="FG_Store_Installed">Установлен</string>
+    <string name="FG_Store_Empty">Каталог пока пуст</string>
+    <string name="FG_Store_Failed">Каталог не загрузился. Проверьте соединение.</string>
+    <string name="FG_Store_Plugins">Плагины</string>
+    <string name="FG_Store_Icons">Наборы значков</string>
+    <string name="FG_Store_Updates">Обновления</string>
+    <string name="FG_Store_Sort">Порядок</string>
+    <string name="FG_Store_SortNew">Сначала новые</string>
+    <string name="FG_Store_SortName">По названию</string>
+    <string name="FG_Store_SortPopular">По числу установок</string>
+    <string name="FG_Store_SortAuthor">По автору</string>
+    <string name="FG_Store_SortInstalled">Сначала установленные</string>
+    <string name="FG_Store_Refresh">Обновить каталог</string>
+    <string name="FG_Store_AutoUpdate">Обновлять плагины</string>
+    <string name="FG_Store_AutoUpdate_Manual">Только вручную</string>
+    <string name="FG_Store_AutoUpdate_Ask">Спрашивать</string>
+    <string name="FG_Store_AutoUpdate_Silent">Ставить сразу</string>
+    <string name="FG_Store_Done">%1$s установлен</string>
+    <string name="FG_Store_Fail">Не удалось установить %1$s</string>
+    <string name="FG_Store_UpdatesReady">Обновлений для плагинов: %1$d</string>
+    <string name="FG_Plugins_BypassClash_Short">Встроенный обход включён</string>
+    <string name="FG_Store_Cat_All">Все</string>
+    <string name="FG_Store_Cat_Customization">Оформление</string>
+    <string name="FG_Store_Cat_Messages">Сообщения</string>
+    <string name="FG_Store_Cat_Utilities">Инструменты</string>
+    <string name="FG_Store_Cat_Informational">Сведения</string>
+    <string name="FG_Store_Cat_Fun">Развлечения</string>
+    <string name="FG_Store_Cat_Library">Библиотеки</string>
+    <string name="FG_Store_Cat_Other">Прочее</string>
+    <string name="FG_Store_Source">Каталог с %1$s</string>
+    <string name="FG_Store_Unverified">Без проверки</string>
+    <string name="FG_Store_Mismatch">Файл не совпал с описью</string>
+    <string name="FG_Store_NeedsApp">Нужен Finegram %1$s</string>
+    <string name="FG_Store_Featured">Стоит посмотреть</string>
+    <string name="FG_Store_Total">Всего: %1$d</string>
+    <string name="FG_Store_Installing">Ставится</string>
+    <string name="FG_Store_NoDesc">Описание не указано</string>
+    <string name="FG_Store_Version">Версия</string>
+    <string name="FG_Store_Size">Размер</string>
+    <string name="FG_Store_Section">Раздел</string>
+    <string name="FG_Store_Signed">Файл сверяется с подписью каталога</string>
+    <string name="FG_Store_Requires">Нужны пакеты: %1$s</string>
+    <string name="FG_Store_Depends">Нужны плагины: %1$s</string>
+    <string name="MainMenuHiddenItems">Скрытые пункты</string>
+    <string name="FG_AppIcon_NightSky">Ночное небо</string>
+    <string name="FG_AppIcon_Aurora">Аврора</string>
+    <string name="FG_AppIcon_Kraft">Крафт</string>
+    <string name="FG_AppIcon_Pixels">Пиксели</string>
+    <string name="FG_AppIcon_Halftone">Полутон</string>
+    <string name="FG_AppIcon_Depth">Глубина</string>
+    <string name="FG_AppIcon_Topography">Топография</string>
+    <string name="FG_AppIcon_Mountains">Горы</string>
+    <string name="FG_AppIcon_Nebula">Туманность</string>
+    <string name="FG_AppIcon_Bauhaus">Баухаус</string>
+    <string name="FG_AppIcon_Memphis">Мемфис</string>
+    <string name="FG_AppIcon_LowPoly">Лоу-поли</string>
+    <string name="FG_AppIcon_PaperLayers">Бумажные слои</string>
+    <string name="FG_AppIcon_Malachite">Малахит</string>
+    <string name="FG_Update_Title">Обновление %1$s</string>
+    <string name="FG_Update_UpToDate">Версия последняя</string>
+    <string name="FG_Update_Install">Установить</string>
+    <string name="FG_Update_Downloading">Загрузка… %1$d%%</string>
+    <string name="FG_Update_OpenChannel">Канал</string>
+    <string name="FG_Update_Preview">Показать окно обновления</string>
+    <string name="FG_Update_WhatsNew">Что нового</string>
+    <string name="FG_Update_CheckSection">Проверка обновлений</string>
+    <string name="FG_Ghost">Режим призрака</string>
+    <string name="FG_Ghost_Value">Не рассказывать о себе</string>
+    <string name="FG_Ghost_Online">Не показываться в сети</string>
+    <string name="FG_Ghost_Typing">Не показывать набор текста</string>
+    <string name="FG_Ghost_Reading">Не отмечать сообщения прочитанными</string>
+    <string name="FG_Ghost_Stories">Не попадать в просмотревшие историю</string>
+    <string name="FG_Ghost_OfflineAfterSend">Уходить в офлайн сразу после отправки</string>
+    <string name="FG_Ghost_Desc">Настройте скрытие статуса «В сети», набора текста, прочтения сообщений и просмотра историй.</string>
+    <string name="FG_Outbound_AddTitle">Добавить свой сервер</string>
+    <string name="FG_Outbound_AddText">В буфере обмена ссылка %1$s:
+
+%2$s
+%3$s
+
+Добавить её в список прокси?</string>
+    <string name="FG_Outbound_Added">Сервер добавлен</string>
+    <string name="FG_Outbound_BadLink">Ссылку не удалось разобрать</string>
+    <string name="FG_Outbound_BusyByBypass">Чтобы подключить прокси, выключите встроенный обход.</string>
+    <string name="FG_Saved">Сохранять удалённые</string>
+    <string name="FG_Saved_Value">Пока ничего не сохранено</string>
+    <string name="FG_Saved_Bots">В чатах с ботами</string>
+    <string name="FG_Saved_Channels">В каналах</string>
+    <string name="FG_Saved_Log">Где удаляли сообщения</string>
+    <string name="FG_Saved_Empty">Пока никто ничего не удалял. Удалённое собеседником останется в своём чате и отметится здесь.</string>
+    <string name="FG_Saved_Clear">Забыть сохранённое</string>
+    <string name="FG_Saved_Clear_Desc">Удаляются только отметки об удалении. Сохранённые сообщения остаются в чатах.</string>
+    <string name="FG_Saved_Clear_Confirm">Пометки снимутся, и удалённые перестанут выделяться. Сами сообщения останутся.</string>
+    <string name="FG_Saved_Desc">Сохранять удалённые сообщения в чатах с отметкой «Удалено». Не применяется к «Избранному», секретным чатам и очистке истории.</string>
+    <string name="FG_Saved_Count_one">Сохранено %1$d сообщение</string>
+    <string name="FG_Saved_Count_few">Сохранено %1$d сообщения</string>
+    <string name="FG_Saved_Count_many">Сохранено %1$d сообщений</string>
+    <string name="FG_Saved_Count_other">Сохранено %1$d сообщения</string>
+    <string name="FG_Saved_InChat_one">%1$d сообщение</string>
+    <string name="FG_Saved_InChat_few">%1$d сообщения</string>
+    <string name="FG_Saved_InChat_many">%1$d сообщений</string>
+    <string name="FG_Saved_InChat_other">%1$d сообщения</string>
+    <string name="FG_Saved_Mark">удалено</string>
+    <string name="FG_SwitchStyle">Вид переключателей</string>
+    <string name="FG_SwitchStyle_Telegram">Как в Telegram</string>
+    <string name="FG_SwitchStyle_OneUI">One UI</string>
+    <string name="FG_SwitchStyle_Material3">Material 3</string>
+    <string name="FG_Anonymity">Анонимность</string>
+    <string name="FG_Anonymity_Desc">Режим призрака, сохранение удалённых</string>
+    <string name="FG_Shadowban">Спрятанные люди</string>
+    <string name="FG_Shadowban_Desc">Скрывать сообщения выбранных пользователей и отключать уведомления от них.</string>
+    <string name="FG_Shadowban_Add">Спрятать человека</string>
+    <string name="FG_Shadowban_Remove">Перестать прятать</string>
+    <string name="FG_Shadowban_Added">Спрятан. Сообщения будут приходить тихо.</string>
+    <string name="FG_Shadowban_Removed">Больше не спрятан</string>
+    <string name="FG_Shadowban_Empty">Никто не спрятан</string>
+    <string name="FG_Shadowban_Dialog">Прятать переписку</string>
+    <string name="FG_Shadowban_Groups">Прятать сообщения в группах</string>
+    <string name="FG_Extra">Ещё</string>
+    <string name="FG_LocalPremium">Премиум для себя</string>
+    <string name="FG_LocalPremium_Desc">Включает локальные возможности Premium. Подписка на сервере Telegram не активируется.</string>
+    <string name="FG_AllowScreenshots">Разрешить скриншоты</string>
+    <string name="FG_AllowScreenshots_Desc">Снимает запрет на снимки экрана в секретных чатах.</string>
+    <string name="FG_DimDeleted">Приглушать удалённые</string>
+    <string name="FG_PseudoForward">Пересылать из закрытых чатов</string>
+    <string name="FG_PseudoForward_Desc">Разрешить пересылку содержимого сообщений из чатов с запретом пересылки.</string>
+    <string name="FG_KeepEdits">Хранить историю правок</string>
+    <string name="FG_KeepEdits_Desc">Сохранять предыдущие версии текста сообщений.</string>
+    <string name="FG_Ghost_Exception_On">Не прятаться в этом чате</string>
+    <string name="FG_Ghost_Exception_Off">Снова прятаться здесь</string>
+    <string name="FG_Ghost_Exception_Added">Здесь собеседник видит всё как обычно</string>
+    <string name="FG_Ghost_Exception_Removed">Режим призрака здесь снова работает</string>
+    <string name="FG_Off">Выкл</string>
+    <string name="FG_Unlock">Запреты клиента</string>
+    <string name="FG_Anonymity_Hint">Некоторые возможности действуют только в Finegram и не меняют данные на сервере Telegram.</string>
+    <string name="FG_Ghost_What">Что перестаёт уходить</string>
+    <string name="FG_Ghost_Exceptions">Исключения</string>
+    <string name="FG_Ghost_Exceptions_Hint">Добавьте пользователя в исключения через меню чата. Для него режим призрака не применяется.</string>
+    <string name="FG_Saved_Where">Где действует</string>
+    <string name="FG_Shadowban_Tap">Нажмите на человека, чтобы перестать его прятать.</string>
+    <string name="FG_Shadowban_Both">Переписка и группы</string>
+    <string name="FG_Outbound_Add">Добавить по ссылке (VLESS, Hysteria2)</string>
+    <string name="FG_NotificationAvatar">Аватар чата в уведомлениях</string>
+    <string name="FG_NotificationAvatar_Desc">Показывать аватар чата крупным значком уведомления. Маленький одноцветный значок остаётся значком клиента.</string>
+    <string name="FG_NotificationIconOld">Классический значок Telegram</string>
+    <string name="FG_NotificationIconOld_Desc">Использовать значок Telegram в уведомлениях.</string>
+    <string name="FG_Plugins_Library">Доставляю %1$s…</string>
+    <string name="FG_Plugins_Library_Progress">Доставляю %1$s — %2$d%%</string>
+    <string name="FG_Store_BypassClash">%1$s установлен. Чтобы запустить плагин, выключите встроенный обход.</string>
+    <string name="FG_Contacts_Export">Выгрузить в файл</string>
+    <string name="FG_RecordMultiMic">Писать со всех микрофонов</string>
+    <string name="FG_RecordMultiMic_Desc">Использовать встроенные микрофоны для стереозаписи, если устройство поддерживает её.</string>
+    <string name="FG_RecordInStereo">Оставлять обе дорожки</string>
+    <string name="FG_RecordInStereo_Desc">Сохранять голосовые сообщения в стерео вместо сведения записи в моно.</string>
+    <string name="FG_SelectBetween">Выделить между</string>
+    <string name="FG_SelectBetween_Nothing">Между выбранными сообщениями ничего нет</string>
+    <string name="FG_LastSeenExactTime">Точное время в сети</string>
+    <string name="FG_LastSeenExactTime_Desc">Показывает «был(а) в сети сегодня в 18:20» вместо «был(а) в сети 20 минут назад».</string>
+    <string name="FG_ShowIdSearch">Поиск по номеру сообщения</string>
+    <string name="FG_ShowIdSearch_Desc">Показывать пункт «Поиск (ID)» в меню чата.</string>
+    <string name="FG_Saved_ForgetChat_Confirm">Убрать пометки удалённых в этом чате? Сами сообщения останутся на месте.</string>
+    <string name="FG_Saved_ForgetChat">Убрать пометки удалённых</string>
+    <string name="FG_Saved_Exceptions">Исключения</string>
+    <string name="FG_Saved_Exceptions_Empty">Нет исключений</string>
+    <string name="FG_Saved_Exceptions_Info">В этих чатах удалённые сообщения не сохраняются. Добавить чат можно долгим нажатием в журнале удалённых.</string>
+    <string name="FG_Saved_ExcludeChat">Не сохранять удалённые</string>
+    <string name="FG_Saved_ResumeChat">Сохранять удалённые</string>
+    <string name="FG_Saved_ResumeChat_Confirm">Снова сохранять удалённые сообщения в этом чате?</string>
+    <string name="FG_Proxy_DisableOnVpn">Выключать прокси при VPN</string>
+    <string name="FG_Proxy_DisableOnVpn_Desc">При подключении VPN отключать обычный прокси. После отключения VPN восстанавливать его, если он был включён.</string>
+    <string name="FG_BottomTabsWithDrawer">Оставить и нижнюю панель</string>
+    <string name="FG_BottomTabsWithDrawer_Desc">Нижние вкладки остаются на месте при включённом боковом меню.</string>
+    <string name="FG_LiquidGlass">Стеклянное размытие</string>
+    <string name="FG_LiquidGlass_Desc">Размытые подложки панелей, меню и заголовка чата. На некоторых устройствах может снижать плавность интерфейса.</string>
+    <string name="FG_NewRoundEngine">Новая запись кружков</string>
+    <string name="FG_NewRoundEngine_Desc">Использовать новый движок записи видеосообщений. Изменение вступит в силу после перезапуска приложения.</string>
+    <string name="FG_ManualCameraId">Выбирать камеры по ID</string>
+    <string name="FG_ManualCameraId_Desc">Для Camera2 и CameraX можно указать ID фронтальной и основной камер.</string>
+    <string name="FG_ManualCameraId_Front">Фронтальная камера</string>
+    <string name="FG_ManualCameraId_Rear">Основная камера</string>
+    <string name="FG_ManualCameraId_Auto">Автоматически</string>
+    <string name="FG_RoundEngine">Движок кружков</string>
+    <string name="FG_CameraAudioMode">Запись звука</string>
+    <string name="FG_CameraModeOld">Старый</string>
+    <string name="FG_CameraModeNew">Новый</string>
+    <string name="FG_CameraAudioMode_Desc">Старый режим использует обычный микрофон и моно. Новый использует выбранный источник звука и поддерживает стерео. При ошибке проверяется другой источник.</string>
+    <string name="FG_RoundZoomScale">Шкала увеличения кружка</string>
+    <string name="FG_CameraTransitions">Плавная смена объектива</string>
+    <string name="FG_CameraDualUnavailable">Двойная камера недоступна. Запись продолжится с одной камерой.</string>
+    <string name="FG_CameraId_Enter">Ввести ID вручную</string>
+    <string name="FG_CameraId_Invalid">Камера не найдена или направлена в другую сторону</string>
+    <string name="FG_Plugins_NoChatActions">В этом чате нет действий плагинов.</string>
+    <string name="FG_FolderCornerBadges">Счётчик в углу иконки</string>
+    <string name="FG_ChatListStyle">Вид списка чатов</string>
+    <string name="FG_ChatListStyle_IOS">iOS</string>
+    <string name="FG_Saved_PreviousLog">Журнал предыдущей версии</string>
+    <string name="FG_Saved_PreviousLog_Info">В предыдущей версии журнал не сохранял аккаунт. Выберите нужный аккаунт и перенесите отметки для каждого чата.</string>
+    <string name="FG_Saved_UnknownChat_Info">Для этих отметок не сохранён ID чата. Перенести их в аккаунт невозможно.</string>
+    <string name="FG_Saved_Transfer">Перенести отметки</string>
+    <string name="FG_Saved_Transfer_Confirm">Перенести отметки для чата %1$s в аккаунт %2$s? Продолжайте, только если они относятся к этому аккаунту.</string>
+    <string name="FG_Saved_Transfer_Error">Не удалось перенести отметки. Старый журнал сохранён.</string>
+    <string name="FG_Saved_DeleteMessage_Confirm">Удалить сохранённое сообщение с этого устройства?</string>
+    <string name="FG_Saved_DeleteMessage_Error">Не удалось удалить сообщение. Попробуйте ещё раз.</string>
+    <string name="FG_ProxyName">Название прокси (необязательно)</string>
+    <string name="FG_SaveLocally">Сохранить у себя</string>
+    <string name="CP_IncludeMutedIn_FolderCounters">Учитывать чаты без звука в счётчиках папок</string>
+    <string name="FG_ProfileHidePhoneNumber">Скрывать номера телефонов в профилях</string>
+</resources>

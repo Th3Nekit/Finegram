@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="FG_AppName" translatable="false">Finegram</string>
+    <string name="FG_FollowChannelTitle">Subscribe to the official channel</string>
+    <string name="FG_FollowChannelInfo">Finegram news and updates in the official channel.</string>
+    <string name="FG_DoNotRemindAgain">Don\'t remind again</string>
+
+    
+    <string name="FG_SwitchedToAccount">Switched to **%1$s**</string>
+
+    <string name="FG_JoinedDate">You joined **%1$s** **%2$s**</string>
+    <string name="FG_CreatedDate">**%1$s** was created **%2$s**</string>
+    <string name="FG_RegistrationDate">**%1$s** joined Telegram **%2$s**</string>
+    <string name="FG_RegistrationDateNewer">later than %s</string>
+    <string name="FG_RegistrationDateOlder">older than %s</string>
+    <string name="FG_RegistrationDateApproximately">approximately %s</string>
+    <string name="FG_RegistrationDateFailed">Failed to get registration date.</string>
+
+    
+    <string name="FG_QRLoginTitle">QR Login</string>
+    <string name="FG_QRLoginMessage">Scan the QR code with another device to log in.</string>
+
+    <string name="FG_OpenOfficialApp">Open Official App</string>
+    <string name="FG_DidNotGetTheCode">If you didn\'t get the code on another device or you don\'t have Telegram logged in on another device, please use the official Telegram app to receive the code.\n\nTelegram has **disabled the ability to log in with SMS** on third-party apps. Users logging into third-party apps are only able to receive login codes via Telegram.\n\nWe cannot help you with this, if you have any issues with logging in, please contact Telegram Support.</string>
+    <string name="FG_ChangePhoneNumber">Telegram has **disabled the ability to change phone number** on third-party apps. Users are only able to change phone number via Telegram.</string>
+
+    <string name="FG_AddAccountWarning">Using 5 or more accounts simultaneously may cause instability, especially on low-end devices (including potential launch crashes).\n\nProceed at your own risk. **Finegram is not responsible** for any lost access to your accounts.</string>
+    
+
+    
+    <string name="FG_LastSeenNow">last seen just now</string>
+
+    <string name="FG_LastSeenMinutes_one">last seen %1$d minute ago</string>
+    <string name="FG_LastSeenMinutes_few">last seen %1$d minutes ago</string>
+    <string name="FG_LastSeenMinutes_many">last seen %1$d minutes ago</string>
+    <string name="FG_LastSeenMinutes_other">last seen %1$d minutes ago</string>
+
+    <string name="FG_LastSeenHours_one">last seen %1$d hour ago</string>
+    <string name="FG_LastSeenHours_few">last seen %1$d hours ago</string>
+    <string name="FG_LastSeenHours_many">last seen %1$d hours ago</string>
+    <string name="FG_LastSeenHours_other">last seen %1$d hours ago</string>
+    
+
+    
+    <string name="FG_AndMoreTypingGroup_one">%1$s and %2$d more</string>
+    <string name="FG_AndMoreTypingGroup_other">%1$s and %2$d more</string>
+    
+
+    
+    <string name="FG_FoldersTypeTitles">Only titles</string>
+    <string name="FG_FoldersTypeIcons">Only icons</string>
+    <string name="FG_FoldersTypeIconsTitles">Icons with Titles</string>
+    <string name="FG_ChooseFolderIcon">Choose an Icon</string>
+    <string name="CP_NewTabs_NoCounter">Hide counter in tabs</string>
+    <string name="FG_SwipeToUnarchive">Swipe left to unarchive</string>
+    
+
+    
+    <string name="FG_PasskeyInfo2">This feature only works with password managers that allow the user to manage trust settings for privileged apps, such as **Bitwarden** and **KeePassDX**.</string>
+    <string name="FG_PasskeyUnsupportedTitle">Unsupported password manager</string>
+    <string name="FG_PasskeyUnsupportedMessage">Try other password managers like **Bitwarden** or **KeePassDX**.</string>
+    <string name="FG_PasskeyNoCredentialAvailable">No viable credential is available.</string>
+    
+
+    
+    <string name="FG_JumpToBeginning">To the beginning</string>
+    <string name="FG_DeleteAllFromSelf">Delete own messages</string>
+    <string name="FG_DeleteAllFromSelfAlert">Warning! This will **delete all messages from you** in this chat for **all** participants.</string>
+    <string name="FG_DeleteAllFromSelfAlertBefore">Warning! This will **delete all messages from you before %s** in this chat for **all** participants.</string>
+    <string name="FG_DeleteAllFromSelfBefore">Before...</string>
+    <string name="FG_DeleteAllFromSelfAdmin">With admin rights</string>
+    <string name="FG_DeleteAllFromSelfDone">All of your messages have been deleted</string>
+
+    <string name="FG_ClearFromCache">Clear from cache</string>
+    <string name="FG_ClearedFromCache">Cleared from cache</string>
+    <string name="FG_ToSaved">Save</string>
+
+    <string name="FG_CreateMention">Create Mention</string>
+    <string name="FG_CreateCode">Create Code</string>
+    <string name="FG_CreateCodeLanguage">Language</string>
+
+    <string name="FG_FwdMenu_Authorship">Sender name</string>
+    <string name="FG_FwdMenu_Captions">Captions</string>
+    <string name="FG_FwdMenu_Notify">Notify</string>
+
+    <string name="FG_Without_Authorship">without authorship</string>
+    <string name="FG_Without_Caption">without caption</string>
+
+    <string name="FG_CopyTitle">Copy Title</string>
+    <string name="FG_CopyCallback">Copy Callback Data</string>
+    <string name="FG_CopyInlineQuery">Copy Inline Query</string>
+    <string name="FG_CopyID">Copy User ID</string>
+
+    
+    <string name="FG_LocationPermission">Finegram needs access to your location so you can share it with your friends. You will now be asked to allow your location to be used (while the app is open).</string>
+    <string name="FG_LocationPermission_Desc">Start sharing your live location in a chat to keep sharing it in the background.</string>
+    <string name="FG_Copy_Coordinates">Coordinates</string>
+    
+
+    
+    <string name="FG_SearchFilter">Filter search results</string>
+    <string name="FG_SearchFilter_None">None</string>
+    <string name="FG_SearchFilter_Photos">Photos</string>
+    <string name="FG_SearchFilter_Videos">Videos</string>
+    <string name="FG_SearchFilter_VoiceMessages">Voice messages</string>
+    <string name="FG_SearchFilter_VideoMessages">Video messages</string>
+    <string name="FG_SearchFilter_Files">Files/Documents</string>
+    <string name="FG_SearchFilter_Music">Music</string>
+    <string name="FG_SearchFilter_GIFs">GIFs</string>
+    <string name="FG_SearchFilter_Geolocation">Geolocation</string>
+    <string name="FG_SearchFilter_Contacts">Contacts</string>
+    <string name="FG_SearchFilter_MyMentions">My mentions</string>
+    
+    
+
+    
+    <string name="FG_SafeStars_buy">Buy via SafeStars</string>
+    <string name="FG_SafeStars_Desc">Multi-chain &amp; No KYC</string>
+    <string name="FG_SafeStars_BuyPremiumButton">Check on the website</string>
+    <string name="FG_SafeStars_buy_Telegram">Buy Stars via Telegram</string>
+    <string name="FG_Stars_TOS">By proceeding, you automatically agree to the **Telegram Terms and Conditions** and the **Finegram Terms of Service**.</string>
+    <string name="FG_SafeSurf_TOS">By proceeding, you automatically agree to the **Finegram Terms of Service**.</string>
+
+    <string name="FG_SortByDate">Sort by message date</string>
+    <string name="FG_SortByUnread">Sort by unread first</string>
+
+    <string name="FG_UnknownSettingsOption">There is no such Finegram Settings option.</string>
+    <string name="FG_Restart">Restart app</string>
+    <string name="FG_RestartToApply">Restart app to apply changes</string>
+    <string name="FG_PushService">Finegram Push Service.</string>
+    <string name="FG_Kaboom">This feature can be accessed without the Finegram password, through the system settings. \n\nThis feature **completely erases all your local (Finegram\'s) data**. It can be used in emergency situations.</string>
+    <string name="FG_AppCrashed">Something went wrong</string>
+    <string name="FG_AppCrashedDesc">Finegram stopped with an error. Send the log to the developer.</string>
+    <string name="FG_CopyReportDetails">Copy Report Details</string>
+    <string name="FG_ReportDetailsCopied">Report details copied to clipboard.</string>
+    <string name="FG_TranslationLanguage">Translation Language</string>
+    <string name="FG_CopyPhoto">Copy photo</string>
+    <string name="FG_CopyPhotoAsSticker">Copy photo as sticker</string>
+    <string name="FG_SendPhotoAsSticker">Send as sticker</string>
+    <string name="FG_EnableMotionPhotos">Enable motion photos</string>
+    <string name="FG_DisableMotionPhotos">Disable motion photos</string>
+    <string name="FG_PhotoCopied">Photo copied to clipboard.</string>
+    <string name="FG_SaveSticker">Save sticker</string>
+    <string name="FG_StickerSavedHint">Sticker saved to downloads</string>
+    <string name="FG_CopySetId">Copy set ID</string>
+    <string name="FG_ExportSettings">Export settings</string>
+    <string name="FG_ImportSettings">Import settings</string>
+    <string name="FG_ImportSettingsAlert">Overwrite the settings\? Importing settings from unknown sources may result in the app not working.</string>
+    <string name="FG_OpenStickerPack">Tap to get the sticker</string>
+    <string name="FG_OpenEmojiPack">Tap to get the emoji</string>
+
+    <string name="FG_ReplyContainsEmojiPack">This reply contains **%s** emoji</string>
+    <string name="FG_GetEmojiPack">Get emoji</string>
+    <string name="FG_ProfileBackground">Apply profile background</string>
+    <string name="FG_MessageContainsCustomReactions_one">Reactions contain custom emoji \nfrom %1$d pack.</string>
+    <string name="FG_MessageContainsCustomReactions_other">Reactions contain custom emojis \nfrom %1$d packs.</string>
+
+    <string name="FG_Sleep">Sleep timer</string>
+    <string name="FG_Sleep_Timer">Sleep timer is set to **%s**</string>
+    <string name="FG_Sleep_Disabled">Sleep timer is disabled</string>
+    <string name="FG_Sleep_Permission">Please allow Finegram to schedule exact alarms so that the sleep timer can work properly.</string>
+
+    <string name="FG_QR_Hint">Tap to copy the code. Touch and hold to save it to the gallery.</string>
+    <string name="FG_WifiConnect">Connect</string>
+    <string name="FG_WifiSuccess">Successfully connected to Wi-Fi.</string>
+    <string name="FG_WifiFailed">Failed to connect to Wi-Fi.</string>
+    <string name="FG_WifiDisabled">Wi-Fi is disabled.</string>
+    <string name="FG_AreYouSureToLogin">Are you sure you want to log in to this account on another device?</string>
+    <string name="FG_CreateQR">Create QR Code</string>
+
+    
+    
+
+    
+
+    
+    <string name="FGP_AdvancedSettings">Finegram Preferences</string>
+    <string name="FGP_About_Desc">A modification of Telegram for Android. Tap to see the list of features.</string>
+    <string name="FGP_Header_About">About Finegram</string>
+    <string name="FGP_Header_About_Desc">Updates, source code and credits</string>
+    <string name="FGP_Links">Links</string>
+    <string name="FGP_ToChannel">News &amp; Updates</string>
+    <string name="FGP_ToBetaChannel">Beta Versions</string>
+    <string name="FGP_ToChat">General Chat</string>
+    <string name="FGP_ToOfftopicChat">Off-topic Chat</string>
+    <string name="FGP_Source">Source code</string>
+    <string name="FGP_Crowdin">Help with translation</string>
+    <string name="FGP_General_Desc">General app settings</string>
+    <string name="FGP_Appearance_Desc">App appearance and interface customization</string>
+    <string name="FGP_Folders_Desc">Folder bar appearance and position</string>
+    <string name="FGP_BottomTabs_Desc">Bottom tabs and their order</string>
+    <string name="FGP_MessagesProfiles_Desc">Display of Premium emoji, ID/DC information, and extra profile/message elements</string>
+    <string name="FGP_Chats_Desc">Chat and message appearance</string>
+    <string name="FGP_Messages_Desc">Messages and action menus</string>
+    <string name="FGP_MessagesFilter_Desc">Message filtering and spam protection</string>
+    <string name="FGP_Camera_Desc">Camera, photos and video messages</string>
+    <string name="FGP_Privacy_Desc">Privacy, chat locking/hiding, and data protection settings</string>
+
+    
+
+    
+    <string name="AP_Header_General">General</string>
+
+    <string name="FG_IgnoreMentions">Ignore Mentions</string>
+    <string name="FG_IgnoreMentionsDesc">Disables notifications for mentions and replies in selected chats, and hides mention badges in both the chat list and inside conversations.</string>
+    <string name="FG_IgnoreMentionsIgnoredChats">Ignored Chats</string>
+    <string name="FG_IgnoreMentionsAutoRead">Auto-read on open</string>
+    <string name="FG_IgnoreMentionsAutoReadDesc">Automatically mark mentions as read when entering the chat.</string>
+    <string name="FG_IgnoreMentions_Destination_Sure">will be ignored</string>
+
+    <string name="FG_ResidentNotification">Keep connection in background</string>
+    <string name="FG_PushStatusNoServices">This phone has no Google services, so messages only arrive through this connection.</string>
+    <string name="FG_PushStatusNever">Google hasn\'t delivered a single push yet. Without the connection, messages arrive only while the app is open.</string>
+    <string name="FG_PushStatusLast">Last push from Google: %1$s. The connection keeps the app online in the background and shows a notification in the shade.</string>
+    
+
+    
+    <string name="AP_Header_Appearance">Appearance</string>
+    <string name="AP_Header">Header</string>
+    <string name="AP_IconReplacements">Icon pack</string>
+    <string name="AP_Old_Notification_Icon">Default notification icon (Telegram)</string>
+    <string name="AP_Tablet_Mode">Tablet mode</string>
+    <string name="AP_ChangeIcon_NewYear">New Year</string>
+    <string name="AP_ChangeIcon_Dark">Dark</string>
+    <string name="AP_ChangeIcon_White">White</string>
+    <string name="AP_ChangeIcon_Bra" translatable="false">Bra</string>
+    <string name="AP_ChangeIcon_Laguna">Laguna</string>
+    <string name="AP_ChangeIcon_Green">Green</string>
+    <string name="AP_ChangeIcon_Lavanda">Lavanda</string>
+    <string name="AP_ChangeIcon_Violet_Sunset" translatable="false">Violet Sunset</string>
+    <string name="AP_ChangeIcon_Sunset">Sunset</string>
+    <string name="AP_ChangeIcon_Sunrise">Sunrise</string>
+    <string name="AP_IconReplacement_Solar">Solar Icons by @Design480</string>
+    <string name="AP_OneUI_Switch_Style">OneUI Switch Style</string>
+    <string name="AP_SystemEmoji">System emoji</string>
+    <string name="AP_ShowPencilIcon">Pencil Icon for Edited Messages</string>
+    <string name="CP_StrokeOnViews">Glare effects</string>
+    <string name="AP_CenterTitle">Center title</string>
+    <string name="AP_CenterTitle_AdaptiveWidth">Adaptive bubble width</string>
+    <string name="AP_HideSearchBar">Hide search bar in chats</string>
+    <string name="AP_DisableDividers">Disable dividers</string>
+    <string name="AP_SystemFonts">System fonts</string>
+
+    <string name="CP_Snowflakes_Header">Snowflakes</string>
+
+    <string name="CP_ProfileReplyBackground">Messages and profiles</string>
+    <string name="CP_CustomizeProfile">Customize profile</string>
+    <string name="CP_ProfileChannelPreview">Personal channel</string>
+    <string name="CP_ProfileBirthDatePreview">Date of Birth</string>
+    <string name="CP_ProfileBusinessPreview">Business hours and location</string>
+    <string name="CP_ProfileBackgroundColor">Background in profile</string>
+    <string name="CP_ProfileBackgroundEmoji">Emoji in profile background</string>
+    <string name="CP_CustomizeMessage">Customize a message</string>
+    <string name="CP_ReplyBackground">Background in replies</string>
+    <string name="CP_ReplyCustomColors">Custom colors in replies and links preview</string>
+    <string name="CP_ReplyBackgroundEmoji">Emoji in replies and links preview</string>
+    <string name="CP_HideStories">Hide Stories (locally)</string>
+    <string name="CP_HideStories_Desc">Hide stories in the chat list and profiles.</string>
+    <string name="CP_ArchiveStories">Archive stories</string>
+    <string name="CP_ArchiveStories_Desc">Automatically move new stories to the archive.</string>
+    <string name="CP_CustomWallpapers">Custom background in chats</string>
+    <string name="CP_CustomWallpapers_Desc">Show wallpapers set by the other person or the channel administrator.</string>
+    <string name="CP_DisableReactionsOverlay">Disable reactions overlay</string>
+    <string name="CP_DisableReactionsOverlay_Desc">Do not show the reaction list above a message.</string>
+    <string name="CP_DisableReactionAnim">Disable reaction animation</string>
+    <string name="CP_DisableReactionAnim_Desc">Do not play the animation when reacting to a message.</string>
+    <string name="CP_DisablePremiumStatuses">Disable premium statuses</string>
+    <string name="CP_DisablePremiumStatuses_Desc">Hide users’ emoji statuses.</string>
+    <string name="CP_DisablePremStickAnim">Disable taps on premium stickers</string>
+    <string name="CP_DisablePremStickAnim_Desc">Do not play the Premium sticker effect when tapped.</string>
+    <string name="CP_DisablePremStickAutoPlay">Disable premium stickers auto-play</string>
+    <string name="CP_DisablePremStickAutoPlay_Desc">Do not play Premium stickers automatically. Available when effects on tap are enabled.</string>
+
+    <string name="CP_Filters_Header">Folders</string>
+    <string name="AP_FoldersAtBottom">Show folders at the bottom</string>
+    <string name="AP_FolderNameInHeader">Folder name instead of \"Finegram\"</string>
+    <string name="AP_FolderNameInHeader_Desc">Show the selected folder name instead of the app name.</string>
+    <string name="CP_NewTabs_RemoveAllChats">Hide \"All chats\" tab</string>
+    <string name="AP_Tab_Style">Tab style</string>
+    <string name="AP_Tab_Style_Stroke">Add stroke</string>
+
+    <string name="CP_MainTabs_Header">Bottom tabs organizer</string>
+    <string name="CP_MainTabs_Layout">Tabs</string>
+    <string name="CP_MainTabs_Order">Layout and order</string>
+    <string name="CP_MainTabs_ShowTabs">Show tabs</string>
+    <string name="CP_MainTabs_OpenSettings">Open settings by swipe</string>
+    <string name="CP_MainTabs_OpenSettings_Desc">Swipe right from the chat list to open settings when bottom tabs are disabled.</string>
+    <string name="CP_MainTabs_Layout_Desc">Tap to show or hide a tab. Touch and hold, then drag to reorder.</string>
+    <string name="CP_MainTabs_KeepChats">The chats tab cannot be turned off</string>
+    <string name="CP_MainTabs_DoubleTap_Desc">Double-tap the chats tab to open Saved Messages. Double-tap the profile tab to switch accounts. If the profile tab is hidden, use the settings tab.</string>
+    <string name="CP_MainTabs_ShowTabsTitle">Show tabs titles</string>
+    <string name="CP_MainTabs_ForceOpenChats">Always search in chats</string>
+    <string name="CP_MainTabs_ForceOpenChats_Desc">Always search chats instead of the current section.</string>
+
+    <string name="AP_HideUserPhone_Show">Tap to show</string>
+    <string name="AP_HideUserPhone_Copy">Hold to copy</string>
+    <string name="AP_MutualContacts_Description">You are in each other\'s contacts.</string>
+    <string name="AP_ShowID">Show ID and DC in profile</string>
+    
+
+    
+    <string name="CP_AutoQuoteReplies">Quote replies</string>
+    <string name="CP_AutoQuoteReplies_Desc">Quote the entire message when replying. Does not apply to topics.</string>
+    <string name="CP_WideMessagesLayout">Wide message layout</string>
+    <string name="CP_WideMessagesLayout_Desc">Use the full width for channel messages and hide the Share button beside them.</string>
+    <string name="CP_TimeOnStick">Hide time on stickers in chat</string>
+
+    <string name="CP_ChatMenuShortcuts">Chat menu shortcuts</string>
+    <string name="CP_AdminActions">Admin shortcuts</string>
+
+    <string name="CP_MessageMenu">Message menu</string>
+    <string name="CP_MessageMenuItems">Message menu items</string>
+    <string name="CP_BlurMessageMenu">iOS-styled message menu</string>
+    <string name="CP_BlurMessageMenu_Desc">Blur the message menu background and show reactions above it, as in Telegram for iOS. Unavailable on tablets.</string>
+    <string name="CP_MessageMenuNativeBlur">Native Blur</string>
+    <string name="CP_MessageMenuNativeBlur_Desc">Use Android system blur. Requires Android 12 or later.</string>
+    <string name="CP_MessageMenuCompactLayout">Compact menu layout</string>
+    <string name="CP_MessageMenuCompactLayout_Desc">Show the main actions in a compact panel at the bottom of the message menu.</string>
+    <string name="CP_MessageMenuCompactLayout_Dot">A dot next to the button indicates it has a long-press action.</string>
+
+    <string name="CP_UnreadBadgeOnBackButton">Show unread chats counter</string>
+    <string name="CP_UnreadBadgeOnBackButton_Desc">Show the number of unread chats on the back button in a chat.</string>
+    <string name="CP_UnreadBadgeOnBackButton_IOS">iOS-styled counter</string>
+    <string name="CP_Slider_RecentEmojisAndStickers">Recent emojis and stickers counter</string>
+    <string name="CP_DeleteForAll">Use \"Delete for all\" by default</string>
+    <string name="CP_DeleteForAll_Desc">Select Delete for Everyone by default.</string>
+    <string name="CP_ForwardMsgDate">Show forwarded message date</string>
+    <string name="CP_ShowSeconds">Format time with seconds</string>
+    <string name="CP_ShowSeconds_Desc" translatable="false">12:34 -> 12:34:56</string>
+    <string name="CP_FormatterDay24HSec" translatable="false">HH:mm:ss</string>
+    <string name="CP_FormatterDay12HSec" translatable="false">h:mm:ss a</string>
+    <string name="CP_LeftBottomButtonAction">Left button action</string>
+    <string name="CP_DoubleTapAction">Double tap action</string>
+    <string name="FG_MsgSlideAction">Action on message swipe</string>
+    <string name="CP_DisableSwipeToNext">Disable transition to the next channel</string>
+    <string name="CP_DisableSwipeToNext_Desc">Do not open the next channel when scrolling to the end.</string>
+    <string name="CP_BottomBar">Bottom bar</string>
+    <string name="CP_iOSMessageInputField">iOS-styled message input field</string>
+    <string name="CP_iOSMessageInputField_Desc">Place the attachment button on the left and use separate input buttons, as in Telegram for iOS.</string>
+    <string name="CP_HideMuteUnmuteButton">Hide bottom bar in channels</string>
+    <string name="CP_HideKbdOnScroll">Scroll intensity to hide keyboard</string>
+    <string name="CP_HideSendAsChannel">Hide \"Send as channel\"</string>
+    <string name="CP_HideSendAsChannelDesc">You can access the menu by long-pressing the Emoji/Stickers/GIFs button</string>
+
+    <string name="CP_GeminiAI_Header" translatable="false">Gemini AI</string>
+    <string name="CP_GeminiAI_API_Key">Gemini API key</string>
+    <string name="CP_GeminiAI_API_Key_Desc">Visit <![CDATA[<a href="https://aistudio.google.com/apikey">https://aistudio.google.com</a>]]> to obtain the API Key.</string>
+    <string name="CP_GeminiAI_Model">Gemini model code</string>
+    <string name="CP_GeminiAI_Model_Desc">Visit <![CDATA[<a href="https://ai.google.dev/gemini-api/docs/models/gemini#model-variations">https://ai.google.dev/gemini-api/docs/models/gemini</a>]]> to get the list of available models.</string>
+    <string name="CP_GeminiAI_Model_Selector">Gemini models list</string>
+    <string name="CP_GeminiAI_Model_Selector_Desc">Tap to choose an available model. Requires a valid API key.</string>
+    <string name="CP_GeminiAI_Sample">Sample:</string>
+    <string name="CP_GeminiAI_System_Prompt">System prompt</string>
+    <string name="CP_GeminiAI_System_Prompt_Desc">An instruction that defines the style and format of model responses.</string>
+    <string name="CP_GeminiAI_Temperature">Temperature</string>
+    <string name="CP_GeminiAI_Temperature_Desc">Lower values make responses more predictable; higher values make them more varied.</string>
+    <string name="CP_GeminiAI_ExtractText">Extract Text (OCR)</string>
+    <string name="CP_GeminiAI_Summarize">Summarize</string>
+    <string name="CP_GeminiAI_VoiceTranscriptionProvider">Voice transcription provider</string>
+
+    <string name="CP_Header_Record">Media</string>
+    <string name="CP_Messages_Size">Messages bubble size</string>
+
+    <string name="CP_Message_Filtering">Message filtering</string>
+    <string name="CP_Message_Filtering_Filter">Enable filter</string>
+    <string name="CP_Message_Filtering_Filter_Desc">Hide filter matches under a spoiler. Tap the spoiler to read the text.</string>
+    <string name="CP_Message_Filtering_Field">Enter words to filter</string>
+    <string name="CP_Message_Filtering_Field_Desc">Separate words with a comma, space, or line break. Use parentheses to group multiple words into a phrase. Case insensitive.
+        \nExample: word, another, (multiple words here).
+    </string>
+    <string name="CP_Message_Filtering_Translit">Translit detection</string>
+    <string name="CP_Message_Filtering_Translit_Desc">Match transliterated words: “test” also matches “тест”. May increase device load.</string>
+    <string name="CP_Message_Filtering_Exact_Words">Exact word match</string>
+    <string name="CP_Message_Filtering_Exact_Words_Desc">Match whole words only, excluding matches within other words.</string>
+    <string name="CP_Message_Filtering_Exclusions">Exclusions</string>
+    <string name="CP_Message_Filtering_Exclude_Destination">to update exclusions</string>
+    <string name="CP_Message_Filtering_Exclude_Sure">will be excluded</string>
+    <string name="CP_Message_Filtering_Entities">Link Entity Filter</string>
+    <string name="CP_Message_Filtering_EntitiesDesc">Check link text and addresses in a message. May increase device load.</string>
+    <string name="CP_Message_Filtering_FilterBlocked">Filter messages from blocked users</string>
+    <string name="CP_Message_Filtering_FilterBlockedDesc">When enabled, all messages and forwarded messages from blocked users will automatically be filtered.</string>
+    <string name="CP_Message_Filtering_HideAll">Entire message spoiler</string>
+    <string name="CP_Message_Filtering_HideAllDesc">Hides the entire message text and media under a spoiler if it contains a filtered word.</string>
+    <string name="CP_Message_Filtering_Collapse">Collapse messages</string>
+    <string name="CP_Message_Filtering_Collapse_Desc">Collapse messages that match the filter. Tap to expand a message.</string>
+    <string name="FG_MsgFilterExpand">Show</string>
+    <string name="CP_Message_Filtering_Transparent">Message Transparency</string>
+    <string name="CP_Message_Filtering_Transparent_Desc">Show messages that match the filter with reduced opacity.</string>
+
+    <string name="CP_Slider_MediaAmplifier">Photos and videos</string>
+    <string name="CP_Slider_MediaAmplifier_Hint">Does not work with albums (grouped media)</string>
+    <string name="CP_LargeVoiceMessages">Adaptive audio message length</string>
+    <string name="CP_LargeVoiceMessages_Desc">Adjust voice message width to the recording duration.</string>
+
+    <string name="CP_VoiceMessagesAutoPlay">Auto-play of voice messages</string>
+    <string name="CP_PlayVideo">Play video with volume button press</string>
+    <string name="CP_PlayVideo_Desc">Use the device volume buttons to unmute videos in a chat.</string>
+    <string name="CP_AutoPauseVideo">Auto pause video</string>
+    <string name="CP_AutoPauseVideo_Desc">Pause videos when the screen turns off or the app is minimized.</string>
+    <string name="CP_DisableVibration">Disable vibration</string>
+    <string name="CP_OpenLinksInIV">Open links in Instant View</string>
+    <string name="CP_VideoSeekDuration">Double-tap to seek video (seconds)</string>
+
+    <string name="CP_VibrateInChats">In-chat vibration</string>
+    <string name="CP_VibrateInChats_Desc">Vibrate when a message arrives in the open chat.</string>
+    <string name="CP_SilenceNonContacts">Silence non-contacts</string>
+    <string name="CP_SilenceNonContacts_Desc">Mute notifications from users who are not in your contacts. Add a user from their profile without a phone number.</string>
+    
+
+    
+    <string name="CP_Category_Camera">Camera</string>
+    <string name="CP_CameraType">Camera Type</string>
+    <string name="CP_LensSwitcher">Lens switcher</string>
+    <string name="CP_LensSwitcher_Desc">Show buttons to switch between available lenses.</string>
+    <string name="CP_CameraUW">Start with the ultra-wide lens</string>
+    <string name="CP_CameraUW_Desc">Start recording video messages with the ultra-wide lens when available.</string>
+    <string name="CP_CameraDualCamera">Dual camera</string>
+    <string name="CP_CameraDualCamera_Desc">Use both cameras when recording video messages to switch between them quickly. Increases battery usage.</string>
+    <string name="CP_CategoryEnhancements">Enhancements</string>
+    <string name="CP_EnhancementsNote">Camera enhancements behave differently across devices. Enabled together, they can make the result worse.</string>
+    <string name="CP_OpticalStabilisation">Optical stabilisation (OIS)</string>
+    <string name="CP_VideoStabilisation">Video stabilisation (EIS)</string>
+    <string name="CP_ContinuousAutofocus">Continuous autofocus</string>
+    <string name="CP_NoiseReduction">Noise reduction</string>
+    <string name="CP_FaceDetection">Face detection</string>
+    <string name="CP_CameraQuality">Camera Quality</string>
+    <string name="CP_CameraTypeSystem">System</string>
+
+    <string name="CP_CameraAspectRatio">Camera aspect ratio</string>
+    <string name="CP_CenterCameraControlButtons">Center control buttons</string>
+    <string name="CP_CenterCameraControlButtons_Desc">Center the camera switch and flash buttons.</string>
+    <string name="CP_RearCam">Use rear camera</string>
+    <string name="CP_RearCam_Desc">Start recording video messages with the rear camera.</string>
+    <string name="CP_DisableCam">Camera button at bottom</string>
+    <string name="CP_DisableCam_Desc">Show a camera button next to the gallery. Tap to open the built-in camera, or touch and hold to open the system camera.</string>
+
+    <string name="CP_Header_Videomessages">Video messages</string>
+    <string name="CP_ExposureSliderPosition">Exposure slider position</string>
+    <string name="CP_ZoomSliderPosition_Bottom">Bottom</string>
+    <string name="CP_ZoomSliderPosition_Right">Right</string>
+    <string name="CP_ZoomSliderPosition_Left">Left</string>
+    <string name="CP_Exposure">Exposure</string>
+    <string name="CP_Brightness">Brightness</string>
+    <string name="CP_Flash_Hint">Hold the flash button to adjust the color and brightness of the flash.</string>
+    <string name="CP_Flash_Hint_Rear">Hold the flash button to adjust the brightness of the flash.</string>
+    
+
+    
+    <string name="EP_NavigationAnimation">Navigation animation</string>
+    <string name="EP_NavigationAnimationSpring" translatable="false">Spring</string>
+    <string name="EP_NavigationAnimationBezier">Classic</string>
+    <string name="EP_NavigationAnimationCrossfading">Crossfading effect</string>
+    <string name="FG_PredictiveBackAnimation">Predictive-Back navigation</string>
+    <string name="EP_CustomChat">Custom chat for Saved Messages</string>
+    <string name="EP_CustomChat_Desc">Choose a chat for quick forwarding from the message menu, by double-tapping or swiping.</string>
+    <string name="EP_CustomChat_Selected_Title">instead of</string>
+    <string name="EP_Network">Network</string>
+    <string name="EP_DownloadSpeedBoost">Download speed boost</string>
+    <string name="EP_DownloadSpeedBoostExtreme">Extreme</string>
+    <string name="EP_UploadloadSpeedBoost">Upload speed boost</string>
+    <string name="EP_SlowNetworkMode">Slow network mode</string>
+    
+
+    
+    <string name="SP_AskBioToOpenChats_Desc">Require biometrics or the system passcode to open selected chats.</string>
+
+    <string name="SP_LockedChats">Locked chats</string>
+    <string name="SP_LockedChats_Lock_Destination">to update the locked list</string>
+    <string name="SP_LockedChats_Lock_Destination_Sure">will be locked</string>
+    <string name="SP_HideArchivedStories">Hide archived stories</string>
+    <string name="SP_HideArchivedStories_Desc">Removes the archived stories tab from your profile.</string>
+    <string name="SP_HideArchive">Hide archive from chats list</string>
+    <string name="SP_HideArchive_Desc">Display the archive as the client channel. Open the archive from the side menu or by touching and holding Search.</string>
+
+    <string name="SP_AskPin">Require password</string>
+    <string name="SP_DoNotAskPin">Don\'t require password</string>
+
+    <string name="SP_AskPinBeforeDelete">Require biometrics to delete chats</string>
+    <string name="SP_AskPinBeforeDelete_Desc">Require biometrics before deleting a chat or clearing its history. Set up screen lock and biometrics in system settings.</string>
+
+    <string name="SP_AllowUseSystemPasscode">Allow use system PIN/Pattern</string>
+    <string name="SP_AllowUseSystemPasscode_Desc">Allow verification using the system PIN, password or pattern instead of biometrics.</string>
+    <string name="SP_TestFingerprint">Test fingerprint</string>
+    <string name="SP_TestFingerprint_Desc">Check biometric availability if it is configured in system settings but not detected by the app.</string>
+    <string name="SP_BiometricUnavailable_Test_Fixed">Fingerprint has been detected successfully!</string>
+    <string name="SP_BiometricUnavailable_Test_Wrong_Desc">Try to reboot your device or check system settings.</string>
+
+    <string name="SP_DeleteAccount">Delete Telegram account</string>
+    
+
+    
+    <string name="UP_Category_Updates">Updates</string>
+    <string name="UP_LastCheck">Last check</string>
+    <string name="UP_CurrentVersion">Current version</string>
+    <string name="UP_BuildType">Build type</string>
+    <string name="UP_BTRelease">Stable</string>
+    <string name="UP_BTBeta">Beta</string>
+    <string name="UP_InstallBetas">Install Beta Versions</string>
+    <string name="UP_Auto_OTA">Check on launch</string>
+    <string name="UP_CheckForUpdates">Check for updates</string>
+    <string name="UP_UpdateAvailable">Update available!</string>
+    
+
+    
+    
+
+    
+    
+    
+
+    <string name="FG_HideBubbleTail">Bubbles without tail</string>
+    <string name="FG_Formulas">Render formulas</string>
+    <string name="FG_Formulas_Desc">Display text between dollar signs as a formula, for example $E = mc^2$.</string>
+    <string name="FG_HideBubbleTail_Desc">Round all message corners and hide the bubble tail.</string>
+    <string name="FG_IconPack_Install">Install from file…</string>
+    <string name="FG_IconPack_Installed">Icon pack \"%1$s\" installed</string>
+    <string name="FG_IconPack_Failed">This file is not an icon pack</string>
+    <string name="FG_IconPack_Info">Author: %1$s\nIcons: %2$d\n\nHold the icon pack row to open this window.</string>
+    <string name="FG_IconPack_Coverage">%1$s · covers %2$d of %3$d icons</string>
+    <string name="FG_IconPack_FilterAll">All</string>
+    <string name="FG_IconPack_FilterCovered">In the pack</string>
+    <string name="FG_IconPack_FilterMissing">Missing</string>
+    <string name="FG_IconPack_Apply">Install icon pack</string>
+    <string name="FG_AvatarCorners">Avatar shape</string>
+    <string name="FG_AvatarCorners_Desc">Avatar corner radius in the chat list, profiles and menus.</string>
+    <string name="FG_AvatarCorners_Circle">Circle</string>
+    <string name="FG_AvatarCorners_Square">Square</string>
+    <string name="FG_WeekdayNearDate">Weekday next to date</string>
+    <string name="FG_WeekdayNearDate_Desc">Show the day of the week beside the date in a chat.</string>
+    <string name="FG_HideActionBarStatus">Hide status in chat header</string>
+    <string name="FG_HideActionBarStatus_Desc">Hide last seen time and participant count below the chat title.</string>
+    <string name="FG_HideSponsored">Hide ads in channels</string>
+    <string name="FG_HideSponsored_Desc">Do not request or display sponsored messages. Does not hide promoted chats in the list or video ads.</string>
+    <string name="FG_HideMuteButton">Hide sound button in channels</string>
+    <string name="FG_HideMuteButton_Desc">Muting stays available in the header menu.</string>
+    <string name="FG_ForumAvatars">Forum avatars like chats</string>
+    <string name="FG_ForumAvatars_Desc">Forum avatars use the same rounding as regular chats.</string>
+    <string name="FG_CustomTitle">App title in chat list</string>
+    <string name="FG_StrongerBlur">Stronger blur</string>
+    <string name="FG_MediaGlow">Media glow</string>
+    <string name="FG_OnlineIndicator">Online dot in chats</string>
+    <string name="FG_ComposerEffects">Lively typing</string>
+    <string name="FG_ComposerEffects_Desc">Highlights characters as they are typed and deleted.</string>
+    <string name="FG_OnlineIndicator_Desc">Marks avatars of people who are currently online.</string>
+    <string name="FG_MediaGlow_Desc">Fills the space around a photo with its blurred colours.</string>
+    <string name="FG_StrongerBlur_Desc">Denser blur behind panels and menus.</string>
+    <string name="FG_DisableSendHints">Hide sending hints</string>
+    <string name="FG_DisableSendHints_Desc">Turns off tooltips about scheduled messages, silent sending and voice recording.</string>
+    <string name="FG_Bypass">Connection bypass</string>
+    <string name="FG_Bypass_Enable">Enable bypass</string>
+    <string name="FG_Bypass_Desc">Connect to Telegram through the selected bypass server.</string>
+    <string name="FG_Bypass_Status_On">on</string>
+    <string name="FG_Bypass_Status_Off">off</string>
+    <string name="FG_Quote_Create">Create quote</string>
+    <string name="FG_Quote_Title">Quote</string>
+    <string name="FG_Quote_Send">Send</string>
+    <string name="FG_Quote_Save">Save to gallery</string>
+    <string name="FG_Quote_Saved">Quote saved</string>
+    <string name="FG_Quote_Failed">Could not create the quote</string>
+    <string name="FG_Quote_Setting">Quote as image</string>
+    <string name="FG_Quote_Setting_Desc">Adds «Create quote» to the message menu. The message is saved as an image.</string>
+    <string name="FG_Plugins">Plugins</string>
+    <string name="FG_Plugins_Install">Install from file…</string>
+    <string name="FG_Plugins_Empty">Nothing installed yet. Open the store or tap a plugin file someone sent.</string>
+    <string name="FG_Plugins_Installed">Installed</string>
+    <string name="FG_Plugins_Desc">Plugins add commands, buttons and other features. Install a plugin from the store or by opening its file.</string>
+    <string name="FG_Plugins_Hint">Tap a plugin to open its settings. Hold it to share, read the log or delete it.</string>
+    <string name="FG_Plugins_Info">Identifier: %1$s</string>
+    <string name="FG_Plugins_Failed">Plugin \"%1$s\" failed to start</string>
+    <string name="FG_Plugins_BadFile">This does not look like a plugin</string>
+    <string name="FG_Plugins_Installed_Toast">Plugin \"%1$s\" installed</string>
+    <string name="FG_Plugin_Abilities">What the plugin uses</string>
+    <string name="FG_Plugin_Ability_Hooks">Changes how the app works</string>
+    <string name="FG_Plugin_Ability_Messages">Sends messages and files</string>
+    <string name="FG_Plugin_Ability_Network">Accesses the network</string>
+    <string name="FG_Plugin_Ability_Files">Reads and writes files</string>
+    <string name="FG_Plugin_Ability_Updates">Reads chats and updates</string>
+    <string name="FG_Plugin_Ability_Settings">Adds its own settings</string>
+    <string name="FG_Plugin_NoAbilities">No calls to the client found in the code</string>
+    <string name="FG_Plugins_Enabled">Enabled</string>
+    <string name="FG_Plugins_Disabled">Disabled</string>
+    <string name="FG_Plugins_DeleteConfirm">Remove this plugin and its settings?</string>
+    <string name="FG_Plugins_NoSettings">This plugin has no settings</string>
+    <string name="FG_Plugins_NoReason">The plugin stopped without an error message</string>
+    <string name="FG_Plugins_Log">Plugin log</string>
+    <string name="FG_Plugins_LogEmpty">Nothing logged yet</string>
+    <string name="FG_Plugins_AskAuthor">Ask the author</string>
+    <string name="FG_Plugins_ReportCopied">Report copied. Send it to the plugin author.</string>
+    <string name="FG_Plugins_ReportHeader">Plugin \"%1$s\" %2$s does not start in Finegram. Please add support.</string>
+    <string name="FG_Plugins_Bundled">bundled</string>
+    <string name="FG_Plugins_Bundled_Hint">This plugin is included with the app and cannot be removed.</string>
+    <string name="FG_Credits">Credits</string>
+    <string name="FG_Credits_Extera">Plugin idea</string>
+    <string name="FG_Credits_Extera_Desc">Compatibility with exteraGram plugins and selected interface features.</string>
+    <string name="FG_Credits_Cherry">Client base</string>
+    <string name="FG_Credits_Store">Plugin catalogue</string>
+    <string name="FG_Plugins_Open">Open</string>
+    <string name="FG_Plugins_Enable">Enable</string>
+    <string name="FG_Plugins_Disable">Disable</string>
+    <string name="FG_Bypass_Connecting">connecting…</string>
+    <string name="FG_Plugins_BypassClash">Turn off the built-in connection bypass to use this plugin</string>
+    <string name="FG_ForwardWoCaption">Forward without caption</string>
+    <string name="FG_GetCustomReactions">Grab these reactions</string>
+    <string name="FG_MenuExtras">Extra menu entries</string>
+    <string name="FG_MenuExtras_Desc">Adds forwarding media without captions and saving emoji from reactions.</string>
+    <string name="FG_SafeStars_Switch">Purchases without Google Pay</string>
+    <string name="FG_SafeStars_Switch_Desc">Show Premium and Stars purchases in builds outside Google Play, including the option to open SafeStars.</string>
+    <string name="FG_NotificationReactions">React from the notification</string>
+    <string name="FG_NotificationReactions_Desc">Show a reaction button in notifications to react without opening the chat.</string>
+    <string name="FG_NotificationReactionEmoji">Reaction to send</string>
+    <string name="FG_PremiumReactionRequired">A custom emoji reaction needs Telegram Premium.</string>
+    <string name="FG_Menu_Reorder">Order of menu entries</string>
+    <string name="FG_Menu_Reorder_Reset">Back to the Telegram order</string>
+    <string name="FG_Menu_Reorder_Desc">Drag the entries into the order you want. Entries Telegram adds later stay at the end.</string>
+    <string name="FG_MessageMenuHaptic">Vibrate when the menu opens</string>
+    <string name="FG_MF_UseRegex">Regular expressions</string>
+    <string name="FG_MF_UseRegex_Desc">Use regular expressions to match messages.</string>
+    <string name="FG_MF_RegexField">One expression per line</string>
+    <string name="FG_MF_RegexField_Desc">Matching is case-insensitive. Invalid expressions are skipped.</string>
+    <string name="FG_MF_Logic">Words and expressions</string>
+    <string name="FG_MF_Logic_Or">Either one is enough</string>
+    <string name="FG_MF_Logic_And">Both must match</string>
+    <string name="FG_RoundVideoBitrate">Video message quality</string>
+    <string name="FG_RoundAudioBitrate">Video message sound</string>
+    <string name="FG_SideDrawer">Side menu instead of bottom bar</string>
+    <string name="FG_SideDrawer_Desc">Open the side menu by swiping right on the chat list or tapping the button in the top corner. Bottom tabs can remain enabled separately.</string>
+    <string name="FG_DrawerItems">Menu items</string>
+    <string name="FG_DrawerItems_Desc">Touch and hold, then drag items to reorder them. Hidden items can also be restored here.</string>
+    <string name="FG_DrawerItems_Reset">Reset</string>
+    <string name="FG_DrawerItems_KeepSettings">Settings stay in the menu: without the bottom bar there is no other way to reach them.</string>
+    <string name="FG_MainTabs_HiddenByDrawer">The bottom bar is hidden while the side menu is on. It is switched in Appearance.</string>
+    <string name="FG_Plugins_Word_one">plugin</string>
+    <string name="FG_Plugins_Word_few">plugins</string>
+    <string name="FG_Plugins_Word_many">plugins</string>
+    <string name="FG_Plugins_Word_other">plugins</string>
+    <string name="FG_Plugins_HeroEmpty">None yet. Take a look at the store.</string>
+    <string name="FG_Plugins_HeroStats">Enabled: %1$d</string>
+    <string name="FG_Plugins_HeroStatsUpdates">Enabled: %1$d · updates: %2$d</string>
+    <string name="FG_Plugins_HeroFile">From file</string>
+    <string name="FG_Plugins_HeroUpdate">Check</string>
+    <string name="FG_Plugins_HeroUpdateCount">Update %1$d</string>
+    <string name="FG_Plugins_InstalledCount">Installed: %1$d</string>
+    <string name="FG_Plugins_BadgeConflict">conflict</string>
+    <string name="FG_Plugins_BadgeCrash">crashed</string>
+    <string name="FG_Plugins_BadgeUpdate">update</string>
+    <string name="FG_Plugins_Share">Share</string>
+    <string name="FG_Plugins_Shared">Plugin sent</string>
+    <string name="FG_Plugins_ShareFailed">Couldn\'t pack the plugin file</string>
+    <string name="FG_Plugins_LogShort">Log</string>
+    <string name="FG_Plugins_StateOn">running</string>
+    <string name="FG_Plugins_StateOff">off</string>
+    <string name="FG_SideDrawer_Rounded">Rounded menu edge</string>
+    <string name="FG_RoundCamera">Camera for video messages</string>
+    <string name="FG_RoundCamera_Front">Front</string>
+    <string name="FG_RoundCamera_Rear">Main</string>
+    <string name="FG_RoundCamera_Last">Same as last time</string>
+    <string name="FG_SafeMode_Title">Safe mode</string>
+    <string name="FG_SafeMode_Crash">The app started without plugins. If it crashes again without them, plugins are not the cause.</string>
+    <string name="FG_SafeMode_Desc">Plugins were disabled after a crash. Restore them using the button above, or enable them one at a time to identify the cause.</string>
+    <string name="FG_SafeMode_TurnOff">Bring plugins back</string>
+    <string name="FG_SafeMode_Started">Plugins are back</string>
+    <string name="FG_RoundCamera_Ask">Ask when recording</string>
+    <string name="FG_RoundCamera_FrontFull">Front camera</string>
+    <string name="FG_RoundCamera_RearFull">Main camera</string>
+    <string name="FG_SideDrawer_Phone">Show phone number</string>
+    <string name="FG_RoundWatermark">Watermark on round videos</string>
+    <string name="FG_RoundWatermark_Desc">Add a small watermark in the corner of video messages.</string>
+    <string name="FG_RoundBitrate_Desc">A higher bitrate improves recording quality and increases file size.</string>
+    <string name="FG_LocalPremiumEmojis">Premium emoji without Premium</string>
+    <string name="FG_LocalPremiumEmojis_Desc">Send emoji as a tg://emoji link. Finegram displays it as emoji; other clients may display the link.</string>
+    <string name="FG_Bypass_Status_Failed">Could not connect</string>
+    <string name="FG_Bypass_Status_Vpn">Paused: VPN is on</string>
+    <string name="FG_Bypass_OpenProxy">Proxy settings</string>
+    <string name="FG_Bypass_SuspendOnVpn">Pause when VPN is connected</string>
+    <string name="FG_Bypass_Location">Location</string>
+    <string name="FG_Bypass_Location_Auto">Automatic</string>
+    <string name="FG_Bypass_Location_Desc">The selected country is tried first. Other locations are used if the connection fails.</string>
+    <string name="FG_Bypass_Location_Current">Current location</string>
+    <string name="FG_Bypass_Location_Ping">%1$d ms</string>
+    <string name="FG_Bypass_Location_Unreachable">No answer</string>
+    <string name="FG_Bypass_Location_Measuring">Checking…</string>
+    <string name="FG_Bypass_SuspendOnVpn_Desc">The built-in bypass pauses when a VPN connects and resumes when it disconnects.</string>
+    <string name="FG_Bypass_Route">Server</string>
+    <string name="FG_Bypass_Route_Tgws">Flowseal</string>
+    <string name="FG_Bypass_Route_Relay">Our server</string>
+    <string name="FG_Bypass_Route_Tgws_Desc">The tg-ws-proxy servers through Cloudflare. Finegram servers are used if the connection is unavailable.</string>
+    <string name="FG_Bypass_Route_Relay_Desc">A Finegram server in the selected location. The tg-ws-proxy servers are used if the connection is unavailable.</string>
+    <string name="FG_Plugins_InstallConfirm">Install</string>
+    <string name="FG_MessageMenuBehaviour">Behaviour</string>
+    <string name="FG_MessageMenuUnifiedScroll">Keep menu size</string>
+    <string name="FG_MessageMenuUnifiedScroll_Desc">Open the Read by submenu inside the message menu with shared scrolling.</string>
+    <string name="FG_MessageMenuFixedHeight">Limit submenu height</string>
+    <string name="FG_MessageMenuFixedHeight_Desc">Limit the height of the Read by list and scroll it inside the menu.</string>
+    <string name="FG_ComposerCursorGlide">Gliding cursor</string>
+    <string name="FG_ComposerCursorGlide_Desc">Move the cursor smoothly while typing.</string>
+    <string name="FG_LargePhotos">Large photos</string>
+    <string name="FG_LargePhotos_Desc">Send photos with a 2560-pixel long edge instead of 1280 pixels. Increases file size.</string>
+    <string name="FG_LockedChatsRemember">Ask again</string>
+    <string name="FG_LockedChatsRemember_Always">Every time</string>
+    <string name="FG_LockedChatsRemember_1Min">After 1 minute</string>
+    <string name="FG_LockedChatsRemember_5Min">After 5 minutes</string>
+    <string name="FG_LockedChatsRemember_15Min">After 15 minutes</string>
+    <string name="FG_LockedChatsRemember_Restart">Until restart</string>
+    <string name="FG_MsgFilters_OnlyInChats">Filter only in these chats</string>
+    <string name="FG_MsgFilters_OnlyInChats_Desc">Choose chats where the filter should apply. An empty list applies the filter to all chats.</string>
+    <string name="FG_ComposerAppear">Letters fade in</string>
+    <string name="FG_ComposerAppear_Desc">Animate characters as you type. Pasted text is not affected.</string>
+    <string name="FG_PreReform">Pre-reform Russian spelling</string>
+    <string name="FG_PreReform_Desc">Apply pre-reform spelling to outgoing Russian messages. Links, code and mentions remain unchanged.</string>
+    <string name="FG_Plugins_CheckUpdates">Check for updates</string>
+    <string name="FG_Plugins_Checking">Checking…</string>
+    <string name="FG_Plugins_NoUpdates">No updates</string>
+    <string name="FG_Plugins_UpdateAvailable">Version %s available</string>
+    <string name="FG_Plugins_Update">Update</string>
+    <string name="FG_Plugins_Updated">Plugin updated</string>
+    <string name="FG_Plugins_UpdateFailed">Could not update the plugin</string>
+    <string name="FG_Plugins_UpdatesFound_one">%1$d plugin can be updated</string>
+    <string name="FG_Plugins_UpdatesFound_other">%1$d plugins can be updated</string>
+    <string name="FG_TextAnim">Typing animation</string>
+    <string name="FG_TextAnim_On">On</string>
+    <string name="FG_TextAnim_Off">Off</string>
+    <string name="FG_TextAnim_Desc">Animate character appearance, cursor movement and text deletion.</string>
+    <string name="FG_TextAnim_Appear">Letters</string>
+    <string name="FG_TextAnim_Appear_Hint">Characters slide up as the blur fades.</string>
+    <string name="FG_TextAnim_Cursor">Caret</string>
+    <string name="FG_TextAnim_Erase">Erasing</string>
+    <string name="FG_TextAnim_Duration">Duration: %1$d ms</string>
+    <string name="FG_TextAnim_Slide">Slide: %1$d dp</string>
+    <string name="FG_TextAnim_Slide_Off">No slide</string>
+    <string name="FG_TextAnim_Blur">Softness: %1$d</string>
+    <string name="FG_TextAnim_Blur_Off">No softness</string>
+    <string name="FG_TextAnim_Speed">Speed: %1$d</string>
+    <string name="FG_TextAnim_Particles">Particles: %1$d</string>
+    <string name="FG_TextAnim_ParticleSpeed">Particle speed: %1$d%%</string>
+    <string name="FG_TextAnim_ParticleSize">Particle size: %1$d%%</string>
+    <string name="FG_TextAnim_Credit">Behaviour taken from the Text Animation plugin by @mihailkotovski and @mishabotov. сторонний форк ships it built in with fixed numbers; here the same numbers are the defaults and each one can be changed.</string>
+    <string name="FG_Cards_Title">Cards</string>
+    <string name="FG_Cards_GeneralHeader">General</string>
+    <string name="FG_Cards_Enable">Enable</string>
+    <string name="FG_Cards_InfiniteScroll">Infinite scrolling</string>
+    <string name="FG_Cards_AutoScroll">Auto-scroll</string>
+    <string name="FG_Cards_ActiveHeader">Active cards</string>
+    <string name="FG_Cards_HiddenHeader">Hidden cards</string>
+    <string name="FG_Cards_GrantLocation">Grant access</string>
+    <string name="FG_Cards_NameWeather">Weather</string>
+    <string name="FG_Cards_NameGram">Gram</string>
+    <string name="FG_Cards_NameBitcoin">Bitcoin</string>
+    <string name="FG_Cards_NameUsd">US dollar</string>
+    <string name="FG_Cards_NameStorage">Storage</string>
+    <string name="FG_Cards_NameProxy">Proxy</string>
+    <string name="FG_Cards_Footer">Drag to reorder. Tap a card for its options.</string>
+    <string name="FG_Cards_Desc">A strip of cards above the chat list: storage, proxy, weather and rates</string>
+    <string name="FG_Credits_TextAnim">Typing animation</string>
+    <string name="FG_Cards_Colors">Colour the cards</string>
+    <string name="FG_Cards_ColorsHint">Use a separate color for each card. When disabled, use the current theme color.</string>
+    <string name="FG_Plugins_Crashed">Off: the last run ended in a crash</string>
+    <string name="FG_Plugins_Slow">Slows the client down: up to %1$d ms per event</string>
+    <string name="FG_Json_UseGson">Read with GSON</string>
+    <string name="FG_Json_UseJackson">Read with Jackson</string>
+    <string name="FG_Json_JacksonUnsupported">Jackson works on Android 8 and newer.</string>
+    <string name="FG_Json_Date">Date: %1$s</string>
+    <string name="FG_Json_ForwardDate">Forwarded on %1$s</string>
+    <string name="FG_Json_NotForwarded">Message was not forwarded</string>
+    <string name="FG_Json_DcMediaOnly">DC: only for media</string>
+    <string name="CP_Bokeh">Background blur</string>
+    <string name="CP_Bokeh_Desc">Blur the background using camera capabilities. May slow down capture on some devices.</string>
+    <string name="FG_NoRestrictions">No restrictions.</string>
+    <string name="FG_Debug_Title">Debugging</string>
+    <string name="FG_Debug_Misc">Misc</string>
+    <string name="FG_Debug_ToastRpc">Show server errors</string>
+    <string name="FG_Debug_ToastRpc_Desc">Show Telegram request errors in brief notifications.</string>
+    <string name="FG_Debug_OldTime">Plain time in chats</string>
+    <string name="FG_Debug_OldTime_Desc">Message time without the iOS and TDesktop styling.</string>
+    <string name="FG_Debug_PerfClass">Performance class</string>
+    <string name="FG_Debug_FixCallNotif">Repair the call notification</string>
+    <string name="FG_Debug_NewBlur">New blur (GPU)</string>
+    <string name="FG_Debug_ForumTabs">Force forum tabs</string>
+    <string name="FG_Debug_Punctuation">Replace quotes and dashes</string>
+    <string name="FG_Debug_Punctuation_Desc">Typographic quotes and em dashes, the way TDesktop does it.</string>
+    <string name="FG_Debug_EditFix">Repair the input box on Samsung</string>
+    <string name="FG_Debug_EditFix_Desc">Preserve emoji and formatting when selecting Samsung keyboard suggestions.</string>
+    <string name="FG_Debug_AudioSource">Microphone source</string>
+    <string name="FG_Debug_MaxQuality">Send video at top quality</string>
+    <string name="FG_Debug_MaxQuality_Desc">Automatically select the highest available quality.</string>
+    <string name="FG_Debug_GifAsVideo">Play GIFs as video</string>
+    <string name="FG_Debug_HideVideoProgress">Hide the watch mark on video</string>
+    <string name="FG_Debug_HideVideoProgress_Desc">Hide the playback position indicator on video previews.</string>
+    <string name="FG_Debug_OwnMark">* Finegram feature.</string>
+    <string name="FG_Debug_Desc">Technical switches and build details.</string>
+    <string name="FG_Store">Store</string>
+    <string name="FG_Store_Desc">Plugins and icon packs from the project server</string>
+    <string name="FG_Store_Install">Install</string>
+    <string name="FG_Store_Update">Update</string>
+    <string name="FG_Store_Installed">Installed</string>
+    <string name="FG_Store_Empty">The catalogue is empty for now</string>
+    <string name="FG_Store_Failed">The catalogue did not load. Check the connection.</string>
+    <string name="FG_Store_Plugins">Plugins</string>
+    <string name="FG_Store_Icons">Icon packs</string>
+    <string name="FG_Store_Updates">Updates</string>
+    <string name="FG_Store_Sort">Order</string>
+    <string name="FG_Store_SortNew">Newest first</string>
+    <string name="FG_Store_SortName">By name</string>
+    <string name="FG_Store_SortPopular">By installs</string>
+    <string name="FG_Store_SortAuthor">By author</string>
+    <string name="FG_Store_SortInstalled">Installed first</string>
+    <string name="FG_Store_Refresh">Reload the catalogue</string>
+    <string name="FG_Store_AutoUpdate">Update plugins</string>
+    <string name="FG_Store_AutoUpdate_Manual">Manually</string>
+    <string name="FG_Store_AutoUpdate_Ask">Ask first</string>
+    <string name="FG_Store_AutoUpdate_Silent">Install right away</string>
+    <string name="FG_Store_Done">%1$s installed</string>
+    <string name="FG_Store_Fail">Could not install %1$s</string>
+    <string name="FG_Store_UpdatesReady">Updates for plugins: %1$d</string>
+    <string name="FG_Plugins_BypassClash_Short">Built-in bypass is enabled</string>
+    <string name="FG_Store_Cat_All">All</string>
+    <string name="FG_Store_Cat_Customization">Appearance</string>
+    <string name="FG_Store_Cat_Messages">Messages</string>
+    <string name="FG_Store_Cat_Utilities">Tools</string>
+    <string name="FG_Store_Cat_Informational">Info</string>
+    <string name="FG_Store_Cat_Fun">Fun</string>
+    <string name="FG_Store_Cat_Library">Libraries</string>
+    <string name="FG_Store_Cat_Other">Other</string>
+    <string name="FG_Store_Source">Catalogue from %1$s</string>
+    <string name="FG_Store_Unverified">Not verified</string>
+    <string name="FG_Store_Mismatch">The file does not match the catalogue</string>
+    <string name="FG_Store_NeedsApp">Needs Finegram %1$s</string>
+    <string name="FG_Store_Featured">Worth a look</string>
+    <string name="FG_Store_Total">%1$d in total</string>
+    <string name="FG_Store_Installing">Installing</string>
+    <string name="FG_Store_NoDesc">No description given</string>
+    <string name="FG_Store_Version">Version</string>
+    <string name="FG_Store_Size">Size</string>
+    <string name="FG_Store_Section">Section</string>
+    <string name="FG_Store_Signed">The file is checked against the catalogue signature</string>
+    <string name="FG_Store_Requires">Needs packages: %1$s</string>
+    <string name="FG_Store_Depends">Needs plugins: %1$s</string>
+    <string name="MainMenuHiddenItems">Hidden items</string>
+    <string name="FG_AppIcon_NightSky">Night Sky</string>
+    <string name="FG_AppIcon_Aurora">Aurora</string>
+    <string name="FG_AppIcon_Kraft">Kraft</string>
+    <string name="FG_AppIcon_Pixels">Pixels</string>
+    <string name="FG_AppIcon_Halftone">Halftone</string>
+    <string name="FG_AppIcon_Depth">Depth</string>
+    <string name="FG_AppIcon_Topography">Topography</string>
+    <string name="FG_AppIcon_Mountains">Mountains</string>
+    <string name="FG_AppIcon_Nebula">Nebula</string>
+    <string name="FG_AppIcon_Bauhaus">Bauhaus</string>
+    <string name="FG_AppIcon_Memphis">Memphis</string>
+    <string name="FG_AppIcon_LowPoly">Low Poly</string>
+    <string name="FG_AppIcon_PaperLayers">Paper Layers</string>
+    <string name="FG_AppIcon_Malachite">Malachite</string>
+    <string name="FG_Update_Title">Update %1$s</string>
+    <string name="FG_Update_UpToDate">You are up to date</string>
+    <string name="FG_Update_Install">Install</string>
+    <string name="FG_Update_Downloading">Downloading… %1$d%%</string>
+    <string name="FG_Update_OpenChannel">Channel</string>
+    <string name="FG_Update_Preview">Show the update window</string>
+    <string name="FG_Update_WhatsNew">What\'s new</string>
+    <string name="FG_Update_CheckSection">Checking for updates</string>
+    <string name="FG_Ghost">Ghost mode</string>
+    <string name="FG_Ghost_Value">Stop telling others about yourself</string>
+    <string name="FG_Ghost_Online">Do not show as online</string>
+    <string name="FG_Ghost_Typing">Do not show as typing</string>
+    <string name="FG_Ghost_Reading">Do not mark messages as read</string>
+    <string name="FG_Ghost_Stories">Do not appear among story viewers</string>
+    <string name="FG_Ghost_OfflineAfterSend">Go offline right after sending</string>
+    <string name="FG_Ghost_Desc">Configure hiding your online status, typing, message reads and story views.</string>
+    <string name="FG_Outbound_AddTitle">Add your own server</string>
+    <string name="FG_Outbound_AddText">A %1$s link is in the clipboard:
+
+%2$s
+%3$s
+
+Add it to the proxy list?</string>
+    <string name="FG_Outbound_Added">Server added</string>
+    <string name="FG_Outbound_BadLink">The link could not be read</string>
+    <string name="FG_Outbound_BusyByBypass">Turn off the built-in bypass to connect a proxy.</string>
+    <string name="FG_Saved">Keep deleted messages</string>
+    <string name="FG_Saved_Value">Nothing kept yet</string>
+    <string name="FG_Saved_Bots">In chats with bots</string>
+    <string name="FG_Saved_Channels">In channels</string>
+    <string name="FG_Saved_Log">Where messages were deleted</string>
+    <string name="FG_Saved_Empty">Nobody has deleted anything yet. Messages deleted by the other side will stay in their chat and be marked here.</string>
+    <string name="FG_Saved_Clear">Forget everything kept</string>
+    <string name="FG_Saved_Clear_Desc">Only deletion marks are removed. Saved messages remain in their chats.</string>
+    <string name="FG_Saved_Clear_Confirm">Marks will be removed and deleted messages will stop standing out. The messages themselves stay.</string>
+    <string name="FG_Saved_Desc">Keep deleted messages in chats with a Deleted mark. Does not apply to Saved Messages, secret chats or clearing history.</string>
+    <string name="FG_Saved_Count_one">%1$d message kept</string>
+    <string name="FG_Saved_Count_other">%1$d messages kept</string>
+    <string name="FG_Saved_InChat_one">%1$d message</string>
+    <string name="FG_Saved_InChat_other">%1$d messages</string>
+    <string name="FG_Saved_Mark">deleted</string>
+    <string name="FG_SwitchStyle">Switch style</string>
+    <string name="FG_SwitchStyle_Telegram">Telegram</string>
+    <string name="FG_SwitchStyle_OneUI">One UI</string>
+    <string name="FG_SwitchStyle_Material3">Material 3</string>
+    <string name="FG_Anonymity">Anonymity</string>
+    <string name="FG_Anonymity_Desc">Ghost mode, keeping deleted messages</string>
+    <string name="FG_Shadowban">Hidden people</string>
+    <string name="FG_Shadowban_Desc">Hide messages from selected users and mute their notifications.</string>
+    <string name="FG_Shadowban_Add">Hide this person</string>
+    <string name="FG_Shadowban_Remove">Stop hiding</string>
+    <string name="FG_Shadowban_Added">Hidden. Messages will keep arriving quietly.</string>
+    <string name="FG_Shadowban_Removed">No longer hidden</string>
+    <string name="FG_Shadowban_Empty">Nobody is hidden</string>
+    <string name="FG_Shadowban_Dialog">Hide the chat</string>
+    <string name="FG_Shadowban_Groups">Hide messages in groups</string>
+    <string name="FG_Extra">More</string>
+    <string name="FG_LocalPremium">Local Premium</string>
+    <string name="FG_LocalPremium_Desc">Enables local Premium features. Does not activate a subscription on Telegram servers.</string>
+    <string name="FG_AllowScreenshots">Allow screenshots</string>
+    <string name="FG_AllowScreenshots_Desc">Removes the screenshot ban in secret chats.</string>
+    <string name="FG_DimDeleted">Dim deleted messages</string>
+    <string name="FG_PseudoForward">Forward from restricted chats</string>
+    <string name="FG_PseudoForward_Desc">Allow forwarding message content from chats with forwarding restrictions.</string>
+    <string name="FG_KeepEdits">Keep edit history</string>
+    <string name="FG_KeepEdits_Desc">Save previous versions of message text.</string>
+    <string name="FG_Ghost_Exception_On">Do not hide from this chat</string>
+    <string name="FG_Ghost_Exception_Off">Hide from this chat again</string>
+    <string name="FG_Ghost_Exception_Added">Here they see everything as usual</string>
+    <string name="FG_Ghost_Exception_Removed">Ghost mode applies here again</string>
+    <string name="FG_Off">Off</string>
+    <string name="FG_Unlock">Client-side limits</string>
+    <string name="FG_Anonymity_Hint">Some features apply only in Finegram and do not change data on Telegram servers.</string>
+    <string name="FG_Ghost_What">What stops going out</string>
+    <string name="FG_Ghost_Exceptions">Exceptions</string>
+    <string name="FG_Ghost_Exceptions_Hint">Add a user to exceptions from the chat menu. Ghost mode does not apply to them.</string>
+    <string name="FG_Saved_Where">Where it applies</string>
+    <string name="FG_Shadowban_Tap">Tap a person to unhide them.</string>
+    <string name="FG_Shadowban_Both">Chat and groups</string>
+    <string name="FG_Outbound_Add">Add by link (VLESS, Hysteria2)</string>
+    <string name="FG_NotificationAvatar">Chat avatar in notifications</string>
+    <string name="FG_NotificationAvatar_Desc">Show the chat avatar as the large notification icon. The small monochrome icon remains the app icon.</string>
+    <string name="FG_NotificationIconOld">Classic Telegram badge</string>
+    <string name="FG_NotificationIconOld_Desc">Use the Telegram icon in notifications.</string>
+    <string name="FG_Plugins_Library">Fetching %1$s…</string>
+    <string name="FG_Plugins_Library_Progress">Fetching %1$s — %2$d%%</string>
+    <string name="FG_Store_BypassClash">%1$s is installed. Turn off the built-in bypass to start the plugin.</string>
+    <string name="FG_Contacts_Export">Export to file</string>
+    <string name="FG_RecordMultiMic">Record from all microphones</string>
+    <string name="FG_RecordMultiMic_Desc">Use built-in microphones for stereo capture when supported by the device.</string>
+    <string name="FG_RecordInStereo">Keep both tracks</string>
+    <string name="FG_RecordInStereo_Desc">Save voice messages in stereo instead of mixing the recording to mono.</string>
+    <string name="FG_SelectBetween">Select between</string>
+    <string name="FG_SelectBetween_Nothing">Nothing between the selected messages</string>
+    <string name="FG_LastSeenExactTime">Exact last seen time</string>
+    <string name="FG_LastSeenExactTime_Desc">Shows "last seen today at 18:20" instead of "last seen 20 minutes ago".</string>
+    <string name="FG_ShowIdSearch">Search by message ID</string>
+    <string name="FG_ShowIdSearch_Desc">Show the Search (ID) entry in the chat menu.</string>
+    <string name="FG_Saved_ForgetChat_Confirm">Forget the deleted messages of this chat? The messages themselves stay where they are.</string>
+    <string name="FG_Saved_ForgetChat">Remove deleted message labels</string>
+    <string name="FG_Saved_Exceptions">Exceptions</string>
+    <string name="FG_Saved_Exceptions_Empty">No exceptions</string>
+    <string name="FG_Saved_Exceptions_Info">Deleted messages are not saved in these chats. Touch and hold a chat in the deleted messages log to add it.</string>
+    <string name="FG_Saved_ExcludeChat">Do not save deleted messages</string>
+    <string name="FG_Saved_ResumeChat">Save deleted messages</string>
+    <string name="FG_Saved_ResumeChat_Confirm">Save deleted messages in this chat again?</string>
+    <string name="FG_Proxy_DisableOnVpn">Turn off proxy while a VPN is on</string>
+    <string name="FG_Proxy_DisableOnVpn_Desc">Disable the regular proxy when a VPN connects. Restore it after the VPN disconnects if it was previously enabled.</string>
+    <string name="FG_BottomTabsWithDrawer">Keep the bottom bar too</string>
+    <string name="FG_BottomTabsWithDrawer_Desc">The bottom tabs stay in place while the side menu is on.</string>
+    <string name="FG_LiquidGlass">Glass blur</string>
+    <string name="FG_LiquidGlass_Desc">Blurred backgrounds for panels, menus and the chat header. May reduce interface smoothness on some devices.</string>
+    <string name="FG_NewRoundEngine">New round video recording</string>
+    <string name="FG_NewRoundEngine_Desc">Use the new video message recording engine. Restart the app to apply the change.</string>
+    <string name="FG_ManualCameraId">Select cameras by ID</string>
+    <string name="FG_ManualCameraId_Desc">Specify the front and rear camera IDs for Camera2 and CameraX.</string>
+    <string name="FG_ManualCameraId_Front">Front camera</string>
+    <string name="FG_ManualCameraId_Rear">Rear camera</string>
+    <string name="FG_ManualCameraId_Auto">Automatic</string>
+    <string name="FG_RoundEngine">Round video engine</string>
+    <string name="FG_CameraAudioMode">Audio recording</string>
+    <string name="FG_CameraModeOld">Old</string>
+    <string name="FG_CameraModeNew">New</string>
+    <string name="FG_CameraAudioMode_Desc">Old mode uses the default microphone in mono. New mode uses the selected audio source and supports stereo. Another source is tried if recording fails.</string>
+    <string name="FG_RoundZoomScale">Round video zoom scale</string>
+    <string name="FG_CameraTransitions">Smooth lens transitions</string>
+    <string name="FG_CameraDualUnavailable">Dual camera unavailable. Recording will continue with one camera.</string>
+    <string name="FG_CameraId_Enter">Enter ID manually</string>
+    <string name="FG_CameraId_Invalid">Camera not found or faces the other direction</string>
+    <string name="FG_Plugins_NoChatActions">No plugin actions for this chat.</string>
+    <string name="FG_FolderCornerBadges">Badge in the icon corner</string>
+    <string name="FG_ChatListStyle">Chat list style</string>
+    <string name="FG_ChatListStyle_IOS">iOS</string>
+    <string name="FG_Saved_PreviousLog">Previous version log</string>
+    <string name="FG_Saved_PreviousLog_Info">The previous version did not record which account owned each entry. Select the correct account and transfer the marks for each chat.</string>
+    <string name="FG_Saved_UnknownChat_Info">These marks have no saved chat ID and cannot be transferred to an account.</string>
+    <string name="FG_Saved_Transfer">Transfer marks</string>
+    <string name="FG_Saved_Transfer_Confirm">Transfer marks for chat %1$s to account %2$s? Continue only if they belong to this account.</string>
+    <string name="FG_Saved_Transfer_Error">Could not transfer the marks. The previous log has been preserved.</string>
+    <string name="FG_Saved_DeleteMessage_Confirm">Delete this saved message from this device?</string>
+    <string name="FG_Saved_DeleteMessage_Error">Could not delete the message. Please try again.</string>
+    <string name="FG_ProxyName">Proxy name (optional)</string>
+    <string name="FG_SaveLocally">Save a copy</string>
+    <string name="CP_IncludeMutedIn_FolderCounters">Include muted chats in folder counters</string>
+    <string name="FG_ProfileHidePhoneNumber">Hide phone numbers in profiles</string>
+</resources>

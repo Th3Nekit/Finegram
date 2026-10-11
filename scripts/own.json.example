@@ -1,0 +1,12 @@
+{
+  "wsbypass": {
+    "url": "https://th3web.com/finegram/store/wsbypass-5.5.0.plugin",
+    "name": "WS-Bypass",
+    "author": "@th3nek1t_projects",
+    "version": "5.5.0",
+    "description": "Обход блокировок Telegram через веб-соединение",
+    "icon": "ResistanceDog/24",
+    "status": "utilities",
+    "min_version": "0.1.0"
+  }
+}

@@ -1,0 +1,35 @@
+/*
+ *  Copyright 2017 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree. An additional intellectual property rights grant can be found
+ *  in the file PATENTS.  All contributing project authors may
+ *  be found in the AUTHORS file in the root of the source tree.
+ */
+
+#ifndef WEBRTC_DISABLE_H265
+
+#import <Foundation/Foundation.h>
+
+#import "RTCMacros.h"
+#import "RTCVideoCodecInfo.h"
+#import "RTCVideoEncoder.h"
+
+RTC_OBJC_EXPORT
+API_AVAILABLE(ios(11.0))
+@interface RTCVideoEncoderH265 : NSObject <RTCVideoEncoder>
+
+- (instancetype _Nonnull)initWithCodecInfo:(RTCVideoCodecInfo * _Nonnull)codecInfo;
+
+- (nullable RTC_OBJC_TYPE(RTCVideoEncoderQpThresholds) *)scalingSettings;
+
+@property(nonatomic, readonly) NSInteger resolutionAlignment;
+
+@property(nonatomic, readonly) BOOL applyAlignmentToAllSimulcastLayers;
+
+@property(nonatomic, readonly) BOOL supportsNativeHandle;
+
+@end
+
+#endif

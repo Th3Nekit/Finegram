@@ -1,0 +1,221 @@
+/**
+ * This is the source code of Finegram for Android.
+ * It is licensed under GNU GPL v. 2 or later.
+ *
+ * Based on Cherrygram (Copyright github.com/arsLan4k1390, 2022-2026),
+ * itself based on Telegram for Android (github.com/DrKLO/Telegram).
+ */
+
+package com.th3nekit.finegram.helpers.ui;
+
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.os.Build;
+
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.LocaleController;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.List;
+
+import com.th3nekit.finegram.core.FinegramLogger;
+
+public class FontHelper {
+
+    public final static String TYPEFACE_GILROY_EXTRABOLD = "fonts/gilroy_extrabold.ttf";
+    private static final String EMOJI_FONT_AOSP = "NotoColorEmoji.ttf";
+
+    private static final String TEST_TEXT;
+    private static final Paint PAINT = new Paint() {{
+        setTextSize(20);
+        setAntiAlias(false);
+        setSubpixelText(false);
+        setFakeBoldText(false);
+    }};
+
+    private static Boolean mediumWeightSupported = null;
+    private static Boolean italicSupported = null;
+
+    private static Typeface systemEmojiTypeface;
+    private static boolean loadSystemEmojiFailed = false;
+
+    static {
+        var lang = LocaleController.getInstance().getCurrentLocale().getLanguage();
+        if (List.of("zh", "ja", "ko").contains(lang)) {
+            TEST_TEXT = "你好";
+        } else if (List.of("ar", "fa").contains(lang)) {
+            TEST_TEXT = "مرحبا";
+        } else if ("iw".equals(lang)) {
+            TEST_TEXT = "שלום";
+        } else if ("th".equals(lang)) {
+            TEST_TEXT = "สวัสดี";
+        } else if ("hi".equals(lang)) {
+            TEST_TEXT = "नमस्ते";
+        } else if (List.of("ru", "uk", "ky", "be", "sr").contains(lang)) {
+            TEST_TEXT = "Привет";
+        } else {
+            TEST_TEXT = "R";
+        }
+    }
+
+    public static Typeface createTypeface2(String assetPath) {
+        if (assetPath == null || assetPath.isEmpty()) {
+            return Typeface.DEFAULT;
+        }
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Typeface.Builder builder = new Typeface.Builder(ApplicationLoader.applicationContext.getAssets(), assetPath);
+
+                String lower = assetPath.toLowerCase();
+
+                if (lower.contains("thin")) {
+                    builder.setWeight(100);
+                } else if (lower.contains("extralight")) {
+                    builder.setWeight(200);
+                } else if (lower.contains("light")) {
+                    builder.setWeight(300);
+                } else if (lower.contains("regular") || lower.contains("book")) {
+                    builder.setWeight(400);
+                } else if (lower.contains("medium")) {
+                    builder.setWeight(500);
+                } else if (lower.contains("semibold")) {
+                    builder.setWeight(600);
+                } else if (lower.contains("bold") && !lower.contains("extrabold")) {
+                    builder.setWeight(700);
+                } else if (lower.contains("extrabold") || lower.contains("black")) {
+                    builder.setWeight(800);
+                } else {
+                    builder.setWeight(400);
+                }
+
+                builder.setItalic(lower.contains("italic"));
+
+                return builder.build();
+            } else {
+                return Typeface.createFromAsset(ApplicationLoader.applicationContext.getAssets(), assetPath);
+            }
+        } catch (Exception e) {
+            FinegramLogger.e(e);
+            return Typeface.DEFAULT;
+        }
+    }
+
+    public static Typeface getSystemEmojiTypeface() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return null;
+        }
+        if (!loadSystemEmojiFailed && systemEmojiTypeface == null) {
+            var font = getSystemEmojiFontPathLegacy();
+            if (font != null) {
+                try {
+                    systemEmojiTypeface = Typeface.createFromFile(font);
+                } catch (Exception e) {
+                    FinegramLogger.e(() -> "Failed to load system emoji font: " + font.getAbsolutePath(), e);
+                }
+            }
+            if (systemEmojiTypeface == null) {
+                loadSystemEmojiFailed = true;
+            }
+        }
+        return systemEmojiTypeface;
+    }
+
+    private static File getSystemEmojiFontPathLegacy() {
+        try (var br = new BufferedReader(new FileReader("/system/etc/fonts.xml"))) {
+            String line;
+            var ignored = false;
+            while ((line = br.readLine()) != null) {
+                var trimmed = line.trim();
+                if (trimmed.startsWith("<family") && trimmed.contains("ignore=\"true\"")) {
+                    ignored = true;
+                } else if (trimmed.startsWith("</family>")) {
+                    ignored = false;
+                } else if (trimmed.startsWith("<font") && !ignored) {
+                    var start = trimmed.indexOf(">");
+                    var end = trimmed.indexOf("<", 1);
+                    if (start > 0 && end > 0) {
+                        var font = trimmed.substring(start + 1, end);
+                        if (font.toLowerCase().contains("emoji")) {
+                            File file = new File("/system/fonts/" + font);
+                            if (file.exists()) {
+                                FinegramLogger.d(() -> "emoji font file fonts.xml = " + font);
+                                return file;
+                            }
+                        }
+                    }
+                }
+            }
+            br.close();
+
+            var fileAOSP = new File("/system/fonts/" + EMOJI_FONT_AOSP);
+            if (fileAOSP.exists()) {
+                return fileAOSP;
+            }
+        } catch (Exception e) {
+            FinegramLogger.e(e);
+        }
+        return null;
+    }
+
+    public static Typeface createTypeface(int weight, boolean italic) {
+        if (!com.th3nekit.finegram.core.configs.FinegramCoreConfig.INSTANCE.getSystemFonts()) {
+            String asset;
+            if (weight >= 800) {
+                asset = "fonts/rextrabold.ttf";
+            } else if (weight >= 500) {
+                asset = italic ? "fonts/mw_bolditalic.ttf" : "fonts/rmedium.ttf";
+            } else {
+                asset = italic ? "fonts/ritalic.ttf" : null;
+            }
+            if (asset != null) {
+                Typeface fromAssets = createTypeface2(asset);
+                if (fromAssets != null && fromAssets != Typeface.DEFAULT) {
+                    return fromAssets;
+                }
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return Typeface.create(null, weight, italic);
+        }
+        var family = switch (weight) {
+            case 800 -> "sans-serif-black";
+            case 500 -> "sans-serif-medium";
+            default -> "sans-serif";
+        };
+        return Typeface.create(family, italic ? Typeface.ITALIC : Typeface.NORMAL);
+    }
+
+    public static boolean isMediumWeightSupported() {
+        if (mediumWeightSupported == null) {
+            Typeface normal = createTypeface(400, false);
+            Typeface medium = createTypeface(500, false);
+
+            mediumWeightSupported = isDifferentTypeface(normal, medium);
+            FinegramLogger.d(() -> "mediumWeightSupported = " + mediumWeightSupported);
+        }
+        return mediumWeightSupported;
+    }
+
+    public static boolean isItalicSupported() {
+        if (italicSupported == null) {
+            Typeface tf = createTypeface(400, true);
+            italicSupported = PAINT.hasGlyph(TEST_TEXT) && tf.isItalic();
+            FinegramLogger.d(() -> "italicSupported = " + italicSupported);
+        }
+        return italicSupported;
+    }
+
+    private static boolean isDifferentTypeface(Typeface a, Typeface b) {
+        PAINT.setTypeface(a);
+        float widthA = PAINT.measureText(TEST_TEXT);
+
+        PAINT.setTypeface(b);
+        float widthB = PAINT.measureText(TEST_TEXT);
+
+        return Math.abs(widthA - widthB) > 0.5f;
+    }
+
+}

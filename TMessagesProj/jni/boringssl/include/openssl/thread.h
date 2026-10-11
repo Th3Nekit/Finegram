@@ -1,0 +1,88 @@
+// Copyright 1995-2016 The OpenSSL Project Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef OPENSSL_HEADER_THREAD_H
+#define OPENSSL_HEADER_THREAD_H
+
+#include <sys/types.h>
+
+#include <openssl/base.h>
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+typedef uint32_t CRYPTO_refcount_t;
+
+#define CRYPTO_LOCK 1
+#define CRYPTO_UNLOCK 2
+#define CRYPTO_READ 4
+#define CRYPTO_WRITE 8
+
+OPENSSL_EXPORT int CRYPTO_num_locks(void);
+
+OPENSSL_EXPORT void CRYPTO_set_locking_callback(
+    void (*func)(int mode, int lock_num, const char *file, int line));
+
+OPENSSL_EXPORT void CRYPTO_set_add_lock_callback(int (*func)(
+    int *num, int amount, int lock_num, const char *file, int line));
+
+OPENSSL_EXPORT void (*CRYPTO_get_locking_callback(void))(int mode, int lock_num,
+                                                         const char *file,
+                                                         int line);
+
+OPENSSL_EXPORT const char *CRYPTO_get_lock_name(int lock_num);
+
+OPENSSL_EXPORT int CRYPTO_THREADID_set_callback(
+    void (*threadid_func)(CRYPTO_THREADID *threadid));
+
+OPENSSL_EXPORT void CRYPTO_THREADID_set_numeric(CRYPTO_THREADID *id,
+                                                unsigned long val);
+
+OPENSSL_EXPORT void CRYPTO_THREADID_set_pointer(CRYPTO_THREADID *id, void *ptr);
+
+OPENSSL_EXPORT void CRYPTO_THREADID_current(CRYPTO_THREADID *id);
+
+OPENSSL_EXPORT void CRYPTO_set_id_callback(unsigned long (*func)(void));
+
+typedef struct {
+  int references;
+  struct CRYPTO_dynlock_value *data;
+} CRYPTO_dynlock;
+
+OPENSSL_EXPORT void CRYPTO_set_dynlock_create_callback(
+    struct CRYPTO_dynlock_value *(*dyn_create_function)(const char *file,
+                                                        int line));
+
+OPENSSL_EXPORT void CRYPTO_set_dynlock_lock_callback(void (*dyn_lock_function)(
+    int mode, struct CRYPTO_dynlock_value *l, const char *file, int line));
+
+OPENSSL_EXPORT void CRYPTO_set_dynlock_destroy_callback(
+    void (*dyn_destroy_function)(struct CRYPTO_dynlock_value *l,
+                                 const char *file, int line));
+
+OPENSSL_EXPORT struct CRYPTO_dynlock_value *(
+    *CRYPTO_get_dynlock_create_callback(void))(const char *file, int line);
+
+OPENSSL_EXPORT void (*CRYPTO_get_dynlock_lock_callback(void))(
+    int mode, struct CRYPTO_dynlock_value *l, const char *file, int line);
+
+OPENSSL_EXPORT void (*CRYPTO_get_dynlock_destroy_callback(void))(
+    struct CRYPTO_dynlock_value *l, const char *file, int line);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif
