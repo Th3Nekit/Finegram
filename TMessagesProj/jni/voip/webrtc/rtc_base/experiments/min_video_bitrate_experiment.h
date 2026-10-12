@@ -1,0 +1,26 @@
+/*
+ *  Copyright 2019 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree. An additional intellectual property rights grant can be found
+ *  in the file PATENTS.  All contributing project authors may
+ *  be found in the AUTHORS file in the root of the source tree.
+ */
+
+#ifndef RTC_BASE_EXPERIMENTS_MIN_VIDEO_BITRATE_EXPERIMENT_H_
+#define RTC_BASE_EXPERIMENTS_MIN_VIDEO_BITRATE_EXPERIMENT_H_
+
+#include "absl/types/optional.h"
+#include "api/units/data_rate.h"
+#include "api/video/video_codec_type.h"
+
+namespace webrtc {
+
+extern const int kDefaultMinVideoBitrateBps;
+
+absl::optional<DataRate> GetExperimentalMinVideoBitrate(VideoCodecType type);
+
+}
+
+#endif

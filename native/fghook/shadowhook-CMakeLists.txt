@@ -1,0 +1,26 @@
+# Сборка shadowhook нашими руками: официальная сборка требует NDK 23 и CMake 4,
+# а -Weverything -Werror ломается на более новом clang. Кода это не меняет,
+# единственная правка исходников — shadowhook-optional-linker.patch.
+cmake_minimum_required(VERSION 3.22)
+project(shadowhook C ASM)
+
+set(SH ${CMAKE_CURRENT_SOURCE_DIR}/../shadowhook-src/shadowhook/src/main/cpp)
+
+if(${ANDROID_ABI} STREQUAL "arm64-v8a")
+    set(ARCH "arm64")
+    set(ARCH_LINK_FLAGS "-Wl,-z,max-page-size=16384")
+else()
+    set(ARCH "arm")
+    set(ARCH_LINK_FLAGS "")
+endif()
+
+file(GLOB SRC ${SH}/*.c ${SH}/arch/${ARCH}/*.c ${SH}/arch/${ARCH}/*.S ${SH}/common/*.c ${SH}/third_party/*/*.c)
+add_library(shadowhook SHARED ${SRC})
+target_compile_features(shadowhook PRIVATE c_std_11)
+target_include_directories(shadowhook PRIVATE
+        ${SH} ${SH}/include ${SH}/arch/${ARCH} ${SH}/common
+        ${SH}/third_party/xdl ${SH}/third_party/bsd ${SH}/third_party/lss)
+target_compile_options(shadowhook PRIVATE -Os -ffunction-sections -fdata-sections)
+target_link_libraries(shadowhook log)
+target_link_options(shadowhook PRIVATE ${ARCH_LINK_FLAGS} -Os -Wl,--undefined-version -Wl,--exclude-libs,ALL -Wl,--gc-sections
+        -Wl,--version-script=${SH}/shadowhook.map.txt)

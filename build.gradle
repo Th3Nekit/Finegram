@@ -1,0 +1,145 @@
+                                                                                                   
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://chaquo.com/maven' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.chaquo.python:gradle:17.0.0'
+        classpath 'com.google.gms:google-services:4.4.4'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0'
+
+        classpath "io.github.valacuz.proguard-dictionary-generator:io.github.valacuz.proguard-dictionary-generator.gradle.plugin:1.0.1"
+    }
+}
+
+def mapsProperties = new Properties()
+def mapsPropertiesFile = rootProject.file('private.properties')
+if (mapsPropertiesFile.exists()) {
+    mapsPropertiesFile.withInputStream { mapsProperties.load(it) }
+}
+def googleMapsApiKey = System.getenv('GOOGLE_MAPS_API_KEY') ?: mapsProperties.getProperty('GOOGLE_MAPS_API_KEY', '')
+
+subprojects {
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        plugins.withId(pluginId) {
+            project.android.defaultConfig.manifestPlaceholders['GOOGLE_MAPS_API_KEY'] = googleMapsApiKey
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://chaquo.com/maven' }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+subprojects {
+    afterEvaluate {
+                                                                                      
+                                                                            
+        if (!path.startsWith(":TMessagesProj_Modules:media3")
+                && (plugins.hasPlugin("com.android.library")
+                        || plugins.hasPlugin("com.android.application"))) {
+            android {
+                buildFeatures {
+                    viewBinding true
+                }
+            }
+        }
+    }
+}
+
+                                                                   
+                                                                                   
+                                                                                 
+                                                                                  
+                                                            
+                                                                                    
+                                                                                          
+                                                                                
+subprojects {
+    plugins.withId('com.android.application') {
+        android {
+            androidResources {
+                ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~:!optional:!licences:!*stmary*:!*eufb*'
+            }
+        }
+    }
+
+    if (project.projectDir.absolutePath.contains('/TMessagesProj_Modules/media/')) {
+        project.plugins.withId('com.android.library') {
+            project.android {
+                if (namespace == null) {
+                    def manifestFile = file("${project.projectDir}/src/main/AndroidManifest.xml")
+
+                    if (manifestFile.exists()) {
+                        def manifest = new XmlSlurper().parse(manifestFile)
+                        def manifestPackage = manifest.@package.text()
+
+                        if (manifestPackage) {
+                            namespace manifestPackage
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    configurations.configureEach {
+                                                                                        
+                                                                                        
+                                                                     
+        resolutionStrategy.dependencySubstitution {
+            ['common', 'container', 'muxer', 'datasource', 'decoder', 'effect',
+             'extractor', 'transformer', 'exoplayer', 'ui', 'session', 'database'].each { name ->
+                def target = rootProject.findProject(":TMessagesProj_Modules:media3:media-lib-${name}")
+                if (target != null) {
+                    substitute module("androidx.media3:media3-${name}") using project(target.path)
+                }
+            }
+        }
+    }
+}
+
+   
+                                                                  
+  
+                                                                                        
+                                                                         
+                                      
+   
+tasks.register("bumpFinegramVersion") {
+    group = "finegram"
+    description = "Поднимает версию Finegram на 0.0.1."
+    doLast {
+        def file = rootProject.file("gradle.properties")
+        def text = file.getText("UTF-8")
+
+        def name = (text =~ /APP_VERSION_NAME_FINEGRAM=(\d+)\.(\d+)\.(\d+)/)
+        if (!name.find()) {
+            throw new GradleException("в gradle.properties нет APP_VERSION_NAME_FINEGRAM")
+        }
+        def nextName = "${name.group(1)}.${name.group(2)}.${(name.group(3) as int) + 1}"
+        text = text.replaceFirst(/APP_VERSION_NAME_FINEGRAM=\d+\.\d+\.\d+/,
+                "APP_VERSION_NAME_FINEGRAM=" + nextName)
+
+        def code = (text =~ /APP_VERSION_CODE=(\d+)/)
+        if (!code.find()) {
+            throw new GradleException("в gradle.properties нет APP_VERSION_CODE")
+        }
+        def nextCode = (code.group(1) as int) + 1
+        text = text.replaceFirst(/APP_VERSION_CODE=\d+/, "APP_VERSION_CODE=" + nextCode)
+
+        file.setText(text, "UTF-8")
+        println("Finegram ${nextName}, код ${nextCode}")
+    }
+}
