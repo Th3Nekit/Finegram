@@ -1,5 +1,8 @@
 <p align="center">
-  <img src=".github/assets/finegram-cover.svg" alt="Finegram — клиент Telegram для Android на базе Cherrygram" width="1280">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/expressive/header-dark.svg">
+  <img src=".github/expressive/header-light.svg" width="100%" alt="Finegram — проект Th3Nekit">
+</picture>
 </p>
 
 <p align="center">
