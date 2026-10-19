@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Значок меню на плашке настроек: рисунок во всю клетку 24dp смотрелся впритык к краям.
+     Отступ подобран по замеру, чтобы рисунок был того же размера, что у значков разделов. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/msg_secret"
+    android:inset="4.5dp" />

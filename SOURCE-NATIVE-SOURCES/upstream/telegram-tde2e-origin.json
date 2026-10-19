@@ -1,0 +1,109 @@
+{
+  "files": [
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": false,
+      "path": "TMessagesProj/jni/tde2e/CMakeLists.txt",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/CMakeLists.txt",
+      "sha256": "f7f7f134094f7aef84c1cd4ccf62b5d11810f8e75bb560724cae629dac7f9817",
+      "snapshot_sha256": "b8b6cb7adc0ef9505d1035174fd8086011ed1e4c55cdffb3e5c75846df3d5e79"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": false,
+      "path": "TMessagesProj/jni/tde2e/README",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/README",
+      "sha256": "e81fc38f03d2db356f400122e513e77d188938a471de370cc925d3b4ae656683",
+      "snapshot_sha256": "0f00891ce2d520cf9890bb7d1db102974c61b4e63ff735f5b8abaeb5a4ad173a"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtde2e.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/arm64-v8a/libtde2e.a",
+      "sha256": "ba48a3c721afb560ac324cd9181bd47c12233360bcda045164a49b13debd90ac",
+      "snapshot_sha256": "ba48a3c721afb560ac324cd9181bd47c12233360bcda045164a49b13debd90ac"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtdutils.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/arm64-v8a/libtdutils.a",
+      "sha256": "a1cba84d0ec97e6a812e1f3241c5b7249e12c6e693d3ce17f093cde7b6f3bfaa",
+      "snapshot_sha256": "a1cba84d0ec97e6a812e1f3241c5b7249e12c6e693d3ce17f093cde7b6f3bfaa"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtde2e.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/armeabi-v7a/libtde2e.a",
+      "sha256": "83be104591c529ede02cba64f38ef7ebc050362cda878f99bdd66fce55c865ba",
+      "snapshot_sha256": "83be104591c529ede02cba64f38ef7ebc050362cda878f99bdd66fce55c865ba"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtdutils.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/armeabi-v7a/libtdutils.a",
+      "sha256": "f2ddd5fc2cb9ac14948b554de46e52812c08c810ed393e9a009db25c405ae7e8",
+      "snapshot_sha256": "f2ddd5fc2cb9ac14948b554de46e52812c08c810ed393e9a009db25c405ae7e8"
+    },
+    {
+      "matches_crlf_normalized": false,
+      "matches_exact_bytes": false,
+      "path": "TMessagesProj/jni/tde2e/bridge.cpp",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/bridge.cpp",
+      "sha256": "defacf9acdee0b7854801685993074188fdad3b3534d967cd494e94cdf08a327",
+      "snapshot_sha256": "c1b9749b7d17b7e8ef3887bf650a83a4ab1c0a54c77245eab458b1e7691a52e9"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": false,
+      "path": "TMessagesProj/jni/tde2e/build-tdlib.sh",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/build-tdlib.sh",
+      "sha256": "e9fa97ae7669ae993c7c5133e520351eaceb16e475d92c8b5025c38cce878b7d",
+      "snapshot_sha256": "655aa6a6371a66cc59294068351e4449e8c374dcf5ab94f86aac262870fe6433"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": false,
+      "path": "TMessagesProj/jni/tde2e/include/e2e_api.h",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/include/e2e_api.h",
+      "sha256": "6387935b245d105521ddf576cfd2f8799e342a3fe47cf3a359a0a422b702d3fe",
+      "snapshot_sha256": "93745c6c9571bed7e871db886e1adff3c165db407476dd1ec388e1cd9ba1e842"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/x86/libtde2e.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86/libtde2e.a",
+      "sha256": "64a2232cbbb6bbaa5933e810077b3da603c8e9739058668e49668d08d978e5c0",
+      "snapshot_sha256": "64a2232cbbb6bbaa5933e810077b3da603c8e9739058668e49668d08d978e5c0"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/x86/libtdutils.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86/libtdutils.a",
+      "sha256": "8da11f67f6ebbb07d51da9e8a3829c03f8968ffb039ace74c369d6696df78391",
+      "snapshot_sha256": "8da11f67f6ebbb07d51da9e8a3829c03f8968ffb039ace74c369d6696df78391"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/x86_64/libtde2e.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86_64/libtde2e.a",
+      "sha256": "8f0356bc69b20e3e6fbacce47d6cb725affc47d853e99fc6ae72cec98ba7abd9",
+      "snapshot_sha256": "8f0356bc69b20e3e6fbacce47d6cb725affc47d853e99fc6ae72cec98ba7abd9"
+    },
+    {
+      "matches_crlf_normalized": true,
+      "matches_exact_bytes": true,
+      "path": "TMessagesProj/jni/tde2e/x86_64/libtdutils.a",
+      "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86_64/libtdutils.a",
+      "sha256": "6c0194847060cef493528d4b453c4b3f54ebf00973032254db0aeab1efbe47e0",
+      "snapshot_sha256": "6c0194847060cef493528d4b453c4b3f54ebf00973032254db0aeab1efbe47e0"
+    }
+  ],
+  "telegram_commit": "289c4625035feafbfac355eb01591b726894a623"
+}

@@ -1,0 +1,241 @@
+{
+  "AAR_sha256": "89cd4ef1f988f2c19c42281500ec3827ba3059fc004ba21a5d61d720555bf668",
+  "ADB_used": false,
+  "all_six_AAR_libraries_match_existing_build_outputs": true,
+  "artifact": "TMessagesProj/libs/fghook-core.aar",
+  "canonical_sources_modified": false,
+  "created_utc": "2026-10-16T05:58:41.017092+00:00",
+  "excluded_LSPlant_gitlinks": [
+    {
+      "git_blob_or_commit": "df88fe4fdd97714fadfd3ef17de0b4401f804052",
+      "mode": "160000",
+      "path": "docs/doxygen-awesome-css",
+      "type": "commit"
+    },
+    {
+      "git_blob_or_commit": "4e2bdaadfa3818d2ffe226731e0690bd42614e0e",
+      "mode": "160000",
+      "path": "test/src/main/jni/external/lsparself",
+      "type": "commit"
+    },
+    {
+      "git_blob_or_commit": "c52e5087a434cdf0274e93ea35371872480d26ab",
+      "mode": "160000",
+      "path": "test/src/main/jni/external/lsprism",
+      "type": "commit"
+    }
+  ],
+  "licenses": {
+    "DexBuilder": "LGPL-3.0 text in lsplant/lsplant/src/main/jni/external/dex_builder/LICENSE",
+    "LSPlant": "LGPL-3.0 text in lsplant/LICENSE",
+    "parallel_hashmap": "Apache-2.0 in its LICENSE; bundled source headers preserve additional notices",
+    "shadowhook": "MIT in shadowhook-src/LICENSE; bundled third_party/xdl and third_party/lss LICENSE and BSD notices retained",
+    "xz-embedded": "0BSD in xz-embedded/COPYING"
+  },
+  "native_build_executed": false,
+  "repositories": [
+    {
+      "archive_prefix": "lsplant",
+      "commit": "1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9",
+      "commit_date": "2026-09-24T08:01:03+08:00",
+      "gitlinks": [
+        {
+          "git_blob_or_commit": "df88fe4fdd97714fadfd3ef17de0b4401f804052",
+          "mode": "160000",
+          "path": "docs/doxygen-awesome-css",
+          "type": "commit"
+        },
+        {
+          "git_blob_or_commit": "ac7fb2230954ee311808bad469b0db501f31bfb8",
+          "mode": "160000",
+          "path": "lsplant/src/main/jni/external/dex_builder",
+          "type": "commit"
+        },
+        {
+          "git_blob_or_commit": "4e2bdaadfa3818d2ffe226731e0690bd42614e0e",
+          "mode": "160000",
+          "path": "test/src/main/jni/external/lsparself",
+          "type": "commit"
+        },
+        {
+          "git_blob_or_commit": "c52e5087a434cdf0274e93ea35371872480d26ab",
+          "mode": "160000",
+          "path": "test/src/main/jni/external/lsprism",
+          "type": "commit"
+        }
+      ],
+      "name": "lsplant",
+      "patch_file": "evidence/lsplant-local.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "public_archive_url": "https://codeload.github.com/LSPosed/LSPlant/zip/1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9",
+      "public_commit_url": "https://github.com/LSPosed/LSPlant/commit/1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9",
+      "public_source_verification": {
+        "all_tracked_blobs_match_local_HEAD": true,
+        "archive_export_exceptions_verified_using_raw_commit_blobs": [
+          {
+            "git_blob": "db3a6ac207e507b0bc1635a9f2c18d3b174e682e",
+            "path": "gradlew.bat",
+            "raw_url": "https://raw.githubusercontent.com/LSPosed/LSPlant/1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9/gradlew.bat",
+            "reason": "archive export-ignore or line-ending transformation; exact raw commit blob verified",
+            "sha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd"
+          }
+        ],
+        "checked_utc": "2026-10-16T05:58:40.288836+00:00",
+        "download_bytes": 232464,
+        "download_sha256": "d8d6e1b463ae73d99f3387b7f460c88a14d85fb93d897d7f2688211312fd658b",
+        "tracked_blob_count_checked": 63,
+        "url": "https://codeload.github.com/LSPosed/LSPlant/zip/1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9"
+      },
+      "status": "",
+      "subject": "Update NDK/libcxx to r30 and use standard library modules (#191)",
+      "tree": "a9c53cf2223ae56c83b023d7490aa5914fda5e3b"
+    },
+    {
+      "archive_prefix": "lsplant/lsplant/src/main/jni/external/dex_builder",
+      "commit": "ac7fb2230954ee311808bad469b0db501f31bfb8",
+      "commit_date": "2025-12-30T13:40:17+01:00",
+      "gitlinks": [
+        {
+          "git_blob_or_commit": "0cd57d29a959256ed66b2afdd1009928fc625d09",
+          "mode": "160000",
+          "path": "external/parallel_hashmap",
+          "type": "commit"
+        }
+      ],
+      "name": "dex_builder",
+      "patch_file": "evidence/dex_builder-local.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "public_archive_url": "https://codeload.github.com/LSPosed/DexBuilder/zip/ac7fb2230954ee311808bad469b0db501f31bfb8",
+      "public_commit_url": "https://github.com/LSPosed/DexBuilder/commit/ac7fb2230954ee311808bad469b0db501f31bfb8",
+      "public_source_verification": {
+        "all_tracked_blobs_match_local_HEAD": true,
+        "archive_export_exceptions_verified_using_raw_commit_blobs": [],
+        "checked_utc": "2026-10-16T05:58:39.791335+00:00",
+        "download_bytes": 97293,
+        "download_sha256": "2284e3e13fffe5513bdacfc586f3275020e62f6ddaa50ba01903cf91c080a67b",
+        "tracked_blob_count_checked": 38,
+        "url": "https://codeload.github.com/LSPosed/DexBuilder/zip/ac7fb2230954ee311808bad469b0db501f31bfb8"
+      },
+      "status": "",
+      "subject": "Fix non-static method",
+      "tree": "ea08fc581866a3338707caaae63346859c37e56d"
+    },
+    {
+      "archive_prefix": "lsplant/lsplant/src/main/jni/external/dex_builder/external/parallel_hashmap",
+      "commit": "0cd57d29a959256ed66b2afdd1009928fc625d09",
+      "commit_date": "2025-06-05T11:31:19-05:00",
+      "gitlinks": [],
+      "name": "parallel_hashmap",
+      "patch_file": "evidence/parallel_hashmap-local.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "public_archive_url": "https://codeload.github.com/greg7mdp/parallel-hashmap/zip/0cd57d29a959256ed66b2afdd1009928fc625d09",
+      "public_commit_url": "https://github.com/greg7mdp/parallel-hashmap/commit/0cd57d29a959256ed66b2afdd1009928fc625d09",
+      "public_source_verification": {
+        "all_tracked_blobs_match_local_HEAD": true,
+        "archive_export_exceptions_verified_using_raw_commit_blobs": [],
+        "checked_utc": "2026-10-16T05:58:40.199316+00:00",
+        "download_bytes": 2157478,
+        "download_sha256": "6a7f206352db4ed578a808c4facea02b71c4f76f40d3c8c8c2f5515509668b77",
+        "tracked_blob_count_checked": 209,
+        "url": "https://codeload.github.com/greg7mdp/parallel-hashmap/zip/0cd57d29a959256ed66b2afdd1009928fc625d09"
+      },
+      "status": "",
+      "subject": "Fix cstdlib include in phmap (#278)",
+      "tree": "623e8bc61a34a1c36bae590e50b781915bcf4431"
+    },
+    {
+      "archive_prefix": "shadowhook-src",
+      "commit": "593f491be68799f03ee3bab71ce5908846437147",
+      "commit_date": "2026-08-26T12:42:45+08:00",
+      "gitlinks": [],
+      "name": "shadowhook",
+      "patch_file": "evidence/shadowhook-local.patch",
+      "patch_sha256": "eb871febae3a1191f7aebfa4ba55c57783972a8d81d44c43954399edf8ec1b8f",
+      "public_archive_url": "https://codeload.github.com/bytedance/android-inline-hook/zip/593f491be68799f03ee3bab71ce5908846437147",
+      "public_commit_url": "https://github.com/bytedance/android-inline-hook/commit/593f491be68799f03ee3bab71ce5908846437147",
+      "public_source_verification": {
+        "all_tracked_blobs_match_local_HEAD": true,
+        "archive_export_exceptions_verified_using_raw_commit_blobs": [],
+        "checked_utc": "2026-10-16T05:58:39.933040+00:00",
+        "download_bytes": 805005,
+        "download_sha256": "baeafe34bdfeb28e5321df183e95542e886ae26fb3f2a82ab3a66e10f179ed10",
+        "tracked_blob_count_checked": 161,
+        "url": "https://codeload.github.com/bytedance/android-inline-hook/zip/593f491be68799f03ee3bab71ce5908846437147"
+      },
+      "status": " M shadowhook/src/main/cpp/shadowhook.c\n",
+      "subject": "Merge pull request #121 from dajiaohuang/fix/120-export-init-errno",
+      "tree": "702fd2ed766b1da7d27c9eded599e2408c756bb7"
+    },
+    {
+      "archive_prefix": "xz-embedded",
+      "commit": "ae63ae3a36ed01724674e8f3d750dc47bf125410",
+      "commit_date": "2024-12-30T11:57:47+02:00",
+      "gitlinks": [],
+      "name": "xz-embedded",
+      "patch_file": "evidence/xz-embedded-local.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "public_archive_url": "https://codeload.github.com/tukaani-project/xz-embedded/zip/ae63ae3a36ed01724674e8f3d750dc47bf125410",
+      "public_commit_url": "https://github.com/tukaani-project/xz-embedded/commit/ae63ae3a36ed01724674e8f3d750dc47bf125410",
+      "public_source_verification": {
+        "all_tracked_blobs_match_local_HEAD": true,
+        "archive_export_exceptions_verified_using_raw_commit_blobs": [
+          {
+            "git_blob": "6fca532659bae72da1948aa195c5ed7be74d66c0",
+            "path": ".codespellrc",
+            "raw_url": "https://raw.githubusercontent.com/tukaani-project/xz-embedded/ae63ae3a36ed01724674e8f3d750dc47bf125410/.codespellrc",
+            "reason": "archive export-ignore or line-ending transformation; exact raw commit blob verified",
+            "sha256": "0e39c599a3caf48cd1782596edcdb0dbe7dbe36b0492a7534f4a193ac432c938"
+          },
+          {
+            "git_blob": "7e8b7060b20cabebb8a3bb4b63659efe0d0fa544",
+            "path": ".gitattributes",
+            "raw_url": "https://raw.githubusercontent.com/tukaani-project/xz-embedded/ae63ae3a36ed01724674e8f3d750dc47bf125410/.gitattributes",
+            "reason": "archive export-ignore or line-ending transformation; exact raw commit blob verified",
+            "sha256": "14d5af0cc056ba3e7970bff94d317e557d3f8b45d3b1c7518ae0603f13093884"
+          },
+          {
+            "git_blob": "357fc0b51ad55f8aef331cb99b5504ac3d3ef5ba",
+            "path": ".gitignore",
+            "raw_url": "https://raw.githubusercontent.com/tukaani-project/xz-embedded/ae63ae3a36ed01724674e8f3d750dc47bf125410/.gitignore",
+            "reason": "archive export-ignore or line-ending transformation; exact raw commit blob verified",
+            "sha256": "1d52964a4f3cc0ea849c728c28d6eec819aedfdeaee4c28b20e8ada9787f1bb0"
+          }
+        ],
+        "checked_utc": "2026-10-16T05:58:41.017092+00:00",
+        "download_bytes": 67088,
+        "download_sha256": "def1cc76f59db117245670f334599d70406c5f8a3ea99fb79763a84803420abf",
+        "tracked_blob_count_checked": 32,
+        "url": "https://codeload.github.com/tukaani-project/xz-embedded/zip/ae63ae3a36ed01724674e8f3d750dc47bf125410"
+      },
+      "status": "",
+      "subject": "Update README about SHA-256 support",
+      "tree": "781f16bae9c6d29175587acf62068f09c4d1e3ca"
+    }
+  ],
+  "shadowhook_patch_matches_canonical_patch": true,
+  "shadowhook_wrapper_matches_canonical_wrapper": true,
+  "source_bundles": [
+    {
+      "bytes": 2473858,
+      "entry_count": 311,
+      "file": "lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip",
+      "file_manifest": "manifests/lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip.files.json",
+      "sha256": "7bcb5dd63ebe01cbca84c78fc59ac05a0797170eb3c526a3032d01d586345b4a"
+    },
+    {
+      "bytes": 775834,
+      "entry_count": 164,
+      "file": "shadowhook-593f491be687-finegram-patched-source.zip",
+      "file_manifest": "manifests/shadowhook-593f491be687-finegram-patched-source.zip.files.json",
+      "sha256": "ecf3fa4eff64f87847b5c120a9352802ce3021f688bca1b39c9fb4974364d6a0"
+    },
+    {
+      "bytes": 63210,
+      "entry_count": 33,
+      "file": "xz-embedded-ae63ae3a36ed-source.zip",
+      "file_manifest": "manifests/xz-embedded-ae63ae3a36ed-source.zip.files.json",
+      "sha256": "7325e12694ebb3683130677538b4cba3d1f6a33517874fee057dc5aaf7eae28a"
+    }
+  ],
+  "verification_limit": "Existing outputs, paths and source working trees are linked by preserved build metadata and byte hashes. No independent source-to-binary reproducibility rebuild was requested or performed."
+}

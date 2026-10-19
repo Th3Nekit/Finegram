@@ -1,0 +1,50 @@
+{
+  "AAR_unchanged_at_end": true,
+  "ZIPs_tested": [
+    {
+      "CRC_testzip_passed": true,
+      "all_entry_SHA256_and_size_checks_passed": true,
+      "archive_sha256": "7bcb5dd63ebe01cbca84c78fc59ac05a0797170eb3c526a3032d01d586345b4a",
+      "archive_sha256_passed": true,
+      "entries_checked": 311,
+      "entry_manifest_set_and_count_match": true,
+      "file": "lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip",
+      "high_confidence_secret_pattern_scan_passed": true,
+      "no_git_history_or_local_build_configuration": true,
+      "source_changes_beyond_HEAD_and_CRLF": []
+    },
+    {
+      "CRC_testzip_passed": true,
+      "all_entry_SHA256_and_size_checks_passed": true,
+      "archive_sha256": "ecf3fa4eff64f87847b5c120a9352802ce3021f688bca1b39c9fb4974364d6a0",
+      "archive_sha256_passed": true,
+      "entries_checked": 164,
+      "entry_manifest_set_and_count_match": true,
+      "file": "shadowhook-593f491be687-finegram-patched-source.zip",
+      "high_confidence_secret_pattern_scan_passed": true,
+      "no_git_history_or_local_build_configuration": true,
+      "source_changes_beyond_HEAD_and_CRLF": [
+        "shadowhook-src/shadowhook/src/main/cpp/shadowhook.c"
+      ]
+    },
+    {
+      "CRC_testzip_passed": true,
+      "all_entry_SHA256_and_size_checks_passed": true,
+      "archive_sha256": "7325e12694ebb3683130677538b4cba3d1f6a33517874fee057dc5aaf7eae28a",
+      "archive_sha256_passed": true,
+      "entries_checked": 33,
+      "entry_manifest_set_and_count_match": true,
+      "file": "xz-embedded-ae63ae3a36ed-source.zip",
+      "high_confidence_secret_pattern_scan_passed": true,
+      "no_git_history_or_local_build_configuration": true,
+      "source_changes_beyond_HEAD_and_CRLF": []
+    }
+  ],
+  "all_six_libraries_match": true,
+  "all_three_arm64_libraries_PT_LOAD_16k_alignment_passed": true,
+  "checked_utc": "2026-10-16T06:00:20.599568+00:00",
+  "fghook_compiled_source_matches_canonical_bytes": true,
+  "fghook_source_comparison": "fghook-source-comparison.json",
+  "public_exact_commit_source_verification_all_five_repositories_passed": true,
+  "public_verification_blockers": []
+}

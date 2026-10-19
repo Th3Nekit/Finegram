@@ -1,0 +1,1308 @@
+[
+  {
+    "HEAD_git_blob": "cff8728b3df6cd1871be61455588f82f3989739a",
+    "bytes": 9430,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.clang-format",
+    "sha256": "63f20fa1f757eac9e071c11b6a8534c315fbb6375f447481dea7d42512821c11"
+  },
+  {
+    "HEAD_git_blob": "50f292d97f5ed7dfa05066d651bb22a19757d272",
+    "bytes": 2324,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.github/ISSUE_TEMPLATE/bug_report.yml",
+    "sha256": "77399898bcd2907248df32fe21208730f8455b039ff60ed85c0c915d44b15c1b"
+  },
+  {
+    "HEAD_git_blob": "8bdece21da8099ec7d6fa990dd0b92c3f712bb60",
+    "bytes": 207,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.github/ISSUE_TEMPLATE/config.yml",
+    "sha256": "df80205a19d55ac65920a0df1b93f9e17ac5060dcd411167eb1116241396c319"
+  },
+  {
+    "HEAD_git_blob": "314faea0af193e4544f097c085f5f8a389746dcf",
+    "bytes": 1567,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.github/ISSUE_TEMPLATE/feature-request.yml",
+    "sha256": "1d9a7570ffd97d81e1ee873eebe1e5f6bd7d405130f0410c6fea2bbc430f5443"
+  },
+  {
+    "HEAD_git_blob": "54c30a1c1b20e548163ecdb5effe57ac4f86abf0",
+    "bytes": 372,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.github/pull_request_template.md",
+    "sha256": "b617ace0586a6c60d2597127932a1783baa4d6a920ed9506e0db54d18059f091"
+  },
+  {
+    "HEAD_git_blob": "82b1a6855223b12d51454f233390fff33581df23",
+    "bytes": 93,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/.gitignore",
+    "sha256": "c26190f7f38d67b4525b4913e7a122a1ca57804f08e7b66506017852a33575b3"
+  },
+  {
+    "HEAD_git_blob": "008b9daf69d25eeaca704a97a7627bb399bc5894",
+    "bytes": 5608,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/CODE_OF_CONDUCT.md",
+    "sha256": "0099bcc36dc5a33075f20b717861ded697c14f10638b9a9155edf2bdeb1881b0"
+  },
+  {
+    "HEAD_git_blob": "e31a363b4facfb2d3e97b115650bad7808c262c8",
+    "bytes": 1735,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/CONTRIBUTING.md",
+    "sha256": "50ef073c5dc64acc141e21e5786a504a7e36b80ea539cca54ea4a2e9338c9fc3"
+  },
+  {
+    "HEAD_git_blob": "94ac6cc7ae40fd92aabf9350f5aedd0a4d46afc8",
+    "bytes": 1097,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/LICENSE",
+    "sha256": "92af8082ff856dc0aed362110c45f700b0b71cace21f1ba5fda49faa13733dcc"
+  },
+  {
+    "HEAD_git_blob": "7c6b9c082c4e3d47ce009bd871d30755bf2c170b",
+    "bytes": 11929,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/README.md",
+    "sha256": "5891ea6b7f8f73fce6160ad8599525dc26bbe3d9aaaa51c6169ee9e3e7fb54db"
+  },
+  {
+    "HEAD_git_blob": "407509a08c9c968709644863023e375bccda0bb9",
+    "bytes": 11446,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/README.zh-CN.md",
+    "sha256": "570357d6bb1b6fb7e21f0f9adf4abc2742ec62406c0c2836830d6742e7606b2e"
+  },
+  {
+    "HEAD_git_blob": "67956eb77ab54470cc07576debd799bbc74487ff",
+    "bytes": 926,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/SECURITY.md",
+    "sha256": "18530e55bae75064a604de9762a4b17281ecb823b78caafe212e926ff5cf94bd"
+  },
+  {
+    "HEAD_git_blob": "42afabfd2abebf31384ca7797186a27a4b7dbee8",
+    "bytes": 6,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/.gitignore",
+    "sha256": "5c3174b74edc6f2b9e0743594b8bd3c7f31e4f4405758cc9872b3fe1de1d28b4"
+  },
+  {
+    "HEAD_git_blob": "b9f907e085865700340701a62ad0d7b66ec63e32",
+    "bytes": 2211,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/build.gradle",
+    "sha256": "82ff9392d55ddcd90d1c39da8bd72f5db384b30586574447c4fc453728c3daee"
+  },
+  {
+    "HEAD_git_blob": "481bb434814107eb79d7a30b676d344b0df2f8ce",
+    "bytes": 770,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/proguard-rules.pro",
+    "sha256": "48c84bd2ac064ce2665b62a6e7c0e87f3b4fe259708a76e16625c2b43e1bc078"
+  },
+  {
+    "HEAD_git_blob": "56b8cb36bb44186160f139cc22272e8fc28726f8",
+    "bytes": 780,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/AndroidManifest.xml",
+    "sha256": "9f1187ac492a5bef8de133c24f106a8e6e0d72ea50e05f9777630d95f3bbe1f0"
+  },
+  {
+    "HEAD_git_blob": "7e5036ae34aa1d568514dcbce9f6b7b4423a560c",
+    "bytes": 1718,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/CMakeLists.txt",
+    "sha256": "e1ee31e43b75931ed8459dded4c4a967df25c8d3fac0962f8685f214cab8955e"
+  },
+  {
+    "HEAD_git_blob": "48598c3814e7add320000918e7f7206badadbf1b",
+    "bytes": 7410,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/arch/arm/a32.S",
+    "sha256": "0a01b9c11374bdf7aa86fcd01c9ea61b23a62c24c41d93bb395536bcda42f6e1"
+  },
+  {
+    "HEAD_git_blob": "97d87dabe84aeca481f4a133752f05d8f2c3870c",
+    "bytes": 6153,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/arch/arm/t16.S",
+    "sha256": "b582d85440cdae898d41d62dad6afbe906de296531404e4ec26b9f78f7b4dc2b"
+  },
+  {
+    "HEAD_git_blob": "6cf7b8dbeda6976926ed4b24eceda0af64001f2d",
+    "bytes": 6250,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/arch/arm/t32.S",
+    "sha256": "1584fa38e4c42aab692475ec4a8ea695d861da7d46858443f90cdc523a37f377"
+  },
+  {
+    "HEAD_git_blob": "da5d613ba1de1482ee399963776ae30dca0f1540",
+    "bytes": 10185,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/arch/arm64/a64.S",
+    "sha256": "69cf796cbfc4e68eb1d1564d88dc36b7b3395b5bccb9ede1cac56cbb4d94e666"
+  },
+  {
+    "HEAD_git_blob": "93cd85f32ff7130a91a085179e298e1fc3fea8d9",
+    "bytes": 3143,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/asm.h",
+    "sha256": "091af77d406b915a55bec417dbeec82d6ec9bf6dc32de1e57e326a6cf450b34c"
+  },
+  {
+    "HEAD_git_blob": "122be9dd80456b2c8482f2a84ba2bb45677d674c",
+    "bytes": 3907,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/hookee.c",
+    "sha256": "f04bb074513b5b4646ac6549d38cc53478aea859d9f8605de70d4dee07418944"
+  },
+  {
+    "HEAD_git_blob": "fc099163a1a644fc902dd0c62da22163d0682322",
+    "bytes": 5287,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee/hookee.h",
+    "sha256": "4466d3f6e4b821472f125e3f44d52d65c4666d9735209c805dcb87e6c566d62d"
+  },
+  {
+    "HEAD_git_blob": "8ef72d9d3ad19f76cd3d93b2232d8e3a419b7b55",
+    "bytes": 1719,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee2/hookee2.c",
+    "sha256": "a720d52d545201c4daed8a02d9b239258f63ac134658330b070c9944bd486999"
+  },
+  {
+    "HEAD_git_blob": "16f25f1b2ed467acc6c6e21f165e2bdcd8c732d1",
+    "bytes": 1313,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/hookee2/hookee2.h",
+    "sha256": "15f0057812e9619eb800e0d5936196433018ce16fe6dd4483886a924600cee71"
+  },
+  {
+    "HEAD_git_blob": "8e92464f2992bc25685da8533b6db8fbad19a474",
+    "bytes": 54427,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/unittest/unittest.c",
+    "sha256": "e1be69a143a760ad8715db26a7f04c4bb91e19d0c24b3fc20a00b2955a8803e0"
+  },
+  {
+    "HEAD_git_blob": "355ac56c5ba2c861ea436506e0333b9b8c8d8fc7",
+    "bytes": 1771,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/unittest/unittest.h",
+    "sha256": "9dbca067762db36cb15a8d064e32409b1586b9ad06e1806db277efb9c7711a30"
+  },
+  {
+    "HEAD_git_blob": "4262e68fe1f12b11d0fe5714ede860d7162c8f2e",
+    "bytes": 6358,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/cpp/unittest/unittest_jni.c",
+    "sha256": "12dfb83aa105fac9383f1d1b2b53bec348b9f1cc61d0d9a4c1d72fe315a86b4c"
+  },
+  {
+    "HEAD_git_blob": "93407a522b5d726aa1819bcdf4257faaad120917",
+    "bytes": 8246,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/java/com/bytedance/shadowhook/sample/MainActivity.java",
+    "sha256": "fc959b1db7f5963f1b82adfeee5250b60445bbe968c05b69ec72502e422e67df"
+  },
+  {
+    "HEAD_git_blob": "1f48f31fbb1a94a7250b478a5f205f68a35400d8",
+    "bytes": 1736,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/java/com/bytedance/shadowhook/sample/MyCustomApplication.java",
+    "sha256": "89d84f4f19cab5b45f8611c919b3a3c41f6b5e2a874a2ba779a6847fd04a59fd"
+  },
+  {
+    "HEAD_git_blob": "60ad380e99bef12da4162fce31ae3801626f0f8f",
+    "bytes": 2149,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/java/com/bytedance/shadowhook/sample/NativeHandler.java",
+    "sha256": "f50ab6c17adc601d8c1043c68bc84e0f811163245c25137690aa41cebf7ed9df"
+  },
+  {
+    "HEAD_git_blob": "2b068d11462a4b96669193de13a711a3a36220a0",
+    "bytes": 1731,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+    "sha256": "6e3c1bb64d9bec079cf0030d867c58b064d2fb19ca6c5a691543c43134f64a2a"
+  },
+  {
+    "HEAD_git_blob": "07d5da9cbf141911847041df5d7b87f0dd5ef9d4",
+    "bytes": 5776,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/drawable/ic_launcher_background.xml",
+    "sha256": "38381d0d0a64770d992c98e5b5e492555690af40e2fc6ee59e5a1c2a7c0fdcde"
+  },
+  {
+    "HEAD_git_blob": "68cb38d164d81502f8769d3dc232cc776195bbae",
+    "bytes": 5195,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/layout/activity_main.xml",
+    "sha256": "3ec044f61b8e4b193b8a562bd0fad3a05ac90d781f3104cea5751465fada0da2"
+  },
+  {
+    "HEAD_git_blob": "6f3b755bf50c6b03d8714a9c6184705e6a08389f",
+    "bytes": 348,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "sha256": "e7c073fbec1a51a73f678b266a1cb207aa6468e3ea1504d24f43591f31d2b7c5"
+  },
+  {
+    "HEAD_git_blob": "6f3b755bf50c6b03d8714a9c6184705e6a08389f",
+    "bytes": 348,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "sha256": "e7c073fbec1a51a73f678b266a1cb207aa6468e3ea1504d24f43591f31d2b7c5"
+  },
+  {
+    "HEAD_git_blob": "a571e60098c92c2baca8a5df62f2929cbff01b52",
+    "bytes": 3593,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+    "sha256": "5ee6ca2903e3094d64110dee90aea432f9eb9bc747c7e5c134496b8f7feff3b8"
+  },
+  {
+    "HEAD_git_blob": "61da551c5594a1f9d26193983d2cd69189014603",
+    "bytes": 5339,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+    "sha256": "876e35db6919f81d28dbe042d8535414b2b3bb13d1139c16265f652ca5df65ac"
+  },
+  {
+    "HEAD_git_blob": "c41dd28531901b2c23927768c84bb6765ebcc1db",
+    "bytes": 2636,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+    "sha256": "62c4db47abd938c35f4926ea0b7b31b9d6c41bef1ddacb2c7685b5c6ea0890e5"
+  },
+  {
+    "HEAD_git_blob": "db5080a752731b34d38d7c634732b2cd999125d0",
+    "bytes": 3388,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+    "sha256": "b9bc0ce206c8715db22eacfbceddff820f9b8a0ef3a519bbb88f7b6e65806d71"
+  },
+  {
+    "HEAD_git_blob": "6dba46dab19242bf475ddf2e0a10042de6a0be16",
+    "bytes": 4926,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+    "sha256": "2a5e85ebec8c77c18f5c34d762949674373c7a95de57a8a82ce165c8db8cedbb"
+  },
+  {
+    "HEAD_git_blob": "da31a871c8dc461a1ea114510bfac640307b0a90",
+    "bytes": 7472,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+    "sha256": "81b31d4cabd3e4358db2d99e6c31474b82ae6379dc06ea0c00267f41da1bd599"
+  },
+  {
+    "HEAD_git_blob": "15ac681720f3df43c647bf0c081f0314ee34eae1",
+    "bytes": 7909,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+    "sha256": "01cec2d4d6cc59f250e4bbfa445042c3a3b9ebf9788b9f34796e85c0af874da4"
+  },
+  {
+    "HEAD_git_blob": "b216f2d313cc673d8b8c4da591c174ebed52795c",
+    "bytes": 11873,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+    "sha256": "bf24682fa050affbc3bdaae15cd5532c13758a5a0e6d5305cfad52ddefc4d571"
+  },
+  {
+    "HEAD_git_blob": "f25a419744727fb48b4b4137b6c6a3a8f2620d51",
+    "bytes": 10652,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+    "sha256": "b2f8a8d39587eb912f8d217f2160c4ba4e21a60fd7a6f84849c102bcac725975"
+  },
+  {
+    "HEAD_git_blob": "e96783ccce844001359f968f5cd9d85b341bd3fb",
+    "bytes": 16570,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+    "sha256": "d7ed7010aa67cb843af6df357ff1a74ec1598d2407e4884d12633aa0f11e3a4b"
+  },
+  {
+    "HEAD_git_blob": "fb512ce0f1f6b3b56c2f5b5142af8ca353e8c3d0",
+    "bytes": 319,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/values/colors.xml",
+    "sha256": "aee4557358459c2e871b6a96db8478734e8a71af5cd5e97c48356ec132d30e02"
+  },
+  {
+    "HEAD_git_blob": "e3b1ca335d3d2464e496a87290f3c82a6446d67c",
+    "bytes": 74,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/values/strings.xml",
+    "sha256": "95ae78d3778066b259f895f8bf6c6d3dd5f6f4d0597e938dda6a279c5cdaba0e"
+  },
+  {
+    "HEAD_git_blob": "084ec71753b455e6084193f54205b47946fc51c2",
+    "bytes": 2693,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/app/src/main/res/values/themes.xml",
+    "sha256": "6ccd7aaae88516d63dc0277725ef7a4b4e090bb59bb049710e7a9f8271c64aa4"
+  },
+  {
+    "HEAD_git_blob": "15d6fb544c8ec5f76b99da5d5115c9aa4f2f74f0",
+    "bytes": 1377,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/build.gradle",
+    "sha256": "d92f4a58af57e409696093b44cc8fe9718011b3a8212927e5010e04e2372f0ca"
+  },
+  {
+    "HEAD_git_blob": "11157197ee79002ce57c17d01275e31f17024bea",
+    "bytes": 3579,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/checkstyle.xml",
+    "sha256": "dce84000c9773b3e68db6cf5526167c6327de892c1cd1dbe97488525381a5ae3"
+  },
+  {
+    "HEAD_git_blob": "7102a10cf7df0c16a47b2e2a006984176a610775",
+    "bytes": 1464,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/clang-format.py",
+    "sha256": "ca538cb3b772729bec5c99511efe3fcee3595daa89049142d8efaef9e6000600"
+  },
+  {
+    "HEAD_git_blob": "3a0b3ba041c088c6dc3057ea89691d13a7a11839",
+    "bytes": 140,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/doc/README.md",
+    "sha256": "d538ace84d6cb027a78e4ae25282b287d5b77e73a12298d2beb8c3709968e52a"
+  },
+  {
+    "HEAD_git_blob": "557d50286f236ced2e585485a004288dbd7f8d97",
+    "bytes": 104797,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/doc/manual.md",
+    "sha256": "f91d561929ac1e2f8bee7019d177c42417de216b0438f0fad88e8bdc3d0a09b3"
+  },
+  {
+    "HEAD_git_blob": "0bc61d68002de6129fe14b7343d3a4a7f835bcc7",
+    "bytes": 98448,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/doc/manual.zh-CN.md",
+    "sha256": "6d5959b9d6619be764d9b27d58a17d5347b1e709be10e28ea3c46e758ba9dae3"
+  },
+  {
+    "HEAD_git_blob": "6f8b6ffe6aa5b6de2e60de19cf997b134e026faa",
+    "bytes": 87077,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/doc/shadowhook_hook_and_intercept.png",
+    "sha256": "d46735cb591c615794563e0d5101e00027648d774468a746045398d7f350374a"
+  },
+  {
+    "HEAD_git_blob": "3eead5e071539df82bce9e9c575a329615764d1f",
+    "bytes": 72406,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/doc/shadowhook_intercept_instr.png",
+    "sha256": "c18974b74f8edd74e20e456aa2d2cfd51fb76db44b504edffa90a13781ffb9a3"
+  },
+  {
+    "HEAD_git_blob": "bb64ed1f4a6858825fe5654910ecf6fda7cbacf6",
+    "bytes": 70321,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/doc/shadowhook_intercept_ret.png",
+    "sha256": "1f9001934d6313a43b66b8ad802354c0d4c9ddfcd4fa966eb7542acae182218e"
+  },
+  {
+    "HEAD_git_blob": "eaab83adb39160ddc4b9dc1aa42b91e98ebfc26f",
+    "bytes": 37089,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/doc/shadowhook_multi_mode.png",
+    "sha256": "6a56631f9a0f8c9f9507c3a1cccbcb6706ea053df2b98075ecca3b0e7b3aabb7"
+  },
+  {
+    "HEAD_git_blob": "1a5684a4bff0c305726c4ce868216412b9aaae92",
+    "bytes": 62081,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/doc/shadowhook_shared_mode.png",
+    "sha256": "1fae5bffd267addd9c92cc568452fbc55ebd51c8d011501252b9e5e7c24cd19d"
+  },
+  {
+    "HEAD_git_blob": "30cef6ff61933e3f564728a2def30c89275d22ed",
+    "bytes": 1319,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradle.properties",
+    "sha256": "ee6892dae975584bc7a0faeb7baa9d9b397b49eadaf75c4133e73217471f72c8"
+  },
+  {
+    "HEAD_git_blob": "fe0cb2c4229e0a3e2a42645d9c71bb8f6ebd9390",
+    "bytes": 341,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradle/check.gradle",
+    "sha256": "c770283f5e52479746cbe54b2a3cd11929edab0ed1499d57bb75c8de3c825ef2"
+  },
+  {
+    "HEAD_git_blob": "c558ef0a54e4fc125ca0ddf2d885e69fab09d9af",
+    "bytes": 2854,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradle/publish.gradle",
+    "sha256": "c75cd58e002c8144911a9926df77abab2e843a61493b1c1fbc3b145aef99c932"
+  },
+  {
+    "HEAD_git_blob": "2867a568eb8c307dc6c3a495a1b3dacc825fb70e",
+    "bytes": 2875,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradle/sanitizer.gradle",
+    "sha256": "7d1d44cf55de08b750f005c2c8902adf9e0b32d1cae738c920c51fea1559791f"
+  },
+  {
+    "HEAD_git_blob": "e708b1c023ec8b20f512888fe07c5bd3ff77bb8f",
+    "bytes": 59203,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/gradle/wrapper/gradle-wrapper.jar",
+    "sha256": "e996d452d2645e70c01c11143ca2d3742734a28da2bf61f25c82bdc288c9e637"
+  },
+  {
+    "HEAD_git_blob": "2e074e0f6c7636d550013ac79250cec831675833",
+    "bytes": 238,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradle/wrapper/gradle-wrapper.properties",
+    "sha256": "4bdc4eeed329971fdd9d962935b69da8944d454a6a06c61ba792c652aefa7fd8"
+  },
+  {
+    "HEAD_git_blob": "4f906e0c811fc9e230eb44819f509cd0627f2600",
+    "bytes": 5951,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/gradlew",
+    "sha256": "c15a47b60a4eeede9ffee33433fd990d8b6236607372b9bb1f6dc51b07b78c39"
+  },
+  {
+    "HEAD_git_blob": "ac1b06f93825db68fb0c0b5150917f340eaa5d02",
+    "bytes": 2763,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/gradlew.bat",
+    "sha256": "af835f98787e9269af5a046edcb821a592fed372139df7b947b471a63cfc236b"
+  },
+  {
+    "HEAD_git_blob": "4c3b9a0b8f6cb971d94a2041570b66b77c02ad2a",
+    "bytes": 386,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/settings.gradle",
+    "sha256": "4d46b540679b2b2ecdac9557154c2d377498708b8819065413cafeec5729c0ce"
+  },
+  {
+    "HEAD_git_blob": "42afabfd2abebf31384ca7797186a27a4b7dbee8",
+    "bytes": 6,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/shadowhook/.gitignore",
+    "sha256": "5c3174b74edc6f2b9e0743594b8bd3c7f31e4f4405758cc9872b3fe1de1d28b4"
+  },
+  {
+    "HEAD_git_blob": "6afee5c72f73fee98613655770866b006c5eff93",
+    "bytes": 1903,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/build.gradle",
+    "sha256": "7712ea11c76f8d5ee6be2a8f8beb0a178633a6e02d7ae21f1a98edbe46076aae"
+  },
+  {
+    "HEAD_git_blob": "b1564d2a68bb8c95289e49c9c0cd5375ae4ed686",
+    "bytes": 77,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/consumer-rules.pro",
+    "sha256": "9fc67e4a50abe38cfd9b77ce43545c9eb061a1f1cc3bd462d279ad4f0e6feb3c"
+  },
+  {
+    "HEAD_git_blob": "41f49d81d785c720b2d6a9f86bf089ecc2be12d5",
+    "bytes": 1103,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/local_dependency.cmake",
+    "sha256": "9211a17c2f097becd5a591bec2a507cb53f884d2c53f52d75f01d8ee7e3bae6b"
+  },
+  {
+    "HEAD_git_blob": "a5918e68abcdde7f61ccae4f0ad4885b764573fd",
+    "bytes": 124,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/AndroidManifest.xml",
+    "sha256": "28b1700b6a37f2d3ae037dbada7741cdbbedea29caf51d706cae22dca0b0d2ce"
+  },
+  {
+    "HEAD_git_blob": "5e340ac21770d4786e9ffc487df695f7a648ee6a",
+    "bytes": 1938,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/CMakeLists.txt",
+    "sha256": "009893cd67fe587a37b7bbea4946e79c5939aca18ee000cadf4d3fa00dce4c9f"
+  },
+  {
+    "HEAD_git_blob": "b4e259768dcabaf91fdd8892baf86112403fd202",
+    "bytes": 18451,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_a32.c",
+    "sha256": "75cea3d251d0bd6893a7ee646a4d16316d3dac4fc25d52971bb174ed6b23e106"
+  },
+  {
+    "HEAD_git_blob": "5e76175c510e9ae97179857a9ef1b23ffb1651c4",
+    "bytes": 1809,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_a32.h",
+    "sha256": "8c7366dda9860dc60e2c06246e121317820c7724393178a6d508b19cad599b68"
+  },
+  {
+    "HEAD_git_blob": "eb26fb515f54a51c361cfd6f84fccf1fe9aacaa6",
+    "bytes": 8446,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_glue.S",
+    "sha256": "dab890b889bd819d1edb4496f4c50233778b92bb5e16efd345d7572ae0f6cda6"
+  },
+  {
+    "HEAD_git_blob": "4a43182a94088c228fcb7486b683273d10678b8a",
+    "bytes": 31542,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_inst.c",
+    "sha256": "8db41c49d66dfa3626e14133fcc8cd76543dfdb2f208747a8452de6653b6f640"
+  },
+  {
+    "HEAD_git_blob": "e40ec48e6eb9fa2ab4a7134ed3cdf25887f66e9b",
+    "bytes": 2482,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_inst.h",
+    "sha256": "7ca6449b026e68b14ac8c82ccd6ce908762c18b4569c5e71cd7d91e6e93a50c1"
+  },
+  {
+    "HEAD_git_blob": "6e8bcd11107548941f9a770e61965d83975725b0",
+    "bytes": 10175,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_t16.c",
+    "sha256": "991d7b95437593d4a1b5deab38d36542987984d86be52a819ad4ed5ae892c4fc"
+  },
+  {
+    "HEAD_git_blob": "080f2c755d3d44d12fac3581a9a58e7aac6ab564",
+    "bytes": 1916,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_t16.h",
+    "sha256": "84c0accdc46b77b571fa22451dbc84cd2be2cbb58f032978db92bfdd4b3cab45"
+  },
+  {
+    "HEAD_git_blob": "b3430a07c73d39065aa294bf263c5bb894c94c99",
+    "bytes": 16746,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_t32.c",
+    "sha256": "d68046fa01ebe8bb675874a9033362a88cb670d6f9bb4204a0bd2d875cec396a"
+  },
+  {
+    "HEAD_git_blob": "f7e0151074d308fa6ae945255535385253725c63",
+    "bytes": 1731,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_t32.h",
+    "sha256": "dc0f9fe3dc1b6a8240408bd4a89e0c78d593050ad8365280889c6c9aec9798ae"
+  },
+  {
+    "HEAD_git_blob": "ef22b0492252c05126f4ea9e2580d06e4324c6e3",
+    "bytes": 2320,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_txx.c",
+    "sha256": "d84c593287f3f4ed3c93400101b43bbbbd1cace0560c19681089cbb9ad568f92"
+  },
+  {
+    "HEAD_git_blob": "9dc476123ed9b3c697fa05c0196ba72ee999a64d",
+    "bytes": 1667,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm/sh_txx.h",
+    "sha256": "74c993e4a0257c2991ddc095b4c2487b3b92ae66da7bf503ce45fbf39f54a6cc"
+  },
+  {
+    "HEAD_git_blob": "8619dc99be1174d5f62fc2b1809027693267c831",
+    "bytes": 15282,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm64/sh_a64.c",
+    "sha256": "d90519d54dbe8351d42f33b61a2d496311e2678229ae132dc7bd3529e82aafcf"
+  },
+  {
+    "HEAD_git_blob": "2723d066c3eb99fc49d24196ee6bab17da428685",
+    "bytes": 2304,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm64/sh_a64.h",
+    "sha256": "bb1141e702d9a4891ca7e1738a9a547693c4e51ff27099332e17f5fa04661424"
+  },
+  {
+    "HEAD_git_blob": "930a86691eece0e417b1e819fe4683821f32d7ce",
+    "bytes": 8578,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm64/sh_glue.S",
+    "sha256": "2d7a80925e1427373d9c9772037584a3e7ea7cc00991de8f700176be47425b57"
+  },
+  {
+    "HEAD_git_blob": "dce274ec3083db539a0210c5b0e4abb6c7ab4c46",
+    "bytes": 19404,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm64/sh_inst.c",
+    "sha256": "a939a0b383181a0786520622eccfd979c21ae6dae620f466ec4df1b2c7fd1bc4"
+  },
+  {
+    "HEAD_git_blob": "f71b9d4f45e096c072d3783517922b8ba32ac9d0",
+    "bytes": 2403,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/arch/arm64/sh_inst.h",
+    "sha256": "bdf8a49e4c0c461b29210014ccf5b76a9ffaf535367bee60692fbb72746e9746"
+  },
+  {
+    "HEAD_git_blob": "44887297a25992d423979f5978978c2da3ea7c4d",
+    "bytes": 12256,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/bytesig.c",
+    "sha256": "ff0fdf8a012733659be830acecdb7687b72668b126a7e39430ca3dafb9ba5166"
+  },
+  {
+    "HEAD_git_blob": "8f46987465d4194942dc3e04c8cd23810a133711",
+    "bytes": 6176,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/bytesig.h",
+    "sha256": "dfc235313fe65e51debf59f835ea6c70f81553ec87401ebac617dcb73238a0f3"
+  },
+  {
+    "HEAD_git_blob": "d50a65a269fa2174d7ba6e1c7efc927f4a149225",
+    "bytes": 3391,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_config.h",
+    "sha256": "dcabb30cab64f1a03d3d19e659168b08d67bdcf74f510fae7b5ef18a57286dcf"
+  },
+  {
+    "HEAD_git_blob": "76dc0cfdc338515d337e5801b08362284a6278d6",
+    "bytes": 5724,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_errno.c",
+    "sha256": "c3f004b7aa32c8e0301a74de83d596f5a97f824446c5f0d29f501624c70e0ee0"
+  },
+  {
+    "HEAD_git_blob": "f041c5e103c4f7ef9ff55a1a90c88c0668d11134",
+    "bytes": 1888,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_errno.h",
+    "sha256": "27492128725a81b2c7fa1957c97debb8fa86bb2ad3e9b0e75470339df8833423"
+  },
+  {
+    "HEAD_git_blob": "b2d7dd9129dbca7631ec361af93bfd8fdd62ffc2",
+    "bytes": 1806,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_log.c",
+    "sha256": "6822a6a102cf7c612c305823254cabe4c3cf736216ac772da9c51fba971e2c13"
+  },
+  {
+    "HEAD_git_blob": "53bc42938eeb49a00886cdad857f2992eea9bee5",
+    "bytes": 3308,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_log.h",
+    "sha256": "4c73f5c5304f0839d20f4e9d58790544fd20336582e179357ec537704a384ad1"
+  },
+  {
+    "HEAD_git_blob": "d73cc73b77818ca45ad47d13c25393dde5f60683",
+    "bytes": 3768,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_ref.c",
+    "sha256": "c7eab0e349434c2fe11203551c9add29688059ad0f3338725e0956088982d071"
+  },
+  {
+    "HEAD_git_blob": "de9d9f45ab64c517679c5b630fa6f927d717ed15",
+    "bytes": 2303,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_ref.h",
+    "sha256": "1ee5e3ea40c8a3468de739052285f90a8f338d2b6493030dad1dc4ca0a59da49"
+  },
+  {
+    "HEAD_git_blob": "81f4abb98091eade79c126d3286b48174e1f30fc",
+    "bytes": 1668,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_sig.h",
+    "sha256": "b54712f26e67b2e5b1bbd90ba047371496e3387d3c5a3650e2f1d9dd9b01b54f"
+  },
+  {
+    "HEAD_git_blob": "1b189998416500c803b9c7184f47675e7ff757b1",
+    "bytes": 6182,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_trampo.c",
+    "sha256": "2801dac6f709be5e4d4a67a84b179c313ef96497f3035920a392b9af105ac397"
+  },
+  {
+    "HEAD_git_blob": "37065cfee76dc26a907428606ccf7eccb0c931de",
+    "bytes": 2171,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_trampo.h",
+    "sha256": "56397a8a334f0de753ad5b92f4aa0c95e764d446b55d8a77e9d611053674d913"
+  },
+  {
+    "HEAD_git_blob": "1e2bfac2977d9ba5c63c47f69d8c2c11cac0cfde",
+    "bytes": 21604,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_util.c",
+    "sha256": "ec855cefb948cf49fef03b3853d8fb9bb380b2b2ac604b9bde489239421bff21"
+  },
+  {
+    "HEAD_git_blob": "23d5decb85ac0cc66aac4b2d79d01f0c1cbe395a",
+    "bytes": 4252,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/common/sh_util.h",
+    "sha256": "975969ebe7a276d384a93dbdc3f579ab8b76522fbf2095afe76ea126ccd40463"
+  },
+  {
+    "HEAD_git_blob": "2fe55c3479f674e527916a514655db2ebedd53bf",
+    "bytes": 13073,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/include/shadowhook.h",
+    "sha256": "aa210e653c0c6909c9b91b5af7cef8b4857e9e6919770996791ae699bb80fd2d"
+  },
+  {
+    "HEAD_git_blob": "dd26a8b27f473106678a297bf764d9a7d560f962",
+    "bytes": 130,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/nothing/sh_nothing.c",
+    "sha256": "77f7a5d14e39be33455103f34610265e7cacdc57b20e02157f125dfae33e5af5"
+  },
+  {
+    "HEAD_git_blob": "bbe0a62f5431363a44debd2473705b9cd47bade4",
+    "bytes": 21866,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_elf.c",
+    "sha256": "6c4d0542c1d12e53a21fe1659ecb163fcaf61adc6e4d736873746ac3aac56d00"
+  },
+  {
+    "HEAD_git_blob": "ebb8e98ecd3112b62d2031c33b3b182aabbf9fe5",
+    "bytes": 1673,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_elf.h",
+    "sha256": "b4d61e9d68d95d57fe567eeda809e17d1e98a1ad6d4288164b8fb4ca75804012"
+  },
+  {
+    "HEAD_git_blob": "53f472fb86fbae1e34b9d92051963db3eb673efc",
+    "bytes": 1866,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_enter.c",
+    "sha256": "3fce0b9cb5d1fc98275b8dcdbc68371f3f2fe1ac20aaac2e043b3cd4be1564e8"
+  },
+  {
+    "HEAD_git_blob": "453dde7224902753b6021bb2eefb2ba5095c40a4",
+    "bytes": 1346,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_enter.h",
+    "sha256": "036f3e23774524d1bebdd391a982d6262d03ec4a73b329f7503af88d7efc8f5e"
+  },
+  {
+    "HEAD_git_blob": "8a1e595a8509392d1f9ed72838e43a52f5dfba6f",
+    "bytes": 20341,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_hub.c",
+    "sha256": "67cb9bf5b57e87e73e2825c699c2031aacb8357f3a5605d8c9f1990c3e550a3d"
+  },
+  {
+    "HEAD_git_blob": "a831194b3e8b787063f7ec6136416c5f7f2ddda5",
+    "bytes": 2056,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_hub.h",
+    "sha256": "76cdc4c66cef0b7e10dbde2f32e30442c9322ba9d10e28cbfb8a1c16c4566fa0"
+  },
+  {
+    "HEAD_git_blob": "5542fecd123b10a4604706af427dcefa61e21aa8",
+    "bytes": 3515,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_island.c",
+    "sha256": "d422496482bcc272611cb5314eb5fc088b60e4e592eb23ee223ea00f468b0d5b"
+  },
+  {
+    "HEAD_git_blob": "fe3428ea4b7957be19d7ecd3b87e8efe59c75d9a",
+    "bytes": 1839,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_island.h",
+    "sha256": "17d1cd7221a217e836df0f4c87f321a944b6b92e78703d63670c81a11f7b7059"
+  },
+  {
+    "HEAD_git_blob": "2928f0a771e1cc0c38d276ce87bd4a03908caa39",
+    "bytes": 5811,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_jni.c",
+    "sha256": "bec9ed96cc05b8f72c96015b8c502a1e0d6cbcb9a380d1b1acd32c7a3d0b504c"
+  },
+  {
+    "HEAD_git_blob": "8f07b43919cbc3c1068e0ced2abfeed60f4e23c7",
+    "bytes": 37287,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_linker.c",
+    "sha256": "0460be2a603819b4bd255de7dfe207b03215d1c87ed03028adf9b4a26ae27703"
+  },
+  {
+    "HEAD_git_blob": "11f193bca6ea31254dc0310c6a30e6588008c7f0",
+    "bytes": 3559,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_linker.h",
+    "sha256": "84f03e8a18bffa8b492530242a313b683044bae24882ae05f14c5b4bb665c9c2"
+  },
+  {
+    "HEAD_git_blob": "5393b4b2976f73e7c6e6a7d83a971a8613621c34",
+    "bytes": 21695,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_recorder.c",
+    "sha256": "fe3ebd4788c1f5d0d0ba8a0992c0b57355ac76674bcc3c7191396d2e46391dd1"
+  },
+  {
+    "HEAD_git_blob": "8bb5834897e90d093d4180196ff7bceef3ff5ee4",
+    "bytes": 2846,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_recorder.h",
+    "sha256": "56814e6484e71cc50db589c70cb0322ec11a201f7d0db673136df119da7fd438"
+  },
+  {
+    "HEAD_git_blob": "fd797790f88f09a7a9efc217f995307ed9ac1d24",
+    "bytes": 6394,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_safe.c",
+    "sha256": "553caae339d068260ff9bbeae8cc9f3779723c6c41163a328a29c273be057aeb"
+  },
+  {
+    "HEAD_git_blob": "1af8d67a26fd77d7cfd7f797687c0a824a4dfa24",
+    "bytes": 2283,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_safe.h",
+    "sha256": "8a761c8928b2505f47ebf1d518f4c72797158a675d4cc97c2423e15ebb0251b9"
+  },
+  {
+    "HEAD_git_blob": "a283a7684c92845b104f6f6da005513e608914d7",
+    "bytes": 36082,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_switch.c",
+    "sha256": "32b8c3deb1430681fbb5315c1ce3388bc61741e024980d84037d6e4b4014e807"
+  },
+  {
+    "HEAD_git_blob": "419ebd11a291a9e429708fe07051b64b05de037c",
+    "bytes": 2347,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_switch.h",
+    "sha256": "16390080c4ad1283e69516a7fb7be035751963471e2d444cce288bb9b8af36bd"
+  },
+  {
+    "HEAD_git_blob": "55bb6c5843b9e9e570c07e954adf8fa6809ee5a9",
+    "bytes": 19904,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_task.c",
+    "sha256": "a02c79e8c65633dc1d7aa919382bc5626ec3653d6ee1ece2519c3493c3ac351c"
+  },
+  {
+    "HEAD_git_blob": "a16d5d960c8325362e77a73d1510e111c9cde8bb",
+    "bytes": 2971,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_task.h",
+    "sha256": "795f8e5c9e11a8853e68a6e2ccc9aa03fdbe4cf943752ac50224fabd733ba1bf"
+  },
+  {
+    "HEAD_git_blob": "e1136ba9609fb86131457e7e10c52e4c3e2d2fd3",
+    "bytes": 6601,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_xdl.c",
+    "sha256": "3e3204e0f1c6c8613560aead8a084305325b6a91b2629e4b13544a84205dcb7b"
+  },
+  {
+    "HEAD_git_blob": "39fdfae14cec07a83335add35b40f14984d2ce13",
+    "bytes": 1619,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/sh_xdl.h",
+    "sha256": "00e16ee7581cc817452fcb4a3ef215e401b2f27279a4e6601ad4caf919f651f5"
+  },
+  {
+    "HEAD_git_blob": "0258ac7965ef9f27917c8ffac6c9c3ca84ee3f1e",
+    "bytes": 26594,
+    "matches_HEAD_after_CRLF_normalization": false,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/shadowhook.c",
+    "sha256": "927e7cee6192799574d49465fdbbd6d80ff43ddb52f805cee5a12982aa2836f4"
+  },
+  {
+    "HEAD_git_blob": "5a6d7fb46f1622572cee04dc4826f4111f62d059",
+    "bytes": 2263,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/shadowhook.map.txt",
+    "sha256": "27d05af02acd6bb95c5cf86520fe6ea60a1ec7b706ecb94af3d9b13caed7f437"
+  },
+  {
+    "HEAD_git_blob": "f550f6c26561849097ef3597e6c0171ad7b6c365",
+    "bytes": 28454,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/bsd/queue.h",
+    "sha256": "f1d6be2aae287b54fc408d1ac88fb86e56ff031bd95b48a6674b8aefdf4bcbf7"
+  },
+  {
+    "HEAD_git_blob": "e6db6a908df40a9e8874e99342b87e75108a8cad",
+    "bytes": 50013,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/bsd/tree.h",
+    "sha256": "0a688a1d7813144a3898c074977188608c7aac006a6fc17cef53ef97325f999b"
+  },
+  {
+    "HEAD_git_blob": "58ab3fba9d4c3318ea545f451bb3ecbfdd5d8f6f",
+    "bytes": 1503,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/lss/LICENSE",
+    "sha256": "01b966ab1dab73c6375d16533c0b5426665d09b090f0041462f74ce24a363291"
+  },
+  {
+    "HEAD_git_blob": "d3791cd4e9c802c157dd8ddfb6d0d9803a9b3d22",
+    "bytes": 202054,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/lss/linux_syscall_support.h",
+    "sha256": "d804864feeecc059cb0127352d9aeaa7977c0eb620dd4aebd4489315bf4be4b3"
+  },
+  {
+    "HEAD_git_blob": "387ba5a622d4995120fb7cab44a8f54479a31e2c",
+    "bytes": 1926,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/lss/linux_syscall_support_android_ext.h",
+    "sha256": "75516b3bb4c8d40d15a789a0d53c6324903e942015663a508f8019f80f324837"
+  },
+  {
+    "HEAD_git_blob": "96802385394c3fd3d76741d337f030d69a1ff37f",
+    "bytes": 1098,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/LICENSE",
+    "sha256": "65a4f0a096b84aed7e35230224fc070bdfd1ab590a310f59db2204c670374e12"
+  },
+  {
+    "HEAD_git_blob": "e47a0a94068e86abcd6c435dffd196c3298cd0a4",
+    "bytes": 36252,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl.c",
+    "sha256": "e27b52d1aa5a867872e703bb45297880c7df9eef19e49231175ae6b82d97b119"
+  },
+  {
+    "HEAD_git_blob": "e52d2ae67debcaeeaaf83b1e03c9b3a3c4d0ea36",
+    "bytes": 3322,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl.h",
+    "sha256": "6d1e9c338bf892c21570bb3929c4086353467a0f9c430cb996eb537203f4e2bf"
+  },
+  {
+    "HEAD_git_blob": "d9216a4684fac8933b902d5ab45958bdbc524251",
+    "bytes": 12312,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_iterate.c",
+    "sha256": "2dc4ca9ae133f6cef1292f2c9b3528e525d9bc265cf86f220e7259f540ad0599"
+  },
+  {
+    "HEAD_git_blob": "a4f5bf744a3a45ebb04b44f4ee0c381a8446666b",
+    "bytes": 1649,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_iterate.h",
+    "sha256": "ecd01ae0d04426441a6b4a932ff93cffcbf65f5814ef8462bda3d6473d3ee495"
+  },
+  {
+    "HEAD_git_blob": "9b43425acf7d21611bc4ca1fd920c90990d57882",
+    "bytes": 9271,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_linker.c",
+    "sha256": "5dce75d9e2c8ab8dce4f0a25d342615ab32327019f0b700293a4723b3e87d4a4"
+  },
+  {
+    "HEAD_git_blob": "ce2c8a8d935c66435f0b3f6a784f2939eedaac91",
+    "bytes": 1471,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_linker.h",
+    "sha256": "19190d8f722f1500752d21baf9243b8042ae664c6d447af54a52b68cd725914b"
+  },
+  {
+    "HEAD_git_blob": "66743739c7ec3a53873f09324f454649eae22ed1",
+    "bytes": 7031,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_lzma.c",
+    "sha256": "5b74091b03364ec093acc9c64e3cafd36115a6063123fca4338f940a315b118f"
+  },
+  {
+    "HEAD_git_blob": "d282de19865a2e51f4edaa0bd9571ab2dba83acb",
+    "bytes": 1485,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_lzma.h",
+    "sha256": "c6a18fc05c937f492b47356e019f887a1b6b6ec5e852fe6c8b78f6b6b155322d"
+  },
+  {
+    "HEAD_git_blob": "4635e08d32578d6765e0dde390ae5c6e2cf990a0",
+    "bytes": 3573,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_util.c",
+    "sha256": "b2eaf4e8af4555853aa4aef839e124c00094d6ea1c68273ddf55d32b771b9a3d"
+  },
+  {
+    "HEAD_git_blob": "8896f8ae875b03424e300f957018f02795c78bd4",
+    "bytes": 2967,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/xdl_util.h",
+    "sha256": "b0c45fba9901ad53624314e85c3060432b8b3e76458b586ed9d99d161cd970a0"
+  },
+  {
+    "HEAD_git_blob": "4c34cbff6057b18f8d9d3605f06ddc212e586ecd",
+    "bytes": 12872,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/shadowhook/src/main/java/com/bytedance/shadowhook/ShadowHook.java",
+    "sha256": "83f51391ee7b8b6af578b826c4eabae4a49654c03f61ef71caabeb899798f1ec"
+  },
+  {
+    "HEAD_git_blob": "42afabfd2abebf31384ca7797186a27a4b7dbee8",
+    "bytes": 6,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": true,
+    "path": "shadowhook-src/systest/.gitignore",
+    "sha256": "5c3174b74edc6f2b9e0743594b8bd3c7f31e4f4405758cc9872b3fe1de1d28b4"
+  },
+  {
+    "HEAD_git_blob": "4ba07bd683e48ca8520fe9f4e29f7398b4760f8c",
+    "bytes": 2007,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/build.gradle",
+    "sha256": "5c30df2649020f91e87836b097031500bb3f17172992e2c027032486b4872262"
+  },
+  {
+    "HEAD_git_blob": "5b171bbc332835f02f5cf306c0a7b00cc6223dbe",
+    "bytes": 82,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/consumer-rules.pro",
+    "sha256": "53bf263cee08b6c92a25e5a4c56dbf3d8d389031180c35732f5499010e4a3cbe"
+  },
+  {
+    "HEAD_git_blob": "a5918e68abcdde7f61ccae4f0ad4885b764573fd",
+    "bytes": 124,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/AndroidManifest.xml",
+    "sha256": "28b1700b6a37f2d3ae037dbada7741cdbbedea29caf51d706cae22dca0b0d2ce"
+  },
+  {
+    "HEAD_git_blob": "a8fc0dab24c560d32e3f8d96dfd8608bb65730d4",
+    "bytes": 1396,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/CMakeLists.txt",
+    "sha256": "311ee11a710da2c81a5dede962d99a7079068d4ee9fcdf6eefa910148ee03af8"
+  },
+  {
+    "HEAD_git_blob": "48c7b0469cb00a9b6d11d2246a39a044e795f1be",
+    "bytes": 56361,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest.c",
+    "sha256": "29dc8fa2568737dc5bff360efdd88a22535205b3aecc4529fee166059ae98cd0"
+  },
+  {
+    "HEAD_git_blob": "8f6d9c63f551a5514d647346ec0af5aa87a748a9",
+    "bytes": 1363,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest.h",
+    "sha256": "a786dc21fc1a79fef477a811344ad2ecf656580587e91816f566a31d5d5a5dee"
+  },
+  {
+    "HEAD_git_blob": "d0f0e10610972a2db48db5c89a77372aac209590",
+    "bytes": 67,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest.map.txt",
+    "sha256": "7c12b46b9596eb944613bb6d3d34ae4f9c5065a0ab82f65bffcd3b95939add02"
+  },
+  {
+    "HEAD_git_blob": "c151cad07c7f6e19eb148e4cc43ff9745ad07e0d",
+    "bytes": 3004,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest_jni.c",
+    "sha256": "78e027e2ec1c681a70cda4a9443be45efd3dc665918ecbad3f8674f360a4a8d9"
+  },
+  {
+    "HEAD_git_blob": "0c8f4ec96e99e81987fea9dd8105335179cd9f21",
+    "bytes": 2767,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest_util.c",
+    "sha256": "210d4efcd7b449cb60e7689fe451018e696058cfa09e6eb5dfc2f90d054855e3"
+  },
+  {
+    "HEAD_git_blob": "293bbd450ad8a6fa198dab4f1418cb07a3ec01db",
+    "bytes": 1296,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/cpp/systest_util.h",
+    "sha256": "50add7b30fc501a8427aa611bed3bdd827784f7e53218acd873964a6d38a49bb"
+  },
+  {
+    "HEAD_git_blob": "52b64fcbf3f2ad5eb47e50333c3c17375fe4ef38",
+    "bytes": 3252,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/systest/src/main/java/com/bytedance/shadowhook/systest/SysTest.java",
+    "sha256": "dfe2f41ab6e527d37ac6f106e7838a4ccfceda46a93f66b5c479cad34fa0e890"
+  },
+  {
+    "HEAD_git_blob": "199c90fea4762b38243e5af9ece72d85a2151762",
+    "bytes": 17068,
+    "matches_HEAD_after_CRLF_normalization": true,
+    "matches_HEAD_blob": false,
+    "path": "shadowhook-src/tools/record_parser.py",
+    "sha256": "7f9ce198702e9351abc50a8cd5dc10446e25c47e5a3bd052ce442396ebab3477"
+  },
+  {
+    "bytes": 1344,
+    "local_addition": true,
+    "path": "shadowhook-build/CMakeLists.txt",
+    "sha256": "3d1e2c839fdcb18d41c71e49a62ebd1e739b55938a275552bcb53609131b6034"
+  },
+  {
+    "bytes": 1283,
+    "local_addition": true,
+    "path": "patches/shadowhook-optional-linker.patch",
+    "sha256": "eb871febae3a1191f7aebfa4ba55c57783972a8d81d44c43954399edf8ec1b8f"
+  },
+  {
+    "bytes": 285,
+    "local_addition": true,
+    "path": "SOURCE-PROVENANCE.txt",
+    "sha256": "fb3eba7911fb8d227b12c6d411d70dd1fa356fd27575fff739ba47e7e841983b"
+  }
+]

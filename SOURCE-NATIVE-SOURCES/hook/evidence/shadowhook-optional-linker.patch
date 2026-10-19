@@ -1,0 +1,18 @@
+diff --git a/shadowhook/src/main/cpp/shadowhook.c b/shadowhook/src/main/cpp/shadowhook.c
+index 0258ac7..f303019 100644
+--- a/shadowhook/src/main/cpp/shadowhook.c
++++ b/shadowhook/src/main/cpp/shadowhook.c
+@@ -87,7 +87,12 @@ int shadowhook_init(shadowhook_mode_t default_mode, bool debuggable) {
+       sh_island_init();
+       sh_enter_init();
+       sh_switch_init();
+-      if (__predict_false(0 != sh_linker_init())) GOTO_END(SHADOWHOOK_ERRNO_INIT_LINKER);
++      // Finegram: модуль линкера следит за загрузкой новых библиотек и нужен только
++      // для перехвата по имени в том, что ещё не загружено. Мы перехватываем только
++      // уже загруженную libart по адресу, а на части прошивок (Android 16) этот модуль
++      // не встаёт: перехват двух функций самого линкера не удаётся, и раньше это
++      // заваливало весь запуск.
++      if (__predict_false(0 != sh_linker_init())) SH_LOG_WARN("linker mod is not available");
+       if (__predict_false(0 != sh_task_init())) GOTO_END(SHADOWHOOK_ERRNO_INIT_TASK);
+ 
+ #undef GOTO_END

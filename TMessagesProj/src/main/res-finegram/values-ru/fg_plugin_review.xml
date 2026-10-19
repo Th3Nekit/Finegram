@@ -1,0 +1,12 @@
+<resources>
+    <string name="FG_Plugins_CheckOnInstall">Проверять плагины перед установкой</string>
+    <string name="FG_Plugins_CheckOnInstallInfo">При отключённой проверке установка требует вашего подтверждения. Проверка архивов и разрешение на запуск кода сохраняются.</string>
+    <string name="FG_Plugins_CheckUnavailable">Автоматическая проверка кода не выполнена. Устанавливайте плагин только если доверяете автору и источнику.</string>
+    <string name="FG_Plugins_Security_Checking">Проверка…</string>
+    <string name="FG_Plugins_Security_RiskTitle">Плагин требует внимания</string>
+    <string name="FG_Plugins_Security_UncheckedTitle">Код не проверен</string>
+    <string name="FG_Plugins_Security_ChangedTitle">Файл изменился</string>
+    <string name="FG_Plugins_Security_ScanDone">Проверка завершена</string>
+    <string name="FG_Plugins_Security_Retry">Повторить проверку</string>
+    <string name="FG_Plugins_Security_InstallRisk">Установить с предупреждением</string>
+</resources>

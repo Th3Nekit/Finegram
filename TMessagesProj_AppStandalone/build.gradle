@@ -1,0 +1,244 @@
+import io.github.valacuz.proguard.dictionary.DictionaryGeneratorPluginExtension
+import io.github.valacuz.proguard.dictionary.tasks.generate.strategy.ObfuscationStrategy
+
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'io.github.valacuz.proguard-dictionary-generator'
+apply plugin: 'org.telegram.string-resource-ids'
+
+/*repositories {
+    mavenCentral()
+    google()
+}*/
+
+configurations {
+    compile.exclude module: 'support-v4'
+}
+
+configurations.configureEach {
+    exclude group: 'com.google.firebase', module: 'firebase-core'
+    exclude group: 'androidx.recyclerview', module: 'recyclerview'
+}
+
+dependencies {
+    implementation project(':TMessagesProj')
+    implementation 'androidx.fragment:fragment-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.18.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation files('../TMessagesProj/libs/libgsaverification-client.aar')
+}
+
+proguardDictGenerator {
+    createConfigFile = true
+    configFilePath = DictionaryGeneratorPluginExtension.DEFAULT_CONFIG_FILE_PATH
+    fieldMethodObfuscationStrategy = ObfuscationStrategy.RANDOM_CHARACTERS
+    classObfuscationStrategy = ObfuscationStrategy.RANDOM_CHARACTERS
+    packageObfuscationStrategy = ObfuscationStrategy.RANDOM_CHARACTERS
+    variantNameFilter = null // Regex pattern
+}
+
+android {
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    compileSdk 36
+    buildToolsVersion = '36.0.0'
+
+    defaultConfig.applicationId = APP_PACKAGE
+
+
+    lintOptions {
+        disable 'MissingTranslation'
+        disable 'ExtraTranslation'
+        disable 'BlockedPrivateApi'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+
+        coreLibraryDesugaringEnabled true
+    }
+
+    androidResources {
+        // Файл с эмодзи клиент открывает отображением в память, а сжатый ассет так не
+        // открыть: система просто не даёт на него описатель. Сжатый файл — это эмодзи,
+        // которых не видно ни в чатах, ни в выборе.
+        noCompress += "pack"
+        localeFilters += ["en", "ar", "de", "es", "it", "ko", "nl", "pt-rBR", "ru", "uk", "be", "ja", "zh-rCN", "zh-rTW"]
+    }
+
+    def signProps = new Properties()
+    def signFile = rootProject.file('private.properties')
+    if (signFile.exists()) {
+        signProps.load(new FileInputStream(signFile))
+    }
+
+    /**
+     * Ключ подписи берётся из окружения (CI), затем из private.properties,
+     * иначе используется локальный отладочный finegram-debug.jks.
+     */
+    def keystorePath = System.getenv("KEYSTORE_PATH") ?: (signProps.getProperty("KEYSTORE_PATH") ?: "../finegram-debug.jks")
+    def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: (signProps.getProperty("KEYSTORE_PASSWORD") ?: "finegram")
+    def keystoreAlias = System.getenv("KEY_ALIAS") ?: (signProps.getProperty("KEY_ALIAS") ?: "finegram")
+    def keystoreKeyPassword = System.getenv("KEY_PASSWORD") ?: (signProps.getProperty("KEY_PASSWORD") ?: "finegram")
+
+    signingConfigs {
+        release {
+            storeFile file(keystorePath)
+            storePassword keystorePassword
+            keyAlias keystoreAlias
+            keyPassword keystoreKeyPassword
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable true
+            signingConfig signingConfigs.release
+//            applicationIdSuffix ".web"
+            minifyEnabled false
+            shrinkResources false
+            multiDexEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), '../TMessagesProj/proguard-rules.pro', '../TMessagesProj/proguard-rules-beta.pro'
+            ndk.debugSymbolLevel = 'FULL'
+        }
+        standalone {
+            matchingFallbacks = ['release']
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+//            applicationIdSuffix ".web"
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), '../TMessagesProj/proguard-rules.pro'
+            ndk.debugSymbolLevel = 'NONE'
+        }
+    }
+
+    sourceSets.debug {
+        manifest.srcFile '../TMessagesProj/config/release/AndroidManifest_standalone.xml'
+    }
+    sourceSets.standalone {
+        manifest.srcFile '../TMessagesProj/config/release/AndroidManifest_standalone.xml'
+    }
+
+    flavorDimensions = ["minApi"]
+
+    productFlavors {
+        afat {
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "armeabi-v7a", "arm64-v8a"/*, "x86", "x86_64"*/
+            }
+            ext {
+                abiVersionCode = 9
+            }
+            sourceSets.standalone {
+                manifest.srcFile '../TMessagesProj/config/release/AndroidManifest_standalone.xml'
+            }
+        }
+    }
+
+    defaultConfig.versionCode = Integer.parseInt(APP_VERSION_CODE)
+
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            def abi = output.getFilter('ABI')
+            if (abi == null) abi = 'universal'
+            outputFileName = "Finegram-${APP_VERSION_NAME_FINEGRAM}-TG-${APP_VERSION_NAME}-${abi}.apk"
+            output.versionCodeOverride = defaultConfig.versionCode * 10
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (variant.buildType.name != "release" && !names.contains("afat")) {
+            setIgnore(true)
+        }
+    }
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 36
+        versionName "${APP_VERSION_NAME_FINEGRAM} (${APP_VERSION_NAME})"
+        ndkVersion "27.2.12479018"
+
+        multiDexEnabled true
+
+        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+
+        externalNativeBuild {
+            cmake {
+                version '3.22.1'
+                arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-21' //, '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
+                targets 'tmessages.49'
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+    namespace 'org.telegram.messenger.web'
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
+    splits.abi {
+        enable true
+        reset()
+        //noinspection ChromeOsAbiSupport
+        include "arm64-v8a", "armeabi-v7a"
+        universalApk true
+    }
+}
+
+// Свежесобранные APK кладём туда, откуда их ставят. Иначе легко поставить старую сборку
+// и не понять, почему ничего не изменилось.
+android.applicationVariants.configureEach { variant ->
+    variant.assembleProvider.configure { assemble ->
+        assemble.doLast {
+            def target = new File(rootDir, 'dist')
+            target.mkdirs()
+            variant.outputs.each { output ->
+                def apk = output.outputFile
+                if (apk != null && apk.exists() && apk.name.endsWith('.apk')) {
+                    copy {
+                        from apk
+                        into target
+                    }
+                    println "APK -> dist/${apk.name}"
+                }
+            }
+        }
+    }
+}
+
+// Ключи Firebase в репозиторий не кладём, и без них этот плагин прерывает сборку.
+// Собираем с ним, только когда файл действительно лежит рядом.
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}

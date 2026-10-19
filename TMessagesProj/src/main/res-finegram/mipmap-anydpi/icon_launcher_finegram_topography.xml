@@ -1,0 +1,4 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@mipmap/icon_background_topography" />
+    <item android:drawable="@drawable/fg_plane_topography" />
+</layer-list>

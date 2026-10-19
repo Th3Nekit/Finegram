@@ -1,0 +1,252 @@
+/**
+ * This is the source code of Finegram for Android.
+ * It is licensed under GNU GPL v. 2 or later.
+ *
+ * Based on Cherrygram (Copyright github.com/arsLan4k1390, 2022-2026),
+ * itself based on Telegram for Android (github.com/DrKLO/Telegram).
+ */
+
+package com.th3nekit.finegram.plugins;
+
+import static org.telegram.messenger.LocaleController.formatString;
+import static org.telegram.messenger.LocaleController.getString;
+
+import com.exteragram.messenger.plugins.ui.components.InstallPluginBottomSheet;
+
+import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.R;
+import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.Components.BulletinFactory;
+
+import java.io.File;
+
+/**
+ * Установка плагина прямо из чата: нажатие на файл открывает окно с описанием.
+ *
+ * Плагины бывают трёх видов: файл на Python (`.plugin`), собранный в dex (`.dex`, `.jar`)
+ * и сборка архивом (`.eaf`), где код разложен по модулям, а рядом лежат переводы и
+ * картинки. Человеку разница видна только строкой в окне: ставятся они одинаково.
+ */
+public final class FGPluginsHook {
+
+    private FGPluginsHook() {
+    }
+
+    public static boolean handleMessage(MessageObject message, String fileName) {
+        try {
+            File file = resolveFile(message);
+            if (file == null) {
+                android.util.Log.w("FGOpen", "plugin: file is not on disk: " + fileName);
+                return false;
+            }
+
+            // Не getLastFragment: верхним слоем бывает уже опустевшая шторка, и тогда
+            // плагин уходил системе в «открыть с помощью».
+            BaseFragment fragment = com.th3nekit.finegram.core.ui.FGHostScreen.find();
+            if (fragment == null) {
+                android.util.Log.w("FGOpen", "plugin: no live screen to show the sheet over");
+                return false;
+            }
+
+            boolean isDex = FGDexPlugins.looksLikePlugin(fileName);
+            return isDex ? showDexSheet(fragment, file) : showPythonSheet(fragment, file, message);
+        } catch (Throwable e) {
+            android.util.Log.w("FGOpen", "plugin: sheet failed", e);
+            FileLog.e(e);
+            return false;
+        }
+    }
+
+    /**
+     * Отдаёт файл плагину, если тот заявил, что умеет открывать такие.
+     * Возвращает true, когда файл забрали и клиенту показывать нечего.
+     */
+    public static boolean handleFile(MessageObject message, String fileName) {
+        try {
+            File file = resolveFile(message);
+            if (file == null) {
+                return false;
+            }
+            return FGPluginsDispatcher.onFileOpened(fileName, file.getAbsolutePath(), message);
+        } catch (Throwable e) {
+            FileLog.e(e);
+            return false;
+        }
+    }
+
+    private static File resolveFile(MessageObject message) {
+        File file = null;
+        if (message.messageOwner.attachPath != null && message.messageOwner.attachPath.length() != 0) {
+            file = new File(message.messageOwner.attachPath);
+        }
+        if (file == null || !file.exists()) {
+            file = FileLoader.getInstance(message.currentAccount).getPathToMessage(message.messageOwner);
+        }
+        return file != null && file.exists() ? file : null;
+    }
+
+    /**
+     * Спрашивает и ставит плагин из готового файла.
+     *
+     * Этим путём плагины обновляют сами себя: скачивают новую сборку и просят клиент
+     * показать окно установки. Возвращаем признак успеха — плагин по нему понимает, открылось
+     * окно или его молча проглотили.
+     */
+    public static boolean promptInstall(BaseFragment fragment, File file) {
+        if (fragment == null || file == null || !file.exists()) {
+            return false;
+        }
+        if (FGDexPlugins.looksLikePlugin(file.getName())) {
+            return showDexSheet(fragment, file);
+        }
+        return showPythonSheet(fragment, file, null);
+    }
+
+    /**
+     * Спрашивает и ставит плагин, пришедший файлом.
+     *
+     * Сообщение запоминаем: канал, в котором лежит плагин, — то место, куда автор выложит
+     * следующую версию, и единственный адрес, который у нас есть, пока он не объявил свой.
+     */
+    private static boolean showPythonSheet(BaseFragment fragment, File file, MessageObject message) {
+        FGPluginsController.Plugin preview = FGPluginsController.INSTANCE.readPreview(file);
+        if (preview == null) {
+            android.util.Log.w("FGOpen", "plugin: header not readable: " + file.getName());
+            return false;
+        }
+        return showSheet(fragment, preview.getId(), preview.getName(), preview.getVersion(),
+                preview.getAuthor(), preview.getDescription(), preview.getIcon(), file,
+                accepted -> FGPluginsController.INSTANCE.getQueue().postRunnable(() -> {
+                    // Чтение файла и первый подъём интерпретатора занимают секунды: на
+                    // главном потоке это выглядит как зависший клиент.
+                    File snapshot = new File(accepted.filePath);
+                    FGPluginsController.Plugin installed;
+                    try {
+                        installed = FGPluginsController.INSTANCE.installReviewed(snapshot,
+                                accepted.expectedFingerprint, accepted.securityRiskAccepted);
+                    } finally {
+                        snapshot.delete();
+                    }
+                    if (installed == null) {
+                        AndroidUtilities.runOnUIThread(FGPluginsHook::reportBadFile);
+                        return;
+                    }
+                    FGPluginUpdates.rememberFromMessage(installed.getId(), message);
+                    boolean started = FGPluginsController.INSTANCE.enable(installed);
+                    AndroidUtilities.runOnUIThread(() -> {
+                        if (started) {
+                            report(installed.getId(), installed.getName(), true);
+                        } else {
+                            FGPluginSecurity.reviewOrFail(fragment, installed,
+                                    () -> enableReviewed(fragment, installed),
+                                    () -> report(installed.getId(), installed.getName(), false));
+                        }
+                    });
+                }));
+    }
+
+    private static boolean showDexSheet(BaseFragment fragment, File file) {
+        FGDexPlugins.Plugin preview = FGDexPlugins.INSTANCE.readPreview(file);
+        if (preview == null) {
+            android.util.Log.w("FGOpen", "dex plugin: header not readable: " + file.getName());
+            return false;
+        }
+        return showSheet(fragment, preview.getId(), preview.getName(), preview.getVersion(),
+                preview.getAuthor(), preview.getDescription(), null, file,
+                accepted -> installDexReviewed(fragment, accepted));
+    }
+
+    private static void installDexReviewed(BaseFragment fragment, InstallPluginBottomSheet.InstallParams accepted) {
+        FGPluginsController.INSTANCE.getQueue().postRunnable(() -> {
+            File snapshot = new File(accepted.filePath);
+            FGDexPlugins.Plugin installed;
+            try {
+                installed = FGDexPlugins.INSTANCE.installReviewed(snapshot,
+                        accepted.expectedFingerprint, accepted.securityRiskAccepted);
+            } finally {
+                snapshot.delete();
+            }
+            if (installed == null) {
+                AndroidUtilities.runOnUIThread(FGPluginsHook::reportBadFile);
+                return;
+            }
+            boolean started = FGDexPlugins.INSTANCE.enable(installed);
+            AndroidUtilities.runOnUIThread(() -> report(installed.getId(), installed.getName(), started));
+        });
+    }
+
+    private static void enableReviewed(BaseFragment fragment, FGPluginsController.Plugin plugin) {
+        FGPluginsController.INSTANCE.getQueue().postRunnable(() -> {
+            boolean started = FGPluginsController.INSTANCE.enable(plugin);
+            AndroidUtilities.runOnUIThread(() -> {
+                if (fragment.isFinished || fragment.getParentActivity() == null) return;
+                if (started) {
+                    report(plugin.getId(), plugin.getName(), true);
+                } else {
+                    FGPluginSecurity.reviewOrFail(fragment, plugin,
+                            () -> enableReviewed(fragment, plugin),
+                            () -> report(plugin.getId(), plugin.getName(), false));
+                }
+            });
+        });
+    }
+
+    /**
+     * Показывает окно установки — то же, что и при выборе файла из системы.
+     *
+     * Вид у обоих видов плагинов один: разница между питоном и dex — дело внутреннее, и
+     * человеку в момент установки она ничего не объясняет.
+     */
+    private static boolean showSheet(BaseFragment fragment, String id, String name, String version,
+                                     String author, String description, String icon, File file,
+                                     InstallPluginBottomSheet.Delegate onInstall) {
+        if (fragment == null || fragment.getParentActivity() == null) {
+            return false;
+        }
+        InstallPluginBottomSheet.InstallParams params =
+                new InstallPluginBottomSheet.InstallParams(file.getAbsolutePath());
+        params.id = id;
+        params.name = name;
+        params.version = version;
+        params.author = author;
+        params.description = description;
+        params.icon = icon;
+        fragment.showDialog(new InstallPluginBottomSheet(fragment.getParentActivity(),
+                fragment.getResourceProvider(), params, onInstall));
+        return true;
+    }
+
+    private static void reportBadFile() {
+        BaseFragment current = com.th3nekit.finegram.core.ui.FGHostScreen.find();
+        if (current != null) {
+            BulletinFactory.of(current).createErrorBulletin(getString(R.string.FG_Plugins_BadFile)).show();
+        }
+    }
+
+    private static void report(String id, String name, boolean started) {
+        BaseFragment current = com.th3nekit.finegram.core.ui.FGHostScreen.find();
+        if (current == null) {
+            return;
+        }
+        if (!started && FGPluginsController.blockedByBypass(id)) {
+            // Плагин встал, но включать его сейчас нельзя: встроенный обход занимает то же
+            // соединение. Говорим об этом, а не «не запустился» — не запускать было решением.
+            BulletinFactory.of(current).createSimpleBulletin(R.raw.info,
+                    getString(R.string.FG_Plugins_BypassClash)).show();
+            return;
+        }
+        if (started) {
+            BulletinFactory.of(current).createSimpleBulletin(
+                    R.raw.done,
+                    formatString(R.string.FG_Plugins_Installed_Toast, name)
+            ).show();
+        } else {
+            BulletinFactory.of(current).createErrorBulletin(
+                    formatString(R.string.FG_Plugins_Failed, name)
+            ).show();
+        }
+    }
+}

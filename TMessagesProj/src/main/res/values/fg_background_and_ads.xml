@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_BackgroundConnection">Background connection</string>
+    <string name="FG_BackgroundConnection_Desc">Messages and calls while the app is closed</string>
+    <string name="FG_AdsSettings">Ads</string>
+</resources>

@@ -1,0 +1,145 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://chaquo.com/maven' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.chaquo.python:gradle:17.0.0'
+        classpath 'com.google.gms:google-services:4.4.4'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0'
+
+        classpath "io.github.valacuz.proguard-dictionary-generator:io.github.valacuz.proguard-dictionary-generator.gradle.plugin:1.0.1"
+    }
+}
+
+def mapsProperties = new Properties()
+def mapsPropertiesFile = rootProject.file('private.properties')
+if (mapsPropertiesFile.exists()) {
+    mapsPropertiesFile.withInputStream { mapsProperties.load(it) }
+}
+def googleMapsApiKey = System.getenv('GOOGLE_MAPS_API_KEY') ?: mapsProperties.getProperty('GOOGLE_MAPS_API_KEY', '')
+
+subprojects {
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        plugins.withId(pluginId) {
+            project.android.defaultConfig.manifestPlaceholders['GOOGLE_MAPS_API_KEY'] = googleMapsApiKey
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://chaquo.com/maven' }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        // Только своим модулям: у плеера есть разметка со скрытыми системными видами,
+        // и генератор привязок на ней спотыкается — собрать его так нельзя.
+        if (!path.startsWith(":TMessagesProj_Modules:media3")
+                && (plugins.hasPlugin("com.android.library")
+                        || plugins.hasPlugin("com.android.application"))) {
+            android {
+                buildFeatures {
+                    viewBinding true
+                }
+            }
+        }
+    }
+}
+
+// Strip JLatexMath fonts we don't ship (transitive AAR assets from
+// io.noties.markwon:ext-latex -> ru.noties:jlatexmath-android, ~764 KB total under
+// assets/org/scilab/forge/jlatexmath/fonts/). Has to live in the APK modules — a
+// library's androidResources.ignoreAssetsPattern doesn't filter packaging in apps
+// that consume it. Using subprojects keeps it in one place.
+//   keep:  base/, latin/, maths/, euler/  (\mathbb, \mathcal, \mathfrak still work)
+//   drop:  latin/optional/, maths/optional/  (~290 KB; \textbf/\textit/\mathds fall back)
+//          licences/                          (~20 KB; pure license text files)
+subprojects {
+    plugins.withId('com.android.application') {
+        android {
+            androidResources {
+                ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~:!optional:!licences:!*stmary*:!*eufb*'
+            }
+        }
+    }
+
+    if (project.projectDir.absolutePath.contains('/TMessagesProj_Modules/media/')) {
+        project.plugins.withId('com.android.library') {
+            project.android {
+                if (namespace == null) {
+                    def manifestFile = file("${project.projectDir}/src/main/AndroidManifest.xml")
+
+                    if (manifestFile.exists()) {
+                        def manifest = new XmlSlurper().parse(manifestFile)
+                        def manifestPackage = manifest.@package.text()
+
+                        if (manifestPackage) {
+                            namespace manifestPackage
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    configurations.configureEach {
+        // Плеер собирается из своего модуля, но CameraX просит те же пакеты готовыми из
+        // сети — и одни и те же классы приезжают дважды, на чём сборка останавливается.
+        // Подменяем внешние на свои: версия одна и та же, дубля нет.
+        resolutionStrategy.dependencySubstitution {
+            ['common', 'container', 'muxer', 'datasource', 'decoder', 'effect',
+             'extractor', 'transformer', 'exoplayer', 'ui', 'session', 'database'].each { name ->
+                def target = rootProject.findProject(":TMessagesProj_Modules:media3:media-lib-${name}")
+                if (target != null) {
+                    substitute module("androidx.media3:media3-${name}") using project(target.path)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Поднимает версию Finegram на 0.0.1, а версию кода — на единицу.
+ *
+ * Каждая сборка, которая уходит на телефон, должна отличаться номером: иначе непонятно,
+ * какая именно проверяется, и обновление поверх прежней не предлагается.
+ * Запуск: gradlew bumpFinegramVersion
+ */
+tasks.register("bumpFinegramVersion") {
+    group = "finegram"
+    description = "Поднимает версию Finegram на 0.0.1."
+    doLast {
+        def file = rootProject.file("gradle.properties")
+        def text = file.getText("UTF-8")
+
+        def name = (text =~ /APP_VERSION_NAME_FINEGRAM=(\d+)\.(\d+)\.(\d+)/)
+        if (!name.find()) {
+            throw new GradleException("в gradle.properties нет APP_VERSION_NAME_FINEGRAM")
+        }
+        def nextName = "${name.group(1)}.${name.group(2)}.${(name.group(3) as int) + 1}"
+        text = text.replaceFirst(/APP_VERSION_NAME_FINEGRAM=\d+\.\d+\.\d+/,
+                "APP_VERSION_NAME_FINEGRAM=" + nextName)
+
+        def code = (text =~ /APP_VERSION_CODE=(\d+)/)
+        if (!code.find()) {
+            throw new GradleException("в gradle.properties нет APP_VERSION_CODE")
+        }
+        def nextCode = (code.group(1) as int) + 1
+        text = text.replaceFirst(/APP_VERSION_CODE=\d+/, "APP_VERSION_CODE=" + nextCode)
+
+        file.setText(text, "UTF-8")
+        println("Finegram ${nextName}, код ${nextCode}")
+    }
+}

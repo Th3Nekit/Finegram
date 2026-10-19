@@ -1,0 +1,1381 @@
+{
+  "build_snapshot_sha256": "5b611177d9971e69169dd15fec82c6ebb416582cfd5da8ee64cfeae0dcbc885a",
+  "components": [
+    {
+      "artifact": "TMessagesProj/libs/fghook-core.aar",
+      "build_recipe": "native/fghook/build.sh; SOURCE-NATIVE-SOURCES/hook/SOURCE-BUILD.md",
+      "build_scripts": [
+        "native/fghook/build.sh",
+        "native/fghook/CMakeLists.txt"
+      ],
+      "documented_toolchain": {
+        "abis": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "cmake": "3.31.6",
+        "ndk": "30.0.16248370"
+      },
+      "license": "Finegram root LICENSE; third-party licenses retained separately",
+      "missing_provenance_fields": [],
+      "name": "Finegram fghook wrapper",
+      "notes": "Canonical wrapper sources match the existing native build working tree. Source, recipe and dependency patches are bundled. No fresh native rebuild is claimed.",
+      "source_directory": "native/fghook",
+      "sources": [
+        {
+          "path": "native/fghook/.gitignore",
+          "sha256": "42b3c7f5fb266605c6b05595f9339f336f7ab5b03967219c16a887640fcc53e9"
+        },
+        {
+          "path": "native/fghook/CMakeLists.txt",
+          "sha256": "f341bec2c1cd10298f4c00d47ce129a240b21db021a8b92034fb7976c44a29bb"
+        },
+        {
+          "path": "native/fghook/build.sh",
+          "sha256": "603e7dadb42a6aa13bdd016d014ad626b7b868889906cbbd1ed13b938ba6ba20"
+        },
+        {
+          "path": "native/fghook/shadowhook-CMakeLists.txt",
+          "sha256": "3d1e2c839fdcb18d41c71e49a62ebd1e739b55938a275552bcb53609131b6034"
+        },
+        {
+          "path": "native/fghook/shadowhook-optional-linker.patch",
+          "sha256": "eb871febae3a1191f7aebfa4ba55c57783972a8d81d44c43954399edf8ec1b8f"
+        },
+        {
+          "path": "native/fghook/src/art_symbols.cpp",
+          "sha256": "a0935e02bdad633384049aa9392a5847ee28245b77a2afaba346e4694ff06425"
+        },
+        {
+          "path": "native/fghook/src/art_symbols.h",
+          "sha256": "6e74aad3e58bb938f9057148d191cb4506c4cb422ba7c35ef812d81533d9b4e5"
+        },
+        {
+          "path": "native/fghook/src/fghook.cpp",
+          "sha256": "d9da2a3280efb59c342bd69edef2114c94ec7b0f0b9eab643b000618778a3378"
+        },
+        {
+          "path": "native/fghook/third_party/LICENSE.lsplant",
+          "sha256": "09acdfb5bfb7aaed93d7d7fa5cebfc7350c555847d2ed07b5b9716da43670e04"
+        },
+        {
+          "path": "native/fghook/third_party/include/lsplant.hpp",
+          "sha256": "4aa0310b19ba4e8c1ad489963a398a02af8a8c6177d5b8f1244d8bf6868a7196"
+        },
+        {
+          "path": "native/fghook/third_party/include/shadowhook.h",
+          "sha256": "abeab3df367da1d49bab17dc737edb3644658584a62060c76b5f43d36bbd8f0e"
+        },
+        {
+          "path": "native/fghook/third_party/xz/COPYING",
+          "sha256": "29963b2e635c238810b0dbb54ad68a28c3ba2cfaedefad729f1f46eb2603e847"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz.h",
+          "sha256": "00b7ddd5292995dad8035f2184b1cbf8e36755f1c9ac894e4f52aede11e1ed81"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_config.h",
+          "sha256": "57060707b0575a9e91cb1b15d4a9305d85af8b7b8d5a3fb84659c9f2461095f7"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_crc32.c",
+          "sha256": "1146f8ac363d6ad3f18d419a523d9961e28aae1770b72c512d074ea1db9229c1"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_crc64.c",
+          "sha256": "f8e06cd51c4ffed25a1c4d62596a76a7c0ada3588364540e5dfb6cf457969077"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_dec_lzma2.c",
+          "sha256": "8bcc9472b5355cfb46547641799b8d2fda2c46fbeb0ad6fe84320b9d2419c3fa"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_dec_stream.c",
+          "sha256": "0d6a9a34ce643a9fe6f749e4c9246317eaf066f000290612681e1278f047020f"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_lzma2.h",
+          "sha256": "1edcde11610234a8a4d75eb24918ccd986429411047b24b86b7f4348423b478a"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_private.h",
+          "sha256": "ba902a1a34d506681cb62c16fb90c6e382e55a26b05aa8f98d41eb20a89576ab"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_stream.h",
+          "sha256": "9a97ee5478cd64259c8f3a819ae83a942c4566ca233f769673fc687acff6a5c6"
+        }
+      ]
+    },
+    {
+      "artifact": "TMessagesProj/libs/fghook-core.aar",
+      "artifact_members": [
+        "jni/arm64-v8a/liblsplant.so",
+        "jni/armeabi-v7a/liblsplant.so"
+      ],
+      "build_recipe": "SOURCE-NATIVE-SOURCES/hook/SOURCE-BUILD.md",
+      "commit": "1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9",
+      "documented_configuration": "Source-built library with 16 KiB alignment (native/fghook/CMakeLists.txt).",
+      "header": "native/fghook/third_party/include/lsplant.hpp",
+      "license": "LGPL-3.0",
+      "license_file": "native/fghook/third_party/LICENSE.lsplant",
+      "missing_provenance_fields": [],
+      "name": "LSPlant",
+      "notes": "Matching history-free source, licenses, local patch set and recipe are bundled; existing native outputs matched release artifact bytes. No fresh native rebuild is claimed.",
+      "public_commit_url": "https://github.com/LSPosed/LSPlant/commit/1dc6ef5c6c5c4eb4d5565fcf50791450c5ede5a9",
+      "source_bundles": [
+        "SOURCE-NATIVE-SOURCES/hook/lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip"
+      ],
+      "upstream": "https://github.com/LSPosed/LSPlant"
+    },
+    {
+      "artifact": "TMessagesProj/libs/fghook-core.aar",
+      "artifact_members": [
+        "jni/arm64-v8a/libshadowhook.so",
+        "jni/armeabi-v7a/libshadowhook.so"
+      ],
+      "build_recipe": "SOURCE-NATIVE-SOURCES/hook/SOURCE-BUILD.md",
+      "build_scripts": [
+        "native/fghook/shadowhook-CMakeLists.txt"
+      ],
+      "commit": "593f491be68799f03ee3bab71ce5908846437147",
+      "header": "native/fghook/third_party/include/shadowhook.h",
+      "license": "MIT",
+      "missing_provenance_fields": [],
+      "name": "shadowhook",
+      "notes": "Matching history-free source, licenses, local patch set and recipe are bundled; existing native outputs matched release artifact bytes. No fresh native rebuild is claimed.",
+      "patches": [
+        "native/fghook/shadowhook-optional-linker.patch"
+      ],
+      "public_commit_url": "https://github.com/bytedance/android-inline-hook/commit/593f491be68799f03ee3bab71ce5908846437147",
+      "source_bundles": [
+        "SOURCE-NATIVE-SOURCES/hook/shadowhook-593f491be687-finegram-patched-source.zip"
+      ],
+      "upstream": "https://github.com/bytedance/android-inline-hook"
+    },
+    {
+      "build_recipe": "SOURCE-NATIVE-SOURCES/hook/SOURCE-BUILD.md",
+      "commit": "ae63ae3a36ed01724674e8f3d750dc47bf125410",
+      "license": "0BSD",
+      "license_file": "native/fghook/third_party/xz/COPYING",
+      "missing_provenance_fields": [],
+      "name": "xz-embedded",
+      "notes": "Matching history-free source, licenses, local patch set and recipe are bundled; existing native outputs matched release artifact bytes. No fresh native rebuild is claimed.",
+      "public_commit_url": "https://github.com/tukaani-project/xz-embedded/commit/ae63ae3a36ed01724674e8f3d750dc47bf125410",
+      "source_bundles": [
+        "SOURCE-NATIVE-SOURCES/hook/xz-embedded-ae63ae3a36ed-source.zip"
+      ],
+      "sources": [
+        {
+          "path": "native/fghook/third_party/xz/COPYING",
+          "sha256": "29963b2e635c238810b0dbb54ad68a28c3ba2cfaedefad729f1f46eb2603e847"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz.h",
+          "sha256": "00b7ddd5292995dad8035f2184b1cbf8e36755f1c9ac894e4f52aede11e1ed81"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_config.h",
+          "sha256": "57060707b0575a9e91cb1b15d4a9305d85af8b7b8d5a3fb84659c9f2461095f7"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_crc32.c",
+          "sha256": "1146f8ac363d6ad3f18d419a523d9961e28aae1770b72c512d074ea1db9229c1"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_crc64.c",
+          "sha256": "f8e06cd51c4ffed25a1c4d62596a76a7c0ada3588364540e5dfb6cf457969077"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_dec_lzma2.c",
+          "sha256": "8bcc9472b5355cfb46547641799b8d2fda2c46fbeb0ad6fe84320b9d2419c3fa"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_dec_stream.c",
+          "sha256": "0d6a9a34ce643a9fe6f749e4c9246317eaf066f000290612681e1278f047020f"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_lzma2.h",
+          "sha256": "1edcde11610234a8a4d75eb24918ccd986429411047b24b86b7f4348423b478a"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_private.h",
+          "sha256": "ba902a1a34d506681cb62c16fb90c6e382e55a26b05aa8f98d41eb20a89576ab"
+        },
+        {
+          "path": "native/fghook/third_party/xz/xz_stream.h",
+          "sha256": "9a97ee5478cd64259c8f3a819ae83a942c4566ca233f769673fc687acff6a5c6"
+        }
+      ],
+      "upstream": "https://tukaani.org/xz/embedded.html"
+    },
+    {
+      "artifact": "TMessagesProj/libs/libbox.aar",
+      "artifact_sha256": "80ffa03c3175851b4c0b8c1be401296a01f660314183d28a59180ed3923965e0",
+      "build_command": "go run ./cmd/internal/build_libbox -target android -platform android/arm64",
+      "build_recipe": "sing-box-finegram-source/SOURCE-BUILD.md inside the source bundle",
+      "build_tags": [
+        "with_quic",
+        "with_utls",
+        "badlinkname",
+        "tfogo_checklinkname0"
+      ],
+      "commit": "710d7c715b10cf9fc158b1ab7fd7198754962c59",
+      "go_version_embedded": "go1.27.1",
+      "license": "GPL-3.0-or-later",
+      "missing_provenance_fields": [],
+      "name": "libbox / sing-box",
+      "notes": "Existing source working tree; sole tracked change is the bundled patch. Its built AAR is byte-identical to the release AAR.",
+      "provenance": "SOURCE-NATIVE-SOURCES/libbox/provenance.json",
+      "source_bundles": [
+        "SOURCE-NATIVE-SOURCES/libbox/sing-box-finegram-source.zip"
+      ],
+      "source_reference": "NOTICE; embedded Go module/build information recorded under local_aars",
+      "upstream": "https://github.com/SagerNet/sing-box.git"
+    },
+    {
+      "artifact": "TMessagesProj/libs/libgsaverification-client.aar",
+      "license_metadata_limit": "Google proprietary dependency: original Telegram NOTICE is retained; additional redistribution terms were not embedded in this upstream artifact.",
+      "missing_provenance_fields": [],
+      "name": "libgsaverification-client",
+      "notes": "Unchanged Google local AAR inherited from public Telegram. No Maven GAV or open-source license is inferred. Manifest package com.google.android.libraries.gsa.actionverification; no license/POM is embedded in the original AAR. No matching Google source is asserted or required by the agreed export scope.",
+      "public_artifact_coordinates": {
+        "commit": "f32ffeec763f0bdbf4bec25b52d654f77bff733d",
+        "matches_exact_bytes": true,
+        "path": "TMessagesProj/libs/libgsaverification-client.aar",
+        "repository": "https://github.com/DrKLO/Telegram",
+        "sha256": "fe6fac5a24d8fd576998540fe63c34890818f4b464529729610a3fb3b42d1be4"
+      }
+    },
+    {
+      "build_recipe": "TMessagesProj/jni/tde2e/README, build-tdlib.sh, CMakeLists.txt",
+      "license": "Boost Software License 1.0; notice in bundled e2e_api.h; supplemental text in SOURCE-NATIVE-SOURCES/upstream/TDLib-LICENSE_1_0.txt",
+      "missing_provenance_fields": [],
+      "name": "TDLib bridge and prebuilt static libraries",
+      "notes": "All eight unmodified static archives match the exact public Telegram commit byte for byte. The bridge source is bundled as built. The original upstream Android build recipe is retained. TDLib source commit is not established and is not guessed; the extra license text commit is a license reference only.",
+      "public_artifact_coordinates": {
+        "commit": "289c4625035feafbfac355eb01591b726894a623",
+        "repository": "https://github.com/DrKLO/Telegram",
+        "static_artifacts": [
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtde2e.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/arm64-v8a/libtde2e.a",
+            "sha256": "ba48a3c721afb560ac324cd9181bd47c12233360bcda045164a49b13debd90ac",
+            "snapshot_sha256": "ba48a3c721afb560ac324cd9181bd47c12233360bcda045164a49b13debd90ac"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtdutils.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/arm64-v8a/libtdutils.a",
+            "sha256": "a1cba84d0ec97e6a812e1f3241c5b7249e12c6e693d3ce17f093cde7b6f3bfaa",
+            "snapshot_sha256": "a1cba84d0ec97e6a812e1f3241c5b7249e12c6e693d3ce17f093cde7b6f3bfaa"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtde2e.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/armeabi-v7a/libtde2e.a",
+            "sha256": "83be104591c529ede02cba64f38ef7ebc050362cda878f99bdd66fce55c865ba",
+            "snapshot_sha256": "83be104591c529ede02cba64f38ef7ebc050362cda878f99bdd66fce55c865ba"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtdutils.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/armeabi-v7a/libtdutils.a",
+            "sha256": "f2ddd5fc2cb9ac14948b554de46e52812c08c810ed393e9a009db25c405ae7e8",
+            "snapshot_sha256": "f2ddd5fc2cb9ac14948b554de46e52812c08c810ed393e9a009db25c405ae7e8"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/x86/libtde2e.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86/libtde2e.a",
+            "sha256": "64a2232cbbb6bbaa5933e810077b3da603c8e9739058668e49668d08d978e5c0",
+            "snapshot_sha256": "64a2232cbbb6bbaa5933e810077b3da603c8e9739058668e49668d08d978e5c0"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/x86/libtdutils.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86/libtdutils.a",
+            "sha256": "8da11f67f6ebbb07d51da9e8a3829c03f8968ffb039ace74c369d6696df78391",
+            "snapshot_sha256": "8da11f67f6ebbb07d51da9e8a3829c03f8968ffb039ace74c369d6696df78391"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/x86_64/libtde2e.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86_64/libtde2e.a",
+            "sha256": "8f0356bc69b20e3e6fbacce47d6cb725affc47d853e99fc6ae72cec98ba7abd9",
+            "snapshot_sha256": "8f0356bc69b20e3e6fbacce47d6cb725affc47d853e99fc6ae72cec98ba7abd9"
+          },
+          {
+            "matches_crlf_normalized": true,
+            "matches_exact_bytes": true,
+            "path": "TMessagesProj/jni/tde2e/x86_64/libtdutils.a",
+            "public_url": "https://raw.githubusercontent.com/DrKLO/Telegram/289c4625035feafbfac355eb01591b726894a623/TMessagesProj/jni/tde2e/x86_64/libtdutils.a",
+            "sha256": "6c0194847060cef493528d4b453c4b3f54ebf00973032254db0aeab1efbe47e0",
+            "snapshot_sha256": "6c0194847060cef493528d4b453c4b3f54ebf00973032254db0aeab1efbe47e0"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "TMessagesProj/jni/tde2e/CMakeLists.txt",
+          "sha256": "b8b6cb7adc0ef9505d1035174fd8086011ed1e4c55cdffb3e5c75846df3d5e79"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/README",
+          "sha256": "0f00891ce2d520cf9890bb7d1db102974c61b4e63ff735f5b8abaeb5a4ad173a"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtde2e.a",
+          "sha256": "ba48a3c721afb560ac324cd9181bd47c12233360bcda045164a49b13debd90ac"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/arm64-v8a/libtdutils.a",
+          "sha256": "a1cba84d0ec97e6a812e1f3241c5b7249e12c6e693d3ce17f093cde7b6f3bfaa"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtde2e.a",
+          "sha256": "83be104591c529ede02cba64f38ef7ebc050362cda878f99bdd66fce55c865ba"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/armeabi-v7a/libtdutils.a",
+          "sha256": "f2ddd5fc2cb9ac14948b554de46e52812c08c810ed393e9a009db25c405ae7e8"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/bridge.cpp",
+          "sha256": "c1b9749b7d17b7e8ef3887bf650a83a4ab1c0a54c77245eab458b1e7691a52e9"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/build-tdlib.sh",
+          "sha256": "655aa6a6371a66cc59294068351e4449e8c374dcf5ab94f86aac262870fe6433"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/include/e2e_api.h",
+          "sha256": "93745c6c9571bed7e871db886e1adff3c165db407476dd1ec388e1cd9ba1e842"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/x86/libtde2e.a",
+          "sha256": "64a2232cbbb6bbaa5933e810077b3da603c8e9739058668e49668d08d978e5c0"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/x86/libtdutils.a",
+          "sha256": "8da11f67f6ebbb07d51da9e8a3829c03f8968ffb039ace74c369d6696df78391"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/x86_64/libtde2e.a",
+          "sha256": "8f0356bc69b20e3e6fbacce47d6cb725affc47d853e99fc6ae72cec98ba7abd9"
+        },
+        {
+          "path": "TMessagesProj/jni/tde2e/x86_64/libtdutils.a",
+          "sha256": "6c0194847060cef493528d4b453c4b3f54ebf00973032254db0aeab1efbe47e0"
+        }
+      ],
+      "upstream": "https://github.com/tdlib/td"
+    }
+  ],
+  "dependencies": [
+    {
+      "bundled": false,
+      "commit": "1024874c5919305883187e2953de8fcb4c3d7fa6",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/libvpx",
+      "url": "https://github.com/webmproject/libvpx.git"
+    },
+    {
+      "bundled": false,
+      "commit": "54706fc6bc0cdecab7e9593974a4039cc038fca7",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/dav1d",
+      "url": "https://github.com/videolan/dav1d.git"
+    },
+    {
+      "bundled": false,
+      "commit": "45f1910444f34b02621f9f0426ea1a538a613c41",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/ffmpeg",
+      "url": "https://github.com/FFmpeg/FFmpeg.git"
+    },
+    {
+      "bundled": false,
+      "commit": "be05b13e98b048f0b5a0f5fa8ce514d56db5f822",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/xiph/ogg",
+      "url": "https://github.com/xiph/ogg.git"
+    },
+    {
+      "bundled": false,
+      "commit": "22244de5a79bd1d6d623c32e72bf1954b56235be",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/xiph/opus",
+      "url": "https://github.com/xiph/opus.git"
+    },
+    {
+      "bundled": false,
+      "commit": "a55c164e9891a9326188b7d4d216ec9a88373739",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/xiph/opusfile",
+      "url": "https://github.com/xiph/opusfile.git"
+    },
+    {
+      "bundled": false,
+      "commit": "919e50b2f6f64b04b712cdb13d558ff9ecf9c8ed",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/lib/jlatexmath",
+      "url": "https://github.com/dkaraush/jlatexmath-android.git"
+    },
+    {
+      "bundled": false,
+      "commit": "92df98dc209bc39b1e567ec74a8c86a0af5239de",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/tlottie",
+      "url": "https://github.com/dkaraush/tlottie.git"
+    },
+    {
+      "bundled": false,
+      "commit": "652bdb7719f30b52b08e506645a7322ff1b2cc6f",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/openh264",
+      "url": "https://github.com/cisco/openh264.git"
+    },
+    {
+      "bundled": false,
+      "commit": "28ce69c2744a6aafdb58564e7b884aec3f66be5f",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/libyuv",
+      "url": "https://chromium.googlesource.com/libyuv/libyuv"
+    },
+    {
+      "bundled": false,
+      "commit": "c430d207677071b1873f9f18266d55ec45722180",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj_Modules/media",
+      "url": "https://github.com/Arseny271/media.git"
+    },
+    {
+      "bundled": false,
+      "commit": "54fac219c4ef0bc379dfffb0b8098725d77ac81b",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/absl",
+      "url": "https://github.com/abseil/abseil-cpp.git"
+    },
+    {
+      "bundled": false,
+      "commit": "25bd7eb63e828e4bd242cc9b38d260b4b31c6605",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/wamr",
+      "url": "https://github.com/wasm-micro-runtime/wasm-micro-runtime.git"
+    },
+    {
+      "bundled": true,
+      "commit": "ccbb57965020768c94f5b205ea08547a7e0fe49d",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/tgcalls",
+      "url": "https://github.com/TelegramMessenger/tgcalls.git"
+    },
+    {
+      "bundled": true,
+      "commit": "5c65e47cb8d68727c20d89382d0bc51292486b9a",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/wallet-engine",
+      "url": "https://github.com/dkaraush/wallet-engine.git"
+    },
+    {
+      "bundled": true,
+      "commit": "4cbcd3078e6ae10d05124379623a1bf03fcb9350",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/boost-regex",
+      "url": "https://github.com/boostorg/regex.git"
+    },
+    {
+      "bundled": true,
+      "commit": "31a5d6fbbef8136e4a2b3adaf7b95e2ccaa7436d",
+      "deleted_overlay_paths": [],
+      "path": "TMessagesProj/jni/third_party/libprisma",
+      "url": "https://github.com/TelegramMessenger/libprisma.git"
+    }
+  ],
+  "dependency_overlays": [
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/Cargo.lock",
+      "sha256": "3a6a1d95f32f7610ef148c77ac1eaac4d391e854e87c94198de694064efd28e4",
+      "size": 1671
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/Cargo.toml",
+      "sha256": "4311146371b303f24c08cd4471f0418c33775d4576e3ca4823e76a0a97d5a210",
+      "size": 1129
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/examples/web/index.html",
+      "sha256": "25eef32e9d4da86eb79796b17938f9834e3ed6d2635802b316b054d7dd5cb8b5",
+      "size": 4680
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/examples/web/main.js",
+      "sha256": "6b430369c345dcc2999bbc113f2d921de9036f5bbc06bbd65b8540aa865a373f",
+      "size": 14043
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/examples/web/tlottie.nosimd.wasm",
+      "sha256": "1e2566386057eec9604ce4237bc220cd776b29137eb342e3e5bf70603bf270c6",
+      "size": 546929
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/examples/web/tlottie.wasm",
+      "sha256": "adaca5c88e5df75abffc7b8bb43f145fc1dcfd0a6cf208164f3a16b1c5e998b3",
+      "size": 562791
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/composition/json.rs",
+      "sha256": "3d8624ebac891691df16509f4e1beff5d00fdcac05aeb78cff36771871a6b344",
+      "size": 11024
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/composition/limits.rs",
+      "sha256": "9b24667d72d14d75e5523562ec7dcfab603efcdc3046b883a57c26b93ce1707e",
+      "size": 6475
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/composition/model.rs",
+      "sha256": "6e6b01ccc8d75fd097765fc3ff8064adb9854c11423777c24db786694bdc044f",
+      "size": 16862
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/composition/parse.rs",
+      "sha256": "3f1d451af515ec447cd622e6c9146e7be07d3971a54d78d4c06d63c37e06087c",
+      "size": 81903
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/composition/tests/parse.rs",
+      "sha256": "2dc5762d2d5273b1e881de35e052fe6f20da9ae4f33d5ccfbf792066353c9817",
+      "size": 16478
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/error.rs",
+      "sha256": "dd265f0f22406f8cede04d3139df4e289038f45bd09189536992be3ef35b6c04",
+      "size": 6154
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/cpu/backend.rs",
+      "sha256": "2142ba4744dc54b48dddeac63acdc2336eb09ee8f0e79f4063b550229e5ae126",
+      "size": 27401
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/cpu/executor.rs",
+      "sha256": "220ad3c26bf240691ebf79bec6c2ba7def83e1fedbd64d43290fe386ff5b6187",
+      "size": 41044
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/cpu/renderer.rs",
+      "sha256": "e3a001cbf2ba1add915410018eb59a6dbc3b24c7ea9f2856e32065d638ca4476",
+      "size": 8555
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/cpu/tests/mask_bounds.rs",
+      "sha256": "171f47bd3178d65b1c6db2d84c39c23daaf5c667cfa60c4d74ead6b5c7da6972",
+      "size": 8802
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/budget.rs",
+      "sha256": "4dd7424487af818f87b40fc36ebb06309d4a2c03357ebd293e4c89f913ab6f32",
+      "size": 22429
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/evaluator.rs",
+      "sha256": "e59cd232cf2bdc22d656f06b27297123aff5931531876db5f86b26962a440e19",
+      "size": 44352
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/geometry.rs",
+      "sha256": "47d3c922f3bc660d8bcd856be73bf644bb907000397391a6e24839e87f763d90",
+      "size": 38882
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/renderer.rs",
+      "sha256": "d98ff4bdd171afdf3a8a2d6b2a25a7813bd694d7326796be078738d727f0ca11",
+      "size": 6240
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/stroke.rs",
+      "sha256": "5a8e716bea9dcfca5fd1eea3d02e0b13fb2344d3efa0df56c8e0909ea8d0c864",
+      "size": 22889
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/src/renderer/frame/walker.rs",
+      "sha256": "10f4fa16946ce2905de6b47534bd2b06fe05d7ab70913b42d65c20172a734df7",
+      "size": 33643
+    },
+    {
+      "mode": 420,
+      "origin": "dependency-overlay",
+      "path": "TMessagesProj/jni/tlottie/tools/benchmark.py",
+      "sha256": "20947f67feb247d1c477abbb548608d26e8243ea9be6634fb96305df39098ecd",
+      "size": 164888
+    }
+  ],
+  "local_aars": [
+    {
+      "members": [
+        {
+          "path": "AndroidManifest.xml",
+          "sha256": "875527d56f398234d16cf746e91a1a797e7578d88f8cac011151a6e9effdd49a",
+          "size": 204
+        },
+        {
+          "path": "R.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size": 0
+        },
+        {
+          "path": "classes.jar",
+          "sha256": "935760bc5128b330a370d5d04313d99b15c40350e16a20d55cd0197fe2f9ddd8",
+          "size": 324
+        },
+        {
+          "path": "jni/arm64-v8a/libfghook.so",
+          "sha256": "dcd355638c4d5a943b93f6c22c1c2721094b5626c4f08b673d2af40e44da0956",
+          "size": 93560
+        },
+        {
+          "path": "jni/arm64-v8a/liblsplant.so",
+          "sha256": "33decc615804c3bc50f897701301d7286fb543f846a31e5f962dba928b86d444",
+          "size": 117312
+        },
+        {
+          "path": "jni/arm64-v8a/libshadowhook.so",
+          "sha256": "806d6755117d5c6c5cb64b6e09210f9821b51ed53147ed22fe70b54cd99148ac",
+          "size": 522808
+        },
+        {
+          "path": "jni/armeabi-v7a/libfghook.so",
+          "sha256": "d41230dac2dd832bbc17cb5c341796228e238a0269b21a24f8298caa8f4e8cd2",
+          "size": 56296
+        },
+        {
+          "path": "jni/armeabi-v7a/liblsplant.so",
+          "sha256": "8486cdfdda84aaeadc71d74e8066e620e3310cc79afe326f2588ce48034a3193",
+          "size": 95140
+        },
+        {
+          "path": "jni/armeabi-v7a/libshadowhook.so",
+          "sha256": "f1a6ba83e256db38e9d186f35e811e54376bb13e2cfd93e1c086ceb7ab5203c1",
+          "size": 418200
+        }
+      ],
+      "path": "TMessagesProj/libs/fghook-core.aar",
+      "sha256": "89cd4ef1f988f2c19c42281500ec3827ba3059fc004ba21a5d61d720555bf668",
+      "size": 550329
+    },
+    {
+      "embedded_go_build_information": {
+        "build\t-tags=": [
+          "with_quic,with_utls,badlinkname,tfogo_checklinkname0"
+        ],
+        "mod": [
+          "github.com/sagernet/sing-box\t(devel)\t",
+          "v0.37.0\th1:vF1DjpVEshcIqoEaauuHebaLk1O1forxjxBaVn884JQ="
+        ],
+        "path": [
+          "github.com/sagernet/sing-box/build/arm64/libbox"
+        ]
+      },
+      "members": [
+        {
+          "path": "AndroidManifest.xml",
+          "sha256": "3f422a8863477a78ac17028a493d62bfb62eed0cedd9e7479ce031b5941f5fc1",
+          "size": 145
+        },
+        {
+          "path": "proguard.txt",
+          "sha256": "cde92d0875834c63bc69b3ba5d782ef8a5b13480bfaebea0b1636f5c294cfa65",
+          "size": 62
+        },
+        {
+          "path": "classes.jar",
+          "sha256": "00ac55e6c787b9114e30dc76c8ef5e816fbf0eb6472624aab0f06e446bc86eb9",
+          "size": 239188
+        },
+        {
+          "path": "jni/arm64-v8a/libbox.so",
+          "sha256": "65da96a4cc8eeb5c420de0fd9b5a843b3fab8d6072b44a3bcbce591fe85f5ef0",
+          "size": 46072656
+        },
+        {
+          "path": "R.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size": 0
+        }
+      ],
+      "path": "TMessagesProj/libs/libbox.aar",
+      "sha256": "80ffa03c3175851b4c0b8c1be401296a01f660314183d28a59180ed3923965e0",
+      "size": 16159022
+    },
+    {
+      "members": [
+        {
+          "path": "AndroidManifest.xml",
+          "sha256": "48da93eb2f0b63858e17312d9280af13fa2ad3478063416bf03797c38567814c",
+          "size": 233
+        },
+        {
+          "path": "classes.jar",
+          "sha256": "4aaae67dce5ad1fd2589c6482bb6892a3eaa4035bd5a7b1e9cc43d87d1021512",
+          "size": 37536
+        },
+        {
+          "path": "res/values-af/values.xml",
+          "sha256": "e0d3b36e1574330a96a8284ab10ec5f909957b8ccdb7851d16033cc67f7fa3d1",
+          "size": 468
+        },
+        {
+          "path": "res/values-am/values.xml",
+          "sha256": "238183ece3d67b4780ef4624f2064ff2e1a0054e371afea46862dbe7733da0f3",
+          "size": 487
+        },
+        {
+          "path": "res/values-ar/values.xml",
+          "sha256": "984af0378ad1852b9adf2bf326c4c7cd54e500a5af56e1020484b7923baf00ca",
+          "size": 514
+        },
+        {
+          "path": "res/values-as/values.xml",
+          "sha256": "59d948c0b9ab6f6a180205f9f7c43c81cd092e4453ce2f8ee6787e279cd00784",
+          "size": 460
+        },
+        {
+          "path": "res/values-az/values.xml",
+          "sha256": "5276c46df9269e6dc5f9807df7e1f83926e1257dabde39460997472798a56b09",
+          "size": 470
+        },
+        {
+          "path": "res/values-b+es+419/values.xml",
+          "sha256": "955a8f32ca79e4740b4c33ca4a7a56ab93c0e7d304695d18b3b9c185b429ac53",
+          "size": 491
+        },
+        {
+          "path": "res/values-b+sr+Latn/values.xml",
+          "sha256": "96e8be5c3f586adc88740bee8bc26837b78bf3bd1d4ddf2770ca66c7c1fbecba",
+          "size": 471
+        },
+        {
+          "path": "res/values-be/values.xml",
+          "sha256": "176f013ab1cad1689f07e8d24021ebfa49ccbf40e2ffa014231fbc00f4054188",
+          "size": 533
+        },
+        {
+          "path": "res/values-bg/values.xml",
+          "sha256": "6e8220b797ca77358cb5b0dd5cb1a3a64a308fa44ac744b96e7511f51c1db110",
+          "size": 541
+        },
+        {
+          "path": "res/values-bn/values.xml",
+          "sha256": "178310ccc3e8ae78a253eb6329aabe307463d1233d1dca4864e044fec43cecb6",
+          "size": 576
+        },
+        {
+          "path": "res/values-bs/values.xml",
+          "sha256": "58675e18f55d43d21b3c896afa5b76bfde351a40b8d31ca8ca35bff0612fa0c4",
+          "size": 460
+        },
+        {
+          "path": "res/values-ca/values.xml",
+          "sha256": "99aa3efbe079f1816b3f727a39d98973d3b943d1fa2bbc6956d9c09820b2405b",
+          "size": 485
+        },
+        {
+          "path": "res/values-cs/values.xml",
+          "sha256": "28619c3940e6f7fee3d9bc37a74c8460be344a829454ff288ee69e8619f3a905",
+          "size": 463
+        },
+        {
+          "path": "res/values-da/values.xml",
+          "sha256": "0a3e5004dc4930c94e0dd6da8f0f02d8406a063139171f3bd3bc91e1888d8e6c",
+          "size": 464
+        },
+        {
+          "path": "res/values-de/values.xml",
+          "sha256": "3d86b76e3c95df1a5dbdafa442b8f5c1b4d3cb00a45ba3f6c971f0c1effcbcb0",
+          "size": 466
+        },
+        {
+          "path": "res/values-el/values.xml",
+          "sha256": "18e8c33de3f45beadaf75012a41c6c1d08e46b24a02d7e8349a8a668858992a3",
+          "size": 510
+        },
+        {
+          "path": "res/values-en-rGB/values.xml",
+          "sha256": "a3c7a34d5e15d0cdfa89500981089d5c44551062aae53e9b9d3f4d22bd4c061d",
+          "size": 464
+        },
+        {
+          "path": "res/values-en-rIN/values.xml",
+          "sha256": "088ae07444b09061ab1839355b4dfcc673eb181063a9c5b45b6dcad66ce1a11f",
+          "size": 464
+        },
+        {
+          "path": "res/values-es/values.xml",
+          "sha256": "f4074cc2b702ca5490e3b76374931b02be66b1af9a64de171e1ce4c095b65094",
+          "size": 483
+        },
+        {
+          "path": "res/values-et/values.xml",
+          "sha256": "6cec956e8565977c000dcd774c6abe313bc3d667e93dcccda65e9cabb518cf19",
+          "size": 464
+        },
+        {
+          "path": "res/values-eu/values.xml",
+          "sha256": "765a97f4751475efbb1c8492d25e5389518b55d6a018517f43579fecca3053b6",
+          "size": 495
+        },
+        {
+          "path": "res/values-fa/values.xml",
+          "sha256": "30bcd206655e49a541a7ad51c49ce660707e3a49d6f24924b4c14fbcc21bb864",
+          "size": 500
+        },
+        {
+          "path": "res/values-fi/values.xml",
+          "sha256": "d04f351ed36933c201e95708b2821749acc3a79a29cc0b51130840d2a1ee4bfc",
+          "size": 467
+        },
+        {
+          "path": "res/values-fr-rCA/values.xml",
+          "sha256": "09c8d08fbd1d0ad575d2aa6d4d1956bf23b6e8e3d2849a2521fb387276c53ae2",
+          "size": 492
+        },
+        {
+          "path": "res/values-fr/values.xml",
+          "sha256": "14f673994a55ab4bd25f27b8339e2cc72b5edcc0fec92ea5628112f844c7b4c6",
+          "size": 474
+        },
+        {
+          "path": "res/values-gl/values.xml",
+          "sha256": "fce3a94adc7dca4eef1a8c87494453b7391ba77e40819d5e23924c3e874ceaa0",
+          "size": 483
+        },
+        {
+          "path": "res/values-gu/values.xml",
+          "sha256": "80e6afc6ddb0e529b1759f067f43a119258622e38d928103ffd4433183c3dbe2",
+          "size": 563
+        },
+        {
+          "path": "res/values-hi/values.xml",
+          "sha256": "687ad2f2c1263abf2553ff928190ec5ee9098b3122173757bdc6a9bf1ec2dcbf",
+          "size": 543
+        },
+        {
+          "path": "res/values-hr/values.xml",
+          "sha256": "86e01960b838b4364ca461347b209de31f538a7c4f97d7a3baeb5b3e51eb5809",
+          "size": 460
+        },
+        {
+          "path": "res/values-hu/values.xml",
+          "sha256": "e9d4da63db21e83bd02a0db5351f9d6edc06c929d2b18246141e6dc5b2a990c3",
+          "size": 460
+        },
+        {
+          "path": "res/values-hy/values.xml",
+          "sha256": "7285985f5dd326dcf550c92484197a93d99dd51f3c3c16eb7f2e306e016bad4f",
+          "size": 536
+        },
+        {
+          "path": "res/values-in/values.xml",
+          "sha256": "45d6b47cf5768c3b7d8e8d5400a1d4e40a37ab5a6d8d7d222c881a7f4d83f723",
+          "size": 462
+        },
+        {
+          "path": "res/values-is/values.xml",
+          "sha256": "40430116bffe08dbc8e3166c54eaa1645aaed64e41630d959ede1eacd7469ed6",
+          "size": 465
+        },
+        {
+          "path": "res/values-it/values.xml",
+          "sha256": "01b24935bc8ae4935af78b32b1fcecfb49a62279d95562d3e989d97171cd21a2",
+          "size": 474
+        },
+        {
+          "path": "res/values-iw/values.xml",
+          "sha256": "f4e2b64a3545ec6ef87fdd7d31065ace210e1ebf2d36ab99ea53514b03ae014b",
+          "size": 473
+        },
+        {
+          "path": "res/values-ja/values.xml",
+          "sha256": "ed4f56abc8fd7189afa95b18a8b1c76dee8c53556ae9b4e508af77ed63799821",
+          "size": 502
+        },
+        {
+          "path": "res/values-ka/values.xml",
+          "sha256": "1c22b53d771456b65d17b1bdc83c7087b3ef408049a4d4727ce938f8eaf30717",
+          "size": 598
+        },
+        {
+          "path": "res/values-kk/values.xml",
+          "sha256": "4dcf85299fd8673c65be723438893d5532311c2461cbdf1a474da23e3066ecc1",
+          "size": 489
+        },
+        {
+          "path": "res/values-km/values.xml",
+          "sha256": "85a2b3786f3a24f2cee6044de5efd422392b3419e38be8dce3ed9fef5f384bfe",
+          "size": 561
+        },
+        {
+          "path": "res/values-kn/values.xml",
+          "sha256": "32809a59724e0a6a725dc5003421506b66ba6e33e08ed7846590ead2e945ab9b",
+          "size": 576
+        },
+        {
+          "path": "res/values-ko/values.xml",
+          "sha256": "17b7cd577b560ad0a82a841fc90e363e3cca5c5d48abdb439e8dad4aef8ed4c7",
+          "size": 490
+        },
+        {
+          "path": "res/values-ky/values.xml",
+          "sha256": "43f945e7cfd2f61ceded0c28bf4d9e00959c63d2b332ef4fe20cc86f0a3257f8",
+          "size": 508
+        },
+        {
+          "path": "res/values-lo/values.xml",
+          "sha256": "7fa53b18927ae04973fdf46d2cb90f4815f2534b9fd41f59fc2d2ac40873836d",
+          "size": 547
+        },
+        {
+          "path": "res/values-lt/values.xml",
+          "sha256": "edc2b69bb819de29a23c55b8277947b045aec1f384275fa7ca10809d950bbec5",
+          "size": 488
+        },
+        {
+          "path": "res/values-lv/values.xml",
+          "sha256": "f917f26ac2ea53eb259627bc6e7160425ddfc84a7f4f3043bf10fb6740ea007f",
+          "size": 465
+        },
+        {
+          "path": "res/values-mk/values.xml",
+          "sha256": "5335c8eefd7ffac2b67a97e8c0c623cbbe6fffa9690b5d26773345a2e107d2b0",
+          "size": 528
+        },
+        {
+          "path": "res/values-ml/values.xml",
+          "sha256": "42280cc8aa161c9a2cddc87e6b2ba6e577f29253b2e101cd3774c613847ae6e0",
+          "size": 576
+        },
+        {
+          "path": "res/values-mn/values.xml",
+          "sha256": "7f0908f9b0ddb80d7d16ee54a9abf5ae07702e86e47773cbf12c3ae8098a1651",
+          "size": 493
+        },
+        {
+          "path": "res/values-mr/values.xml",
+          "sha256": "71a43bdb6769a055c05befb68cd448beac854478791819a8ed07c50be12359a6",
+          "size": 554
+        },
+        {
+          "path": "res/values-ms/values.xml",
+          "sha256": "1b5247f0cc0b87dd76b3a6059333c22ee06ef862e68cf657c9bd9ae2fbde2aae",
+          "size": 461
+        },
+        {
+          "path": "res/values-my/values.xml",
+          "sha256": "795064416226def69ec245dd91049513c7992efb96c98f7a0302c263a885daf2",
+          "size": 528
+        },
+        {
+          "path": "res/values-ne/values.xml",
+          "sha256": "0de871410c0bed12430fcfa627e3cc3fb642cd45496c07bca184b86f42d9ace6",
+          "size": 526
+        },
+        {
+          "path": "res/values-nl/values.xml",
+          "sha256": "080e9755b31f42c67f65f34ff12ba245e2704ef0b0b62e8b8c00d9904301f21f",
+          "size": 464
+        },
+        {
+          "path": "res/values-no/values.xml",
+          "sha256": "665fff8c4f29d00699fc76b09046339e53ea32fee8777e63d2a3a4843df583bd",
+          "size": 464
+        },
+        {
+          "path": "res/values-or/values.xml",
+          "sha256": "ec14bd222b0205c0e5f9d06179fc55f237f53bfd9dd05475b11f7f707e2d72b5",
+          "size": 460
+        },
+        {
+          "path": "res/values-pa/values.xml",
+          "sha256": "9941281a2a7e87cd37c406e3df9fc72e4ec24c9c835ad61abbbd18570af60e84",
+          "size": 547
+        },
+        {
+          "path": "res/values-pl/values.xml",
+          "sha256": "878897adab4833558068c9a1aae181c8e2424928620bd1844d48cd1cfceaaeaa",
+          "size": 466
+        },
+        {
+          "path": "res/values-pt-rBR/values.xml",
+          "sha256": "3ca6295ac39356d1cdf6ad9c98d6f85934c50dface7ca1d6d372840dba9fce20",
+          "size": 484
+        },
+        {
+          "path": "res/values-pt-rPT/values.xml",
+          "sha256": "4e9074f8188342680b7cde915e83ee171b4dc1b029a49db3fc23073ce69c91d7",
+          "size": 484
+        },
+        {
+          "path": "res/values-ro/values.xml",
+          "sha256": "7031f842d62f69a9528fe0f633643fc3026e941faaf99774207d2d464390586c",
+          "size": 471
+        },
+        {
+          "path": "res/values-ru/values.xml",
+          "sha256": "dc00479727f279e42c5b8010304fb1fe08201e3264bc5dcb526ef35fc2d90a56",
+          "size": 533
+        },
+        {
+          "path": "res/values-si/values.xml",
+          "sha256": "c25e96e930db164627c7ce6a2eac065999694fb163eccef543fa00fbdf0a2c08",
+          "size": 510
+        },
+        {
+          "path": "res/values-sk/values.xml",
+          "sha256": "fd4ffeb8f284741e7c4793423cf9634cb2017412f4d89484419647af6597b9ef",
+          "size": 460
+        },
+        {
+          "path": "res/values-sl/values.xml",
+          "sha256": "49c4f35b7a7295204a81beabe1fa827bd9535159fb47e6cb0de16f440b24109c",
+          "size": 475
+        },
+        {
+          "path": "res/values-sq/values.xml",
+          "sha256": "957e9626af4bc395045c16eb786a68c2a7977be64a72999a718acfbb622d98ac",
+          "size": 478
+        },
+        {
+          "path": "res/values-sr/values.xml",
+          "sha256": "9aae797f5fb8542167107290f4fb359e6f989f89e2c0ea8e53dfcf4b03dfaa89",
+          "size": 496
+        },
+        {
+          "path": "res/values-sv/values.xml",
+          "sha256": "61717653fe3ab835f60ad0a2e4d584b64a3ded14178fc759ee91bf99ae175bf5",
+          "size": 483
+        },
+        {
+          "path": "res/values-sw/values.xml",
+          "sha256": "cbb560cd1f55501290dda7bd2e548ae0e242930d9252cf60d4b13431a0c58c50",
+          "size": 492
+        },
+        {
+          "path": "res/values-ta/values.xml",
+          "sha256": "4b3f7db39b1c59f52cd304957d0c0a884ed6da0ba351b65192dbb062e2164c60",
+          "size": 582
+        },
+        {
+          "path": "res/values-te/values.xml",
+          "sha256": "ea2447a86c2d5a09bc27baffaacbe6978e231c6fb7dd8512c97cae5c0444a670",
+          "size": 537
+        },
+        {
+          "path": "res/values-th/values.xml",
+          "sha256": "34b29b4f02492497717d4252f02b87befb2856f03cea97d0a1273ce9783b3840",
+          "size": 530
+        },
+        {
+          "path": "res/values-tl/values.xml",
+          "sha256": "f4a031600deac2d1db37f4d9660caf5cecf71d20bcdf5a873245d201bcc0d19c",
+          "size": 477
+        },
+        {
+          "path": "res/values-tr/values.xml",
+          "sha256": "7302e0c09fd101809ac457192a605e7037541d82f6a7ca585db9fd053131c96f",
+          "size": 466
+        },
+        {
+          "path": "res/values-uk/values.xml",
+          "sha256": "1e6a8e610ac4a12aa22711d915cd8b98054781eeb2ecac286a1ea8faa13532bf",
+          "size": 533
+        },
+        {
+          "path": "res/values-ur/values.xml",
+          "sha256": "2c880826b02ea5c3cc6492b212a59a86edefcb918b8814d5144df82b66d81fdb",
+          "size": 503
+        },
+        {
+          "path": "res/values-uz/values.xml",
+          "sha256": "371f212913c8d480084e6726b7318526ce9877c64ef6d2e8e593c5c217578e04",
+          "size": 473
+        },
+        {
+          "path": "res/values-vi/values.xml",
+          "sha256": "6972e62146a19e715dd62a957a038c94d76e36827e25c6be8f8a3f8ba1e315f0",
+          "size": 482
+        },
+        {
+          "path": "res/values-zh-rCN/values.xml",
+          "sha256": "d17ecd6ece1f1a51a7ceb2a39e0289a0647a896fecaca549c23bef03de9df865",
+          "size": 470
+        },
+        {
+          "path": "res/values-zh-rHK/values.xml",
+          "sha256": "1c763db73c8d90fcc0edeea94dde22d2c0056b9365a90a2a5fc6af0ac4c38595",
+          "size": 482
+        },
+        {
+          "path": "res/values-zh-rTW/values.xml",
+          "sha256": "b669ffc06b9ff999abcab0b365dee397bd539a775cbbaaf210284aae55f941c1",
+          "size": 467
+        },
+        {
+          "path": "res/values-zu/values.xml",
+          "sha256": "b1dfaa838fd316b9c429d5c61ad08959088b2441162f6b6d4ee1464b4515040b",
+          "size": 465
+        },
+        {
+          "path": "res/values/values.xml",
+          "sha256": "97e2a17396cfd94747d293fa9d9b926ca5ae4ba3a96df789fc65e130762ee271",
+          "size": 425
+        },
+        {
+          "path": "R.txt",
+          "sha256": "8c1380b315375fa1fdcb1334da85a6cd229cd9bc921d5ef5d1b945ed61adf090",
+          "size": 121
+        }
+      ],
+      "path": "TMessagesProj/libs/libgsaverification-client.aar",
+      "sha256": "fe6fac5a24d8fd576998540fe63c34890818f4b464529729610a3fb3b42d1be4",
+      "size": 75730
+    }
+  ],
+  "missing_fields_policy": "Completeness covers matching source, patch, license and recipe for Finegram native additions. Unchanged upstream TDLib/Google artifacts use exact public Telegram artifact coordinates and preserved upstream recipes/notices. Historical command logs and a new bit-identical rebuild are not prerequisites and are not claimed.",
+  "native_source_files": [
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip",
+      "sha256": "7bcb5dd63ebe01cbca84c78fc59ac05a0797170eb3c526a3032d01d586345b4a"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/manifests/lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip.files.json",
+      "sha256": "ef43826501ac63787bb7c30f48d005ede0add5cc7389e7782ebddd8ff94b192d"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/shadowhook-593f491be687-finegram-patched-source.zip",
+      "sha256": "ecf3fa4eff64f87847b5c120a9352802ce3021f688bca1b39c9fb4974364d6a0"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/manifests/shadowhook-593f491be687-finegram-patched-source.zip.files.json",
+      "sha256": "32b49bcd2badf7fb3621a1e0b0ec486c5d65863829c337b51ba646994d5c17d9"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/xz-embedded-ae63ae3a36ed-source.zip",
+      "sha256": "7325e12694ebb3683130677538b4cba3d1f6a33517874fee057dc5aaf7eae28a"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/manifests/xz-embedded-ae63ae3a36ed-source.zip.files.json",
+      "sha256": "cfeecc254b83a5d5e1d794505675133e344ffd1a6934d30cbb21d7f1488b6f0c"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/provenance.json",
+      "sha256": "1be22b9201cf825723e8db7deec334c60e81bacc31b530b105bb29df4187f9b4"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/binary-matches.json",
+      "sha256": "7d705bc07a8da5eb8b1bd58b0929e5204c4d0ddbd54417b3b6a0e20decd239d8"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/fghook-source-comparison.json",
+      "sha256": "9bc5af426093c6e1eb3a9d601742c83abbae7efff6c909c72704e029ae469f85"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/xz-vendored-matches.json",
+      "sha256": "4c0b568b7958e4881ad15dcc6baf705cc8e8f198d4cc834f13eb2c38a7edddde"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/verification.json",
+      "sha256": "bcb41e3e7066f1e4a3127574dbff91ec02a990846838050402c3fe93f579880d"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/SOURCE-BUILD.md",
+      "sha256": "0ec2bb0e98ef70f36ad48acb5e55b80f59b8ab6f78e79c1f4b3c56d0c67d56d5"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/README.md",
+      "sha256": "96ce0b1b47207dcadb7af9ea027fe35006ae007505750e37a07fb4e468ccbf61"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/lsplant-local.patch",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/dex_builder-local.patch",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/parallel_hashmap-local.patch",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/shadowhook-local.patch",
+      "sha256": "eb871febae3a1191f7aebfa4ba55c57783972a8d81d44c43954399edf8ec1b8f"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/shadowhook-optional-linker.patch",
+      "sha256": "eb871febae3a1191f7aebfa4ba55c57783972a8d81d44c43954399edf8ec1b8f"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/shadowhook-CMakeLists.txt",
+      "sha256": "3d1e2c839fdcb18d41c71e49a62ebd1e739b55938a275552bcb53609131b6034"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/hook/evidence/xz-embedded-local.patch",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/libbox/sing-box-finegram-source.zip",
+      "sha256": "29e58986e23eb9a3e0756a8ee25f942744381b08bfef39fbb7635e0a8ef32506"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/libbox/provenance.json",
+      "sha256": "d8e905fe3a73537fd53fd4775b274aaee4fc7c82125e2e0f48c4170f8ada1e06"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/libbox/finegram-libbox.patch",
+      "sha256": "8e4c0740c780274ebf1efba1e0ec46b04e5d02139bafe8631a7654bb02ef3c13"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/libbox/fixture-review.json",
+      "sha256": "4ace9ea3a437ac03984a0e3c99cba6f2d958ae0a8a33c1babb5862f29ba779c7"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/upstream/telegram-tde2e-origin.json",
+      "sha256": "6564d2272e46ea8bb468aec8502876a022432f7284793a73a99e816ebb2ef87b"
+    },
+    {
+      "path": "SOURCE-NATIVE-SOURCES/upstream/TDLib-LICENSE_1_0.txt",
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+    }
+  ],
+  "nonblocking_limits": [
+    "No fresh native source-to-binary rebuild was performed.",
+    "TDLib source revision is not established; exact unchanged public Telegram binary origin and original recipe are documented.",
+    "Google local AAR does not embed POM/license metadata; public artifact coordinates and upstream notices are retained."
+  ],
+  "provenance_complete": true,
+  "required_source_components": [
+    "Finegram fghook wrapper",
+    "LSPlant",
+    "shadowhook",
+    "xz-embedded",
+    "libbox / sing-box"
+  ],
+  "scope": "Frozen release build inputs, bundled native sources, public dependency pins and known provenance limits. No native rebuild performed.",
+  "source_bundle_verification": [
+    {
+      "crc_verified": true,
+      "git_history_included": false,
+      "licenses": {
+        "lsplant/LICENSE": "09acdfb5bfb7aaed93d7d7fa5cebfc7350c555847d2ed07b5b9716da43670e04",
+        "lsplant/lsplant/src/main/jni/external/dex_builder/LICENSE": "eaac271f6aaeec28f07bc8834a313ea23b2aa1282a0dd7ea3e6067f0b25895db",
+        "lsplant/lsplant/src/main/jni/external/dex_builder/external/parallel_hashmap/LICENSE": "e8de1a7393457e9c88768b78e6ba790622fbefb040ce48194c2cb0f1b6d4e9ff"
+      },
+      "member_hashes_verified": true,
+      "path": "lsplant-1dc6ef5c6c5c-with-native-submodules-source.zip",
+      "private_local_paths": false,
+      "sha256": "7bcb5dd63ebe01cbca84c78fc59ac05a0797170eb3c526a3032d01d586345b4a",
+      "size": 2473858,
+      "source_manifest_entries": 311
+    },
+    {
+      "crc_verified": true,
+      "git_history_included": false,
+      "licenses": {
+        "shadowhook-src/LICENSE": "92af8082ff856dc0aed362110c45f700b0b71cace21f1ba5fda49faa13733dcc",
+        "shadowhook-src/shadowhook/src/main/cpp/third_party/lss/LICENSE": "01b966ab1dab73c6375d16533c0b5426665d09b090f0041462f74ce24a363291",
+        "shadowhook-src/shadowhook/src/main/cpp/third_party/xdl/LICENSE": "65a4f0a096b84aed7e35230224fc070bdfd1ab590a310f59db2204c670374e12"
+      },
+      "member_hashes_verified": true,
+      "path": "shadowhook-593f491be687-finegram-patched-source.zip",
+      "private_local_paths": false,
+      "sha256": "ecf3fa4eff64f87847b5c120a9352802ce3021f688bca1b39c9fb4974364d6a0",
+      "size": 775834,
+      "source_manifest_entries": 164
+    },
+    {
+      "crc_verified": true,
+      "git_history_included": false,
+      "licenses": {
+        "xz-embedded/AUTHORS": "646bdb241410bea77693d1482f29600d46283473e385433da683ecbee47dde30",
+        "xz-embedded/COPYING": "29963b2e635c238810b0dbb54ad68a28c3ba2cfaedefad729f1f46eb2603e847"
+      },
+      "member_hashes_verified": true,
+      "path": "xz-embedded-ae63ae3a36ed-source.zip",
+      "private_local_paths": false,
+      "sha256": "7325e12694ebb3683130677538b4cba3d1f6a33517874fee057dc5aaf7eae28a",
+      "size": 63210,
+      "source_manifest_entries": 33
+    },
+    {
+      "crc_verified": true,
+      "git_history_included": false,
+      "licenses": {
+        "sing-box-finegram-source/LICENSE": "bb3805862b583aee73ad6f7805ec634747a37257a637a3069857843f05ea589c",
+        "sing-box-finegram-source/common/ja3/LICENSE": "fbf8be62efaf777900674533141cddef88fe00ca93aa37a2edbb492f5e7a7461",
+        "sing-box-finegram-source/common/windivert/assets/LICENSE.txt": "542e02ca56c33aea103ce84a8b874b0b15e25b9f559d9bf578a10652f824815d"
+      },
+      "member_hashes_verified": true,
+      "path": "sing-box-finegram-source.zip",
+      "private_local_paths": false,
+      "sha256": "29e58986e23eb9a3e0756a8ee25f942744381b08bfef39fbb7635e0a8ef32506",
+      "size": 2962404,
+      "source_manifest_entries": 1635
+    }
+  ],
+  "version": "1.5.1"
+}

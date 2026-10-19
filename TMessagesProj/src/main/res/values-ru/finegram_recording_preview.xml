@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_ConfirmVoiceBeforeSend">Проверять голосовые перед отправкой</string>
+    <string name="FG_ConfirmRoundBeforeSend">Проверять видеосообщения перед отправкой</string>
+    <string name="FG_ConfirmRecordingBeforeSend_Desc">После записи открывать предпросмотр. Для отправки потребуется отдельное нажатие.</string>
+</resources>

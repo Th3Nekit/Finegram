@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_BackgroundConnection">Фоновое подключение</string>
+    <string name="FG_BackgroundConnection_Desc">Для сообщений и звонков при закрытом приложении</string>
+    <string name="FG_AdsSettings">Реклама</string>
+</resources>

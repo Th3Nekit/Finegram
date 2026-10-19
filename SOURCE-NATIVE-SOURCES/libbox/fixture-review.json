@@ -1,0 +1,34 @@
+[
+  {
+    "matches_public_head_ignoring_crlf": true,
+    "path": "sing-box-finegram-source/test/hysteria2_test.go",
+    "rules": [
+      "credential_literal"
+    ],
+    "sha256": "11040d05362bbcaf5cd9620c843f1fd1bca379e2c8adc2ffdd8a0995f090234b"
+  },
+  {
+    "matches_public_head_ignoring_crlf": true,
+    "path": "sing-box-finegram-source/test/openvpn_test.go",
+    "rules": [
+      "credential_literal"
+    ],
+    "sha256": "d7b7c57a5aafd60f5fe7612f6a5aa7a1ec2dde7e4ba78d98543dc34280341350"
+  },
+  {
+    "matches_public_head_ignoring_crlf": true,
+    "path": "sing-box-finegram-source/test/shadowsocks_legacy_test.go",
+    "rules": [
+      "credential_literal"
+    ],
+    "sha256": "9516bb04ae93a88f7638cc1ecaeaca233f320dcf3ad866ab78fbceb9c6c55681"
+  },
+  {
+    "matches_public_head_ignoring_crlf": true,
+    "path": "sing-box-finegram-source/test/ss_plugin_test.go",
+    "rules": [
+      "credential_literal"
+    ],
+    "sha256": "dba56b91c48093f243c7135ccbbbf79f9a70ca48057309e296845297b96f1be5"
+  }
+]

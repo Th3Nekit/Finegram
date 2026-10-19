@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Update_InstalledTitle">Установленная версия</string>
+    <string name="FG_Update_Bytes">Загрузка · %1$s</string>
+    <string name="FG_Update_Pause">Приостановить загрузку</string>
+    <string name="FG_Update_Resume">Продолжить загрузку</string>
+    <string name="FG_Update_Paused">Загрузка приостановлена</string>
+    <string name="FG_Update_Verifying">Проверка обновления…</string>
+    <string name="FG_Update_Ready">Готово к установке</string>
+    <string name="FG_Update_DownloadFailed">Загрузка прервана</string>
+    <string name="FG_Update_RetryHint">Скачанная часть сохранена. Нажмите «Продолжить загрузку», чтобы повторить попытку.</string>
+    <string name="FG_Update_CheckFailed">Не удалось проверить обновления. Проверьте подключение и повторите попытку.</string>
+    <string name="FG_Update_StorageHint">Во время загрузки можно выйти с этого экрана. Прогресс виден в клиенте и в уведомлении. Установка начнётся только после нажатия «Установить». Файлы установленных и устаревших обновлений удаляются автоматически.</string>
+    <string name="FG_Update_NotificationsOff">Уведомления об обновлениях отключены. Нажмите сюда, чтобы включить их в настройках системы.</string>
+</resources>

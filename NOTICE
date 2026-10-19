@@ -1,0 +1,31 @@
+Finegram
+
+Основано на исходном коде Telegram для Android (https://github.com/DrKLO/Telegram),
+лицензия GNU GPL v2 или новее.
+
+База форка: Cherrygram (https://github.com/arsLan4k1390/Cherrygram),
+Copyright github.com/arsLan4k1390, 2022-2026, лицензия GNU GPL v2 или новее.
+Файлы, оставшиеся производными от Cherrygram, сохраняют авторские заголовки.
+
+Магазин плагинов:
+
+- PluginManager — проект KangelPlugins (https://git.kangel.xyz/KangelPlugins/PluginManager),
+  лицензия GNU GPL v3. Части магазина и проверки подписей адаптированы для Finegram.
+  Код: `TMessagesProj/src/main/java/com/th3nekit/finegram/store/`.
+  Оригинальный текст лицензии: `LICENSE.PluginManager`.
+- Каталог плагинов: KangelPlugins/Plugins-Store
+  (https://git.kangel.xyz/KangelPlugins/Plugins-Store).
+  Лицензии отдельных плагинов определяются их авторами.
+
+В дереве лежат три собранные библиотеки:
+
+- `TMessagesProj/libs/libbox.aar` — урезанное ядро sing-box (https://github.com/SagerNet/sing-box),
+  лицензия GNU GPL v3 или новее.
+- `TMessagesProj/libs/fghook-core.aar` — движок перехватов на LSPlant
+  (https://github.com/LSPosed/LSPlant, лицензия GNU LGPL v3) и ShadowHook
+  (https://github.com/bytedance/android-inline-hook, лицензия MIT). Исходники в
+  `native/fghook/`, сборка — `sh native/fghook/build.sh`.
+- `TMessagesProj/libs/libgsaverification-client.aar` — досталась от Telegram для Android
+  вместе с остальным деревом.
+
+Finegram не связан с Telegram Messenger Inc. и не одобрен им.

@@ -1,0 +1,174 @@
+{
+  "AAR_sha256": "89cd4ef1f988f2c19c42281500ec3827ba3059fc004ba21a5d61d720555bf668",
+  "artifact": "TMessagesProj/libs/fghook-core.aar",
+  "libraries": [
+    {
+      "AAR_entry": "jni/arm64-v8a/liblsplant.so",
+      "bytes": 117312,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 16384,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 16384,
+            "offset": 113984,
+            "vaddr": 130368
+          },
+          {
+            "align": 16384,
+            "offset": 115272,
+            "vaddr": 148040
+          }
+        ],
+        "all_loads_16k_aligned": true,
+        "elf_class": 64
+      },
+      "optional_linker_warning_literal_present": null,
+      "sha256": "33decc615804c3bc50f897701301d7286fb543f846a31e5f962dba928b86d444",
+      "shadowhook_version_literal": null
+    },
+    {
+      "AAR_entry": "jni/arm64-v8a/libshadowhook.so",
+      "bytes": 522808,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 16384,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 16384,
+            "offset": 97056,
+            "vaddr": 113440
+          },
+          {
+            "align": 16384,
+            "offset": 98632,
+            "vaddr": 131400
+          }
+        ],
+        "all_loads_16k_aligned": true,
+        "elf_class": 64
+      },
+      "optional_linker_warning_literal_present": true,
+      "sha256": "806d6755117d5c6c5cb64b6e09210f9821b51ed53147ed22fe70b54cd99148ac",
+      "shadowhook_version_literal": "2.0.1"
+    },
+    {
+      "AAR_entry": "jni/arm64-v8a/libfghook.so",
+      "bytes": 93560,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 16384,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 16384,
+            "offset": 87584,
+            "vaddr": 103968
+          },
+          {
+            "align": 16384,
+            "offset": 90696,
+            "vaddr": 123464
+          }
+        ],
+        "all_loads_16k_aligned": true,
+        "elf_class": 64
+      },
+      "optional_linker_warning_literal_present": null,
+      "sha256": "dcd355638c4d5a943b93f6c22c1c2721094b5626c4f08b673d2af40e44da0956",
+      "shadowhook_version_literal": null
+    },
+    {
+      "AAR_entry": "jni/armeabi-v7a/liblsplant.so",
+      "bytes": 95140,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 4096,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 4096,
+            "offset": 93040,
+            "vaddr": 97136
+          },
+          {
+            "align": 4096,
+            "offset": 93700,
+            "vaddr": 101892
+          }
+        ],
+        "all_loads_16k_aligned": false,
+        "elf_class": 32
+      },
+      "optional_linker_warning_literal_present": null,
+      "sha256": "8486cdfdda84aaeadc71d74e8066e620e3310cc79afe326f2588ce48034a3193",
+      "shadowhook_version_literal": null
+    },
+    {
+      "AAR_entry": "jni/armeabi-v7a/libshadowhook.so",
+      "bytes": 418200,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 4096,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 4096,
+            "offset": 72048,
+            "vaddr": 76144
+          },
+          {
+            "align": 4096,
+            "offset": 73068,
+            "vaddr": 81260
+          }
+        ],
+        "all_loads_16k_aligned": false,
+        "elf_class": 32
+      },
+      "optional_linker_warning_literal_present": true,
+      "sha256": "f1a6ba83e256db38e9d186f35e811e54376bb13e2cfd93e1c086ceb7ab5203c1",
+      "shadowhook_version_literal": "2.0.1"
+    },
+    {
+      "AAR_entry": "jni/armeabi-v7a/libfghook.so",
+      "bytes": 56296,
+      "elf": {
+        "PT_LOAD": [
+          {
+            "align": 16384,
+            "offset": 0,
+            "vaddr": 0
+          },
+          {
+            "align": 16384,
+            "offset": 52496,
+            "vaddr": 68880
+          },
+          {
+            "align": 16384,
+            "offset": 54048,
+            "vaddr": 86816
+          }
+        ],
+        "all_loads_16k_aligned": true,
+        "elf_class": 32
+      },
+      "optional_linker_warning_literal_present": null,
+      "sha256": "d41230dac2dd832bbc17cb5c341796228e238a0269b21a24f8298caa8f4e8cd2",
+      "shadowhook_version_literal": null
+    }
+  ]
+}
