@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FGUpdateNotificationChannel">Обновления приложения</string>
+    <string name="FGUpdateNotificationChannelDescription">Загрузка и проверка обновлений Finegram</string>
+    <string name="FGUpdateNotificationTitle">Finegram %1$s</string>
+    <string name="FGUpdateNotificationDownloading">Загрузка обновления</string>
+    <string name="FGUpdateNotificationPaused">Загрузка приостановлена</string>
+    <string name="FGUpdateNotificationVerifying">Проверка обновления</string>
+    <string name="FGUpdateNotificationReady">Обновление готово. Нажмите, чтобы открыть экран обновления</string>
+    <string name="FGUpdateNotificationFailed">Загрузка остановлена</string>
+    <string name="FGUpdateNotificationPause">Пауза</string>
+    <string name="FGUpdateNotificationResume">Продолжить</string>
+    <string name="FGUpdateErrorNetwork">Не удалось завершить загрузку. Проверьте соединение и повторите попытку.</string>
+    <string name="FGUpdateErrorForeground">Android не разрешил запустить сервис загрузки. Откройте экран обновления и повторите попытку.</string>
+    <string name="FGUpdateErrorStorage">Не удалось сохранить обновление. Проверьте свободное место и повторите попытку.</string>
+    <string name="FGUpdateErrorMetadata">Сведения о файле обновления некорректны. Проверьте обновления ещё раз.</string>
+    <string name="FGUpdateErrorSize">Размер APK некорректен. Файл удалён.</string>
+    <string name="FGUpdateErrorHash">Контрольная сумма APK не совпала. Файл удалён.</string>
+    <string name="FGUpdateErrorPackage">APK не относится к этому приложению или не читается. Файл удалён.</string>
+    <string name="FGUpdateErrorSignature">Подпись APK не совпадает с подписью приложения. Файл удалён.</string>
+    <string name="FGUpdateErrorVersion">APK не новее установленного приложения. Файл удалён.</string>
+    <string name="FGUpdateErrorSignatureUnreadable">Не удалось прочитать подпись приложения или APK. Установка заблокирована, файл удалён. Повторите загрузку.</string>
+    <string name="FGUpdateChangelogHistory">История изменений</string>
+</resources>

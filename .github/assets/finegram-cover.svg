@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" fill="none">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1280" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0C171D"/><stop offset="1" stop-color="#152C35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(1010 193) rotate(90) scale(306 409)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#46C9C2" stop-opacity=".24"/><stop offset="1" stop-color="#46C9C2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="925" y1="90" x2="1147" y2="313" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8BE5DC" stop-opacity=".20"/><stop offset="1" stop-color="#4B89B2" stop-opacity=".09"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="925" y1="90" x2="1147" y2="313" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B2F5EA" stop-opacity=".62"/><stop offset="1" stop-color="#7DC4E5" stop-opacity=".16"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="969" y1="151" x2="1106" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0FCFA"/><stop offset="1" stop-color="#8FE7DC"/>
+    </linearGradient>
+    <clipPath id="frame"><rect width="1280" height="400" rx="28"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="400" fill="url(#background)"/>
+    <rect width="1280" height="400" fill="url(#glow)"/>
+    <path d="M821 -79C742 49 764 112 851 170S1001 293 889 477" stroke="#A1E4DD" stroke-opacity=".08" stroke-width="1.5"/>
+    <path d="M886 -100C807 28 829 91 916 149S1066 272 954 456" stroke="#A1E4DD" stroke-opacity=".09" stroke-width="1.5"/>
+    <path d="M951 -121C872 7 894 70 981 128S1131 251 1019 435" stroke="#A1E4DD" stroke-opacity=".10" stroke-width="1.5"/>
+    <text x="68" y="65" fill="#84D7CD" font-family="Arial, sans-serif" font-size="13" letter-spacing="3">ANDROID · TELEGRAM · CHERRYGRAM</text>
+    <text x="64" y="149" fill="#F1F8F7" font-family="Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Finegram</text>
+    <text x="68" y="201" fill="#B2C6CB" font-family="Arial, sans-serif" font-size="24">Telegram с вашими настройками</text>
+    <path d="M68 237H640" stroke="#65838B" stroke-opacity=".35"/>
+    <text x="68" y="277" fill="#D6E6E8" font-family="Arial, sans-serif" font-size="19">Плагины · Обход блокировок · Оформление</text>
+    <text x="68" y="307" fill="#8DA9B2" font-family="Arial, sans-serif" font-size="17">Клиент для Android на базе Cherrygram</text>
+    <g transform="rotate(-10 1036 202)">
+      <rect x="925" y="91" width="222" height="222" rx="65" fill="url(#glass)" stroke="url(#edge)" stroke-width="1.5"/>
+      <path d="M969 190L1099 145C1108 142 1112 147 1109 157L1081 258C1079 266 1074 268 1068 263L1035 236L1018 252C1014 256 1011 255 1012 249L1015 219L1080 166L999 207L973 199C965 196 964 192 969 190Z" fill="url(#mark)"/>
+      <path d="M1015 219L1035 236L1080 166Z" fill="#16333F" fill-opacity=".36"/>
+    </g>
+    <rect x=".75" y=".75" width="1278.5" height="398.5" rx="27.25" stroke="#779AA5" stroke-opacity=".20" stroke-width="1.5"/>
+  </g>
+</svg>

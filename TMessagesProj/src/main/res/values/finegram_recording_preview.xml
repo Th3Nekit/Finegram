@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_ConfirmVoiceBeforeSend">Review voice messages before sending</string>
+    <string name="FG_ConfirmRoundBeforeSend">Review video messages before sending</string>
+    <string name="FG_ConfirmRecordingBeforeSend_Desc">Open a preview after recording. Tap send separately to send the message.</string>
+</resources>

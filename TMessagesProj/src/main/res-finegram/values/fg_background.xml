@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fg_splash_background">#FFFFFF</color>
+    <color name="fg_splash_navigation_bar">#FFF</color>
+    <color name="fg_background">#041A40</color>
+    <color name="fg_foreground">#FFFFFF</color>
+    <color name="fg_icon_background_dark">#FF101014</color>
+</resources>

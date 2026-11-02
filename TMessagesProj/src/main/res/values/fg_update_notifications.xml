@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FGUpdateNotificationChannel">App updates</string>
+    <string name="FGUpdateNotificationChannelDescription">Download and verify Finegram updates</string>
+    <string name="FGUpdateNotificationTitle">Finegram %1$s</string>
+    <string name="FGUpdateNotificationDownloading">Downloading update</string>
+    <string name="FGUpdateNotificationPaused">Download paused</string>
+    <string name="FGUpdateNotificationVerifying">Verifying update</string>
+    <string name="FGUpdateNotificationReady">Update ready. Tap to open updater</string>
+    <string name="FGUpdateNotificationFailed">Download stopped</string>
+    <string name="FGUpdateNotificationPause">Pause</string>
+    <string name="FGUpdateNotificationResume">Resume</string>
+    <string name="FGUpdateErrorNetwork">The download could not be completed. Check your connection and try again.</string>
+    <string name="FGUpdateErrorForeground">Android did not allow the download service to start. Open the updater and try again.</string>
+    <string name="FGUpdateErrorStorage">Could not save the update. Check available storage and try again.</string>
+    <string name="FGUpdateErrorMetadata">The update file details are invalid. Check for updates again.</string>
+    <string name="FGUpdateErrorSize">The APK size is invalid. The file was removed.</string>
+    <string name="FGUpdateErrorHash">The APK checksum did not match. The file was removed.</string>
+    <string name="FGUpdateErrorPackage">The APK does not belong to this app or could not be read. The file was removed.</string>
+    <string name="FGUpdateErrorSignature">The APK signature does not match this app. The file was removed.</string>
+    <string name="FGUpdateErrorVersion">The APK is not newer than the installed app. The file was removed.</string>
+    <string name="FGUpdateErrorSignatureUnreadable">Could not read the app or APK signing certificate. Installation was blocked and the file was removed. Download it again.</string>
+    <string name="FGUpdateChangelogHistory">Version history</string>
+</resources>

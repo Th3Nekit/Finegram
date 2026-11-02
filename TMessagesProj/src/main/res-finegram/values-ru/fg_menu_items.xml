@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_MenuItems_Main">Основные</string>
+    <string name="FG_MenuItems_Media">Медиа и файлы</string>
+    <string name="FG_MenuItems_Finegram">Finegram</string>
+    <string name="FG_MenuItems_Hint">Выключенные пункты не появятся в меню сообщения. Порядок пунктов меняется в разделе «Порядок пунктов меню».</string>
+    <string name="FG_MessageMenuOnHold">Открывать удержанием</string>
+    <string name="FG_MessageMenuOnHold_Desc">Меню появляется, только если подержать палец на сообщении, как в Telegram для iOS. Обычное касание его не открывает, а выделить сообщения можно пунктом «Выбрать».</string>
+</resources>

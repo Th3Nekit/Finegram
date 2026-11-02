@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_MessageInfoTitle">Message info</string>
+    <string name="FG_MessageInfoSent">Sent</string>
+    <string name="FG_MessageInfoEdited">Edited</string>
+    <string name="FG_MessageInfoOriginal">Original</string>
+</resources>

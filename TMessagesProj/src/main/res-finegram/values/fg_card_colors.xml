@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Cards_Appearance">Card appearance</string>
+    <string name="FG_Cards_ColorPreview">Preview</string>
+    <string name="FG_Cards_OriginalColors">Card colors</string>
+    <string name="FG_Cards_ThemeColors">Theme colors</string>
+    <string name="FG_Cards_MD3Palette">MD3 palette</string>
+    <string name="FG_Cards_Brightness">Color brightness</string>
+    <string name="FG_Cards_Saturation">Color saturation</string>
+    <string name="FG_Cards_AppearanceHint">Each palette gives cards different, coordinated colors. Saturation adjusts color intensity; brightness adjusts the background tone. Changes apply immediately, with readable text and icons. Preview values are examples.</string>
+    <string name="FG_Cards_PaletteViolet">Violet</string>
+    <string name="FG_Cards_PaletteBlue">Blue</string>
+    <string name="FG_Cards_PaletteTeal">Teal</string>
+    <string name="FG_Cards_PaletteGreen">Green</string>
+    <string name="FG_Cards_PaletteLime">Lime</string>
+    <string name="FG_Cards_PaletteOrangeCocoa">Orange &amp; cocoa</string>
+    <string name="FG_Cards_PaletteCoral">Coral</string>
+    <string name="FG_Cards_PaletteRose">Rose</string>
+</resources>

@@ -1,0 +1,4 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/icon_background_ultraviolet" />
+    <item android:drawable="@drawable/fg_plane_ultraviolet" />
+</layer-list>

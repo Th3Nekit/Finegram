@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Cards_Appearance">Оформление карточек</string>
+    <string name="FG_Cards_ColorPreview">Предпросмотр</string>
+    <string name="FG_Cards_OriginalColors">Цвета карточек</string>
+    <string name="FG_Cards_ThemeColors">Из темы</string>
+    <string name="FG_Cards_MD3Palette">Палитра MD3</string>
+    <string name="FG_Cards_Brightness">Яркость цветов</string>
+    <string name="FG_Cards_Saturation">Насыщенность</string>
+    <string name="FG_Cards_AppearanceHint">Палитра задаёт карточкам разные согласованные цвета. Насыщенность меняет интенсивность цвета, яркость — тон фона. Изменения применяются сразу, текст и иконки остаются читаемыми. В предпросмотре показаны примеры значений.</string>
+    <string name="FG_Cards_PaletteViolet">Лиловая</string>
+    <string name="FG_Cards_PaletteBlue">Синяя</string>
+    <string name="FG_Cards_PaletteTeal">Бирюзовая</string>
+    <string name="FG_Cards_PaletteGreen">Зелёная</string>
+    <string name="FG_Cards_PaletteLime">Лаймовая</string>
+    <string name="FG_Cards_PaletteOrangeCocoa">Оранжево-коричневая</string>
+    <string name="FG_Cards_PaletteCoral">Коралловая</string>
+    <string name="FG_Cards_PaletteRose">Розовая</string>
+</resources>

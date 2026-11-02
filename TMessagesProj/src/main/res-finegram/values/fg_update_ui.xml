@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Update_InstalledTitle">Installed version</string>
+    <string name="FG_Update_Bytes">Downloading · %1$s</string>
+    <string name="FG_Update_Pause">Pause download</string>
+    <string name="FG_Update_Resume">Resume download</string>
+    <string name="FG_Update_Paused">Download paused</string>
+    <string name="FG_Update_Verifying">Verifying update…</string>
+    <string name="FG_Update_Ready">Ready to install</string>
+    <string name="FG_Update_DownloadFailed">Download interrupted</string>
+    <string name="FG_Update_RetryHint">The saved part is kept. Tap Resume to try again.</string>
+    <string name="FG_Update_CheckFailed">Could not check for updates. Check your connection and try again.</string>
+    <string name="FG_Update_StorageHint">You can leave this screen while the update downloads. Progress is shown in the app and in a notification. Installation starts only when you tap Install. Installed and outdated update files are removed automatically.</string>
+    <string name="FG_Update_NotificationsOff">Update notifications are disabled. Tap here to enable them in system settings.</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_KaboomWidgetInfo">Экстренная кнопка: одним нажатием стирает все данные Finegram на телефоне.</string>
+    <string name="EditWidgetChatsInfo">Последнее сообщение из выбранных чатов.\n\nЕсли чаты не выбраны, виджет покажет недавние.</string>
+    <string name="EditWidgetContactsInfo">Быстрый доступ к самым важным чатам.\n\nЕсли никто не выбран, виджет покажет тех, с кем вы общаетесь чаще всего.</string>
+</resources>

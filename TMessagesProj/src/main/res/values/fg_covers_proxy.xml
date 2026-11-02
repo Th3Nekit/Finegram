@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_ProxyNoNetwork">No internet connection. Check your phone’s network.</string>
+    <string name="FG_ProxyTelegram">Telegram</string>
+    <string name="FG_FolderCovers">Folder covers</string>
+    <string name="FG_FolderCoversCustomize">Customize covers</string>
+    <string name="FG_CoverFolder">Folder</string>
+    <string name="FG_CoverArtwork">Illustration</string>
+    <string name="FG_CoverImage">Choose an image</string>
+    <string name="FG_CoverAutomatic">Automatic</string>
+    <string name="FG_CoverGeometry">Geometry</string>
+    <string name="FG_CoverLandscape">Landscape</string>
+    <string name="FG_CoverInfo">Each folder has its own cover. Images are stored on this device.</string>
+    <string name="FG_CoverImporting">Saving image…</string>
+    <string name="FG_CoverImportFailed">Could not open this image. Choose another file.</string>
+    <string name="FG_ProxyConnection">Connection</string>
+    <string name="FG_ProxyPhone">Phone</string>
+    <string name="FG_ProxyNode">Proxy</string>
+    <string name="FG_ProxyChecking">Checking availability…</string>
+    <string name="FG_ProxyReady">Proxy is available</string>
+    <string name="FG_ProxyFailed">Could not connect through this proxy</string>
+    <string name="FG_ProxyOnline">Telegram is connected</string>
+    <string name="FG_ProxyWaiting">Connecting to Telegram…</string>
+    <string name="FG_ProxyInactive">This proxy is no longer selected</string>
+    <string name="FG_ProxyTimeout">Check timed out. Try again.</string>
+    <string name="FG_ProxyRetry">Check again</string>
+    <string name="FG_ProxyDetails">Availability and Telegram connection are checked separately.</string>
+</resources>

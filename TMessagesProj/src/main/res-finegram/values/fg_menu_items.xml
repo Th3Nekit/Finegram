@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_MenuItems_Main">Main actions</string>
+    <string name="FG_MenuItems_Media">Media and files</string>
+    <string name="FG_MenuItems_Finegram">Finegram</string>
+    <string name="FG_MenuItems_Hint">Items you turn off won\'t appear in the message menu. Their order is set in Order of menu entries.</string>
+    <string name="FG_MessageMenuOnHold">Open with a long press</string>
+    <string name="FG_MessageMenuOnHold_Desc">The menu opens only when you hold a message, like in Telegram for iOS. A tap no longer opens it, and messages are selected with Select in the menu.</string>
+</resources>

@@ -1,0 +1,1784 @@
+                                               
+
+package com.th3nekit.finegram.camera;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.os.Build;
+import android.os.Looper;
+import android.os.Process;
+import android.util.Range;
+import android.util.Size;
+import android.view.Surface;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.camera.camera2.interop.Camera2CameraInfo;
+import androidx.camera.camera2.interop.Camera2Interop;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.CameraInfo;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.SessionConfig;
+import androidx.camera.core.UseCase;
+import androidx.camera.core.ZoomState;
+import androidx.camera.core.resolutionselector.AspectRatioStrategy;
+import androidx.camera.core.resolutionselector.ResolutionSelector;
+import androidx.camera.core.resolutionselector.ResolutionStrategy;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.video.Quality;
+import androidx.camera.video.QualitySelector;
+import androidx.core.content.ContextCompat;
+
+import com.google.common.util.concurrent.ListenableFuture;
+
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.SharedConfig;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+
+public final class CameraXUtils {
+
+    public static final int CAMERA_TELEGRAM = 0;
+    public static final int CAMERA_X = 1;
+    public static final int CAMERA_2 = 2;
+    public static final int CAMERA_SYSTEM = 3;
+
+    private CameraXUtils() {}
+
+    private static volatile Map<Quality, Size> qualityToSize;
+    private static final Map<String, Map<Quality, Size>> QUALITY_TO_SIZE_BY_CAMERA =
+            new ConcurrentHashMap<>();
+    private static volatile int suggestedCameraResolution = -1;
+    private static final AtomicBoolean QUALITY_LOAD_STARTED = new AtomicBoolean();
+    private static final AtomicBoolean ZOOM_LOAD_STARTED = new AtomicBoolean();
+    private static volatile ZoomPreview[] zoomPreviews;
+    private static final Map<String, float[]> ZOOM_SHORTCUTS = new ConcurrentHashMap<>();
+
+    public static final class ZoomPreview {
+        public final float minimum, maximum;
+        private final float[] shortcuts;
+
+        private ZoomPreview(float minimum, float maximum, float[] shortcuts) {
+            this.minimum = minimum;
+            this.maximum = maximum;
+            this.shortcuts = shortcuts.clone();
+        }
+
+        public float[] getShortcuts() { return shortcuts.clone(); }
+    }
+
+    @Nullable
+    public static ZoomPreview getZoomPreview(boolean frontFacing, boolean ultraWide) {
+        ZoomPreview[] previews = zoomPreviews;
+        return previews == null ? null : previews[frontFacing ? 0 : ultraWide ? 2 : 1];
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    @Nullable
+    static float[] getCachedZoomShortcuts(CameraInfo info, @Nullable CameraSelector selector) {
+        if (info == null || selector == null) return null;
+        try {
+            return ZOOM_SHORTCUTS.get(Camera2CameraInfo.from(info).getCameraId()
+                    + ":" + selector.getPhysicalCameraId());
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    @Nullable
+    private static ZoomPreview loadZoomPreview(ProcessCameraProvider provider, CameraSelector selector) {
+        try {
+            CameraInfo info = resolveSelectedCameraInfo(provider, selector);
+            ZoomState state = info == null ? null : info.getZoomState().getValue();
+            if (state == null) return null;
+            float min = state.getMinZoomRatio(), max = state.getMaxZoomRatio();
+            if (!Float.isFinite(min) || !Float.isFinite(max) || min <= 0f || max < min) return null;
+            float[] candidates = findZoomShortcutCandidates(info, selector);
+            if (candidates.length > 0) {
+                ZOOM_SHORTCUTS.put(Camera2CameraInfo.from(info).getCameraId()
+                        + ":" + selector.getPhysicalCameraId(), candidates);
+            }
+            return new ZoomPreview(min, max, CameraXZoomShortcuts.select(min, max, candidates));
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static void warmUpZoomAsync(Context context) {
+        ZoomPreview[] previews = zoomPreviews;
+        if (previews != null && previews[0] != null && previews[1] != null) return;
+        if (!ZOOM_LOAD_STARTED.compareAndSet(false, true)) return;
+        final ExecutorService executor;
+        try {
+            executor = newQualityExecutor();
+        } catch (Throwable ignored) {
+            ZOOM_LOAD_STARTED.set(false);
+            return;
+        }
+        try {
+            ListenableFuture<ProcessCameraProvider> future = getProviderFuture(context);
+            future.addListener(() -> {
+                try {
+                    ProcessCameraProvider provider = future.get();
+                    ZoomPreview front = loadZoomPreview(provider, buildIntendedCameraSelector(provider, true, false));
+                    ZoomPreview back = loadZoomPreview(provider, buildIntendedCameraSelector(provider, false, false));
+                    CameraSelector wide = hasLogicalUltraWide(provider) ? null : buildUltraWideSelector(provider);
+                    ZoomPreview ultraWide = wide == null ? back : loadZoomPreview(provider, wide);
+                    ZoomPreview[] previous = zoomPreviews;
+                    if (previous != null) {
+                        if (front == null) front = previous[0];
+                        if (back == null) back = previous[1];
+                        if (ultraWide == null) ultraWide = previous[2];
+                    }
+                    if (front != null || back != null) zoomPreviews = new ZoomPreview[]{front, back, ultraWide};
+                } catch (Throwable ignored) {
+                } finally {
+                    ZOOM_LOAD_STARTED.set(false);
+                    executor.shutdown();
+                }
+            }, executor);
+        } catch (Throwable ignored) {
+            ZOOM_LOAD_STARTED.set(false);
+            executor.shutdown();
+        }
+    }
+    private static ExecutorService newQualityExecutor() {
+        return Executors.newSingleThreadExecutor(command ->
+            new Thread(() -> {
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                } catch (Throwable ignored) {}
+                command.run();
+            }, "cameraCapabilities"));
+    }
+    private static final Object PROVIDER_LOCK = new Object();
+    @Nullable private static volatile ListenableFuture<ProcessCameraProvider> sharedProviderFuture;
+    private static final Map<String, CameraCapabilities> CAMERA_CAPABILITIES =
+            new ConcurrentHashMap<>();
+
+    private static final class CameraCapabilities {
+        final CameraInfo cameraInfo;
+        final Range<Integer>[] fpsRanges;
+        final int[] opticalStabilizationModes;
+        final int[] videoStabilizationModes;
+        final int[] autofocusModes;
+        final int[] noiseReductionModes;
+        final int[] faceDetectionModes;
+        final int[] distortionCorrectionModes;
+
+        @SuppressWarnings("unchecked")
+        CameraCapabilities(CameraInfo cameraInfo) {
+            this.cameraInfo = cameraInfo;
+            Camera2CameraInfo info = Camera2CameraInfo.from(cameraInfo);
+            fpsRanges = info.getCameraCharacteristic(
+                    CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+            opticalStabilizationModes = info.getCameraCharacteristic(
+                    CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION);
+            videoStabilizationModes = info.getCameraCharacteristic(
+                    CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES);
+            autofocusModes = info.getCameraCharacteristic(
+                    CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+            noiseReductionModes = info.getCameraCharacteristic(
+                    CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES);
+            faceDetectionModes = info.getCameraCharacteristic(
+                    CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
+            distortionCorrectionModes = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                    ? info.getCameraCharacteristic(
+                            CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES)
+                    : null;
+        }
+    }
+
+    public static ListenableFuture<ProcessCameraProvider> getProviderFuture(Context context) {
+        ListenableFuture<ProcessCameraProvider> future = sharedProviderFuture;
+        if (future != null) {
+            return future;
+        }
+        synchronized (PROVIDER_LOCK) {
+            future = sharedProviderFuture;
+            if (future == null) {
+                Context appContext = context.getApplicationContext();
+                future = ProcessCameraProvider.getInstance(appContext != null ? appContext : context);
+                sharedProviderFuture = future;
+                final ListenableFuture<ProcessCameraProvider> createdFuture = future;
+                createdFuture.addListener(() -> {
+                    try {
+                        createdFuture.get();
+                    } catch (Throwable error) {
+
+                        synchronized (PROVIDER_LOCK) {
+                            if (sharedProviderFuture == createdFuture) {
+                                sharedProviderFuture = null;
+                            }
+                        }
+                    }
+                }, ContextCompat.getMainExecutor(appContext != null ? appContext : context));
+            }
+        }
+        return future;
+    }
+
+    public static Map<Quality, Size> getAvailableVideoSizes() {
+        Map<Quality, Size> sizes = qualityToSize;
+        return sizes != null ? sizes : Collections.emptyMap();
+    }
+
+    public static void loadCameraXSizes() {
+        if (qualityToSize != null) return;
+        if (!isCameraXSupported()) return;
+        Context context = ApplicationLoader.applicationContext;
+        if (context == null) return;
+        if (!QUALITY_LOAD_STARTED.compareAndSet(false, true)) return;
+        final ExecutorService executor;
+        try {
+            executor = newQualityExecutor();
+        } catch (Throwable ignored) {
+            QUALITY_LOAD_STARTED.set(false);
+            return;
+        }
+        try {
+            ListenableFuture<ProcessCameraProvider> providerFuture = getProviderFuture(context);
+            providerFuture.addListener(() -> {
+                try {
+                    ProcessCameraProvider provider = providerFuture.get();
+                    for (CameraInfo cameraInfo : provider.getAvailableCameraInfos()) {
+                        cacheAvailableVideoSizes(cameraInfo);
+                    }
+                    CameraSelector selector = buildIntendedBackCameraSelector(provider);
+                    CameraInfo selectedCamera = resolveSelectedCameraInfo(provider, selector);
+                    Map<Quality, Size> loadedSizes = cacheAvailableVideoSizes(selectedCamera);
+                    if (!loadedSizes.isEmpty()) {
+                        qualityToSize = loadedSizes;
+                        loadSuggestedResolution();
+                    }
+                } catch (Throwable ignored) {
+                } finally {
+                    QUALITY_LOAD_STARTED.set(false);
+                    executor.shutdown();
+                }
+            }, executor);
+        } catch (Throwable ignored) {
+            QUALITY_LOAD_STARTED.set(false);
+            executor.shutdown();
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private static Map<Quality, Size> fetchAvailableVideoSizes(@Nullable CameraInfo cameraInfo) {
+        Map<Quality, Size> result = new HashMap<>();
+        if (cameraInfo == null) return result;
+        for (Quality quality : QualitySelector.getSupportedQualities(cameraInfo)) {
+            Size resolution = QualitySelector.getResolution(cameraInfo, quality);
+            result.put(quality, resolution != null ? resolution : new Size(0, 0));
+        }
+        return result;
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static Map<Quality, Size> cacheAvailableVideoSizes(@Nullable CameraInfo cameraInfo) {
+        if (cameraInfo == null) return Collections.emptyMap();
+        final String cameraId;
+        try {
+            cameraId = Camera2CameraInfo.from(cameraInfo).getCameraId();
+        } catch (Throwable ignored) {
+            return Collections.emptyMap();
+        }
+        Map<Quality, Size> cached = QUALITY_TO_SIZE_BY_CAMERA.get(cameraId);
+        if (cached != null) return cached;
+        Map<Quality, Size> loaded = fetchAvailableVideoSizes(cameraInfo);
+        if (loaded.isEmpty()) return Collections.emptyMap();
+        loaded = Collections.unmodifiableMap(loaded);
+        Map<Quality, Size> raced = QUALITY_TO_SIZE_BY_CAMERA.putIfAbsent(cameraId, loaded);
+        return raced != null ? raced : loaded;
+    }
+
+    public static Quality getVideoQuality(CameraSelector selector, ProcessCameraProvider provider) {
+        final int configuredHeight = getEffectiveConfiguredHeight();
+        CameraInfo selectedCamera = resolveSelectedCameraInfo(provider, selector);
+        Map<Quality, Size> sizes = null;
+        if (selectedCamera != null) {
+            try {
+                sizes = QUALITY_TO_SIZE_BY_CAMERA.get(
+                        Camera2CameraInfo.from(selectedCamera).getCameraId());
+            } catch (Throwable ignored) {
+            }
+        }
+        if (sizes == null && Looper.myLooper() != Looper.getMainLooper()) {
+            sizes = cacheAvailableVideoSizes(selectedCamera);
+        } else if (sizes == null) {
+            loadCameraXSizes();
+            sizes = Collections.emptyMap();
+        }
+        for (Map.Entry<Quality, Size> entry : sizes.entrySet()) {
+            if (entry.getValue().getHeight() == configuredHeight) return entry.getKey();
+        }
+        return qualityForConfiguredHeight(configuredHeight);
+    }
+
+    public static void loadSuggestedResolution() {
+        int suggestedRes = getSuggestedResolution(false);
+        getAvailableVideoSizes().values().stream()
+                .mapToInt(Size::getHeight)
+                .filter(height -> height <= suggestedRes)
+                .max()
+                .ifPresent(height -> suggestedCameraResolution = height);
+    }
+
+    public static Quality getVideoQuality() {
+        final int configuredHeight = getEffectiveConfiguredHeight();
+        return getAvailableVideoSizes().entrySet().stream()
+                .filter(entry -> entry.getValue().getHeight() == configuredHeight)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElseGet(() -> qualityForConfiguredHeight(configuredHeight));
+    }
+
+    private static int getEffectiveConfiguredHeight() {
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraResolution() > 0) {
+            return com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraResolution();
+        }
+        return suggestedCameraResolution > 0
+                ? suggestedCameraResolution : getSuggestedResolution(false);
+    }
+
+    private static Quality qualityForConfiguredHeight(int configuredHeight) {
+        if (configuredHeight >= 2160) return Quality.UHD;
+
+        if (configuredHeight >= 1440) return Quality.FHD;
+        if (configuredHeight >= 1080) return Quality.FHD;
+        if (configuredHeight >= 720) return Quality.HD;
+        if (configuredHeight > 0) return Quality.SD;
+        return Quality.HIGHEST;
+    }
+
+    private static int getSuggestedResolution(boolean isPreview) {
+        int perfClass = SharedConfig.getDevicePerformanceClass();
+        if (perfClass == SharedConfig.PERFORMANCE_CLASS_LOW) return 720;
+
+        return 1080;
+    }
+
+    public static boolean isCameraXSupported() {
+        return SharedConfig.getDevicePerformanceClass() >= SharedConfig.PERFORMANCE_CLASS_AVERAGE;
+    }
+
+    public static boolean isCurrentCameraCameraX() {
+        return isCameraXSupported() && com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraType() == CAMERA_X;
+    }
+
+    public static boolean isCurrentCameraNotCameraX() {
+        return !isCurrentCameraCameraX();
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static String findBackUltraWideCameraId(ProcessCameraProvider provider) {
+        if (provider == null) return null;
+        CameraSelector manual = findManualUltraWideSelector(provider);
+        if (manual != null) {
+            try {
+                String physicalId = manual.getPhysicalCameraId();
+                return physicalId != null ? physicalId
+                        : Camera2CameraInfo.from(provider.getCameraInfo(manual)).getCameraId();
+            } catch (Throwable ignored) {
+            }
+        }
+        try {
+            String defaultBackId = null;
+            CameraInfo defaultBack = null;
+            try {
+                defaultBack = provider.getCameraInfo(buildIntendedCameraSelector(provider, false, false));
+                if (defaultBack != null) {
+                    defaultBackId = Camera2CameraInfo.from(defaultBack).getCameraId();
+                }
+            } catch (Throwable ignored) {
+            }
+
+            String logicalPhysicalId = findLogicalUltraWidePhysicalId(defaultBack);
+            if (logicalPhysicalId != null) {
+                return logicalPhysicalId;
+            }
+
+            List<CameraInfo> all = provider.getAvailableCameraInfos();
+            int backCount = 0;
+            float bestIntrinsicRatio = 1f;
+            String bestId = null;
+            for (CameraInfo info : all) {
+                Camera2CameraInfo c2 = Camera2CameraInfo.from(info);
+                Integer facing = c2.getCameraCharacteristic(CameraCharacteristics.LENS_FACING);
+                if (facing == null || facing != CameraCharacteristics.LENS_FACING_BACK) continue;
+                backCount++;
+
+                String cameraId = c2.getCameraId();
+
+                if (cameraId == null || cameraId.equals(defaultBackId)) continue;
+
+                int[] capabilities = c2.getCameraCharacteristic(
+                        CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+                boolean logicalMultiCamera = false;
+                if (capabilities != null) {
+                    for (int capability : capabilities) {
+                        if (capability == CameraCharacteristics
+                                .REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA) {
+                            logicalMultiCamera = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (logicalMultiCamera) continue;
+
+                float intrinsicRatio = relativeOpticalRatio(defaultBack, info);
+                if (intrinsicRatio > 0f && intrinsicRatio < 0.95f
+                        && intrinsicRatio < bestIntrinsicRatio) {
+                    bestIntrinsicRatio = intrinsicRatio;
+                    bestId = cameraId;
+                }
+            }
+            if (backCount < 2) return null;
+            return bestId;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static String findLogicalUltraWidePhysicalId(@Nullable CameraInfo logicalCamera) {
+        if (logicalCamera == null) return null;
+        try {
+            if (!logicalCamera.isLogicalMultiCameraSupported()) return null;
+            Set<CameraInfo> physicalInfos = logicalCamera.getPhysicalCameraInfos();
+            if (physicalInfos == null || physicalInfos.size() < 2) return null;
+
+            CameraInfo best = null;
+            float bestIntrinsicRatio = 1f;
+            for (CameraInfo physicalInfo : physicalInfos) {
+                float intrinsicRatio = relativeOpticalRatio(logicalCamera, physicalInfo);
+                if (intrinsicRatio > 0f && intrinsicRatio < 0.95f
+                        && intrinsicRatio < bestIntrinsicRatio) {
+                    best = physicalInfo;
+                    bestIntrinsicRatio = intrinsicRatio;
+                }
+            }
+
+            return best == null ? null
+                    : Camera2CameraInfo.from(best).getCameraId();
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    static float[] findZoomShortcutCandidates(CameraInfo info, @Nullable CameraSelector selector) {
+        try {
+            if (info == null || selector == null || selector.getPhysicalCameraId() != null
+                    || !info.isLogicalMultiCameraSupported()) return new float[0];
+            float reference = zoomShortcutOpticalScale(info);
+            Set<CameraInfo> children = info.getPhysicalCameraInfos();
+            if (children == null || children.size() < 2) return new float[0];
+            ArrayList<Float> scales = new ArrayList<>();
+            for (CameraInfo child : children) {
+                try {
+                    if (child.getLensFacing() != info.getLensFacing()) continue;
+                    float scale = zoomShortcutOpticalScale(child);
+                    if (!Float.isFinite(scale) || scale <= 0f) continue;
+                    scales.add(scale);
+                } catch (Throwable ignored) {}
+            }
+            float[] result = new float[scales.size()];
+            for (int i = 0; i < result.length; i++) result[i] = scales.get(i);
+            float[] optical = CameraXZoomShortcuts.fromOpticalScales(reference, result);
+            if (optical.length > 0) return optical;
+            scales.clear();
+            for (CameraInfo child : children) {
+                try {
+                    if (child.getLensFacing() == info.getLensFacing()) {
+                        scales.add(safeIntrinsicZoomRatio(child));
+                    }
+                } catch (Throwable ignored) {}
+            }
+            result = new float[scales.size()];
+            for (int i = 0; i < result.length; i++) result[i] = scales.get(i);
+            return CameraXZoomShortcuts.fromOpticalScales(safeIntrinsicZoomRatio(info), result);
+        } catch (Throwable ignored) {
+            return new float[0];
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private static float zoomShortcutOpticalScale(CameraInfo info) {
+        Camera2CameraInfo camera2 = Camera2CameraInfo.from(info);
+        android.util.SizeF sensor = camera2.getCameraCharacteristic(
+                CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+        android.util.Size pixels = camera2.getCameraCharacteristic(
+                CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+        android.graphics.Rect active = camera2.getCameraCharacteristic(
+                CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+        if (sensor == null || pixels == null || active == null
+                || pixels.getWidth() <= 0 || pixels.getHeight() <= 0
+                || active.left < 0 || active.top < 0 || active.width() <= 0 || active.height() <= 0
+                || active.right > pixels.getWidth() || active.bottom > pixels.getHeight()) {
+            return Float.NaN;
+        }
+        return CameraXZoomShortcuts.opticalScale(camera2.getCameraCharacteristic(
+                        CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS),
+                sensor.getWidth() * ((float) active.width() / pixels.getWidth()),
+                sensor.getHeight() * ((float) active.height() / pixels.getHeight()));
+    }
+
+    private static float safeIntrinsicZoomRatio(@Nullable CameraInfo info) {
+        if (info == null) return 1f;
+        try {
+            float ratio = info.getIntrinsicZoomRatio();
+            return Float.isNaN(ratio) || Float.isInfinite(ratio) || ratio <= 0f
+                    ? 1f : ratio;
+        } catch (Throwable ignored) {
+            return 1f;
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private static float relativeOpticalRatio(@Nullable CameraInfo reference, @Nullable CameraInfo candidate) {
+        if (reference == null || candidate == null) return Float.NaN;
+        try {
+            float ratio = zoomShortcutOpticalScale(candidate) / zoomShortcutOpticalScale(reference);
+            if (Float.isFinite(ratio) && ratio > 0f) return ratio;
+            return safeIntrinsicZoomRatio(candidate) / safeIntrinsicZoomRatio(reference);
+        } catch (Throwable ignored) {
+            return Float.NaN;
+        }
+    }
+
+    static final class LensRoute extends CameraXOpticalZoom.Lens {
+        final CameraSelector selector;
+        final CameraSelector fallbackSelector;
+
+        LensRoute(String key, CameraSelector selector, float scale, float minimum, float maximum) {
+            this(key, selector, scale, minimum, maximum, null);
+        }
+
+        LensRoute(String key, CameraSelector selector, float scale, float minimum, float maximum,
+                  @Nullable CameraSelector fallbackSelector) {
+            super(key, scale, minimum, maximum);
+            this.selector = selector;
+            this.fallbackSelector = fallbackSelector;
+        }
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    static List<LensRoute> findRearLensRoutes(ProcessCameraProvider provider) {
+        return findRearLensRoutes(provider, false);
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    static List<LensRoute> findRearLensRoutes(ProcessCameraProvider provider, boolean preferContinuous) {
+        ArrayList<LensRoute> routes = new ArrayList<>();
+        if (provider == null) return routes;
+        try {
+            CameraSelector main = buildIntendedCameraSelector(provider, false, false);
+            CameraInfo reference = provider.getCameraInfo(main);
+            if (preferContinuous) {
+                try {
+                    CameraSelector continuous = findContinuousRearSelector(provider, main);
+                    if (continuous != null) {
+                        CameraInfo info = provider.getCameraInfo(continuous);
+                        ZoomState zoom = info.getZoomState().getValue();
+                        if (zoom != null) {
+                            LensRoute route = new LensRoute(lensRouteKey(provider, continuous),
+                                    continuous, 1f, zoom.getMinZoomRatio(), zoom.getMaxZoomRatio(), main);
+                            if (route.isValid()) routes.add(route);
+                        }
+                    }
+                } catch (Exception | LinkageError ignored) {
+                }
+            }
+            addLensRoute(routes, provider, main, reference, 1f);
+            try {
+                CameraSelector wide = buildUltraWideSelector(provider);
+                if (wide != null) {
+                    CameraInfo info = selectedLensInfo(provider, wide);
+                    float ratio = relativeOpticalRatio(reference, info);
+                    if (ratio > 0f && ratio < .95f) addLensRoute(routes, provider, wide, info, ratio);
+                }
+            } catch (Throwable ignored) {
+            }
+            for (CameraInfo info : provider.getAvailableCameraInfos()) {
+                try {
+                    if (info.getLensFacing() != CameraSelector.LENS_FACING_BACK) continue;
+                    if (!info.isLogicalMultiCameraSupported()) {
+                        addTeleLensRoute(routes, provider, reference, info, null);
+                    } else {
+                        for (CameraInfo child : info.getPhysicalCameraInfos()) {
+                            try {
+                                addTeleLensRoute(routes, provider, reference, child, info);
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        } catch (Throwable error) {
+            FileLog.e("CameraX lens discovery failed", error);
+        }
+        return routes;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraSelector findContinuousRearSelector(ProcessCameraProvider provider, CameraSelector main) {
+        try {
+            if (main.getPhysicalCameraId() != null) return null;
+            CameraInfo reference = selectedLensInfo(provider, main);
+            ZoomState mainZoom = reference.getZoomState().getValue();
+            if (mainZoom == null || !Float.isFinite(mainZoom.getMaxZoomRatio())) return null;
+            CameraSelector wide = buildUltraWideSelector(provider);
+            if (wide == null) return null;
+            CameraInfo wideInfo = selectedLensInfo(provider, wide);
+            String mainId = Camera2CameraInfo.from(reference).getCameraId();
+            String wideId = Camera2CameraInfo.from(wideInfo).getCameraId();
+            float wideRatio = relativeOpticalRatio(reference, wideInfo);
+            if (!Float.isFinite(wideRatio) || wideRatio <= 0f || wideRatio >= .95f) return null;
+            List<CameraInfo> available = provider.getAvailableCameraInfos();
+            if (available == null) return null;
+            for (CameraInfo parent : available) {
+                try {
+                    if (parent.getLensFacing() != CameraSelector.LENS_FACING_BACK
+                            || !parent.isLogicalMultiCameraSupported()) continue;
+                    String parentId = Camera2CameraInfo.from(parent).getCameraId();
+                    boolean hasMain = parentId.equals(mainId);
+                    boolean hasWide = false;
+                    Set<CameraInfo> physical = parent.getPhysicalCameraInfos();
+                    if (physical == null) continue;
+                    for (CameraInfo child : physical) {
+                        String childId = Camera2CameraInfo.from(child).getCameraId();
+                        hasMain |= mainId.equals(childId);
+                        hasWide |= wideId.equals(childId);
+                    }
+                    if (!hasMain || !hasWide) continue;
+                    float scale = relativeOpticalRatio(reference, parent);
+                    ZoomState zoom = parent.getZoomState().getValue();
+                    if (!Float.isFinite(scale) || scale != 1f || zoom == null
+                            || !Float.isFinite(zoom.getMinZoomRatio()) || !Float.isFinite(zoom.getMaxZoomRatio())
+                            || zoom.getMinZoomRatio() <= 0f || zoom.getMinZoomRatio() > wideRatio
+                            || zoom.getMaxZoomRatio() < Math.max(1f, mainZoom.getMaxZoomRatio())) continue;
+                    CameraSelector selector = buildCameraIdSelector(parentId, false);
+                    if (provider.hasCamera(selector)) return selector;
+                } catch (Exception | LinkageError ignored) {
+                }
+            }
+        } catch (Exception | LinkageError ignored) {
+        }
+        return null;
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static void addTeleLensRoute(List<LensRoute> routes, ProcessCameraProvider provider,
+                                         CameraInfo reference, CameraInfo lens, @Nullable CameraInfo parent) {
+        if (lens.getLensFacing() != CameraSelector.LENS_FACING_BACK) return;
+        float ratio = relativeOpticalRatio(reference, lens);
+        if (!Float.isFinite(ratio) || ratio < 1.5f || ratio > 8f) return;
+        CameraSelector selector = buildCameraIdSelector(Camera2CameraInfo.from(
+                parent == null ? lens : parent).getCameraId(), false);
+        if (parent != null) selector = CameraSelector.Builder.fromSelector(selector)
+                .setPhysicalCameraId(Camera2CameraInfo.from(lens).getCameraId()).build();
+        addLensRoute(routes, provider, selector, lens, ratio);
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private static CameraInfo selectedLensInfo(ProcessCameraProvider provider, CameraSelector selector) {
+        CameraInfo parent = provider.getCameraInfo(selector);
+        String physical = selector.getPhysicalCameraId();
+        if (physical != null) for (CameraInfo child : parent.getPhysicalCameraInfos()) {
+            if (physical.equals(Camera2CameraInfo.from(child).getCameraId())) return child;
+        }
+        return parent;
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    static String lensRouteKey(ProcessCameraProvider provider, CameraSelector selector) {
+        if (provider == null || selector == null) return "";
+        try {
+            return Camera2CameraInfo.from(provider.getCameraInfo(selector)).getCameraId()
+                    + "/" + String.valueOf(selector.getPhysicalCameraId());
+        } catch (Throwable ignored) {
+            return "";
+        }
+    }
+
+    private static void addLensRoute(List<LensRoute> routes, ProcessCameraProvider provider,
+                                     CameraSelector selector, CameraInfo info, float scale) {
+        try {
+            if (!provider.hasCamera(selector)) return;
+            String key = lensRouteKey(provider, selector);
+            for (LensRoute route : routes) if (route.key.equals(key)
+                    || Math.abs(route.opticalRatio - scale) < .03f) return;
+            CameraInfo controls = selector.getPhysicalCameraId() == null
+                    ? info : provider.getCameraInfo(selector);
+            ZoomState state = controls.getZoomState().getValue();
+            if (state == null) return;
+            float minimum = selector.getPhysicalCameraId() == null ? state.getMinZoomRatio() : 1f;
+            float nominal = Math.round(scale);
+            if (nominal >= 2f && Math.abs(scale - nominal) / nominal <= .05f) scale = nominal;
+            LensRoute route = new LensRoute(key, selector, scale, minimum, state.getMaxZoomRatio());
+            if (route.isValid()) routes.add(route);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static boolean hasLogicalUltraWide(ProcessCameraProvider provider) {
+        if (provider == null) return false;
+        try {
+            CameraInfo info = provider.getCameraInfo(buildIntendedCameraSelector(provider, false, false));
+            return supportsSubOneZoom(info);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    static boolean supportsSubOneZoom(ProcessCameraProvider provider,
+                                      @Nullable CameraSelector selector) {
+        if (provider == null || selector == null) return false;
+        try {
+            return supportsSubOneZoom(provider.getCameraInfo(selector));
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private static boolean supportsSubOneZoom(@Nullable CameraInfo info) {
+        if (info == null) return false;
+        try {
+            ZoomState state = info.getZoomState().getValue();
+            if (state != null && state.getMinZoomRatio() < 0.999f) return true;
+        } catch (Throwable ignored) {
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                Range<Float> range = Camera2CameraInfo.from(info).getCameraCharacteristic(
+                        CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
+                return range != null && range.getLower() < 0.999f;
+            } catch (Throwable ignored) {
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraSelector findManualUltraWideSelector(ProcessCameraProvider provider) {
+        if (provider == null) return null;
+        String requested = com.th3nekit.finegram.core.configs.FinegramCameraConfig.manualUltraWideId().trim();
+        if (requested.isEmpty()) return null;
+        try {
+            CameraSelector direct = buildCameraIdSelector(requested, false);
+            if (provider.hasCamera(direct)) return direct;
+        } catch (Throwable ignored) {
+        }
+
+        final List<CameraInfo> available;
+        try {
+            available = provider.getAvailableCameraInfos();
+        } catch (Throwable ignored) {
+            return null;
+        }
+        if (available == null) return null;
+        String preferredParent = com.th3nekit.finegram.core.configs.FinegramCameraConfig.manualIdFor(false).trim();
+        CameraSelector fallback = null;
+        for (CameraInfo parent : available) {
+            try {
+                if (parent.getLensFacing() != CameraSelector.LENS_FACING_BACK
+                        || !parent.isLogicalMultiCameraSupported()) continue;
+                Set<CameraInfo> physicalInfos = parent.getPhysicalCameraInfos();
+                if (physicalInfos == null) continue;
+                for (CameraInfo child : physicalInfos) {
+                    try {
+                        if (child.getLensFacing() != CameraSelector.LENS_FACING_BACK
+                                || !requested.equals(Camera2CameraInfo.from(child).getCameraId())) continue;
+                        String parentId = Camera2CameraInfo.from(parent).getCameraId();
+                        CameraSelector selector = CameraSelector.Builder.fromSelector(
+                                buildCameraIdSelector(parentId, false))
+                                .setPhysicalCameraId(requested).build();
+                        if (!provider.hasCamera(selector)) continue;
+                        if (parentId.equals(preferredParent)) return selector;
+                        if (fallback == null) fallback = selector;
+                    } catch (Throwable ignored) {
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        return fallback;
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    public static CameraSelector buildUltraWideSelector(ProcessCameraProvider provider) {
+        if (provider == null) return null;
+        CameraSelector manual = findManualUltraWideSelector(provider);
+        if (manual != null) return manual;
+        try {
+            CameraInfo logicalBack = provider.getCameraInfo(buildIntendedCameraSelector(provider, false, false));
+            String physicalId = findLogicalUltraWidePhysicalId(logicalBack);
+            if (logicalBack != null && physicalId != null) {
+                String logicalId = Camera2CameraInfo.from(logicalBack).getCameraId();
+                CameraSelector logicalSelector = buildCameraIdSelector(logicalId, false);
+
+                return CameraSelector.Builder.fromSelector(logicalSelector)
+                        .setPhysicalCameraId(physicalId)
+                        .build();
+            }
+        } catch (Throwable ignored) {
+        }
+
+        final String standaloneId = findBackUltraWideCameraId(provider);
+        if (standaloneId == null) return null;
+        return buildCameraIdSelector(standaloneId, false);
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static CameraSelector buildIntendedBackCameraSelector(ProcessCameraProvider provider) {
+        return buildIntendedCameraSelector(provider, false);
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static CameraSelector buildIntendedCameraSelector(ProcessCameraProvider provider, boolean frontFacing) {
+        return buildIntendedCameraSelector(provider, frontFacing, true);
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static CameraSelector buildIntendedCameraSelector(ProcessCameraProvider provider,
+                                                             boolean frontFacing,
+                                                             boolean useConfiguredUltraWide) {
+        if (provider == null) return frontFacing
+                ? CameraSelector.DEFAULT_FRONT_CAMERA : CameraSelector.DEFAULT_BACK_CAMERA;
+        if (!frontFacing && useConfiguredUltraWide
+                && com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getStartFromUltraWideCam()) {
+            CameraSelector wide = findManualUltraWideSelector(provider);
+            if (wide != null) return wide;
+        }
+        String requested = com.th3nekit.finegram.core.configs.FinegramCameraConfig.manualIdFor(frontFacing).trim();
+        if (!requested.isEmpty()) {
+            CameraSelector manual = buildCameraIdSelector(requested, frontFacing);
+            try {
+                if (provider.hasCamera(manual)) return manual;
+            } catch (Exception | LinkageError error) {
+                FileLog.e(error);
+            }
+        }
+        if (!frontFacing && com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraCompatibility()) {
+            CameraSelector logical = findCompatibleLogicalBackSelector(provider);
+            return logical != null ? logical : CameraSelector.DEFAULT_BACK_CAMERA;
+        }
+        if (!frontFacing && useConfiguredUltraWide && com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getStartFromUltraWideCam()
+                && !hasLogicalUltraWide(provider)) {
+            CameraSelector wide = buildUltraWideSelector(provider);
+            if (wide != null) return wide;
+        }
+        CameraSelector defaultSelector = frontFacing
+                ? CameraSelector.DEFAULT_FRONT_CAMERA : CameraSelector.DEFAULT_BACK_CAMERA;
+        try {
+            CameraInfo selected = provider.getCameraInfo(defaultSelector);
+            if (selected != null) {
+                return buildCameraIdSelector(
+                        Camera2CameraInfo.from(selected).getCameraId(), frontFacing);
+            }
+        } catch (Throwable ignored) {
+        }
+        return defaultSelector;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraSelector findCompatibleLogicalBackSelector(ProcessCameraProvider provider) {
+        CameraSelector best = null;
+        float bestMin = 1f;
+        final List<CameraInfo> available;
+        try {
+            available = provider.getAvailableCameraInfos();
+        } catch (Exception | LinkageError error) {
+            FileLog.e(error);
+            return null;
+        }
+        if (available == null) return null;
+        for (CameraInfo info : available) {
+            try {
+                if (info.getLensFacing() != CameraSelector.LENS_FACING_BACK
+                        || !info.isLogicalMultiCameraSupported()) continue;
+                ZoomState zoom = info.getZoomState().getValue();
+                if (zoom == null || !Float.isFinite(zoom.getMinZoomRatio())
+                        || !Float.isFinite(zoom.getMaxZoomRatio())
+                        || zoom.getMinZoomRatio() <= 0f || zoom.getMaxZoomRatio() < 1f
+                        || zoom.getMinZoomRatio() >= bestMin) continue;
+                CameraSelector selector = buildCameraIdSelector(Camera2CameraInfo.from(info).getCameraId(), false);
+                if (!provider.hasCamera(selector)) continue;
+                best = selector;
+                bestMin = zoom.getMinZoomRatio();
+            } catch (Throwable error) {
+                FileLog.e(error);
+            }
+        }
+        return best;
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    static CameraSelector buildCameraIdSelector(String cameraId, boolean frontFacing) {
+        return new CameraSelector.Builder()
+
+                .requireLensFacing(frontFacing
+                        ? CameraSelector.LENS_FACING_FRONT
+                        : CameraSelector.LENS_FACING_BACK)
+                .addCameraFilter(cameras -> {
+            java.util.ArrayList<CameraInfo> result = new java.util.ArrayList<>(1);
+            for (CameraInfo info : cameras) {
+                try {
+                    if (cameraId.equals(Camera2CameraInfo.from(info).getCameraId())) result.add(info);
+                } catch (Throwable ignored) {}
+            }
+            return result;
+        }).build();
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    static CameraSelector[] buildConcurrentCameraSelectors(ProcessCameraProvider provider,
+                                                            boolean firstFront,
+                                                            boolean secondFront) {
+        return buildConcurrentCameraSelectors(provider, firstFront, secondFront, false);
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    static CameraSelector[] buildConcurrentCameraSelectors(ProcessCameraProvider provider,
+                                                            boolean firstFront,
+                                                            boolean secondFront,
+                                                            boolean preferUltraWide) {
+        if (provider == null || firstFront == secondFront) {
+            return null;
+        }
+        try {
+            String preferredFrontId = null;
+            String preferredBackId = null;
+            try {
+                preferredFrontId = Camera2CameraInfo.from(
+                        provider.getCameraInfo(buildIntendedCameraSelector(provider, true, false)))
+                        .getCameraId();
+            } catch (Throwable ignored) {}
+            try {
+                preferredBackId = Camera2CameraInfo.from(
+                        provider.getCameraInfo(buildIntendedCameraSelector(provider, false, false)))
+                        .getCameraId();
+            } catch (Throwable ignored) {}
+            String preferredFirstId = firstFront
+                    ? preferredFrontId : preferredBackId;
+            String preferredSecondId = secondFront
+                    ? preferredFrontId : preferredBackId;
+            String preferredUltraWideId = preferUltraWide
+                    ? findBackUltraWideCameraId(provider) : null;
+
+            if (isOppoCph2791ConcurrentQuirk()) {
+                String independentWideId = findBackUltraWideCameraId(provider);
+                CameraSelector independentWide = findAvailableCameraSelector(
+                        provider, independentWideId, false);
+                CameraSelector exactFront = findAvailableCameraSelector(
+                        provider, preferredFrontId, true);
+                if (independentWide != null && exactFront != null
+                        && independentWideId != null
+                        && !independentWideId.equals(preferredBackId)) {
+                    return firstFront
+                            ? new CameraSelector[] { exactFront, independentWide }
+                            : new CameraSelector[] { independentWide, exactFront };
+                }
+            }
+
+            CameraSelector[] best = null;
+            int bestScore = Integer.MIN_VALUE;
+            for (List<CameraInfo> pair : provider.getAvailableConcurrentCameraInfos()) {
+                ArrayList<CameraInfo> firstCandidates = new ArrayList<>();
+                ArrayList<CameraInfo> secondCandidates = new ArrayList<>();
+                for (CameraInfo info : pair) {
+                    Integer facing = Camera2CameraInfo.from(info).getCameraCharacteristic(
+                            CameraCharacteristics.LENS_FACING);
+                    if (facing == null) continue;
+                    if (facing != CameraCharacteristics.LENS_FACING_FRONT
+                            && facing != CameraCharacteristics.LENS_FACING_BACK) continue;
+                    boolean front = facing == CameraCharacteristics.LENS_FACING_FRONT;
+                    if (front == firstFront) {
+                        firstCandidates.add(info);
+                    }
+                    if (front == secondFront) {
+                        secondCandidates.add(info);
+                    }
+                }
+                for (CameraInfo first : firstCandidates) {
+                    for (CameraInfo second : secondCandidates) {
+                        if (first == second) continue;
+                        String firstId =
+                                Camera2CameraInfo.from(first).getCameraId();
+                        String secondId =
+                                Camera2CameraInfo.from(second).getCameraId();
+
+                        CameraSelector firstSelector = first.getCameraSelector();
+                        CameraSelector secondSelector = second.getCameraSelector();
+
+                        int score = 0;
+                        if (preferredFirstId != null
+                                && preferredFirstId.equals(firstId)) score += 4;
+                        if (preferredSecondId != null
+                                && preferredSecondId.equals(secondId)) score += 4;
+                        if (preferUltraWide) {
+                            CameraInfo backInfo = firstFront ? second : first;
+                            String backId = firstFront ? secondId : firstId;
+
+                            if (preferredUltraWideId != null
+                                    && preferredUltraWideId.equals(backId)) {
+                                score += 12;
+                            }
+                            if (supportsSubOneZoom(backInfo)) {
+                                score += 8;
+                            }
+                            if (safeIntrinsicZoomRatio(backInfo) < 0.95f) {
+                                score += 10;
+                            }
+                        }
+                        if (pair.size() == 2) score += 1;
+                        if (best == null || score > bestScore) {
+                            best = new CameraSelector[] {
+                                    firstSelector, secondSelector
+                            };
+                            bestScore = score;
+                        }
+                    }
+                }
+            }
+            return best;
+        } catch (Throwable error) {
+        }
+        return null;
+    }
+
+    static boolean isOppoCph2791ConcurrentQuirk() {
+        return "OPPO".equalsIgnoreCase(Build.MANUFACTURER)
+                && "CPH2791".equalsIgnoreCase(Build.MODEL);
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraSelector findAvailableCameraSelector(
+            @NonNull ProcessCameraProvider provider,
+            @Nullable String cameraId,
+            boolean frontFacing) {
+        if (cameraId == null) return null;
+        try {
+            for (CameraInfo info : provider.getAvailableCameraInfos()) {
+                if (cameraId.equals(Camera2CameraInfo.from(info).getCameraId())) {
+                    Integer facing = Camera2CameraInfo.from(info).getCameraCharacteristic(
+                            CameraCharacteristics.LENS_FACING);
+                    if (facing == null || (facing == CameraCharacteristics.LENS_FACING_FRONT)
+                            != frontFacing) {
+                        continue;
+                    }
+
+                    CameraSelector selector = buildCameraIdSelector(
+                            cameraId, frontFacing);
+
+                    CameraInfo resolved = provider.getCameraInfo(selector);
+                    if (resolved != null && cameraId.equals(
+                            Camera2CameraInfo.from(resolved).getCameraId())) {
+                        return selector;
+                    }
+                }
+            }
+        } catch (Throwable error) {
+        }
+        return null;
+    }
+
+    private static int compareCameraIds(String left, String right) {
+        try {
+            return Integer.compare(Integer.parseInt(left), Integer.parseInt(right));
+        } catch (Throwable ignored) {
+            return left.compareTo(right);
+        }
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static String getWideCameraId(ProcessCameraProvider provider) {
+        return findBackUltraWideCameraId(provider);
+    }
+
+    public static boolean isWideAngleAvailable(ProcessCameraProvider provider) {
+        return hasLogicalUltraWide(provider) || findBackUltraWideCameraId(provider) != null;
+    }
+
+    public static float getBaseZoomRatio(@Nullable ZoomState state, boolean startFromUltraWide) {
+        if (state == null) return 1f;
+        float min = state.getMinZoomRatio();
+        float max = state.getMaxZoomRatio();
+        float target = startFromUltraWide ? min : 1f;
+        return Math.max(min, Math.min(max, target));
+    }
+
+    public static float normalizedZoomToLinear(@Nullable ZoomState state,
+                                               float baseRatio,
+                                               float normalizedZoom) {
+        if (state == null) return Math.max(0f, Math.min(1f, normalizedZoom));
+        float baseLinear = ratioToLinearZoom(state, baseRatio);
+        float normalized = Math.max(0f, Math.min(1f, normalizedZoom));
+        return baseLinear + normalized * (1f - baseLinear);
+    }
+
+    public static float normalizedZoomToRatio(@Nullable ZoomState state,
+                                              float baseRatio,
+                                              float normalizedZoom) {
+        if (state == null) return Math.max(0.0001f, baseRatio);
+        return linearZoomToRatio(state,
+                normalizedZoomToLinear(state, baseRatio, normalizedZoom));
+    }
+
+    public static float zoomRatioToNormalized(@Nullable ZoomState state,
+                                              float baseRatio,
+                                              float ratio) {
+        if (state == null) return 0f;
+        return linearZoomToNormalized(state, baseRatio,
+                ratioToLinearZoom(state, ratio));
+    }
+
+    public static float linearZoomToNormalized(@Nullable ZoomState state,
+                                               float baseRatio,
+                                               float linearZoom) {
+        if (state == null) return 0f;
+        float baseLinear = ratioToLinearZoom(state, baseRatio);
+        float range = 1f - baseLinear;
+        if (range <= 0.0001f) return 0f;
+        return Math.max(0f, Math.min(1f, (linearZoom - baseLinear) / range));
+    }
+
+    private static float ratioToLinearZoom(ZoomState state, float ratio) {
+        float min = Math.max(0.0001f, state.getMinZoomRatio());
+        float max = Math.max(min, state.getMaxZoomRatio());
+        float clamped = Math.max(min, Math.min(max, ratio));
+        if (max - min <= 0.0001f) return 0f;
+        float denominator = 1f / min - 1f / max;
+        if (Math.abs(denominator) <= 0.000001f) return 0f;
+        return Math.max(0f, Math.min(1f, (1f / min - 1f / clamped) / denominator));
+    }
+
+    private static float linearZoomToRatio(ZoomState state, float linearZoom) {
+        float min = Math.max(0.0001f, state.getMinZoomRatio());
+        float max = Math.max(min, state.getMaxZoomRatio());
+        if (max - min <= 0.0001f) return min;
+        float linear = Math.max(0f, Math.min(1f, linearZoom));
+        float inverse = 1f / min - linear * (1f / min - 1f / max);
+        if (inverse <= 0.000001f) return max;
+        return Math.max(min, Math.min(max, 1f / inverse));
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    public static CameraSelector getDefaultWideAngleCamera(ProcessCameraProvider provider) {
+        CameraSelector selector = buildUltraWideSelector(provider);
+        if (selector != null) return selector;
+        throw new IllegalArgumentException("This device doesn't support wide camera! "
+                + "isWideAngleAvailable should be checked first before calling "
+                + "getDefaultWideAngleCamera.");
+    }
+
+    public static ProcessCameraProvider getProviderBlocking(Context ctx) {
+        try {
+            ListenableFuture<ProcessCameraProvider> f = getProviderFuture(ctx);
+            return f.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    public static int toSurfaceRotation(int rotation) {
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90
+                || rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_270) {
+            return rotation;
+        }
+        int degrees = ((rotation % 360) + 360) % 360;
+        if (degrees >= 315 || degrees < 45) return Surface.ROTATION_0;
+        if (degrees < 135) return Surface.ROTATION_90;
+        if (degrees < 225) return Surface.ROTATION_180;
+        return Surface.ROTATION_270;
+    }
+
+    @Nullable
+    public static Size getTargetResolutionSize() {
+        int shortSide = com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraResolution();
+        if (shortSide <= 0) return null;
+        int longSide = Math.max(1, Math.round(shortSide * 16f / 9f));
+        if ((shortSide & 1) != 0) shortSide++;
+        if ((longSide & 1) != 0) longSide++;
+        return new Size(shortSide, longSide);
+    }
+
+    @Nullable
+    public static Size getAttachPreviewResolutionSize() {
+        Size output = getTargetResolutionSize();
+        int shortSide = output == null
+                ? 1080 : Math.min(1080, Math.min(output.getWidth(), output.getHeight()));
+        int longSide = Math.max(1, Math.round(shortSide * 16f / 9f));
+        if ((shortSide & 1) != 0) shortSide++;
+        if ((longSide & 1) != 0) longSide++;
+        return new Size(shortSide, longSide);
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    static boolean supportsContinuousPreviewTarget(ProcessCameraProvider provider,
+                                                   CameraSelector fallback, @Nullable Size target) {
+        if (provider == null || fallback == null || target == null
+                || Math.min(target.getWidth(), target.getHeight()) <= 0) return false;
+        try {
+            if (fallback.getPhysicalCameraId() != null) return false;
+            CameraInfo info = provider.getCameraInfo(fallback);
+            if (info == null) return false;
+            StreamConfigurationMap map = Camera2CameraInfo.from(info).getCameraCharacteristic(
+                    CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            if (map == null) return false;
+            Size[] sizes = map.getOutputSizes(SurfaceTexture.class);
+            if (sizes == null) return false;
+            int shortSide = Math.min(target.getWidth(), target.getHeight());
+            int longSide = Math.max(target.getWidth(), target.getHeight());
+            for (Size size : sizes) {
+                if (size != null && Math.min(size.getWidth(), size.getHeight()) == shortSide
+                        && Math.max(size.getWidth(), size.getHeight()) == longSide) return true;
+            }
+        } catch (Exception | LinkageError ignored) {
+        }
+        return false;
+    }
+
+    static ResolutionSelector buildContinuousPreviewResolutionSelector(
+            @Nullable Size preferred, int minimumShortSide) {
+        if (preferred == null || Math.min(preferred.getWidth(), preferred.getHeight()) <= 0
+                || Math.min(preferred.getWidth(), preferred.getHeight()) < Math.max(0, minimumShortSide)) {
+            throw new IllegalArgumentException("Continuous preview requires a valid exact target size");
+        }
+        final int shortSide = Math.min(preferred.getWidth(), preferred.getHeight());
+        final int longSide = Math.max(preferred.getWidth(), preferred.getHeight());
+        final float ratio = longSide / (float) shortSide;
+        return new ResolutionSelector.Builder()
+                .setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
+                .setAspectRatioStrategy(Math.abs(ratio - 4f / 3f) < Math.abs(ratio - 16f / 9f)
+                        ? AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY
+                        : AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+                .setResolutionStrategy(new ResolutionStrategy(
+                        new Size(longSide, shortSide), ResolutionStrategy.FALLBACK_RULE_NONE))
+                .setResolutionFilter((supportedSizes, rotationDegrees) -> {
+                    ArrayList<Size> exact = new ArrayList<>();
+                    for (Size size : supportedSizes) {
+                        if (Math.min(size.getWidth(), size.getHeight()) == shortSide
+                                && Math.max(size.getWidth(), size.getHeight()) == longSide) {
+                            exact.add(size);
+                        }
+                    }
+                    if (exact.isEmpty()) {
+                        throw new IllegalArgumentException("Continuous preview target size is unsupported");
+                    }
+                    return exact;
+                })
+                .build();
+    }
+
+    public static ResolutionSelector buildResolutionSelector(@Nullable Size preferred,
+                                                              int aspectRatio,
+                                                              boolean preferCaptureRate) {
+        return buildResolutionSelector(preferred, aspectRatio, preferCaptureRate, 0);
+    }
+
+    public static ResolutionSelector buildResolutionSelector(@Nullable Size preferred,
+                                                              int aspectRatio,
+                                                              boolean preferCaptureRate,
+                                                              int minimumShortSide) {
+        ResolutionSelector.Builder builder = new ResolutionSelector.Builder()
+                .setAllowedResolutionMode(preferCaptureRate
+                        ? ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION
+                        : ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE);
+        if (aspectRatio == AspectRatio.RATIO_16_9) {
+            builder.setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY);
+        } else {
+            builder.setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY);
+        }
+        if (preferred != null) {
+            int fallbackRule = preferCaptureRate
+                    ? ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER
+                    : ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER;
+            builder.setResolutionStrategy(new ResolutionStrategy(
+                    preferred, fallbackRule));
+            final float preferredRatio = normalizedRatio(preferred);
+            final boolean customRatio = Math.abs(preferredRatio - 16f / 9f) > 0.03f
+                    && Math.abs(preferredRatio - 4f / 3f) > 0.03f;
+            final int requiredShortSide = Math.max(0, minimumShortSide);
+            if (customRatio || requiredShortSide > 0) {
+                final long preferredArea = (long) preferred.getWidth() * preferred.getHeight();
+                builder.setResolutionFilter((supportedSizes, rotationDegrees) -> {
+                    ArrayList<Size> sorted = new ArrayList<>(supportedSizes);
+                    sorted.sort(Comparator
+                            .comparingInt((Size size) ->
+                                    Math.min(size.getWidth(), size.getHeight()) >= requiredShortSide ? 0 : 1)
+                            .thenComparingInt(size -> {
+                                int shortSide = Math.min(size.getWidth(), size.getHeight());
+                                return shortSide < requiredShortSide ? -shortSide : 0;
+                            })
+                            .thenComparingDouble(size ->
+                                    Math.abs(normalizedRatio(size) - preferredRatio))
+
+                            .thenComparingInt(size -> {
+                                long area = (long) size.getWidth() * size.getHeight();
+                                return preferCaptureRate
+                                        ? (area <= preferredArea ? 0 : 1)
+                                        : (area >= preferredArea ? 0 : 1);
+                            })
+                            .thenComparingLong(size ->
+                                    Math.abs((long) size.getWidth() * size.getHeight() - preferredArea)));
+                    return sorted;
+                });
+            }
+        }
+        return builder.build();
+    }
+
+    public static ResolutionSelector buildConcurrentPreviewResolutionSelector(
+            @NonNull Size preferred, int aspectRatio) {
+        final int requestedWidth = Math.max(1, preferred.getWidth());
+        final int requestedHeight = Math.max(1, preferred.getHeight());
+        final long requestedArea = (long) requestedWidth * requestedHeight;
+        final float requestedRatio = normalizedRatio(preferred);
+        ResolutionSelector.Builder builder = new ResolutionSelector.Builder()
+                .setAllowedResolutionMode(
+                        ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
+                .setAspectRatioStrategy(aspectRatio == AspectRatio.RATIO_16_9
+                        ? AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY
+                        : AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
+                .setResolutionFilter((supportedSizes, rotationDegrees) -> {
+                    ArrayList<Size> compatible = new ArrayList<>();
+                    ArrayList<Size> all = new ArrayList<>(supportedSizes);
+                    for (Size size : supportedSizes) {
+                        int orientedWidth = rotationDegrees == 90 || rotationDegrees == 270
+                                ? size.getHeight() : size.getWidth();
+                        int orientedHeight = rotationDegrees == 90 || rotationDegrees == 270
+                                ? size.getWidth() : size.getHeight();
+                        long area = (long) orientedWidth * orientedHeight;
+                        if (area <= requestedArea
+                                && Math.abs(normalizedRatio(size) - requestedRatio) <= 0.035f) {
+                            compatible.add(size);
+                        }
+                    }
+                    ArrayList<Size> result = compatible.isEmpty() ? all : compatible;
+                    result.sort((left, right) -> compareConcurrentPreviewSizes(
+                            left, right, rotationDegrees,
+                            requestedWidth, requestedHeight, requestedArea,
+                            requestedRatio));
+                    return result;
+                });
+        return builder.build();
+    }
+
+    private static int compareConcurrentPreviewSizes(
+            Size left, Size right, int rotationDegrees,
+            int requestedWidth, int requestedHeight, long requestedArea,
+            float requestedRatio) {
+        long leftScore = concurrentPreviewScore(left, rotationDegrees,
+                requestedWidth, requestedHeight, requestedArea, requestedRatio);
+        long rightScore = concurrentPreviewScore(right, rotationDegrees,
+                requestedWidth, requestedHeight, requestedArea, requestedRatio);
+        return Long.compare(leftScore, rightScore);
+    }
+
+    private static long concurrentPreviewScore(
+            Size size, int rotationDegrees,
+            int requestedWidth, int requestedHeight, long requestedArea,
+            float requestedRatio) {
+        int width = rotationDegrees == 90 || rotationDegrees == 270
+                ? size.getHeight() : size.getWidth();
+        int height = rotationDegrees == 90 || rotationDegrees == 270
+                ? size.getWidth() : size.getHeight();
+        long area = (long) width * height;
+        long exactPenalty = width == requestedWidth && height == requestedHeight
+                ? 0L : 1_000_000_000_000L;
+        long oversizePenalty = area > requestedArea ? 2_000_000_000_000L : 0L;
+        long ratioPenalty = Math.round(
+                Math.abs(normalizedRatio(size) - requestedRatio) * 100_000_000_000L);
+        long dimensionPenalty = (long) Math.abs(width - requestedWidth) * 1_000_000L
+                + (long) Math.abs(height - requestedHeight) * 1_000L;
+        long areaPenalty = Math.min(999_999_999L, Math.abs(area - requestedArea));
+        return exactPenalty + oversizePenalty + ratioPenalty
+                + dimensionPenalty + areaPenalty;
+    }
+
+    private static float normalizedRatio(Size size) {
+        int shortSide = Math.max(1, Math.min(size.getWidth(), size.getHeight()));
+        int longSide = Math.max(size.getWidth(), size.getHeight());
+        return longSide / (float) shortSide;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraInfo resolveSelectedCameraInfo(ProcessCameraProvider provider,
+                                                        CameraSelector selector) {
+        if (provider == null || selector == null) return null;
+        try {
+            CameraInfo selected = provider.getCameraInfo(selector);
+            String physicalId = selector.getPhysicalCameraId();
+            if (physicalId == null || selected == null) return selected;
+            try {
+                if (physicalId.equals(
+                        Camera2CameraInfo.from(selected).getCameraId())) {
+                    return selected;
+                }
+            } catch (Throwable ignored) {
+            }
+            Set<CameraInfo> physicalInfos = selected.getPhysicalCameraInfos();
+            if (physicalInfos != null) {
+                for (CameraInfo physicalInfo : physicalInfos) {
+                    try {
+                        if (physicalId.equals(Camera2CameraInfo.from(
+                                physicalInfo).getCameraId())) {
+                            return physicalInfo;
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+            }
+
+            return null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    private static CameraCapabilities getCameraCapabilities(ProcessCameraProvider provider,
+                                                            CameraSelector selector) {
+        if (provider == null || selector == null) return null;
+        try {
+            CameraInfo cameraInfo = resolveSelectedCameraInfo(provider, selector);
+            if (cameraInfo == null) return null;
+            String cameraId = Camera2CameraInfo.from(cameraInfo).getCameraId();
+            CameraCapabilities cached = CAMERA_CAPABILITIES.get(cameraId);
+            if (cached != null) return cached;
+            CameraCapabilities capabilities = new CameraCapabilities(cameraInfo);
+            CameraCapabilities raced = CAMERA_CAPABILITIES.putIfAbsent(cameraId, capabilities);
+            return raced != null ? raced : capabilities;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static boolean containsMode(@Nullable int[] modes, int wanted) {
+        if (modes == null) return false;
+        for (int mode : modes) {
+            if (mode == wanted) return true;
+        }
+        return false;
+    }
+
+    public static boolean shouldEnableOpticalStabilization(ProcessCameraProvider provider,
+                                                            CameraSelector selector) {
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraCompatibility()) return false;
+        CameraCapabilities capabilities = getCameraCapabilities(provider, selector);
+        return com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getOpticalStabilisation()
+                && capabilities != null
+                && containsMode(capabilities.opticalStabilizationModes,
+                        CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON);
+    }
+
+    public static boolean shouldEnablePreviewStabilization(ProcessCameraProvider provider,
+                                                            CameraSelector selector) {
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraCompatibility()
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || !com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getVideoStabilisation()
+                || shouldEnableOpticalStabilization(provider, selector)) {
+            return false;
+        }
+        CameraCapabilities capabilities = getCameraCapabilities(provider, selector);
+        return capabilities != null
+                && containsMode(capabilities.videoStabilizationModes,
+                        android.hardware.camera2.CameraMetadata
+                                .CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION);
+    }
+
+    public static boolean shouldEnableVideoStabilization(ProcessCameraProvider provider,
+                                                          CameraSelector selector) {
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraCompatibility()
+                || !com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getVideoStabilisation()
+                || shouldEnableOpticalStabilization(provider, selector)) {
+            return false;
+        }
+        CameraCapabilities capabilities = getCameraCapabilities(provider, selector);
+        return capabilities != null
+                && (containsMode(capabilities.videoStabilizationModes,
+                        CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_ON)
+                || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && containsMode(capabilities.videoStabilizationModes,
+                        android.hardware.camera2.CameraMetadata
+                                .CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION));
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static void applyCamera2Controls(ProcessCameraProvider provider,
+                                            CameraSelector selector,
+                                            Camera2Interop.Extender<?> extender,
+                                            boolean stillCapture) {
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraCompatibility()) return;
+        CameraCapabilities capabilities = getCameraCapabilities(provider, selector);
+        if (capabilities == null || extender == null) return;
+
+        final boolean useOis = shouldEnableOpticalStabilization(provider, selector);
+        if (containsMode(capabilities.opticalStabilizationModes,
+                useOis ? CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON
+                        : CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF)) {
+            extender.setCaptureRequestOption(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    useOis ? CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON
+                            : CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
+        }
+
+        if ((useOis || !com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getVideoStabilisation())
+                && containsMode(capabilities.videoStabilizationModes,
+                        CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF)) {
+            extender.setCaptureRequestOption(
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
+        }
+
+        int preferredAf = stillCapture
+                ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                : CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+        int fallbackAf = CaptureRequest.CONTROL_AF_MODE_AUTO;
+        int selectedAf = com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getContinuousAutofocus()
+                && containsMode(capabilities.autofocusModes, preferredAf)
+                ? preferredAf
+                : containsMode(capabilities.autofocusModes, fallbackAf)
+                        ? fallbackAf : CaptureRequest.CONTROL_AF_MODE_OFF;
+        if (containsMode(capabilities.autofocusModes, selectedAf)) {
+            extender.setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, selectedAf);
+        }
+
+        int selectedNoiseReduction;
+        if (!com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getNoiceReduction()) {
+            selectedNoiseReduction = CaptureRequest.NOISE_REDUCTION_MODE_OFF;
+        } else if (stillCapture && containsMode(capabilities.noiseReductionModes,
+                CaptureRequest.NOISE_REDUCTION_MODE_HIGH_QUALITY)) {
+            selectedNoiseReduction = CaptureRequest.NOISE_REDUCTION_MODE_HIGH_QUALITY;
+        } else {
+            selectedNoiseReduction = CaptureRequest.NOISE_REDUCTION_MODE_FAST;
+        }
+        if (containsMode(capabilities.noiseReductionModes, selectedNoiseReduction)) {
+            extender.setCaptureRequestOption(
+                    CaptureRequest.NOISE_REDUCTION_MODE, selectedNoiseReduction);
+        }
+
+        int selectedFaceDetection = CaptureRequest.STATISTICS_FACE_DETECT_MODE_OFF;
+        if (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getFaceDetection()) {
+            if (containsMode(capabilities.faceDetectionModes,
+                    CaptureRequest.STATISTICS_FACE_DETECT_MODE_SIMPLE)) {
+                selectedFaceDetection = CaptureRequest.STATISTICS_FACE_DETECT_MODE_SIMPLE;
+            } else if (containsMode(capabilities.faceDetectionModes,
+                    CaptureRequest.STATISTICS_FACE_DETECT_MODE_FULL)) {
+                selectedFaceDetection = CaptureRequest.STATISTICS_FACE_DETECT_MODE_FULL;
+            }
+        }
+        if (containsMode(capabilities.faceDetectionModes, selectedFaceDetection)) {
+            extender.setCaptureRequestOption(
+                    CaptureRequest.STATISTICS_FACE_DETECT_MODE, selectedFaceDetection);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            int selectedDistortion = stillCapture
+                    && containsMode(capabilities.distortionCorrectionModes,
+                            CaptureRequest.DISTORTION_CORRECTION_MODE_HIGH_QUALITY)
+                    ? CaptureRequest.DISTORTION_CORRECTION_MODE_HIGH_QUALITY
+                    : CaptureRequest.DISTORTION_CORRECTION_MODE_FAST;
+            if (containsMode(capabilities.distortionCorrectionModes, selectedDistortion)) {
+                extender.setCaptureRequestOption(
+                        CaptureRequest.DISTORTION_CORRECTION_MODE, selectedDistortion);
+            }
+        }
+    }
+
+    @Nullable
+    public static Range<Integer> getTargetFpsRange() {
+        switch (com.th3nekit.finegram.core.configs.FinegramCameraConfig.INSTANCE.getCameraXFpsRange()) {
+            case com.th3nekit.finegram.core.configs.FinegramCameraConfig.CameraXFpsRange25to30: return new Range<>(25, 30);
+            case com.th3nekit.finegram.core.configs.FinegramCameraConfig.CameraXFpsRange30to30: return new Range<>(30, 30);
+            case com.th3nekit.finegram.core.configs.FinegramCameraConfig.CameraXFpsRange30to60: return new Range<>(30, 60);
+
+            case com.th3nekit.finegram.core.configs.FinegramCameraConfig.CameraXFpsRange60to60: return new Range<>(60, 60);
+            case com.th3nekit.finegram.core.configs.FinegramCameraConfig.CameraXFpsRangeDefault:
+            default: return null;
+        }
+    }
+
+    @Nullable
+    public static Range<Integer> chooseSupportedFpsRange(
+            @Nullable Range<Integer> requested, @Nullable Iterable<Range<Integer>> supported) {
+        if (requested == null || supported == null) return null;
+        Range<Integer> best = null;
+        for (Range<Integer> range : supported) {
+            if (range == null || !range.getUpper().equals(requested.getUpper())) continue;
+            if (range.equals(requested)) return range;
+            int distance = Math.abs(range.getLower() - requested.getLower());
+            int bestDistance = best == null ? Integer.MAX_VALUE
+                    : Math.abs(best.getLower() - requested.getLower());
+            if (distance < bestDistance || distance == bestDistance
+                    && range.getLower() > best.getLower()) {
+                best = range;
+            }
+        }
+        return best;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static Range<Integer> getSupportedTargetFpsRange(ProcessCameraProvider provider,
+                                                            CameraSelector selector) {
+        Range<Integer> requested = getTargetFpsRange();
+        if (requested == null || provider == null || selector == null) return null;
+        try {
+            CameraCapabilities capabilities = getCameraCapabilities(provider, selector);
+            Range<Integer>[] ranges = capabilities != null ? capabilities.fpsRanges : null;
+            return chooseSupportedFpsRange(requested,
+                    ranges == null ? null : java.util.Arrays.asList(ranges));
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    @Nullable
+    public static Range<Integer> getCommonSupportedTargetFpsRange(
+            ProcessCameraProvider provider,
+            CameraSelector firstSelector,
+            CameraSelector secondSelector) {
+        Range<Integer> requested = getTargetFpsRange();
+        if (requested == null || provider == null
+                || firstSelector == null || secondSelector == null) {
+            return null;
+        }
+        CameraCapabilities first = getCameraCapabilities(provider, firstSelector);
+        CameraCapabilities second = getCameraCapabilities(provider, secondSelector);
+        if (first == null || second == null || first.fpsRanges == null) return null;
+        List<Range<Integer>> common = new ArrayList<>();
+        for (Range<Integer> range : first.fpsRanges) {
+            if (range != null && containsRange(second.fpsRanges, range)) common.add(range);
+        }
+        return chooseSupportedFpsRange(requested, common);
+    }
+
+    private static boolean containsRange(@Nullable Range<Integer>[] ranges,
+                                         Range<Integer> wanted) {
+        if (ranges == null || wanted == null) return false;
+        for (Range<Integer> range : ranges) {
+            if (range != null
+                    && wanted.getLower().equals(range.getLower())
+                    && wanted.getUpper().equals(range.getUpper())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    public static Range<Integer> getSupportedTargetFpsRange(
+            ProcessCameraProvider provider, CameraSelector selector,
+            List<? extends UseCase> useCases) {
+        Range<Integer> requested = getTargetFpsRange();
+        if (requested == null || provider == null || selector == null
+                || useCases == null || useCases.isEmpty()) {
+            return null;
+        }
+        try {
+            CameraInfo cameraInfo = resolveSelectedCameraInfo(provider, selector);
+            if (cameraInfo == null) return null;
+            SessionConfig probe = new SessionConfig.Builder(useCases).build();
+            Set<Range<Integer>> supported =
+                    cameraInfo.getSupportedFrameRateRanges(probe);
+            return chooseSupportedFpsRange(requested, supported);
+        } catch (Throwable ignored) {
+
+        }
+        return null;
+    }
+
+    @SuppressLint({"UnsafeOptInUsageError", "RestrictedApi"})
+    static boolean preservesFrameRates(ProcessCameraProvider provider, CameraSelector selector,
+                                       CameraSelector fallback, List<? extends UseCase> useCases) {
+        if (provider == null || selector == null || fallback == null
+                || useCases == null || useCases.isEmpty()) return false;
+        try {
+            CameraInfo selected = resolveSelectedCameraInfo(provider, selector);
+            CameraInfo ordinary = resolveSelectedCameraInfo(provider, fallback);
+            if (selected == null || ordinary == null) return false;
+            SessionConfig probe = new SessionConfig.Builder(useCases).build();
+            Set<Range<Integer>> baseline = ordinary.getSupportedFrameRateRanges(probe);
+            Set<Range<Integer>> supported = selected.getSupportedFrameRateRanges(probe);
+            return baseline != null && !baseline.isEmpty() && !baseline.contains(null)
+                    && supported != null && supported.containsAll(baseline);
+        } catch (Exception | LinkageError ignored) {
+            return false;
+        }
+    }
+
+    public static int normalizedExposureToIndex(float value, int lower, int upper) {
+        float signed = (Math.max(0f, Math.min(1f, value)) - 0.5f) * 2f;
+        int index = signed < 0f
+                ? Math.round(Math.max(0, -lower) * signed)
+                : Math.round(Math.max(0, upper) * signed);
+        return Math.max(lower, Math.min(upper, index));
+    }
+
+    public static int configuredExposureToIndex(int value, int lower, int upper) {
+        float signed = Math.max(-100, Math.min(100, value)) / 100f;
+        int index = signed < 0f
+                ? Math.round(Math.max(0, -lower) * signed)
+                : Math.round(Math.max(0, upper) * signed);
+        return Math.max(lower, Math.min(upper, index));
+    }
+
+    public static int exposureIndexToConfigured(int index, int lower, int upper) {
+        int clamped = Math.max(lower, Math.min(upper, index));
+        float normalized;
+        if (clamped < 0) {
+            normalized = Math.max(0, -lower) == 0
+                    ? 0f : clamped / (float) Math.max(1, -lower);
+        } else {
+            normalized = Math.max(0, upper) == 0
+                    ? 0f : clamped / (float) Math.max(1, upper);
+        }
+        return Math.max(-100, Math.min(100, Math.round(normalized * 100f)));
+    }
+
+    public static void warmUpAsync(Context ctx) {
+        if (ctx == null || !isCameraXSupported()) return;
+        try {
+            final ListenableFuture<ProcessCameraProvider> f = getProviderFuture(ctx);
+            f.addListener(() -> {}, ContextCompat.getMainExecutor(ctx));
+            warmUpZoomAsync(ctx);
+        } catch (Throwable ignored) {}
+    }
+}

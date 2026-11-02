@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_ProxyNoNetwork">Нет подключения к интернету. Проверьте сеть на телефоне.</string>
+    <string name="FG_ProxyTelegram">Telegram</string>
+    <string name="FG_FolderCovers">Обложки папок</string>
+    <string name="FG_FolderCoversCustomize">Настроить обложки</string>
+    <string name="FG_CoverFolder">Папка</string>
+    <string name="FG_CoverArtwork">Рисунок</string>
+    <string name="FG_CoverImage">Выбрать изображение</string>
+    <string name="FG_CoverAutomatic">Автоматически</string>
+    <string name="FG_CoverGeometry">Геометрия</string>
+    <string name="FG_CoverLandscape">Пейзаж</string>
+    <string name="FG_CoverInfo">У каждой папки своя обложка. Изображения хранятся на этом устройстве.</string>
+    <string name="FG_CoverImporting">Сохранение изображения…</string>
+    <string name="FG_CoverImportFailed">Не удалось открыть изображение. Выберите другой файл.</string>
+    <string name="FG_ProxyConnection">Подключение</string>
+    <string name="FG_ProxyPhone">Телефон</string>
+    <string name="FG_ProxyNode">Прокси</string>
+    <string name="FG_ProxyChecking">Проверка доступности…</string>
+    <string name="FG_ProxyReady">Прокси доступен</string>
+    <string name="FG_ProxyFailed">Не удалось подключиться через этот прокси</string>
+    <string name="FG_ProxyOnline">Telegram подключён</string>
+    <string name="FG_ProxyWaiting">Подключение к Telegram…</string>
+    <string name="FG_ProxyInactive">Этот прокси больше не выбран</string>
+    <string name="FG_ProxyTimeout">Время проверки истекло. Попробуйте ещё раз.</string>
+    <string name="FG_ProxyRetry">Проверить ещё раз</string>
+    <string name="FG_ProxyDetails">Доступность прокси и подключение Telegram проверяются отдельно.</string>
+</resources>

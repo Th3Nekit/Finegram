@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_MessageInfoTitle">Инфо о сообщении</string>
+    <string name="FG_MessageInfoSent">Отправлено</string>
+    <string name="FG_MessageInfoEdited">Изменено</string>
+    <string name="FG_MessageInfoOriginal">Оригинал</string>
+</resources>

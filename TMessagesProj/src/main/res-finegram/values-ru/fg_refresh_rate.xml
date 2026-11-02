@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_DisplayRefreshRate">Использовать частоту экрана</string>
+    <string name="FG_DisplayRefreshRate_Desc">Использовать высокую частоту при текущем разрешении. Энергосбережение и ограничения системы сохраняются. Если выключить, частоту выберет Android.</string>
+</resources>

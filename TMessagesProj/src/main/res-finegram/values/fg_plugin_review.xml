@@ -1,0 +1,12 @@
+<resources>
+    <string name="FG_Plugins_CheckOnInstall">Check plugins before installation</string>
+    <string name="FG_Plugins_CheckOnInstallInfo">If disabled, installation requires your explicit confirmation. Archive validation and approval of executable code remain enabled.</string>
+    <string name="FG_Plugins_CheckUnavailable">Automatic code review was not completed. Install only if you trust the author and source.</string>
+    <string name="FG_Plugins_Security_Checking">Checking…</string>
+    <string name="FG_Plugins_Security_RiskTitle">Plugin requires review</string>
+    <string name="FG_Plugins_Security_UncheckedTitle">Code not checked</string>
+    <string name="FG_Plugins_Security_ChangedTitle">File changed</string>
+    <string name="FG_Plugins_Security_ScanDone">Review completed</string>
+    <string name="FG_Plugins_Security_Retry">Check again</string>
+    <string name="FG_Plugins_Security_InstallRisk">Install with warning</string>
+</resources>
