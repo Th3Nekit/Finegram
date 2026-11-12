@@ -9,7 +9,6 @@
 package org.telegram.ui.Components;
 
 @Deprecated
-// use Rect ot RectF
 public class RectOld {
 
     public float x;

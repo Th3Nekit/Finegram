@@ -1029,7 +1029,7 @@ public class InstantCameraView extends InstantCameraViewBase implements Notifica
         super.onAttachedToWindow();
         removeCallbacks(refreshRoundZoomControl);
         post(refreshRoundZoomControl);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploaded);
     }
 
     @Override
@@ -5365,6 +5365,13 @@ public class InstantCameraView extends InstantCameraViewBase implements Notifica
                 boolean done = false;
                 AudioTimestamp audioTimestamp = new AudioTimestamp();
                 boolean shouldUseTimestamp = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+                final ArrayList<AudioBufferInfo> heldBuffers = new ArrayList<>();
+                final AudioTimestamp rateStamp = new AudioTimestamp();
+                boolean rateDecided = audioInputChannels != 1 || audioOutputChannels != 1;
+                boolean pairedMono = false;
+                long rateFrames = 0;
+                long rateFrames0 = -1;
+                long rateHal0 = -1;
 
                 try {
                     while (!done) {
@@ -5403,13 +5410,70 @@ public class InstantCameraView extends InstantCameraViewBase implements Notifica
                                 android.os.SystemClock.sleep(8);
                                 readResult = com.th3nekit.finegram.camera.AudioCaptureLifecycle.read(recorder, byteBuffer, 2048);
                             }
+                            if (readResult > 0 && !rateDecided) {
+                                rateFrames += readResult / 2;
+                                if (recorder.getTimestamp(rateStamp, AudioTimestamp.TIMEBASE_MONOTONIC) == AudioRecord.SUCCESS) {
+                                    if (rateHal0 < 0) {
+                                        rateHal0 = rateStamp.framePosition;
+                                        rateFrames0 = rateFrames;
+                                    } else if (rateStamp.framePosition - rateHal0 >= audioSampleRate / 2) {
+                                        double ratio = (double) (rateFrames - rateFrames0) / (rateStamp.framePosition - rateHal0);
+                                        pairedMono = ratio > 1.8 && ratio < 2.2;
+                                        rateDecided = true;
+                                        if (pairedMono) {
+                                            FileLog.d("InstantCamera: mono recorder delivers paired samples, ratio " + ratio);
+                                        }
+                                    }
+                                }
+                                if (rateFrames >= audioSampleRate * 4L) {
+                                    rateDecided = true;
+                                }
+                                if (rateDecided) {
+                                    long correctedTimeUs = -1;
+                                    if (pairedMono && !shouldUseTimestamp) {
+                                        if (!heldBuffers.isEmpty()) {
+                                            correctedTimeUs = heldBuffers.get(0).offset[0];
+                                        } else if (a > 0) {
+                                            correctedTimeUs = buffer.offset[0];
+                                        } else {
+                                            correctedTimeUs = audioPresentationTimeUs;
+                                        }
+                                    }
+                                    for (int i = 0; i < heldBuffers.size(); i++) {
+                                        AudioBufferInfo held = heldBuffers.get(i);
+                                        if (pairedMono) {
+                                            for (int k = 0; k < held.results; k++) {
+                                                held.read[k] = com.th3nekit.finegram.camera.CameraXAudioCapture.downmixStereo16(held.buffer[k], held.read[k]);
+                                                if (correctedTimeUs >= 0) {
+                                                    held.offset[k] = correctedTimeUs;
+                                                    correctedTimeUs += com.th3nekit.finegram.camera.CameraXAudioCapture.durationUs(held.read[k], audioSampleRate, audioOutputChannels);
+                                                }
+                                            }
+                                        }
+                                        handler.sendMessage(handler.obtainMessage(MSG_AUDIOFRAME_AVAILABLE, held));
+                                    }
+                                    heldBuffers.clear();
+                                    if (pairedMono) {
+                                        for (int k = 0; k < a; k++) {
+                                            buffer.read[k] = com.th3nekit.finegram.camera.CameraXAudioCapture.downmixStereo16(buffer.buffer[k], buffer.read[k]);
+                                            if (correctedTimeUs >= 0) {
+                                                buffer.offset[k] = correctedTimeUs;
+                                                correctedTimeUs += com.th3nekit.finegram.camera.CameraXAudioCapture.durationUs(buffer.read[k], audioSampleRate, audioOutputChannels);
+                                            }
+                                        }
+                                    }
+                                    if (correctedTimeUs >= 0) {
+                                        audioPresentationTimeUs = correctedTimeUs;
+                                    }
+                                }
+                            }
                             if (readResult < 0 && running && !pauseRecorder) {
                                 throw new IllegalStateException("AudioRecord read failed: " + readResult);
                             }
                             int capturedBytes = readResult;
                             if (readResult > 0) {
                                 byteBuffer.limit(readResult);
-                                if (audioInputChannels == 2 && audioOutputChannels == 1) {
+                                if ((audioInputChannels == 2 || pairedMono) && audioOutputChannels == 1) {
                                     readResult = com.th3nekit.finegram.camera.CameraXAudioCapture.downmixStereo16(byteBuffer, readResult);
                                 }
                             }
@@ -5456,7 +5520,7 @@ public class InstantCameraView extends InstantCameraViewBase implements Notifica
 
                             buffer.read[a] = readResult;
                             long bufferDurationUs = com.th3nekit.finegram.camera.CameraXAudioCapture.durationUs(
-                                    capturedBytes, audioSampleRate, audioInputChannels);
+                                    readResult, audioSampleRate, audioOutputChannels);
                             audioFramesRead += capturedBytes / (audioInputChannels * 2);
                             if (!shouldUseTimestamp || audioInputChannels == 2) {
                                 audioPresentationTimeUs = timestamp + bufferDurationUs;
@@ -5466,7 +5530,16 @@ public class InstantCameraView extends InstantCameraViewBase implements Notifica
                             if ((!running || pauseRecorder) && buffer.results < AudioBufferInfo.MAX_SAMPLES) {
                                 done = true;
                             }
-                            handler.sendMessage(handler.obtainMessage(MSG_AUDIOFRAME_AVAILABLE, buffer));
+                            if (!rateDecided && !done && !buffer.last) {
+                                heldBuffers.add(buffer);
+                            } else {
+                                for (int i = 0; i < heldBuffers.size(); i++) {
+                                    handler.sendMessage(handler.obtainMessage(MSG_AUDIOFRAME_AVAILABLE, heldBuffers.get(i)));
+                                }
+                                heldBuffers.clear();
+                                rateDecided = true;
+                                handler.sendMessage(handler.obtainMessage(MSG_AUDIOFRAME_AVAILABLE, buffer));
+                            }
                         } else {
                             if (!running) {
                                 done = true;

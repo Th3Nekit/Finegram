@@ -81,11 +81,7 @@ public class ProfileBirthdayEffect extends View {
             if (!autoplayed) {
                 autoplayed = true;
                 post(() -> {
-//                    final String key = "bdayanim_" + LocalDate.now().getYear() + "_" + dialogId;
-//                    if (MessagesController.getInstance(currentAccount).getMainSettings().getBoolean(key, true)) {
                         start();
-//                        MessagesController.getInstance(currentAccount).getMainSettings().edit().putBoolean(key, false).apply();
-//                    }
                 });
             }
         }

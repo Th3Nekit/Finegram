@@ -12,14 +12,6 @@ package org.webrtc;
 
 import java.util.Map;
 
-/**
- * Java version of webrtc::RTCStats. Represents an RTCStats object, as
- * described in https://w3c.github.io/webrtc-stats/. The `id`, `timestampUs`
- * and `type` accessors have the same meaning for this class as for the
- * RTCStats dictionary. Each RTCStatsReport produced by getStats contains
- * multiple RTCStats objects; one for each underlying object (codec, stream,
- * transport, etc.) that was inspected to produce the stats.
- */
 public class RTCStats {
   private final long timestampUs;
   private final String type;
@@ -33,37 +25,18 @@ public class RTCStats {
     this.members = members;
   }
 
-  // Timestamp in microseconds.
   public double getTimestampUs() {
     return timestampUs;
   }
 
-  // Equivalent to RTCStatsType in the stats spec. Indicates the type of the
-  // object that was inspected to produce the stats.
   public String getType() {
     return type;
   }
 
-  // Unique ID representing this stats object. May be referred to by members of
-  // other stats objects.
   public String getId() {
     return id;
   }
 
-  /**
-   * Returns map of member names to values. Returns as an ordered map so that
-   * the stats object can be serialized with a consistent ordering.
-   *
-   * Values will be one of the following objects:
-   * - Boolean
-   * - Integer (for 32-bit signed integers)
-   * - Long (for 32-bit unsigned and 64-bit signed integers)
-   * - BigInteger (for 64-bit unsigned integers)
-   * - Double
-   * - String
-   * - The array form of any of the above (e.g., Integer[])
-   * - Map of String keys to BigInteger / Double values
-   */
   public Map<String, Object> getMembers() {
     return members;
   }
@@ -98,14 +71,12 @@ public class RTCStats {
       }
       builder.append(']');
     } else if (value instanceof String) {
-      // Enclose strings in quotes to make it clear they're strings.
       builder.append('"').append(value).append('"');
     } else {
       builder.append(value);
     }
   }
 
-  // TODO(bugs.webrtc.org/8557) Use ctor directly with full Map type.
   @SuppressWarnings("unchecked")
   @CalledByNative
   static RTCStats create(long timestampUs, String type, String id, Map members) {

@@ -2,19 +2,19 @@ package org.telegram.messenger.video;
 
 public class AudioConversions {
 
-    private static final int BYTES_PER_SAMPLE_PER_CHANNEL = 2; // Assuming 16bit audio, so 2
+    private static final int BYTES_PER_SAMPLE_PER_CHANNEL = 2;
     private static final long MICROSECONDS_PER_SECOND = 1000000L;
     private static final int BYTES_PER_SHORT = 2;
 
     @SuppressWarnings("WeakerAccess")
     public static long bytesToUs(
-            int bytes /* bytes */,
-            int sampleRate /* samples/sec */,
-            int channels /* channel */
+            int bytes            ,
+            int sampleRate                  ,
+            int channels
     ) {
-        int byteRatePerChannel = sampleRate * BYTES_PER_SAMPLE_PER_CHANNEL; // bytes/sec/channel
-        int byteRate = byteRatePerChannel * channels; // bytes/sec
-        return MICROSECONDS_PER_SECOND * bytes / byteRate; // usec
+        int byteRatePerChannel = sampleRate * BYTES_PER_SAMPLE_PER_CHANNEL;
+        int byteRate = byteRatePerChannel * channels;
+        return MICROSECONDS_PER_SECOND * bytes / byteRate;
     }
 
     @SuppressWarnings("WeakerAccess")

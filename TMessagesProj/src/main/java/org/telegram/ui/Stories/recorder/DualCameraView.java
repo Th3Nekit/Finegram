@@ -93,16 +93,9 @@ public class DualCameraView extends CameraView {
         setupToScreenMatrix();
     }
 
-//    @Override
-//    protected void updatedDualRotation() {
-//        setupToScreenMatrix();
-//    }
 
     private void setupToScreenMatrix() {
         toScreen.reset();
-//        if (applyCameraRotation()) {
-//            toScreen.postRotate(getDualRotation());
-//        }
         toScreen.postTranslate(1f, -1f);
         toScreen.postScale(getMeasuredWidth() / 2f, -getMeasuredHeight() / 2f);
         toScreen.invert(toGL);
@@ -458,12 +451,6 @@ public class DualCameraView extends CameraView {
     private float[] vertex = new float[2];
     private float[] verticesSrc, verticesDst;
     public boolean isPointInsideDual(Matrix matrix, float x, float y) {
-//        vertex[0] = x;
-//        vertex[1] = y;
-//        toGL.mapPoints(vertex);
-//        matrix.invert(tempMatrix);
-//        tempMatrix.mapPoints(vertex);
-//        return vertex[0] >= -1f && vertex[0] <= 1f && vertex[1] >= -1f && vertex[1] <= 1f;
 
         if (verticesSrc == null) {
             verticesSrc = new float[8];
@@ -531,40 +518,38 @@ public class DualCameraView extends CameraView {
     }
 
     private static final int[] dualWhitelistByDevice = new int[] {
-        1893745684,  // XIAOMI CUPID
-        -215458996,  // XIAOMI VAYU
-        -862041025,  // XIAOMI WILLOW
-        -1258375037, // XIAOMI INGRES
-        -1320049076, // XIAOMI GINKGO
-        -215749424,  // XIAOMI LISA
-        1901578030,  // XIAOMI LEMON
-        -215451421,  // XIAOMI VIVA
-        1908491424,  // XIAOMI STONE
-        -1321491332, // XIAOMI RAPHAEL
-        -1155551678, // XIAOMI MARBLE
-        1908524435,  // XIAOMI SURYA
-        976847578,   // XIAOMI LAUREL_SPROUT
-        -1489198134, // XIAOMI ALIOTH
-        1910814392,  // XIAOMI VENUS
-        -713271737,  // OPPO OP4F2F
-        -2010722764, // SAMSUNG A52SXQ (A52s 5G)
-        1407170066,  // SAMSUNG D2Q (Note10+)
-        -821405251,  // SAMSUNG BEYOND2
-        -1394190955, // SAMSUNG A71
-        -1394190055, // SAMSUNG B4Q
-        1407170066,  // HUAWEI HWNAM
-        1407159934,  // HUAWEI HWCOR
-        1407172057,  // HUAWEI HWPCT
-        1231389747,  // FAIRPHONE FP3
-        -2076538925, // MOTOROLA RSTAR
-        41497626,    // MOTOROLA RHODEC
-        846150482,   // MOTOROLA CHANNEL
-        -1198092731, // MOTOROLA CYPRUS64
-        -251277614,  // MOTOROLA HANOIP
-//        -2078385967, // MOTOROLA PSTAR
-        -2073158771, // MOTOROLA VICKY
-        1273004781   // MOTOROLA BLACKJACK
-//        -1426053134  // REALME REE2ADL1
+        1893745684,
+        -215458996,
+        -862041025,
+        -1258375037,
+        -1320049076,
+        -215749424,
+        1901578030,
+        -215451421,
+        1908491424,
+        -1321491332,
+        -1155551678,
+        1908524435,
+        976847578,
+        -1489198134,
+        1910814392,
+        -713271737,
+        -2010722764,
+        1407170066,
+        -821405251,
+        -1394190955,
+        -1394190055,
+        1407170066,
+        1407159934,
+        1407172057,
+        1231389747,
+        -2076538925,
+        41497626,
+        846150482,
+        -1198092731,
+        -251277614,
+        -2073158771,
+        1273004781
     };
 
     private static final int[] dualWhitelistByModel = new int[] {

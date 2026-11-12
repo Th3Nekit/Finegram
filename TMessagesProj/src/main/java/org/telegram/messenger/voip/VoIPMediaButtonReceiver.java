@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.KeyEvent;
 
-/**
- * Created by grishka on 21.11.16.
- */
 
 public class VoIPMediaButtonReceiver extends BroadcastReceiver {
 	@Override

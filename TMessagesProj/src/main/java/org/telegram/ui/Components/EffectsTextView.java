@@ -14,7 +14,6 @@ import org.telegram.messenger.Emoji;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.spoilers.SpoilersTextView;
 
-// TextView with both Spoilers, Links and Emojis (not animated though)
 public class EffectsTextView extends SpoilersTextView {
     public interface OnLinkPress {
         public void run(ClickableSpan span);

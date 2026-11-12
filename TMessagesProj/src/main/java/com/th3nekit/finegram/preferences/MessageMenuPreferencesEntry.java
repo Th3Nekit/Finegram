@@ -38,6 +38,7 @@ public class MessageMenuPreferencesEntry extends BaseCGPreferencesEntry {
     private final int messageMenuOrderRow = 12;
     private final int messageMenuHapticRow = 13;
     private final int messageMenuOnHoldRow = 14;
+    private final int editSideButtonRow = 15;
 
     @Override
     protected CharSequence getTitle() {
@@ -89,6 +90,8 @@ public class MessageMenuPreferencesEntry extends BaseCGPreferencesEntry {
                 .setChecked(FinegramMessagesConfig.INSTANCE.getForwardWithoutCaption()));
         items.add(SettingsHelper.asSwitchCG(getCustomReactionsRow, getString(R.string.FG_GetCustomReactions))
                 .setChecked(FinegramMessagesConfig.INSTANCE.getGetCustomReactions()));
+        items.add(SettingsHelper.asSwitchCG(editSideButtonRow, getString(R.string.FG_EditSideButton), getString(R.string.FG_EditSideButton_Desc))
+                .setChecked(FinegramMessagesConfig.INSTANCE.getEditSideButton()).slug("editSideButton"));
         items.add(UItem.asShadow(getString(R.string.FG_MenuExtras_Desc)));
     }
 
@@ -123,6 +126,10 @@ public class MessageMenuPreferencesEntry extends BaseCGPreferencesEntry {
         } else if (item.id == forwardWoCaptionRow) {
             FinegramMessagesConfig.INSTANCE.setForwardWithoutCaption(!FinegramMessagesConfig.INSTANCE.getForwardWithoutCaption());
             SettingsHelper.updateCheckState(view, FinegramMessagesConfig.INSTANCE.getForwardWithoutCaption());
+        } else if (item.id == editSideButtonRow) {
+            FinegramMessagesConfig.INSTANCE.setEditSideButton(!FinegramMessagesConfig.INSTANCE.getEditSideButton());
+            SettingsHelper.updateCheckState(view, FinegramMessagesConfig.INSTANCE.getEditSideButton());
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
         } else if (item.id == getCustomReactionsRow) {
             FinegramMessagesConfig.INSTANCE.setGetCustomReactions(!FinegramMessagesConfig.INSTANCE.getGetCustomReactions());
             SettingsHelper.updateCheckState(view, FinegramMessagesConfig.INSTANCE.getGetCustomReactions());

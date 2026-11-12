@@ -108,9 +108,6 @@ public class EditTextEffects extends EditText {
         checkSpoilerTimeout();
     }
 
-    /**
-     * Checks for spoiler timeout to be posted
-     */
     private void checkSpoilerTimeout() {
         boolean onSpoiler = false;
         CharSequence cs = getLayout() != null ? getLayout().getText() : null;
@@ -197,7 +194,7 @@ public class EditTextEffects extends EditText {
     public void setText(CharSequence text, BufferType type) {
         if (!suppressOnTextChanged) {
             isSpoilersRevealed = false;
-            if (spoilersPool != null) // Constructor check
+            if (spoilersPool != null)
                 spoilersPool.clear();
         }
         super.setText(text, type);
@@ -224,9 +221,6 @@ public class EditTextEffects extends EditText {
         invalidateQuotes(false);
     }
 
-    /**
-     * Sets if spoilers should be revealed by touch or not
-     */
     public void setShouldRevealSpoilersByTouch(boolean shouldRevealSpoilersByTouch) {
         this.shouldRevealSpoilersByTouch = shouldRevealSpoilersByTouch;
     }
@@ -249,9 +243,6 @@ public class EditTextEffects extends EditText {
         return super.dispatchTouchEvent(event) || detector;
     }
 
-    /**
-     * Sets if spoiler are already revealed or not
-     */
     public void setSpoilersRevealed(boolean spoilersRevealed, boolean notifyEffects) {
         isSpoilersRevealed = spoilersRevealed;
         Spannable text = getText();
@@ -291,7 +282,8 @@ public class EditTextEffects extends EditText {
                 Build.MANUFACTURER == null ||
                 !Build.MANUFACTURER.toLowerCase().contains("honor") &&
                 !Build.MANUFACTURER.toLowerCase().contains("huawei") &&
-                !Build.MANUFACTURER.toLowerCase().contains("alps")
+                !Build.MANUFACTURER.toLowerCase().contains("alps") &&
+                !Build.MANUFACTURER.toLowerCase().contains("vivo")
             ) && (
                 Build.MODEL == null ||
                 !Build.MODEL.toLowerCase().contains("mediapad")
@@ -431,7 +423,6 @@ public class EditTextEffects extends EditText {
         }
     }
 
-    // really dirty workaround to reset fontmetrics cache (lineheightspan.chooseheight works only when text is inserted into the respected line)
     protected void resetFontMetricsCache() {
         float originalTextSize = getTextSize();
         setTextSize(TypedValue.COMPLEX_UNIT_PX, originalTextSize + 1);
@@ -451,7 +442,7 @@ public class EditTextEffects extends EditText {
     }
 
     protected void invalidateSpoilers() {
-        if (spoilers == null) return; // A null-check for super constructor, because it calls onTextChanged
+        if (spoilers == null) return;
         spoilersPool.addAll(spoilers);
         spoilers.clear();
 

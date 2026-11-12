@@ -10,7 +10,6 @@
 
 package org.webrtc;
 
-/** Enumeration of supported video codec types. */
 enum VideoCodecMimeType {
   VP8("video/x-vnd.on2.vp8"),
   VP9("video/x-vnd.on2.vp9"),

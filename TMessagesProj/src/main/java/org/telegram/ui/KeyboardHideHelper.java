@@ -62,7 +62,7 @@ public class KeyboardHideHelper {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             boolean isKeyboardVisible = view.getRootWindowInsets().getInsets(WindowInsetsCompat.Type.ime()).bottom > 0;
-            if (!movingKeyboard && !isKeyboardVisible && !endingMovingKeyboard /* && !enterView.isPopupShowing()*/) {
+            if (!movingKeyboard && !isKeyboardVisible && !endingMovingKeyboard                                    ) {
                 return false;
             }
             boolean insideEnterView = ev.getY() >= enterView.getTop();
@@ -152,12 +152,7 @@ public class KeyboardHideHelper {
                     startedOutsideView = false;
                     return true;
                 }
-//                if (t > .15f && !exactlyMovingKeyboard) {
-//                    exactlyMovingKeyboard = true;
-//                }
-//                if (exactlyMovingKeyboard) {
                     update(t, true);
-//                }
                 if (lastT != t) {
                     lastDifferentT = lastT;
                 }
@@ -186,7 +181,6 @@ public class KeyboardHideHelper {
         } else {
             float y = (1f - t) * keyboardSize;
             panLayoutHelper.OnPanTranslationUpdate(y, t, true);
-//            ((View) ((View) view.getParent()).getParent()).setTranslationY(-y);
         }
     }
 }

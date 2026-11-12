@@ -289,11 +289,6 @@ public class RichMediaUploader implements NotificationCenter.NotificationCenterD
         } else if (isAudio || isDocument) {
             TLRPC.TL_inputMediaUploadedDocument media = new TLRPC.TL_inputMediaUploadedDocument();
             media.file = inputFile;
-            // A pageBlockDocument must resolve to a generic file. In particular, sending a
-            // forced WebP document with image/webp + documentAttributeImageSize makes the
-            // rich-message validator classify it as image media and reject the block with
-            // RICH_MESSAGE_DOCUMENT_INVALID. The filename still preserves the real extension,
-            // and the separately uploaded thumb remains available for the document preview.
             media.mime_type = isDocument ? "application/octet-stream" :
                     (audioDocument != null && audioDocument.mime_type != null ? audioDocument.mime_type : "audio/mpeg");
             if (audioDocument != null) {

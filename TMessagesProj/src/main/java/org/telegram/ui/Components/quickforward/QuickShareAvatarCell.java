@@ -129,7 +129,6 @@ class QuickShareAvatarCell implements ValueAnimator.AnimatorUpdateListener {
     }
 
 
-    /* Draw */
 
     public void drawBlurredAvatar(Canvas c, float cx, float cy, float radius, float alpha) {
         if (blurredAvatarDrawable == null) {
@@ -217,7 +216,6 @@ class QuickShareAvatarCell implements ValueAnimator.AnimatorUpdateListener {
 
 
 
-    /* Animations */
 
     private ValueAnimator alphaAnimator;
     private float alphaFactor = 1f;
@@ -286,7 +284,6 @@ class QuickShareAvatarCell implements ValueAnimator.AnimatorUpdateListener {
 
 
 
-    /* Init */
 
     private void setDialog(ChatMessageCell cell, long uid) {
         CharSequence displayName;

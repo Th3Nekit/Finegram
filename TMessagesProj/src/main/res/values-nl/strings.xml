@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">Dutch</string>
     <string name="LanguageCode">nl</string>
     <string name="ContinueOnThisLanguage">Doorgaan in het Nederlands</string>
-    <!--signin view-->
+    
     <string name="YourPhone">Je telefoon</string>
     <string name="StartText">Selecteer je landcode en\nvoer je telefoonnummer in.</string>
     <string name="Country">Land</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">Als je de code niet via SMS of telefonisch hebt ontvangen, controleer dan je **mobiele data-instellingen** en telefoonnummer:\n\n**%1$s**\n\nJe resterende mogelijkheden zijn om een ander nummer te proberen of contact op te nemen met de ondersteuning van Telegram. Tik op **Hulp** om de technische details naar ons te sturen, zodat we het probleem kunnen identificeren.</string>
     <string name="DidNotGetTheCodeHelpButton">Help</string>
     <string name="DidNotGetTheCodeEditNumberButton">Nummer wijzigen</string>
-    <!--code enter view-->
+    
     <string name="YourCode">Telefoonverificatie</string>
     <string name="SentSmsCode">We hebben een sms met een activeringscode verzonden naar je telefoon **%1$s**.</string>
     <string name="SentAppCode">We hebben de code naar de **Telegram**-app op je andere apparaat verzonden.</string>
@@ -69,7 +69,7 @@
     <string name="RequestMissedCall">Code via oproep ontvangen</string>
     <string name="LoginAccessibilityCountryCode">Landnummer</string>
     <string name="SignInWithGoogle">Inloggen met Google</string>
-    <!--signup view-->
+    
     <string name="YourName">Je naam</string>
     <string name="RegisterText2">Voer je naam in en voeg een profielfoto toe.</string>
     <string name="FirstName">Voornaam (verplicht)</string>
@@ -78,7 +78,7 @@
     <string name="LastNameSmall">Achternaam</string>
     <string name="CancelRegistration">Registratie annuleren</string>
     <string name="RegistrationProfileInfo">Profielinformatie</string>
-    <!--widgets-->
+    
     <string name="EditWidget">Wijzig Widget</string>
     <string name="EditWidgetContactsInfo">Geef snelkoppelingen weer naar je belangrijkste chats voor snelle toegang.\n\nKies je niemand? dan geeft de widget je meest gebruikte contacten weer.</string>
     <string name="EditWidgetChatsInfo">Meest recente berichten weergeven van de gekozen chats.\n\nKies je geen specifieke chats? Dan geeft deze Widget je meest recente chats weer.</string>
@@ -90,12 +90,12 @@
     <string name="WidgetChats">Chats</string>
     <string name="WidgetShortcuts">Snelkoppelingen</string>
     <string name="WidgetLoggedOff">Account is uitgelogd</string>
-    <!--broadcasts-->
+    
     <string name="NewBroadcastList">Nieuwe verzendlijst</string>
     <string name="EnterListName">Naam van lijst</string>
     <string name="YouCreatedBroadcastList">Je hebt een verzendlijst gemaakt</string>
     <string name="KickFromBroadcast">Verwijder van verzendlijst</string>
-    <!--audio view-->
+    
     <string name="NoAudioFiles">Geen audiobestanden</string>
     <string name="NoAudioFilesInfo">Je muziekcollectie is leeg</string>
     <string name="NoAudioFound">Geen resultaten</string>
@@ -108,7 +108,7 @@
     <string name="RepeatList">Lijst Herhalen</string>
     <string name="ShuffleList">Willekeurige Volgorde</string>
     <string name="ReverseOrder">Volgorde omdraaien</string>
-    <!--documents view-->
+    
     <string name="SelectFile">Kies een bestand</string>
     <string name="FreeOfTotal">Vrij: %1$s van %2$s</string>
     <string name="UnknownError">Onbekende fout</string>
@@ -126,7 +126,7 @@
     <string name="InternalFolderInfo">Blader door je bestandssysteem</string>
     <string name="ExternalFolderInfo">Blader door je externe opslag</string>
     <string name="SearchMusic">Zoek muziek</string>
-    <!--notification-->
+    
     <string name="NotificationMessageGiftCode">%1$s heeft je een cadeaucode voor %2$s Telegram Premium gestuurd</string>
     <string name="NotificationMessageGiveaway">%1$s heeft je een winactie voor %2$s premium-abonnementen van %3$s maanden gestuurd</string>
     <string name="NotificationMessageChannelGiveaway">%1$s is een winactie voor %2$s premium-abonnementen van %3$s maanden gestart</string>
@@ -282,7 +282,7 @@
     <string name="NotificationActionPinnedGifUser">\n%1$s zette een GIF vast</string>
     <string name="NotificationActionPinnedMusicUser">\n%1$s zette een audiobestand vast</string>
     <string name="SecretChatName">Telegram</string>
-    <!--usernames-->
+    
     <string name="Username">Gebruikersnaam</string>
     <string name="UsernameAlso">ook %1$s</string>
     <string name="UsernameLinkPlaceholder">gebruikersnaam</string>
@@ -300,7 +300,7 @@
     <string name="UsernameEmpty">Geen</string>
     <string name="ErrorOccurred">Er is een fout opgetreden.</string>
     <string name="None">Geen</string>
-    <!--settings view-->
+    
     <string name="ResetNotificationsText">Alle meldingen gereset</string>
     <string name="ResetNotificationsAlertTitle">Alle meldingen herstellen</string>
     <string name="ResetNotificationsAlert">Weet je zeker dat je alle meldingsinstellingen naar de standaardwaarden wilt herstellen?</string>
@@ -739,7 +739,7 @@
     <string name="CheckPhoneNumberLearnMoreUrl">https://telegram.org/faq#q-i-have-a-new-phone-number-what-do-i-do</string>
     <string name="CheckPhoneNumberYes">Ja</string>
     <string name="CheckPhoneNumberNo">Nee</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">Tweestapsverificatie</string>
     <string name="TwoStepVerificationTitle">Tweestapsverificatie</string>
     <string name="TwoStepVerificationPasswordSet">Wachtwoord ingesteld!</string>
@@ -861,10 +861,10 @@
     <string name="CheckYourNewEmail">Controleer je mailbox</string>
     <string name="CheckYourNewEmailSubtitle">Voer de code in die naar je nieuwe e-mailadres is verzonden: %1$s.</string>
     <string name="LoginOrSingInWithGoogle">of</string>
-    <!--edit video view-->
+    
     <string name="SendingVideo">Video versturen</string>
     <string name="SendingGif">GIF versturen...</string>
-    <!--Alert messages-->
+    
     <string name="LimitReachedPinnedTopics">Sorry, je kunt niet meer dan %d onderwerpen bovenaan vastzetten.</string>
     <string name="DeleteAllMessagesAlert">Let op! Hiermee verwijder je **alle berichten** in deze chat voor **beide** deelnemers.</string>
     <string name="DeleteAllMessagesChannelAlert">Waarschuwing! Dit zal **alle berichten** in het kanaal verwijderen.</string>
@@ -1020,7 +1020,7 @@
     <string name="TosAgeText">Tik op Akkoord om te bevestigen dat je %1$s of ouder bent.</string>
     <string name="TosUpdateDecline">Er zijn helaas geen andere mogelijkheden. In tegenstelling tot veel andere apps, gebruik Telegram de gegevens van onze gebruikers niet voor het tonen van gerichte advertenties of andere commerciële doeleinden. Telegram slaat alleen de informatie op die het nodig heeft om te functioneren als een veelzijdige clouddienst. Je kunt zelf aanpassen hoe je gegevens worden gebruikt in de Privacy- en Beveiligingsinstellingen.\n\nAls je niet akkoord gaat met de beperkte vereisten van Telegram, zullen we niet in staat zijn om je deze dienst aan te bieden.</string>
     <string name="TosDeclineDeleteAccount">Waarschuwing: dit zal ervoor zorgen dat je Telegram-account permanent wordt verwijderd, samen met alle data die je in de Telegram-cloud hebt opgeslagen.\n\nBelangrijk: je kunt het proces nu annuleren en je gegevens exporteren voordat je jouw account verwijdert, zodat je niet alles kwijtraakt. (Om dit te doen, kun je de nieuwste versie van Telegram Desktop openen en naar Instellingen &gt; Geavanceerd &gt; Telegram-gegevens Exporteren gaan.)</string>
-    <!--permissions-->
+    
     <string name="PermissionStorageWithHint">**Telegram** heeft toegang tot je opslag nodig, zodat je foto\'s, video\'s, muziek en andere bestanden kunt verzenden en opslaan. Tik op Instellingen &gt; Machtigingen en schakel **Bestanden en media** aan.</string>
     <string name="PermissionNoAudioWithHint">**Telegram** heeft toegang tot je microfoon nodig zodat je spraakberichten kunt versturen. Tik op Instellingen &gt; Machtigingen en schakel **Microfoon** aan.</string>
     <string name="PermissionNoAudioVideoWithHint">**Telegram** heeft toegang tot je microfoon nodig zodat je spraakberichten kunt versturen. Tik op Instellingen &gt; Machtigingen en schakel **Microfoon** aan.</string>
@@ -1040,11 +1040,11 @@
     <string name="PermissionBackgroundLocation">Om je Live-locatie in deze chat te kunnen delen heeft Telegram constante toegang tot je locatie nodig, ook als deze op de achtergrond draait.\n\nWe gebruiken je locatie alleen voor de periode die jij instelt en je kunt het delen op ieder moment stoppen. We maken alleen gebruik van je locatiegegevens voor het delen ervan in deze chat.</string>
     <string name="PermissionDrawAboveOtherAppsTitle">Beeld-in-beeld</string>
     <string name="PermissionDrawAboveOtherAppsGroupCallTitle">Videochatoverlay</string>
-    <!--contacts shortcuts-->
+    
     <string name="ContactShortcutMessage">Bericht naar %1$s</string>
     <string name="ContactShortcutVoiceCall">Spraakoproep naar %1$s</string>
     <string name="ContactShortcutVideoCall">Video-oproep naar %1$s</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">dd MMM yyyy</string>
     <string name="formatterGiveawayCard">dd MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">dd MMMM</string>

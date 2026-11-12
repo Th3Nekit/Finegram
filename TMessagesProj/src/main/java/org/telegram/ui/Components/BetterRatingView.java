@@ -12,9 +12,6 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
 
-/**
- * Created by grishka on 10.02.17.
- */
 
 public class BetterRatingView extends View {
 	private Bitmap filledStar, hollowStar;

@@ -24,15 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Bottom sheet with horizontally paged content. Pages are arbitrary ViewGroups
- * placed into a single {@link ViewPagerFixed}, so a swipe (or a programmatic
- * {@link #openPage(int)}) slides the current page to the left while the next one
- * slides in from the right. The sheet background is drawn over the tail of the
- * pages (following the animated content top of whichever pages are visible) and the
- * whole thing is clipped to that rounded rectangle, mirroring
- * StoryPrivacyBottomSheet / EmojiBottomSheet.
- */
 public class NavBottomSheet extends BottomSheet {
 
     private final ViewPagerFixed viewPager;
@@ -64,10 +55,6 @@ public class NavBottomSheet extends BottomSheet {
         navContainer.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL));
     }
 
-    /**
-     * Pins a view to the bottom of the sheet, outside the pager, so it stays in
-     * place while the pages above it slide horizontally.
-     */
     public NavBottomSheet setFixedFooter(View footer) {
         if (footerContainer == null) {
             footerContainer = new FrameLayout(getContext());
@@ -198,12 +185,6 @@ public class NavBottomSheet extends BottomSheet {
         return viewPager.getCurrentPosition() == 0;
     }
 
-    /**
-     * Pages opt-into the animated sheet shape by reporting the y-offset (from the
-     * page's own top edge) at which their visible content begins. The sheet
-     * background follows the weighted average of the tops of the two pages that are
-     * on screen during a transition.
-     */
     public interface NavPage {
         float top();
 
@@ -211,11 +192,6 @@ public class NavBottomSheet extends BottomSheet {
         }
     }
 
-    /**
-     * Convenience page: a full-height {@link FrameLayout} that bottom-aligns a
-     * single content holder and reports its top automatically, so plain content-based
-     * sheets get the animated background for free.
-     */
     public static class Page extends FrameLayout implements NavPage {
 
         private final FrameLayout content;

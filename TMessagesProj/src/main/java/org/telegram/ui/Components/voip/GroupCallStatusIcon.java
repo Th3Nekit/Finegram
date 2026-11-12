@@ -141,11 +141,6 @@ public class GroupCallStatusIcon {
             }
 
             changed = micDrawable.setCustomEndFrame(136);
-//            if (animated) {
-//                micDrawable.setOnFinishCallback(raiseHandCallback, 135);
-//            } else {
-//                micDrawable.setOnFinishCallback(null, 0);
-//            }
         } else {
             iconView.setAnimation(micDrawable);
             micDrawable.setOnFinishCallback(null, 0);

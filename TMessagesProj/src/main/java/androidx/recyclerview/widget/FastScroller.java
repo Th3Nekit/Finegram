@@ -34,19 +34,13 @@ import androidx.core.view.ViewCompat;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * Class responsible to animate and provide a fast scroller.
- */
 @VisibleForTesting
 class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.OnItemTouchListener {
     @IntDef({STATE_HIDDEN, STATE_VISIBLE, STATE_DRAGGING})
     @Retention(RetentionPolicy.SOURCE)
     private @interface State { }
-    // Scroll thumb not showing
     private static final int STATE_HIDDEN = 0;
-    // Scroll thumb visible and moving along with the scrollbar
     private static final int STATE_VISIBLE = 1;
-    // Scroll thumb being dragged by user
     private static final int STATE_DRAGGING = 2;
 
     @IntDef({DRAG_X, DRAG_Y, DRAG_NONE})
@@ -77,26 +71,22 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
     private final int mScrollbarMinimumRange;
     private final int mMargin;
 
-    // Final values for the vertical scroll bar
-    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    @SuppressWarnings("WeakerAccess")
     final StateListDrawable mVerticalThumbDrawable;
-    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    @SuppressWarnings("WeakerAccess")
     final Drawable mVerticalTrackDrawable;
     private final int mVerticalThumbWidth;
     private final int mVerticalTrackWidth;
 
-    // Final values for the horizontal scroll bar
     private final StateListDrawable mHorizontalThumbDrawable;
     private final Drawable mHorizontalTrackDrawable;
     private final int mHorizontalThumbHeight;
     private final int mHorizontalTrackHeight;
 
-    // Dynamic values for the vertical scroll bar
     @VisibleForTesting int mVerticalThumbHeight;
     @VisibleForTesting int mVerticalThumbCenterY;
     @VisibleForTesting float mVerticalDragY;
 
-    // Dynamic values for the horizontal scroll bar
     @VisibleForTesting int mHorizontalThumbWidth;
     @VisibleForTesting int mHorizontalThumbCenterX;
     @VisibleForTesting float mHorizontalDragX;
@@ -105,10 +95,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
     private int mRecyclerViewHeight = 0;
 
     private RecyclerView mRecyclerView;
-    /**
-     * Whether the document is long/wide enough to require scrolling. If not, we don't show the
-     * relevant scroller.
-     */
     private boolean mNeedVerticalScrollbar = false;
     private boolean mNeedHorizontalScrollbar = false;
     @State private int mState = STATE_HIDDEN;
@@ -116,9 +102,9 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
 
     private final int[] mVerticalRange = new int[2];
     private final int[] mHorizontalRange = new int[2];
-    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    @SuppressWarnings("WeakerAccess")
     final ValueAnimator mShowHideAnimator = ValueAnimator.ofFloat(0, 1);
-    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    @SuppressWarnings("WeakerAccess")
     @AnimationState int mAnimationState = ANIMATION_STATE_OUT;
     private final Runnable mHideRunnable = new Runnable() {
         @Override
@@ -162,7 +148,7 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
 
     public void attachToRecyclerView(@Nullable RecyclerView recyclerView) {
         if (mRecyclerView == recyclerView) {
-            return; // nothing to do
+            return;
         }
         if (mRecyclerView != null) {
             destroyCallbacks();
@@ -186,7 +172,7 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
         cancelHide();
     }
 
-    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    @SuppressWarnings("WeakerAccess")
     void requestRedraw() {
         mRecyclerView.invalidate();
     }
@@ -228,7 +214,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
         switch (mAnimationState) {
             case ANIMATION_STATE_FADING_OUT:
                 mShowHideAnimator.cancel();
-                // fall through
             case ANIMATION_STATE_OUT:
                 mAnimationState = ANIMATION_STATE_FADING_IN;
                 mShowHideAnimator.setFloatValues((float) mShowHideAnimator.getAnimatedValue(), 1);
@@ -244,7 +229,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
         switch (mAnimationState) {
             case ANIMATION_STATE_FADING_IN:
                 mShowHideAnimator.cancel();
-                // fall through
             case ANIMATION_STATE_IN:
                 mAnimationState = ANIMATION_STATE_FADING_OUT;
                 mShowHideAnimator.setFloatValues((float) mShowHideAnimator.getAnimatedValue(), 0);
@@ -269,10 +253,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
                 || mRecyclerViewHeight != mRecyclerView.getHeight()) {
             mRecyclerViewWidth = mRecyclerView.getWidth();
             mRecyclerViewHeight = mRecyclerView.getHeight();
-            // This is due to the different events ordering when keyboard is opened or
-            // retracted vs rotate. Hence to avoid corner cases we just disable the
-            // scroller when size changed, and wait until the scroll position is recomputed
-            // before showing it back.
             setState(STATE_HIDDEN);
             return;
         }
@@ -328,13 +308,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
         canvas.translate(-left, -top);
     }
 
-    /**
-     * Notify the scroller of external change of the scroll, e.g. through dragging or flinging on
-     * the view itself.
-     *
-     * @param offsetX The new scroll X offset.
-     * @param offsetY The new scroll Y offset.
-     */
     void updateScrollPosition(int offsetX, int offsetY) {
         int verticalContentLength = mRecyclerView.computeVerticalScrollRange();
         int verticalVisibleLength = mRecyclerViewHeight;
@@ -526,18 +499,12 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
         return mVerticalThumbDrawable;
     }
 
-    /**
-     * Gets the (min, max) vertical positions of the vertical scroll bar.
-     */
     private int[] getVerticalRange() {
         mVerticalRange[0] = mMargin;
         mVerticalRange[1] = mRecyclerViewHeight - mMargin;
         return mVerticalRange;
     }
 
-    /**
-     * Gets the (min, max) horizontal positions of the horizontal scroll bar.
-     */
     private int[] getHorizontalRange() {
         mHorizontalRange[0] = mMargin;
         mHorizontalRange[1] = mRecyclerViewWidth - mMargin;
@@ -553,7 +520,6 @@ class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.O
 
         @Override
         public void onAnimationEnd(Animator animation) {
-            // Cancel is always followed by a new directive, so don't update state.
             if (mCanceled) {
                 mCanceled = false;
                 return;

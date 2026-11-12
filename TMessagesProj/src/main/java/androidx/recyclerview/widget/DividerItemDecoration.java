@@ -29,17 +29,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * DividerItemDecoration is a {@link RecyclerView.ItemDecoration} that can be used as a divider
- * between items of a {@link LinearLayoutManager}. It supports both {@link #HORIZONTAL} and
- * {@link #VERTICAL} orientations.
- *
- * <pre>
- *     mDividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
- *             mLayoutManager.getOrientation());
- *     recyclerView.addItemDecoration(mDividerItemDecoration);
- * </pre>
- */
 public class DividerItemDecoration extends RecyclerView.ItemDecoration {
     public static final int HORIZONTAL = LinearLayout.HORIZONTAL;
     public static final int VERTICAL = LinearLayout.VERTICAL;
@@ -49,20 +38,10 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 
     private Drawable mDivider;
 
-    /**
-     * Current orientation. Either {@link #HORIZONTAL} or {@link #VERTICAL}.
-     */
     private int mOrientation;
 
     private final Rect mBounds = new Rect();
 
-    /**
-     * Creates a divider {@link RecyclerView.ItemDecoration} that can be used with a
-     * {@link LinearLayoutManager}.
-     *
-     * @param context Current context, it will be used to access resources.
-     * @param orientation Divider orientation. Should be {@link #HORIZONTAL} or {@link #VERTICAL}.
-     */
     public DividerItemDecoration(Context context, int orientation) {
         final TypedArray a = context.obtainStyledAttributes(ATTRS);
         mDivider = a.getDrawable(0);
@@ -74,12 +53,6 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         setOrientation(orientation);
     }
 
-    /**
-     * Sets the orientation for this divider. This should be called if
-     * {@link RecyclerView.LayoutManager} changes orientation.
-     *
-     * @param orientation {@link #HORIZONTAL} or {@link #VERTICAL}
-     */
     public void setOrientation(int orientation) {
         if (orientation != HORIZONTAL && orientation != VERTICAL) {
             throw new IllegalArgumentException(
@@ -88,11 +61,6 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         mOrientation = orientation;
     }
 
-    /**
-     * Sets the {@link Drawable} for this divider.
-     *
-     * @param drawable Drawable that should be used as a divider.
-     */
     public void setDrawable(@NonNull Drawable drawable) {
         if (drawable == null) {
             throw new IllegalArgumentException("Drawable cannot be null.");
@@ -100,9 +68,6 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         mDivider = drawable;
     }
 
-    /**
-     * @return the {@link Drawable} for this divider.
-     */
     @Nullable
     public Drawable getDrawable() {
         return mDivider;

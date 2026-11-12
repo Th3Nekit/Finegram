@@ -261,7 +261,7 @@ public class GroupCallMessageCell extends ViewGroup
         if (animatedReactionDrawable != null) {
             animatedReactionDrawable.addView(this);
         }
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
         if (groupCallMessage != null) {
             groupCallMessage.subscribeToStateUpdates(onMessageStateUpdateListener);
         }
@@ -501,9 +501,9 @@ public class GroupCallMessageCell extends ViewGroup
 
 
 
-    private static final char LRI = '\u2066'; // Left-to-Right Isolate
-    private static final char RLI = '\u2067'; // Right-to-Left Isolate
-    private static final char PDI = '\u2069'; // Pop Directional Isolate
+    private static final char LRI = '\u2066';
+    private static final char RLI = '\u2067';
+    private static final char PDI = '\u2069';
 
     public static CharSequence concat(CharSequence name, CharSequence message) {
         SpannableStringBuilder builder = new SpannableStringBuilder();

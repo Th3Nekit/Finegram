@@ -27,9 +27,6 @@ public class FileVideoCapturer implements VideoCapturer {
     void close();
   }
 
-  /**
-   * Read video data from file for the .y4m container.
-   */
   @SuppressWarnings("StringSplitter")
   private static class VideoReaderY4M implements VideoReader {
     private static final String TAG = "VideoReaderY4M";
@@ -38,7 +35,6 @@ public class FileVideoCapturer implements VideoCapturer {
 
     private final int frameWidth;
     private final int frameHeight;
-    // First char after header
     private final long videoStart;
     private final RandomAccessFile mediaFile;
     private final FileChannel mediaFileChannel;
@@ -50,11 +46,9 @@ public class FileVideoCapturer implements VideoCapturer {
       for (;;) {
         int c = mediaFile.read();
         if (c == -1) {
-          // End of file reached.
           throw new RuntimeException("Found end of file before end of header for file: " + file);
         }
         if (c == '\n') {
-          // End of header found.
           break;
         }
         builder.append((char) c);
@@ -107,7 +101,6 @@ public class FileVideoCapturer implements VideoCapturer {
       try {
         ByteBuffer frameDelim = ByteBuffer.allocate(FRAME_DELIMETER_LENGTH);
         if (mediaFileChannel.read(frameDelim) < FRAME_DELIMETER_LENGTH) {
-          // We reach end of file, loop
           mediaFileChannel.position(videoStart);
           if (mediaFileChannel.read(frameDelim) < FRAME_DELIMETER_LENGTH) {
             throw new RuntimeException("Error looping video");
@@ -127,13 +120,12 @@ public class FileVideoCapturer implements VideoCapturer {
         throw new RuntimeException(e);
       }
 
-      return new VideoFrame(buffer, 0 /* rotation */, captureTimeNs);
+      return new VideoFrame(buffer, 0               , captureTimeNs);
     }
 
     @Override
     public void close() {
       try {
-        // Closing a file also closes the channel.
         mediaFile.close();
       } catch (IOException e) {
         Logging.e(TAG, "Problem closing file", e);
@@ -186,7 +178,6 @@ public class FileVideoCapturer implements VideoCapturer {
 
   @Override
   public void changeCaptureFormat(int width, int height, int framerate) {
-    // Empty on purpose
   }
 
   @Override

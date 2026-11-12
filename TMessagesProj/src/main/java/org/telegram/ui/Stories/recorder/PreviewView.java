@@ -93,7 +93,6 @@ public class PreviewView extends FrameLayout {
     private VideoPlayer audioPlayer;
 
     private CollageLayoutView2 collage;
-//    private VideoTimelinePlayView videoTimelineView;
     private TimelineView timelineView;
 
     private final Paint snapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -177,7 +176,6 @@ public class PreviewView extends FrameLayout {
         return collage != null && entry != null && entry.isCollage();
     }
 
-    // set without video for faster transition
     public void preset(StoryEntry entry) {
         this.entry = entry;
         if (entry == null) {
@@ -631,18 +629,12 @@ public class PreviewView extends FrameLayout {
     }
 
     public void onRoundRemove() {
-        // Override
     }
 
     public void onRoundSelectChange(boolean selected) {
-        // Override
     }
 
     private void setupImage(StoryEntry entry) {
-//        if (thumbBitmap != null && !thumbBitmap.isRecycled()) {
-//            thumbBitmap.recycle();
-//        }
-//        thumbBitmap = null;
         Utilities.searchQueue.postRunnable(() -> {
             final Bitmap[] resultedBitmap = new Bitmap[1];
             final boolean[] setupMatrix = new boolean[] { true };
@@ -1466,13 +1458,11 @@ public class PreviewView extends FrameLayout {
     public void drawContent(Canvas canvas) {
         if (textureView != null) {
             canvas.save();
-//            textureView.getTransform(matrix);
             canvas.scale((float) getContentWidth() / getWidth(), (float) getContentHeight() / getHeight());
             canvas.concat(transformBackMatrix);
             textureView.draw(canvas);
             canvas.restore();
         } else if (bitmap != null && entry != null) {
-//            matrix.set(entry.matrix);
             matrix.reset();
             matrix.preScale((float) entry.width / bitmap.getWidth(), (float) entry.height / bitmap.getHeight());
             bitmapPaint.setAlpha(0xFF);
@@ -1485,7 +1475,6 @@ public class PreviewView extends FrameLayout {
             matrix.reset();
             return;
         }
-//        matrix.
     }
 
     public VideoEditTextureView getTextureView() {
@@ -1542,17 +1531,6 @@ public class PreviewView extends FrameLayout {
             textureView.invalidate();
         }
         invalidate();
-//
-//        invertMatrix.reset();
-//        entry.matrix.invert(invertMatrix);
-//        if (entry == null || entry.isRepostMessage) {
-//            return;
-//        }
-//        if (textureView != null) {
-//            setTextureViewTransform(false, textureView);
-//            textureView.invalidate();
-//        }
-//        invalidate();
     }
 
     public void setTextureViewTransform(boolean applyRotation, TextureView view) {
@@ -1573,10 +1551,6 @@ public class PreviewView extends FrameLayout {
                 w = entry.height;
                 h = entry.width;
             }
-//            canvas.clipRect(
-//                    -w * entry.crop.cropPw / 2.0f, -h * entry.crop.cropPh / 2.0f,
-//                    +w * entry.crop.cropPw / 2.0f, +h * entry.crop.cropPh / 2.0f
-//            );
             transformMatrix.preScale(entry.crop.cropScale, entry.crop.cropScale);
             transformMatrix.preTranslate(entry.crop.cropPx * w, entry.crop.cropPy * h);
             transformMatrix.preRotate(entry.crop.cropRotate + entry.crop.transformRotation);
@@ -1807,8 +1781,6 @@ public class PreviewView extends FrameLayout {
         updateRoundPlayer(true);
     }
 
-    // ignores actual player and other reasons to pause a video
-    // (so that play button doesn't make it play when f.ex. popup is on)
     public boolean isPlaying() {
         return !pauseLinks.contains(-9982);
     }

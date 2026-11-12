@@ -198,66 +198,6 @@ public class ChannelRecommendationsCell {
         }
     }
 
-//    public void drawText(Canvas canvas) {
-//        if (msg == null || cell == null) return;
-//
-//        float y = 0;
-//        if (serviceText != null) {
-//            y += dp(4 + 3.33f + 3.33f) + serviceTextHeight;
-//        }
-//
-//        float expandT;
-//        if (cell.transitionParams.animateRecommendationsExpanded) {
-//            if (isExpanded()) {
-//                expandT = cell.transitionParams.animateChangeProgress;
-//            } else {
-//                expandT = 1f - cell.transitionParams.animateChangeProgress;
-//            }
-//        } else {
-//            expandT = isExpanded() ? 1f : 0f;
-//        }
-//        expandT = Utilities.clamp((expandT - .3f) / .7f, 1, 0);
-//        if (expandT > 0) {
-//            int width = (int) Math.min(cell.getWidth() - dp(18), blockWidth * 6.5f);
-//            backgroundBounds.set(
-//                    (cell.getWidth() - width) / 2f,
-//                    y + dp(4 + 6),
-//                    (cell.getWidth() + width) / 2f,
-//                    y + dp(4 + 134)
-//            );
-//            checkBackgroundPath(expandT);
-//
-//            canvas.save();
-//            final float s = .4f + .6f * expandT;
-//            canvas.scale(s, s, backgroundBounds.centerX(), backgroundBounds.top - dp(6));
-//
-//            canvas.clipPath(backgroundPath);
-//
-//            if (headerText != null) {
-//                headerText.draw(canvas, backgroundBounds.left + dp(17), backgroundBounds.top + dp( 20), cell.getThemedColor(Theme.key_windowBackgroundWhiteBlackText), expandT);
-//            }
-//
-//            final float loadingAlpha = this.loadingAlpha.set(loading);
-//
-//            final float xstart = backgroundBounds.left + dp(7) - scrollX;
-//            final float xi = blockWidth + dp(9);
-//            int from = (int) Math.floor((backgroundBounds.left - width - xstart) / xi);
-//            int to = (int) Math.ceil((backgroundBounds.right - xstart) / xi);
-//
-//            if (loadingAlpha < 1) {
-//                for (int i = Math.max(0, from); i < Math.min(to + 1, channels.size()); ++i) {
-//                    ChannelBlock block = channels.get(i);
-//
-//                    canvas.save();
-//                    canvas.translate(xstart + i * xi, backgroundBounds.bottom - ChannelBlock.height());
-//                    block.drawText(canvas, blockWidth, expandT * (1f - loadingAlpha));
-//                    canvas.restore();
-//                }
-//            }
-//
-//            canvas.restore();
-//        }
-//    }
 
     public void draw(Canvas canvas) {
         if (msg == null || cell == null) return;
@@ -271,6 +211,7 @@ public class ChannelRecommendationsCell {
             AndroidUtilities.rectTmp.set(ox + serviceTextLeft - dp(8.66f), dp(4), ox + serviceTextRight + dp(8.66f), dp(4 + 3.33f + 3.33f) + serviceTextHeight);
             cell.drawServiceBackground(canvas, AndroidUtilities.rectTmp, dp(11), 1f);
             canvas.translate(ox, dp(4 + 3.33f));
+            serviceTextPaint.setColor(cell.getThemedColor(Theme.key_chat_serviceText));
             serviceText.draw(canvas);
             canvas.restore();
 
@@ -307,6 +248,7 @@ public class ChannelRecommendationsCell {
             final float s = .4f + .6f * expandT;
             canvas.scale(s, s, backgroundBounds.centerX(), backgroundBounds.top - dp(6));
 
+            backgroundPaint.setColor(cell.getThemedColor(Theme.key_chat_inBubble));
             backgroundPaint.setAlpha((int) (0xFF * expandT));
             backgroundPaint.setShadowLayer(dpf2(1), 0, dpf2(0.33f), ColorUtils.setAlphaComponent(Color.BLACK, (int) (27 * expandT)));
             canvas.drawPath(backgroundPath, backgroundPaint);
@@ -360,7 +302,6 @@ public class ChannelRecommendationsCell {
                 loadingDrawable.draw(canvas);
                 canvas.restore();
 
-//                cell.invalidate();
             }
 
             final float cs = closeBounce.getScale(0.02f);
@@ -453,20 +394,24 @@ public class ChannelRecommendationsCell {
                     avatarDrawable[i].setInfo(currentAccount, chats[i]);
                     avatarImageReceiver[i].setForUserOrChat(chats[i], avatarDrawable[i]);
                 } else {
-//                    int resId = i == 1 ? R.drawable.widget_avatar_5 : R.drawable.widget_avatar_4;
-//                    Drawable avatar = cell.getContext().getResources().getDrawable(resId).mutate();
-//                    avatarImageReceiver[i].setImageBitmap(avatar);
                     final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                    final int color = Theme.blendOver(cell.getThemedColor(Theme.key_chat_inBubble), Theme.multAlpha(cell.getThemedColor(Theme.key_windowBackgroundWhiteGrayText), .50f));
-                    paint.setColor(color);
+                    final int[] color = new int[] { Theme.blendOver(cell.getThemedColor(Theme.key_chat_inBubble), Theme.multAlpha(cell.getThemedColor(Theme.key_windowBackgroundWhiteGrayText), .50f)) };
+                    paint.setColor(color[0]);
                     avatarImageReceiver[i].setImageBitmap(new Drawable() {
                         @Override
                         public void draw(@NonNull Canvas canvas) {
+                            final int newColor = Theme.blendOver(cell.getThemedColor(Theme.key_chat_inBubble), Theme.multAlpha(cell.getThemedColor(Theme.key_windowBackgroundWhiteGrayText), .50f));
+                            if (newColor != color[0]) {
+                                final int paintAlpha = paint.getAlpha();
+                                color[0] = newColor;
+                                paint.setColor(newColor);
+                                paint.setAlpha(paintAlpha);
+                            }
                             canvas.drawCircle(getBounds().centerX(), getBounds().centerY(), getBounds().width() / 2f, paint);
                         }
                         @Override
                         public void setAlpha(int alpha) {
-                            paint.setAlpha(Theme.multAlpha(color, alpha / 255f));
+                            paint.setAlpha(Theme.multAlpha(color[0], alpha / 255f));
                         }
                         @Override
                         public void setColorFilter(@Nullable ColorFilter colorFilter) {

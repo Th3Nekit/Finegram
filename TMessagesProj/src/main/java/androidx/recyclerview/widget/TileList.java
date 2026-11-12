@@ -20,14 +20,10 @@ import android.util.SparseArray;
 
 import java.lang.reflect.Array;
 
-/**
- * A sparse collection of tiles sorted for efficient access.
- */
 class TileList<T> {
 
     final int mTileSize;
 
-    // Keyed by start position.
     private final SparseArray<Tile<T>> mTiles = new SparseArray<Tile<T>>(10);
 
     Tile<T> mLastAccessedTile;
@@ -87,7 +83,7 @@ class TileList<T> {
         public final T[] mItems;
         public int mStartPosition;
         public int mItemCount;
-        Tile<T> mNext;  // Used only for pooling recycled tiles.
+        Tile<T> mNext;
 
         public Tile(Class<T> klass, int size) {
             @SuppressWarnings("unchecked")

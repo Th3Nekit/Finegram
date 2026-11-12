@@ -174,7 +174,7 @@ public class PipRoundVideoView implements NotificationCenter.NotificationCenterD
 
             @Override
             protected void onDraw(Canvas canvas) {
-                if (Theme.chat_roundVideoShadow != null/* && aspectRatioFrameLayout.isDrawingReady()*/) {
+                if (Theme.chat_roundVideoShadow != null                                               ) {
                     Theme.chat_roundVideoShadow.setAlpha((int) (getAlpha() * 255));
                     Theme.chat_roundVideoShadow.setBounds(AndroidUtilities.dp(1), AndroidUtilities.dp(2), AndroidUtilities.dp(125), AndroidUtilities.dp(125));
                     Theme.chat_roundVideoShadow.draw(canvas);
@@ -298,7 +298,7 @@ public class PipRoundVideoView implements NotificationCenter.NotificationCenterD
         }
         parentActivity = activity;
         currentAccount = UserConfig.selectedAccount;
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.messagePlayingProgressDidChanged);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.messagePlayingProgressDidChanged);
         runShowHideAnimation(true);
     }
 
@@ -365,7 +365,6 @@ public class PipRoundVideoView implements NotificationCenter.NotificationCenterD
             try {
                 windowManager.removeView(windowView);
             } catch (Exception e) {
-                //don't promt
             }
             if (instance == this) {
                 instance = null;

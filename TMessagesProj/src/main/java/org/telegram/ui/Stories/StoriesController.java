@@ -24,6 +24,7 @@ import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.DownloadController;
+import org.telegram.messenger.DownloadSpeedEstimator;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FileRefController;
@@ -566,6 +567,51 @@ public class StoriesController {
     private void sortUserStories() {
         AndroidUtilities.cancelRunOnUIThread(sortStoriesRunnable);
         sortStoriesRunnable.run();
+    }
+
+    public static TLRPC.Document getStoryVideoDocument(int currentAccount, TL_stories.StoryItem storyItem) {
+        if (storyItem == null || storyItem.media == null) return null;
+        if (StoryVideoQuality.hasQualityChoice(storyItem.media)) return StoryVideoQuality.getDocument(currentAccount, storyItem.media);
+        TLRPC.Document main = storyItem.media.getDocument();
+        if (main == null || storyItem.media.alt_documents == null) {
+            return main;
+        }
+        TLRPC.Document alt = main;
+        for (TLRPC.Document d : storyItem.media.alt_documents) {
+            if (d != null && MessageObject.isVideoDocument(d) && d.size > 0 && d.size < alt.size) {
+                alt = d;
+            }
+        }
+        if (alt == main) {
+            return main;
+        }
+        double duration = MessageObject.getDocumentDuration(main);
+        long mainBitrate = (long) (main.size * 8 / Math.max(1.0, duration > 0 ? duration : 15));
+        long speed = DownloadSpeedEstimator.getBitrate();
+        boolean pickMain;
+        if (ApplicationLoader.isConnectionSlow() || ApplicationLoader.isRoaming()) {
+            pickMain = false;
+        } else if (isFullyCached(currentAccount, main)) {
+            pickMain = true;
+        } else if (isFullyCached(currentAccount, alt)) {
+            pickMain = speed >= 4 * mainBitrate;
+        } else if (hasData(currentAccount, main) != hasData(currentAccount, alt)) {
+            pickMain = hasData(currentAccount, main);
+        } else {
+            pickMain = speed * 0.6 >= mainBitrate;
+        }
+        return pickMain ? main : alt;
+    }
+
+    private static boolean hasData(int currentAccount, TLRPC.Document document) {
+        String name = FileLoader.getAttachFileName(document);
+        int dot = name.lastIndexOf('.');
+        return FileLoader.getInstance(currentAccount).isLoadingFile(name) || new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_CACHE), (dot > 0 ? name.substring(0, dot) : name) + ".temp").exists();
+    }
+
+    private static boolean isFullyCached(int currentAccount, TLRPC.Document document) {
+        String name = FileLoader.getAttachFileName(document);
+        return new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_STORIES), name).exists() || FileLoader.getInstance(currentAccount).getPathToAttach(document, true).exists();
     }
 
     public void preloadUserStories(TL_stories.PeerStories userStories) {

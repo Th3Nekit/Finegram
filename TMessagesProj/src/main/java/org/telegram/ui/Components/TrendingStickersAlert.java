@@ -23,6 +23,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class TrendingStickersAlert extends BottomSheet {
 
@@ -109,8 +110,6 @@ public class TrendingStickersAlert extends BottomSheet {
     public ArrayList<ThemeDescription> getThemeDescriptions() {
         final ArrayList<ThemeDescription> descriptions = new ArrayList<>();
         layout.getThemeDescriptions(descriptions, layout::updateColors);
-        descriptions.add(new ThemeDescription(alertContainerView, 0, null, null, new Drawable[]{shadowDrawable}, null, Theme.key_dialogBackground));
-        descriptions.add(new ThemeDescription(alertContainerView, 0, null, null, null, null, Theme.key_sheet_scrollUp));
         return descriptions;
     }
 
@@ -222,11 +221,9 @@ public class TrendingStickersAlert extends BottomSheet {
             canvas.save();
             canvas.translate(0, layout.getTranslationY() + translationY);
 
-            // background with top corners
             shadowDrawable.setBounds(0, scrollOffsetY - backgroundPaddingTop + offset, getMeasuredWidth(), getMeasuredHeight() + (translationY < 0 ? -translationY : 0));
             shadowDrawable.draw(canvas);
 
-            // mutable top corners
             if (fraction > 0f && fraction < 1f) {
                 final float radius = AndroidUtilities.dp(12) * fraction;
                 shapeDrawable.setColor(getThemedColor(Theme.key_dialogBackground));
@@ -255,7 +252,6 @@ public class TrendingStickersAlert extends BottomSheet {
 
             final float fraction = getFraction();
 
-            // status bar
             setStatusBarVisible(fraction == 0f && !isDismissed(), true);
             updateLightStatusBar(statusBarAlpha > .5f);
             if (statusBarAlpha > 0f) {
@@ -269,7 +265,6 @@ public class TrendingStickersAlert extends BottomSheet {
             canvas.save();
             canvas.translate(0, layout.getTranslationY() + AndroidUtilities.statusBarHeight - topOffset);
 
-            // top icon
             final int w = AndroidUtilities.dp(36);
             final int h = AndroidUtilities.dp(4);
             final int offset = (int) (h * 2f * (1f - fraction));
@@ -323,5 +318,12 @@ public class TrendingStickersAlert extends BottomSheet {
                 }
             }
         }
+    }
+
+    @Override
+    public void addThemeColorKeys(HashSet<Integer> keys) {
+        super.addThemeColorKeys(keys);
+        keys.add(Theme.key_sheet_scrollUp);
+        keys.add(Theme.key_dialogBackground);
     }
 }

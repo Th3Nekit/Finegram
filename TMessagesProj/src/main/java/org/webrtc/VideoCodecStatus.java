@@ -10,10 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Status codes reported by video encoding/decoding components. This should be kept in sync with
- * video_error_codes.h.
- */
 public enum VideoCodecStatus {
   TARGET_BITRATE_OVERSHOOT(5),
   REQUEST_SLI(2),

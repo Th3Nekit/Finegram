@@ -71,7 +71,6 @@ public class SearchTextWatcher implements TextWatcher {
 
 
 
-    /* * */
 
     @Override
     public final void beforeTextChanged(CharSequence s, int start, int count, int after) {

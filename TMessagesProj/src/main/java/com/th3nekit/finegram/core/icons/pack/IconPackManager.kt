@@ -279,6 +279,7 @@ object IconPackManager {
         } catch (e: Throwable) {
             return null
         }
+        if (resourceName == "abc_vector_test") return null
         val file = pack.fileFor(resourceName) ?: return null
 
         val stock = try {

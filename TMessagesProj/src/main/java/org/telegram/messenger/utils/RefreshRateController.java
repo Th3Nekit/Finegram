@@ -21,67 +21,38 @@ import org.telegram.messenger.FileLog;
 
 import java.util.Locale;
 
-/**
- * RefreshRateController
-
- * Purpose:
- *  - Track real FPS using FrameMetrics
- *  - Switch display refresh rate to ~60 Hz if FPS is stably below 60
- *  - Restore max refresh rate if FPS is stably high again
- *  - Apply hysteresis and a minimum switch interval
-
- * Usage:
- *   private RefreshRateController rr;
- *   onCreate(): rr = new RefreshRateController(this);
- *   onResume(): rr.start();
- *   onPause(): rr.stop();
- */
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public final class RefreshRateController {
 
     private static final String TAG = "RefreshRateController";
 
-    // --- Tuning parameters ---
 
-    /** How long FPS must stay consistently low/high to trigger a switch */
-    private static final long STABLE_WINDOW_MS = 1800; // ~1.8 seconds
+    private static final long STABLE_WINDOW_MS = 1800;
 
-    /** Minimum interval between refresh rate switches */
     private static final long MIN_SWITCH_INTERVAL_MS = 3000;
 
-    /**
-     * Hysteresis thresholds:
-     *  - DOWN_FPS: average FPS must be <= this value to switch down to 60 Hz
-     *  - UP_FPS:   average FPS must be >= this value to switch back to max Hz
-     */
     private static final float DOWN_FPS = 55.0f;
     private static final float UP_FPS   = 58.5f;
 
-    /** Ring buffer size (covers ~2–3 seconds of frames) */
     private static final int RING_SIZE = 240;
 
     private final Activity activity;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // FrameMetrics listener (API 24+)
     private Window.OnFrameMetricsAvailableListener listener;
 
-    // Ring buffer storing frame durations (nanoseconds)
     private final long[] frameNs = new long[RING_SIZE];
     private int ringCount = 0;
     private int ringPos = 0;
     private long ringSumNs = 0;
 
-    // Stability tracking timestamps
     private long belowSinceMs = -1;
     private long aboveSinceMs = -1;
 
-    // Refresh rate switching control
     private long lastSwitchMs = 0;
     private int currentPreferredModeId = 0;
 
-    // Cached display modes
     private Display.Mode mode60;
     private Display.Mode modeMax;
 
@@ -102,7 +73,6 @@ public final class RefreshRateController {
         resetStats();
     }
 
-    // --- Internal logic ---
 
     private void resetStats() {
         ringCount = 0;
@@ -117,7 +87,6 @@ public final class RefreshRateController {
         if (listener != null) return;
 
         listener = (w, fm, dropCountSinceLastInvocation) -> {
-            // TOTAL_DURATION: full frame time from start of processing to buffer swap
             final long totalNs = fm.getMetric(FrameMetrics.TOTAL_DURATION);
             if (totalNs <= 0) return;
 
@@ -125,7 +94,6 @@ public final class RefreshRateController {
             maybeSwitch();
         };
 
-        // Use main looper so window attribute updates are safe
         window.addOnFrameMetricsAvailableListener(listener, mainHandler);
     }
 
@@ -138,7 +106,6 @@ public final class RefreshRateController {
     }
 
     private void pushFrame(long totalNs) {
-        // Update ring buffer with running sum
         if (ringCount < RING_SIZE) {
             ringCount++;
         } else {
@@ -158,7 +125,6 @@ public final class RefreshRateController {
     }
 
     private void maybeSwitch() {
-        // Require a small warm-up period
         if (ringCount < 30) return;
 
         final long nowMs = android.os.SystemClock.uptimeMillis();
@@ -167,7 +133,6 @@ public final class RefreshRateController {
         final boolean canSwitchNow =
                 (nowMs - lastSwitchMs) >= MIN_SWITCH_INTERVAL_MS;
 
-        // If currently preferring high refresh rate and FPS is stably low → switch to 60 Hz
         final boolean preferHigh = !isPrefer60();
         if (preferHigh) {
             if (avgFps <= DOWN_FPS) {
@@ -180,12 +145,11 @@ public final class RefreshRateController {
                     logDecision("DOWN", avgFps);
                 }
             } else {
-                belowSinceMs = -1; // FPS is unstable again
+                belowSinceMs = -1;
             }
             return;
         }
 
-        // If currently preferring 60 Hz and FPS is stably high → restore max refresh rate
         if (avgFps >= UP_FPS) {
             if (aboveSinceMs < 0) aboveSinceMs = nowMs;
             if ((nowMs - aboveSinceMs) >= STABLE_WINDOW_MS && canSwitchNow) {
@@ -228,13 +192,11 @@ public final class RefreshRateController {
                 bestMax = m;
             }
 
-            // Look for a refresh rate close to 60 Hz (often 59.94)
             final float rr = m.getRefreshRate();
             if (rr >= 58.0f && rr <= 62.5f) {
                 if (best60 == null) {
                     best60 = m;
                 } else {
-                    // Prefer the mode closest to 60 Hz; if equal, pick higher resolution
                     float d1 = Math.abs(best60.getRefreshRate() - 60f);
                     float d2 = Math.abs(rr - 60f);
                     if (d2 < d1) {
@@ -263,27 +225,11 @@ public final class RefreshRateController {
         if (mode == null) return;
 
         final Window window = activity.getWindow();
-        //final WindowManager wm = window.getWindowManager();
-        //if (wm == null) return;
 
         AndroidUtilities.setPreferredMaxRefreshRate(window, mode.getRefreshRate());
 
-        //final WindowManager.LayoutParams lp = window.getAttributes();
 
-        // Do nothing if the mode is already set
-        //if (lp.preferredDisplayModeId == mode.getModeId()) {
-        //    currentPreferredModeId = mode.getModeId();
-        //    return;
-        //}
 
-        //lp.preferredRefreshRate = mode.getRefreshRate();
-        //lp.preferredDisplayModeId = mode.getModeId();
-        //try {
-        //    window.setAttributes(lp);
-        //    wm.updateViewLayout(window.getDecorView(), lp);
-        //} catch (Exception e) {
-        //    FileLog.e(e);
-        //}
         currentPreferredModeId = mode.getModeId();
     }
 
@@ -292,7 +238,6 @@ public final class RefreshRateController {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return activity.getDisplay();
         } else {
-            // Deprecated but still required for older APIs
             return activity.getWindowManager().getDefaultDisplay();
         }
     }

@@ -4,9 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.nio.ShortBuffer;
 
-/**
- * The simplest {@link AudioRemixer} that does nothing.
- */
 public class PassThroughAudioRemixer implements AudioRemixer {
 
     @Override

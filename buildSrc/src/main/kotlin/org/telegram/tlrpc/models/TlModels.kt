@@ -47,7 +47,6 @@ data class TlScheme(
 
 
 
-/**/
 
 data class TlObjectWithLayer(
     val tl: TlObject,
@@ -86,7 +85,6 @@ data class TlTypeKey(
     }
 }
 
-/**/
 
 
 data class TlParamOptionalKey(

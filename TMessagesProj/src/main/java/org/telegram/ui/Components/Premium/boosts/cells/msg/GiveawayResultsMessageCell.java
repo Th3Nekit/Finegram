@@ -365,7 +365,7 @@ public class GiveawayResultsMessageCell {
         measuredHeight += topHeight;
         measuredHeight += countriesHeight;
         measuredHeight += bottomHeight;
-        measuredHeight += dp(32 + 96); //gift
+        measuredHeight += dp(32 + 96);
         measuredWidth = maxWidth;
 
         if (isStars) {
@@ -600,7 +600,6 @@ public class GiveawayResultsMessageCell {
             }
             selectorDrawable.setBounds(clickRect[pressedPos]);
             selectorDrawable.setCallback(parentView);
-//            selectorDrawable.draw(canvas);
         }
 
         if (links != null && links.draw(canvas)) {

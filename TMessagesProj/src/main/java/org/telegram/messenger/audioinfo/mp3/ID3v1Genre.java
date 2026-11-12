@@ -16,9 +16,6 @@
 package org.telegram.messenger.audioinfo.mp3;
 
 public enum ID3v1Genre {
-	/*
-	 * The following genres is defined in ID3v1 (0-79)
-	 */
 	Blues("Blues"),
 	ClassicRock("Classic Rock"),
 	Country("Country"),
@@ -100,9 +97,6 @@ public enum ID3v1Genre {
 	RockAndRoll("Rock & Roll"),
 	HardRock("Hard Rock"),
 
-	/*
-	 * The following genres are Winamp extensions (80-125)
-	 */
 	Folk("Folk"),
 	FolkRock("Folk-Rock"),
 	NationalFolk("National Folk"),

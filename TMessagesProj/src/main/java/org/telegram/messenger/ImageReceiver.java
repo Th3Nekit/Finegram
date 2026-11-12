@@ -2294,7 +2294,13 @@ public class ImageReceiver implements NotificationCenter.NotificationCenterDeleg
     }
 
     public final Runnable invalidateRunnable = this::invalidate;
+    public Runnable invalidateListener;
+    public Runnable bitmapSetListener;
+
     public void invalidate() {
+        if (invalidateListener != null) {
+            invalidateListener.run();
+        }
         if (parentView == null) {
             return;
         }
@@ -2739,6 +2745,18 @@ public class ImageReceiver implements NotificationCenter.NotificationCenterDeleg
         }
     }
 
+    public void resumeAnimation() {
+        AnimatedFileDrawable animation = getAnimation();
+        if (animation != null && allowStartAnimation && currentOpenedLayerFlags == 0) {
+            animation.setUseSharedQueue(useSharedAnimationQueue);
+            animation.start();
+        }
+        RLottieDrawable lottie = getLottieAnimation();
+        if (lottie != null && allowStartLottieAnimation && (!lottie.isHeavyDrawable() || currentOpenedLayerFlags == 0)) {
+            lottie.start();
+        }
+    }
+
     private boolean emojiPaused;
     public void setEmojiPaused(boolean paused) {
         if (emojiPaused == paused) return;
@@ -2832,6 +2850,14 @@ public class ImageReceiver implements NotificationCenter.NotificationCenterDeleg
     }
 
     protected boolean setImageBitmapByKey(Drawable drawable, String key, int type, boolean memCache, int guid) {
+        final boolean result = setImageBitmapByKeyInternal(drawable, key, type, memCache, guid);
+        if (bitmapSetListener != null) {
+            bitmapSetListener.run();
+        }
+        return result;
+    }
+
+    private boolean setImageBitmapByKeyInternal(Drawable drawable, String key, int type, boolean memCache, int guid) {
         if (drawable == null || key == null || currentGuid != guid) {
             return false;
         }

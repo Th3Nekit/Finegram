@@ -50,7 +50,7 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
     private static final int ICON_RADIUS_DP = 14;
     private static final int CORNER_DP = 20;
     private static final int TEXT_LEFT_DP = SIDE_DP + INNER_DP + ICON_DP + 14;
-    private static final int SWITCH_RIGHT_DP = SIDE_DP + INNER_DP;
+    private static final int SWITCH_RIGHT_DP = SIDE_DP + 22;
 
     private static final float DISABLED_ALPHA = 0.5f;
 
@@ -96,7 +96,7 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
         nameView.setLines(1);
         nameView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         addView(nameView, LayoutHelper.createFrameRelatively(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT,
-                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 37 + 12, 0));
+                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 39 + 12, 0));
 
         badgeView = new TextView(context);
         badgeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
@@ -108,7 +108,7 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
         badgeView.setPadding(dp(7), dp(2), dp(7), dp(2));
         badgeView.setVisibility(GONE);
         addView(badgeView, LayoutHelper.createFrameRelatively(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT,
-                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 37 + 12, 0));
+                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 39 + 12, 0));
 
         statusView = new TextView(context);
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
@@ -116,12 +116,12 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
         statusView.setEllipsize(TextUtils.TruncateAt.END);
         statusView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         addView(statusView, LayoutHelper.createFrameRelatively(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
-                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 37 + 12, 0));
+                Gravity.START | Gravity.TOP, TEXT_LEFT_DP, 0, SWITCH_RIGHT_DP + 39 + 12, 0));
 
         checkBox = new Switch(context, resourcesProvider);
         checkBox.setColors(Theme.key_switchTrack, Theme.key_switchTrackChecked,
                 Theme.key_switchTrackBlueThumb, Theme.key_switchTrackBlueThumbChecked);
-        addView(checkBox, LayoutHelper.createFrameRelatively(37, 20, Gravity.END | Gravity.CENTER_VERTICAL,
+        addView(checkBox, LayoutHelper.createFrameRelatively(39, 40, Gravity.END | Gravity.CENTER_VERTICAL,
                 0, 0, SWITCH_RIGHT_DP, 0));
 
         cardColor = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
@@ -138,7 +138,7 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
     }
 
     public boolean isOnSwitch(float x) {
-        return LocaleController.isRTL ? x <= dp(SWITCH_RIGHT_DP + 37 + 12) : x >= getMeasuredWidth() - dp(SWITCH_RIGHT_DP + 37 + 12);
+        return LocaleController.isRTL ? x <= dp(SWITCH_RIGHT_DP + 39 + 12) : x >= getMeasuredWidth() - dp(SWITCH_RIGHT_DP + 39 + 12);
     }
 
     public void toggle() {
@@ -226,7 +226,7 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
-        final int textWidth = Math.max(0, width - dp(TEXT_LEFT_DP) - dp(SWITCH_RIGHT_DP) - dp(37) - dp(12));
+        final int textWidth = Math.max(0, width - dp(TEXT_LEFT_DP) - dp(SWITCH_RIGHT_DP) - dp(39) - dp(12));
         final int naturalHeight = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         int badgeSpace = 0;
         if (badgeView.getVisibility() == VISIBLE) {
@@ -239,8 +239,8 @@ public class FGPluginCell extends FrameLayout implements Theme.Colorable {
         final int iconSize = MeasureSpec.makeMeasureSpec(dp(ICON_DP), MeasureSpec.EXACTLY);
         placeholderView.measure(iconSize, iconSize);
         iconView.measure(iconSize, iconSize);
-        checkBox.measure(MeasureSpec.makeMeasureSpec(dp(37), MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(dp(20), MeasureSpec.EXACTLY));
+        checkBox.measure(MeasureSpec.makeMeasureSpec(dp(39), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(dp(40), MeasureSpec.EXACTLY));
         final int titleHeight = Math.max(nameView.getMeasuredHeight(),
                 badgeView.getVisibility() == VISIBLE ? badgeView.getMeasuredHeight() : 0);
         final int height = Math.max(dp(HEIGHT_DP), titleHeight + dp(4) + statusView.getMeasuredHeight() + dp(24));

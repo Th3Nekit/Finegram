@@ -45,7 +45,7 @@ public class MHTML {
         Entry currentEntry = null;
         final int boundarylen = 2 + boundary.length();
         while ((line = reader.readLine()) != null) {
-            filePos[0] += line.getBytes().length + 2; // 2 = CRLF, TODO(@dkaraush): support proper offset calc
+            filePos[0] += line.getBytes().length + 2;
             if (line.length() == boundarylen && line.substring(2).equals(boundary)) {
                 if (currentEntry != null) {
                     currentEntry.end = filePos[0] - boundarylen - 2;
@@ -70,7 +70,7 @@ public class MHTML {
         String currentHeader = null;
         StringBuilder currentValue = null;
         while ((line = reader.readLine()) != null) {
-            filePos[0] += line.getBytes().length + 2; // 2 = CRLF, TODO(@dkaraush): support proper offset calc
+            filePos[0] += line.getBytes().length + 2;
             line = line.trim();
             if (line.isEmpty()) {
                 break;
@@ -230,9 +230,9 @@ public class MHTML {
                 int c = read();
                 if (c == -1) {
                     if (bytesRead == 0) {
-                        return -1; // End of stream
+                        return -1;
                     }
-                    break; // Partial read
+                    break;
                 }
                 b[off + i] = (byte) c;
                 bytesRead++;

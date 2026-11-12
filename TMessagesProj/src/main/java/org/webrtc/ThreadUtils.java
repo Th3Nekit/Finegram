@@ -19,9 +19,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class ThreadUtils {
-  /**
-   * Utility class to be used for checking that a method is called on the correct thread.
-   */
   public static class ThreadChecker {
     @Nullable private Thread thread = Thread.currentThread();
 
@@ -39,28 +36,14 @@ public class ThreadUtils {
     }
   }
 
-  /**
-   * Throws exception if called from other than main thread.
-   */
   public static void checkIsOnMainThread() {
     if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
       throw new IllegalStateException("Not on main thread!");
     }
   }
 
-  /**
-   * Utility interface to be used with executeUninterruptibly() to wait for blocking operations
-   * to complete without getting interrupted..
-   */
   public interface BlockingOperation { void run() throws InterruptedException; }
 
-  /**
-   * Utility method to make sure a blocking operation is executed to completion without getting
-   * interrupted. This should be used in cases where the operation is waiting for some critical
-   * work, e.g. cleanup, that must complete before returning. If the thread is interrupted during
-   * the blocking operation, this function will re-run the operation until completion, and only then
-   * re-interrupt the thread.
-   */
   public static void executeUninterruptibly(BlockingOperation operation) {
     boolean wasInterrupted = false;
     while (true) {
@@ -68,12 +51,9 @@ public class ThreadUtils {
         operation.run();
         break;
       } catch (InterruptedException e) {
-        // Someone is asking us to return early at our convenience. We can't cancel this operation,
-        // but we should preserve the information and pass it along.
         wasInterrupted = true;
       }
     }
-    // Pass interruption information along.
     if (wasInterrupted) {
       Thread.currentThread().interrupt();
     }
@@ -88,14 +68,11 @@ public class ThreadUtils {
         thread.join(timeRemainingMs);
         break;
       } catch (InterruptedException e) {
-        // Someone is asking us to return early at our convenience. We can't cancel this operation,
-        // but we should preserve the information and pass it along.
         wasInterrupted = true;
         final long elapsedTimeMs = SystemClock.elapsedRealtime() - startTimeMs;
         timeRemainingMs = timeoutMs - elapsedTimeMs;
       }
     }
-    // Pass interruption information along.
     if (wasInterrupted) {
       Thread.currentThread().interrupt();
     }
@@ -130,23 +107,17 @@ public class ThreadUtils {
         result = barrier.await(timeRemainingMs, TimeUnit.MILLISECONDS);
         break;
       } catch (InterruptedException e) {
-        // Someone is asking us to return early at our convenience. We can't cancel this operation,
-        // but we should preserve the information and pass it along.
         wasInterrupted = true;
         final long elapsedTimeMs = SystemClock.elapsedRealtime() - startTimeMs;
         timeRemainingMs = timeoutMs - elapsedTimeMs;
       }
     } while (timeRemainingMs > 0);
-    // Pass interruption information along.
     if (wasInterrupted) {
       Thread.currentThread().interrupt();
     }
     return result;
   }
 
-  /**
-   * Post `callable` to `handler` and wait for the result.
-   */
   public static <V> V invokeAtFrontUninterruptibly(
       final Handler handler, final Callable<V> callable) {
     if (handler.getLooper().getThread() == Thread.currentThread()) {
@@ -156,7 +127,6 @@ public class ThreadUtils {
         throw new RuntimeException(e);
       }
     }
-    // Place-holder classes that are assignable inside nested class.
     class CaughtException {
       Exception e;
     }
@@ -178,8 +148,6 @@ public class ThreadUtils {
       }
     });
     awaitUninterruptibly(barrier);
-    // Re-throw any runtime exception caught inside the other thread. Since this is an invoke, add
-    // stack trace for the waiting thread as well.
     if (caughtException.e != null) {
       final RuntimeException runtimeException = new RuntimeException(caughtException.e);
       runtimeException.setStackTrace(
@@ -189,9 +157,6 @@ public class ThreadUtils {
     return result.value;
   }
 
-  /**
-   * Post `runner` to `handler`, at the front, and wait for completion.
-   */
   public static void invokeAtFrontUninterruptibly(final Handler handler, final Runnable runner) {
     invokeAtFrontUninterruptibly(handler, new Callable<Void>() {
       @Override

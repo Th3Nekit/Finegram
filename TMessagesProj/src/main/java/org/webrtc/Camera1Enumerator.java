@@ -19,22 +19,18 @@ import org.webrtc.CameraEnumerationAndroid.CaptureFormat;
 @SuppressWarnings("deprecation")
 public class Camera1Enumerator implements CameraEnumerator {
   private final static String TAG = "Camera1Enumerator";
-  // Each entry contains the supported formats for corresponding camera index. The formats for all
-  // cameras are enumerated on the first call to getSupportedFormats(), and cached for future
-  // reference.
   private static List<List<CaptureFormat>> cachedSupportedFormats;
 
   private final boolean captureToTexture;
 
   public Camera1Enumerator() {
-    this(true /* captureToTexture */);
+    this(true                       );
   }
 
   public Camera1Enumerator(boolean captureToTexture) {
     this.captureToTexture = captureToTexture;
   }
 
-  // Returns device names that can be used to create a new VideoCapturerAndroid.
   @Override
   public String[] getDeviceNames() {
     ArrayList<String> namesList = new ArrayList<>();
@@ -119,8 +115,6 @@ public class Camera1Enumerator implements CameraEnumerator {
       int maxFps = 0;
       final List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
       if (listFpsRange != null) {
-        // getSupportedPreviewFpsRange() returns a sorted list. Take the fps range
-        // corresponding to the highest fps.
         final int[] range = listFpsRange.get(listFpsRange.size() - 1);
         minFps = range[android.hardware.Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
         maxFps = range[android.hardware.Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
@@ -138,7 +132,6 @@ public class Camera1Enumerator implements CameraEnumerator {
     return formatList;
   }
 
-  // Convert from android.hardware.Camera.Size to Size.
   static List<Size> convertSizes(List<android.hardware.Camera.Size> cameraSizes) {
     final List<Size> sizes = new ArrayList<Size>();
     for (android.hardware.Camera.Size size : cameraSizes) {
@@ -147,7 +140,6 @@ public class Camera1Enumerator implements CameraEnumerator {
     return sizes;
   }
 
-  // Convert from int[2] to CaptureFormat.FramerateRange.
   static List<CaptureFormat.FramerateRange> convertFramerates(List<int[]> arrayRanges) {
     final List<CaptureFormat.FramerateRange> ranges = new ArrayList<CaptureFormat.FramerateRange>();
     for (int[] range : arrayRanges) {
@@ -158,8 +150,6 @@ public class Camera1Enumerator implements CameraEnumerator {
     return ranges;
   }
 
-  // Returns the camera index for camera with name `deviceName`, or throws IllegalArgumentException
-  // if no such camera can be found.
   static int getCameraIndex(String deviceName) {
     Logging.d(TAG, "getCameraIndex: " + deviceName);
     for (int i = 0; i < android.hardware.Camera.getNumberOfCameras(); ++i) {
@@ -170,8 +160,6 @@ public class Camera1Enumerator implements CameraEnumerator {
     throw new IllegalArgumentException("No such camera: " + deviceName);
   }
 
-  // Returns the name of the camera with camera index. Returns null if the
-  // camera can not be used.
   static @Nullable String getDeviceName(int index) {
     android.hardware.Camera.CameraInfo info = getCameraInfo(index);
     if (info == null) {

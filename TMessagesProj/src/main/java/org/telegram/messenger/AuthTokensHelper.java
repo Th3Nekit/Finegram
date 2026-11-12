@@ -51,7 +51,6 @@ public class AuthTokensHelper {
                 editor.putString("log_out_token_" + i, Utilities.bytesToHex(data.toByteArray()));
             }
             editor.apply();
-            //   BackupAgent.requestBackup(ApplicationLoader.applicationContext);
         }
     }
 

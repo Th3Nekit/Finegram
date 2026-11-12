@@ -19,32 +19,23 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.util.Log;
 
-/**
- * Display the video stream on a SurfaceView.
- */
 public class SurfaceViewRenderer extends SurfaceView
     implements SurfaceHolder.Callback, VideoSink, RendererCommon.RendererEvents {
   private static final String TAG = "SurfaceViewRenderer";
 
-  // Cached resource name.
   private final String resourceName;
   private final RendererCommon.VideoLayoutMeasure videoLayoutMeasure =
       new RendererCommon.VideoLayoutMeasure();
   private final SurfaceEglRenderer eglRenderer;
 
-  // Callback for reporting renderer events. Read-only after initialization so no lock required.
   private RendererCommon.RendererEvents rendererEvents;
 
-  // Accessed only on the main thread.
   private int rotatedFrameWidth;
   private int rotatedFrameHeight;
   private boolean enableFixedSize;
   private int surfaceWidth;
   private int surfaceHeight;
 
-  /**
-   * Standard View constructor. In order to render something, you must first call init().
-   */
   public SurfaceViewRenderer(Context context) {
     super(context);
     this.resourceName = getResourceName();
@@ -53,9 +44,6 @@ public class SurfaceViewRenderer extends SurfaceView
     getHolder().addCallback(eglRenderer);
   }
 
-  /**
-   * Standard View constructor. In order to render something, you must first call init().
-   */
   public SurfaceViewRenderer(Context context, AttributeSet attrs) {
     super(context, attrs);
     this.resourceName = getResourceName();
@@ -64,20 +52,10 @@ public class SurfaceViewRenderer extends SurfaceView
     getHolder().addCallback(eglRenderer);
   }
 
-  /**
-   * Initialize this class, sharing resources with `sharedContext`. It is allowed to call init() to
-   * reinitialize the renderer after a previous init()/release() cycle.
-   */
   public void init(EglBase.Context sharedContext, RendererCommon.RendererEvents rendererEvents) {
     init(sharedContext, rendererEvents, EglBase.CONFIG_PLAIN, new GlRectDrawer());
   }
 
-  /**
-   * Initialize this class, sharing resources with `sharedContext`. The custom `drawer` will be used
-   * for drawing frames on the EGLSurface. This class is responsible for calling release() on
-   * `drawer`. It is allowed to call init() to reinitialize the renderer after a previous
-   * init()/release() cycle.
-   */
   public void init(final EglBase.Context sharedContext,
       RendererCommon.RendererEvents rendererEvents, final int[] configAttributes,
       RendererCommon.GlDrawer drawer) {
@@ -85,42 +63,18 @@ public class SurfaceViewRenderer extends SurfaceView
     this.rendererEvents = rendererEvents;
     rotatedFrameWidth = 0;
     rotatedFrameHeight = 0;
-    eglRenderer.init(sharedContext, this /* rendererEvents */, configAttributes, drawer);
+    eglRenderer.init(sharedContext, this                     , configAttributes, drawer);
   }
 
-  /**
-   * Block until any pending frame is returned and all GL resources released, even if an interrupt
-   * occurs. If an interrupt occurs during release(), the interrupt flag will be set. This function
-   * should be called before the Activity is destroyed and the EGLContext is still valid. If you
-   * don't call this function, the GL resources might leak.
-   */
   public void release() {
     eglRenderer.release();
   }
 
-  /**
-   * Register a callback to be invoked when a new video frame has been received.
-   *
-   * @param listener The callback to be invoked. The callback will be invoked on the render thread.
-   *                 It should be lightweight and must not call removeFrameListener.
-   * @param scale    The scale of the Bitmap passed to the callback, or 0 if no Bitmap is
-   *                 required.
-   * @param drawer   Custom drawer to use for this frame listener.
-   */
   public void addFrameListener(
       EglRenderer.FrameListener listener, float scale, RendererCommon.GlDrawer drawerParam) {
     eglRenderer.addFrameListener(listener, scale, drawerParam);
   }
 
-  /**
-   * Register a callback to be invoked when a new video frame has been received. This version uses
-   * the drawer of the EglRenderer that was passed in init.
-   *
-   * @param listener The callback to be invoked. The callback will be invoked on the render thread.
-   *                 It should be lightweight and must not call removeFrameListener.
-   * @param scale    The scale of the Bitmap passed to the callback, or 0 if no Bitmap is
-   *                 required.
-   */
   public void addFrameListener(EglRenderer.FrameListener listener, float scale) {
     eglRenderer.addFrameListener(listener, scale);
   }
@@ -129,26 +83,16 @@ public class SurfaceViewRenderer extends SurfaceView
     eglRenderer.removeFrameListener(listener);
   }
 
-  /**
-   * Enables fixed size for the surface. This provides better performance but might be buggy on some
-   * devices. By default this is turned off.
-   */
   public void setEnableHardwareScaler(boolean enabled) {
     ThreadUtils.checkIsOnMainThread();
     enableFixedSize = enabled;
     updateSurfaceSize();
   }
 
-  /**
-   * Set if the video stream should be mirrored or not.
-   */
   public void setMirror(final boolean mirror) {
     eglRenderer.setMirror(mirror);
   }
 
-  /**
-   * Set how the video will fill the allowed layout area.
-   */
   public void setScalingType(RendererCommon.ScalingType scalingType) {
     ThreadUtils.checkIsOnMainThread();
     videoLayoutMeasure.setScalingType(scalingType);
@@ -162,12 +106,6 @@ public class SurfaceViewRenderer extends SurfaceView
     requestLayout();
   }
 
-  /**
-   * Limit render framerate.
-   *
-   * @param fps Limit render framerate to this value, or use Float.POSITIVE_INFINITY to disable fps
-   *            reduction.
-   */
   public void setFpsReduction(float fps) {
     eglRenderer.setFpsReduction(fps);
   }
@@ -180,13 +118,11 @@ public class SurfaceViewRenderer extends SurfaceView
     eglRenderer.pauseVideo();
   }
 
-  // VideoSink interface.
   @Override
   public void onFrame(VideoFrame frame) {
     eglRenderer.onFrame(frame);
   }
 
-  // View layout interface.
   @Override
   protected void onMeasure(int widthSpec, int heightSpec) {
     ThreadUtils.checkIsOnMainThread();
@@ -218,7 +154,6 @@ public class SurfaceViewRenderer extends SurfaceView
         drawnFrameWidth = rotatedFrameWidth;
         drawnFrameHeight = (int) (rotatedFrameWidth / layoutAspectRatio);
       }
-      // Aspect ratio of the drawn frame and the view is the same.
       final int width = Math.min(getWidth(), drawnFrameWidth);
       final int height = Math.min(getHeight(), drawnFrameHeight);
       logD("updateSurfaceSize. Layout size: " + getWidth() + "x" + getHeight() + ", frame size: "
@@ -235,7 +170,6 @@ public class SurfaceViewRenderer extends SurfaceView
     }
   }
 
-  // SurfaceHolder.Callback interface.
   @Override
   public void surfaceCreated(final SurfaceHolder holder) {
     ThreadUtils.checkIsOnMainThread();
@@ -257,9 +191,6 @@ public class SurfaceViewRenderer extends SurfaceView
     }
   }
 
-  /**
-   * Post a task to clear the SurfaceView to a transparent uniform color.
-   */
   public void clearImage() {
     eglRenderer.clearImage();
   }
@@ -278,7 +209,6 @@ public class SurfaceViewRenderer extends SurfaceView
     }
     int rotatedWidth = rotation == 0 || rotation == 180 ? videoWidth : videoHeight;
     int rotatedHeight = rotation == 0 || rotation == 180 ? videoHeight : videoWidth;
-    // run immediately if possible for ui thread tests
     postOrRun(() -> {
       rotatedFrameWidth = rotatedWidth;
       rotatedFrameHeight = rotatedHeight;

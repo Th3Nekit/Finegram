@@ -1,7 +1,8 @@
 package org.telegram.ui;
 
 import com.th3nekit.finegram.core.ui.FGAvatars;
-
+import static org.telegram.messenger.AndroidUtilities.dp;
+import static org.telegram.messenger.AndroidUtilities.find;
 import static org.telegram.ui.CacheControlActivity.TYPE_DOCUMENTS;
 import static org.telegram.ui.CacheControlActivity.TYPE_MUSIC;
 import static org.telegram.ui.CacheControlActivity.TYPE_VIDEOS;
@@ -9,6 +10,7 @@ import static org.telegram.ui.CacheControlActivity.UNKNOWN_CHATS_DIALOG_ID;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -18,6 +20,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -48,6 +51,7 @@ import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.SharedAudioCell;
 import org.telegram.ui.Cells.SharedDocumentCell;
 import org.telegram.ui.Cells.SharedPhotoVideoCell2;
@@ -60,15 +64,18 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.ListView.AdapterWithDiffUtils;
 import org.telegram.ui.Components.NestedSizeNotifierLayout;
 import org.telegram.ui.Components.RecyclerListView;
+import org.telegram.ui.Components.RecyclerPagerView;
+import org.telegram.ui.Components.SiblingRecyclerPagerLayout;
 import org.telegram.ui.Components.ViewPagerFixed;
 import org.telegram.ui.Storage.CacheModel;
 import org.telegram.ui.Stories.StoriesListPlaceProvider;
+import org.telegram.utils.glass.GlassEngine;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifierLayout.ChildLayout {
+public class CachedMediaLayout extends FrameLayout implements Theme.Colorable, NestedSizeNotifierLayout.ChildLayout {
 
     private static final int PAGE_TYPE_CHATS = 0;
     private static final int PAGE_TYPE_MEDIA = 1;
@@ -85,8 +92,8 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
     private final ArrayList<View> actionModeViews = new ArrayList<>();
     public final AnimatedTextView selectedMessagesCountTextView;
     private final ActionBarMenuItem clearItem;
+    public final FrameLayout tabsContainer;
     private final ViewPagerFixed.TabsView tabs;
-    private final View divider;
 
     BaseFragment parentFragment;
 
@@ -97,19 +104,29 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
     Page[] allPages = new Page[5];
 
     BasePlaceProvider placeProvider;
-    private int bottomPadding;
+    private int listPaddingTop;
+    private int listPaddingBottom;
+    private final SiblingRecyclerPagerLayout scrollCoordinator;
 
-    public CachedMediaLayout(@NonNull Context context, BaseFragment parentFragment) {
+    public CachedMediaLayout(@NonNull Context context, BaseFragment parentFragment, GlassEngine glassEngine) {
+        this(context, parentFragment, glassEngine, null);
+    }
+
+    public CachedMediaLayout(@NonNull Context context, BaseFragment parentFragment, GlassEngine glassEngine,
+                             SiblingRecyclerPagerLayout scrollCoordinator) {
         super(context);
         this.parentFragment = parentFragment;
+        this.scrollCoordinator = scrollCoordinator;
+        if (scrollCoordinator != null) {
+            setClipChildren(false);
+            setClipToPadding(false);
+        }
 
         int CacheTabChats;
         allPages[PAGE_TYPE_CHATS] = new Page(LocaleController.getString(R.string.FilterChats), PAGE_TYPE_CHATS, new DialogsAdapter());
-        //allPages[PAGE_TYPE_STORIES] = new Page(LocaleController.getString(R.string.FilterStories), PAGE_TYPE_STORIES, new MediaAdapter(true));
         allPages[PAGE_TYPE_MEDIA] = new Page(LocaleController.getString(R.string.MediaTab), PAGE_TYPE_MEDIA, new MediaAdapter(false));
         allPages[PAGE_TYPE_DOCUMENTS] = new Page(LocaleController.getString(R.string.SharedFilesTab2), PAGE_TYPE_DOCUMENTS, new DocumentsAdapter());
         allPages[PAGE_TYPE_MUSIC] = new Page(LocaleController.getString(R.string.Music), PAGE_TYPE_MUSIC, new MusicAdapter());
-        //   allPages[PAGE_TYPE_VOICE] = new Page(LocaleController.getString(R.string.Voice), PAGE_TYPE_VOICE, new VoiceAdapter());
 
         for (int i = 0; i < allPages.length; i++) {
             if (allPages[i] == null) {
@@ -118,18 +135,21 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             pages.add(i, allPages[i]);
         }
 
-        viewPagerFixed = new ViewPagerFixed(getContext());
+        tabsContainer = new FrameLayout(context);
+        viewPagerFixed = scrollCoordinator == null ? new ViewPagerFixed(getContext())
+                : new RecyclerPagerView(context, parentFragment.getResourceProvider(), scrollCoordinator);
         viewPagerFixed.setAllowDisallowInterceptTouch(false);
-        addView(viewPagerFixed, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 0, 0, 48, 0, 0));
-        addView(tabs = viewPagerFixed.createTabsView(true, 3), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48));
-        divider = new View(getContext()) {
-            @Override
-            protected void onDraw(Canvas canvas) {
-                canvas.drawLine(0, getMeasuredHeight() - 1, getMeasuredWidth(), getMeasuredHeight() - 1, Theme.dividerPaint);
-            }
-        };
-        addView(divider, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 1, 0, 0, 48, 0, 0));
-        divider.getLayoutParams().height = 1;
+        if (glassEngine != null) {
+            glassEngine.addScrolledView(viewPagerFixed);
+        }
+        addView(viewPagerFixed, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,
+                Gravity.TOP, 0, glassEngine != null || scrollCoordinator != null ? 0 : 48, 0, 0));
+        tabsContainer.addView(tabs = viewPagerFixed.createTabsView(true, glassEngine != null ? ViewPagerFixed.SELECTOR_TYPE_BUBBLE_STYLE : 3), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 36 + 6 + 6));
+        if (glassEngine != null) {
+            tabsContainer.setPadding(dp(4), dp(4), dp(4), dp(4));
+        }
+        addView(tabsContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, -4, 0, -4, 0));
+
         viewPagerFixed.setAdapter(new ViewPagerFixed.Adapter() {
 
             private ActionBarPopupWindow popupWindow;
@@ -150,20 +170,36 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             }
 
             @Override
+            public int getItemViewType(int position) {
+                return pages.get(position).type;
+            }
+
+            @Override
             public View createView(int viewType) {
                 RecyclerListView recyclerListView = new RecyclerListView(context);
+                if (glassEngine != null) {
+                    glassEngine.addScrolledView(recyclerListView);
+                }
 
                 DefaultItemAnimator itemAnimator = (DefaultItemAnimator) recyclerListView.getItemAnimator();
                 itemAnimator.setDelayAnimations(false);
                 itemAnimator.setSupportsChangeAnimations(false);
                 recyclerListView.setClipToPadding(false);
-                recyclerListView.setPadding(0, 0, 0, bottomPadding);
+                if (viewType != PAGE_TYPE_MEDIA && viewType != PAGE_TYPE_STORIES && glassEngine != null) {
+                    recyclerListView.setSections(false);
+                }
+
+                recyclerListView.setCaptureSectionsDecoratorAllowed(true);
+                if (viewType == PAGE_TYPE_MEDIA) {
+                    recyclerListView.setPadding(dp(2), listPaddingTop, 0, listPaddingBottom);
+                } else {
+                    recyclerListView.setPadding(0, listPaddingTop, 0, listPaddingBottom);
+                }
                 recyclerListView.setOnItemClickListener(new RecyclerListView.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
                         BaseAdapter adapter = (BaseAdapter) recyclerListView.getAdapter();
                         ItemInner itemInner = adapter.itemInners.get(position);
-                        //if (cacheModel.getSelectedFiles() == 0) {
                         if (view instanceof SharedPhotoVideoCell2) {
                             boolean isStory = ((MediaAdapter) adapter).isStories;
                             if (isStory) {
@@ -179,7 +215,6 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
                             return;
                         }
 
-                        //}
                         if (delegate != null) {
                             delegate.onItemSelected(itemInner.entities, itemInner.file, false);
                         }
@@ -248,12 +283,13 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
                     }
                     return true;
                 });
-                return recyclerListView;
+
+                return scrollCoordinator == null ? recyclerListView : new PageView(context, recyclerListView);
             }
 
             @Override
             public void bindView(View view, int position, int viewType) {
-                RecyclerListView recyclerListView = (RecyclerListView) view;
+                RecyclerListView recyclerListView = getPageListView(view);
                 recyclerListView.setAdapter(pages.get(position).adapter);
                 if (pages.get(position).type == PAGE_TYPE_MEDIA || pages.get(position).type == PAGE_TYPE_STORIES) {
                     recyclerListView.setLayoutManager(new GridLayoutManager(view.getContext(), 3));
@@ -261,6 +297,10 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
                     recyclerListView.setLayoutManager(new LinearLayoutManager(view.getContext()));
                 }
                 recyclerListView.setTag(pages.get(position).type);
+                view.setTag(pages.get(position).type);
+                if (scrollCoordinator != null) {
+                    ((RecyclerPagerView) viewPagerFixed).onPageBound(view);
+                }
             }
 
             @Override
@@ -271,7 +311,7 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
         });
 
         actionModeLayout = new LinearLayout(context);
-        actionModeLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        ThemeBind.backgroundColor(actionModeLayout, Theme.key_windowBackgroundWhite);
         actionModeLayout.setAlpha(0.0f);
         actionModeLayout.setClickable(true);
         addView(actionModeLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48));
@@ -281,30 +321,32 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
         closeButton.setScaleType(ImageView.ScaleType.CENTER);
         closeButton.setImageDrawable(backDrawable = new BackDrawable(true));
         backDrawable.setColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
-        closeButton.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_actionBarActionModeDefaultSelector), 1));
+        ThemeBind.selectorBackground(closeButton, Theme.createSelectorDrawable(Theme.getColor(Theme.key_actionBarActionModeDefaultSelector), 1), null, ThemeBind.of(Theme.key_actionBarActionModeDefaultSelector));
         closeButton.setContentDescription(LocaleController.getString(R.string.Close));
-        actionModeLayout.addView(closeButton, new LinearLayout.LayoutParams(AndroidUtilities.dp(54), ViewGroup.LayoutParams.MATCH_PARENT));
+        actionModeLayout.addView(closeButton, new LinearLayout.LayoutParams(dp(54), ViewGroup.LayoutParams.MATCH_PARENT));
         actionModeViews.add(closeButton);
-        closeButton.setOnClickListener(v -> {
-            delegate.clearSelection();
-        });
+        closeButton.setOnClickListener(v -> delegate.clearSelection());
 
         selectedMessagesCountTextView = new AnimatedTextView(context, true, true, true);
-        selectedMessagesCountTextView.setTextSize(AndroidUtilities.dp(18));
+        selectedMessagesCountTextView.setTextSize(dp(18));
         selectedMessagesCountTextView.setTypeface(AndroidUtilities.bold());
-        selectedMessagesCountTextView.setTextColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
+        ThemeBind.textColor(selectedMessagesCountTextView, Theme.key_actionBarActionModeDefaultIcon);
         actionModeLayout.addView(selectedMessagesCountTextView, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1.0f, 18, 0, 0, 0));
         actionModeViews.add(selectedMessagesCountTextView);
 
         clearItem = new ActionBarMenuItem(context, null, Theme.getColor(Theme.key_actionBarActionModeDefaultSelector), Theme.getColor(Theme.key_actionBarActionModeDefaultIcon), false);
         clearItem.setIcon(R.drawable.msg_clear);
+        if (clearItem.getBackground() != null) {
+            ThemeBind.selectorBackground(clearItem, clearItem.getBackground(), null, ThemeBind.of(Theme.key_actionBarActionModeDefaultSelector));
+        }
+        if (clearItem.getIconView() != null) {
+            ThemeBind.colorFilter(clearItem.getIconView(), Theme.key_actionBarActionModeDefaultIcon, PorterDuff.Mode.SRC_IN);
+        }
         clearItem.setContentDescription(LocaleController.getString(R.string.Delete));
         clearItem.setDuplicateParentStateEnabled(false);
-        actionModeLayout.addView(clearItem, new LinearLayout.LayoutParams(AndroidUtilities.dp(54), ViewGroup.LayoutParams.MATCH_PARENT));
+        actionModeLayout.addView(clearItem, new LinearLayout.LayoutParams(dp(54), ViewGroup.LayoutParams.MATCH_PARENT));
         actionModeViews.add(clearItem);
-        clearItem.setOnClickListener(v -> {
-            delegate.clear();
-        });
+        clearItem.setOnClickListener(v -> delegate.clear());
     }
 
     private void openPhoto(ItemInner itemInner, MediaAdapter adapter, RecyclerListView recyclerListView, SharedPhotoVideoCell2 view) {
@@ -321,7 +363,7 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
     }
 
     private void openItem(CacheModel.FileInfo fileInfo, CacheCell cacheCell) {
-        RecyclerListView recyclerListView = (RecyclerListView) viewPagerFixed.getCurrentView();
+        RecyclerListView recyclerListView = getListView();
         if (cacheCell.type == TYPE_DOCUMENTS) {
             if (!(recyclerListView.getAdapter() instanceof DocumentsAdapter)) {
                 return;
@@ -349,7 +391,6 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
                     MediaController.getInstance().playMessage(fileInfo.messageObject);
                 }
             } else {
-                // MediaController.getInstance().setPlaylist(documentsAdapter.createPlaylist(), fileInfo.messageObject, 0);
                 MediaController.getInstance().playMessage(fileInfo.messageObject);
             }
         }
@@ -372,9 +413,49 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
         update();
     }
 
+    private int targetTabsPosition;
+    private boolean tabsExternallyManaged;
+
+    public FrameLayout takeTabsContainer() {
+        tabsExternallyManaged = true;
+        AndroidUtilities.removeFromParent(tabsContainer);
+        tabsContainer.setTranslationY(0);
+        return tabsContainer;
+    }
+
+    public void setTargetTabsPosition(int targetTabsPosition) {
+        this.targetTabsPosition = targetTabsPosition;
+    }
+
+    ViewTreeObserver.OnPreDrawListener onPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+        @Override
+        public boolean onPreDraw() {
+            if (tabsExternallyManaged) {
+                return true;
+            }
+            final float y = getY();
+            final float ty = Math.max(0, targetTabsPosition - y);
+            if (tabsContainer.getTranslationY() != ty) {
+                tabsContainer.setTranslationY(ty);
+            }
+            return true;
+        }
+    };
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        getViewTreeObserver().addOnPreDrawListener(onPreDrawListener);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        getViewTreeObserver().removeOnPreDrawListener(onPreDrawListener);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //itemSize = ((MeasureSpec.getSize(widthMeasureSpec) - AndroidUtilities.dp(6 * 2) - AndroidUtilities.dp(5 * 2)) / 3);
         super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.EXACTLY));
     }
 
@@ -405,7 +486,6 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
         if (pages.size() == 1 && cacheModel.isDialog) {
             tabs.setVisibility(View.GONE);
             ((MarginLayoutParams) viewPagerFixed.getLayoutParams()).topMargin = 0;
-            ((MarginLayoutParams) divider.getLayoutParams()).topMargin = 0;
         }
         boolean rebuildPager = false;
         if (oldPages.size() == pages.size()) {
@@ -419,21 +499,30 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             rebuildPager = true;
         }
         if (rebuildPager) {
-            viewPagerFixed.rebuild(true);
+            viewPagerFixed.rebuild(scrollCoordinator == null);
         }
         for (int i = 0; i < pages.size(); i++) {
             if (pages.get(i).adapter != null) {
                 pages.get(i).adapter.update();
             }
         }
+        if (scrollCoordinator != null) {
+            scrollCoordinator.onPagerChanged();
+        }
+    }
+
+    public ViewPagerFixed getViewPager() {
+        return viewPagerFixed;
+    }
+
+    public RecyclerListView getPageListView(View page) {
+        if (page == null) return null;
+        return page instanceof PageView ? ((PageView) page).list : (RecyclerListView) page;
     }
 
     @Override
     public RecyclerListView getListView() {
-        if (viewPagerFixed.getCurrentView() == null) {
-            return null;
-        }
-        return (RecyclerListView) viewPagerFixed.getCurrentView();
+        return getPageListView(viewPagerFixed.getCurrentView());
     }
 
     @Override
@@ -443,17 +532,21 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
 
     public void updateVisibleRows() {
         for (int i = 0; i < viewPagerFixed.getViewPages().length; i++) {
-            RecyclerListView recyclerListView = (RecyclerListView) viewPagerFixed.getViewPages()[i];
-            AndroidUtilities.updateVisibleRows(recyclerListView);
+            RecyclerListView recyclerListView = getPageListView(viewPagerFixed.getViewPages()[i]);
+            if (recyclerListView != null) {
+                AndroidUtilities.updateVisibleRows(recyclerListView);
+            }
         }
     }
 
-    public void setBottomPadding(int padding) {
-        this.bottomPadding = padding;
+    public void setListPadding(int top, int bottom) {
+        if (scrollCoordinator != null) return;
+        listPaddingTop = top;
+        listPaddingBottom = bottom;
         for (int i = 0; i < viewPagerFixed.getViewPages().length; i++) {
-            RecyclerListView recyclerListView = (RecyclerListView) viewPagerFixed.getViewPages()[i];
+            RecyclerListView recyclerListView = getPageListView(viewPagerFixed.getViewPages()[i]);
             if (recyclerListView != null) {
-                recyclerListView.setPadding(0, 0, 0, padding);
+                recyclerListView.setPadding(recyclerListView.getPaddingLeft(), top, recyclerListView.getPaddingRight(), bottom);
             }
         }
     }
@@ -466,13 +559,18 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
         return false;
     }
 
-//    public void showActionMode(boolean show) {
-//        AndroidUtilities.updateViewVisibilityAnimated(actionModeLayout, show);
-//    }
+    private static final class PageView extends FrameLayout {
+        final RecyclerListView list;
 
-//    public boolean actionModeIsVisible() {
-//        return actionModeLayout.getVisibility() == View.VISIBLE;
-//    }
+        PageView(Context context, RecyclerListView list) {
+            super(context);
+            this.list = list;
+            setClipChildren(false);
+            setClipToPadding(false);
+            setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            addView(list, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        }
+    }
 
     private class Page {
         final public String title;
@@ -533,12 +631,6 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
                 }
             }
             setItems(old, itemInners);
-//            if (loadingDialogs) {
-//                itemInners.add(new ItemInner(VIEW_FLICKER_LOADING_DIALOG, null, null));
-//            } else if (dialogsFilesEntities != null && dialogsFilesEntities.size() > 0) {
-//
-//                itemInners.add(new ItemInner(VIEW_TYPE_INFO, null, null));
-//            }
         }
 
         @NonNull
@@ -548,7 +640,6 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             switch (viewType) {
                 case VIEW_TYPE_CHAT:
                     CacheControlActivity.UserCell userCell = new CacheControlActivity.UserCell(getContext(), null);
-                    userCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     view = userCell;
                     break;
             }
@@ -790,7 +881,7 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             if (!animated) {
                 cell.setPhoto(file.file.getPath());
             }
-            cell.getImageView().setRoundRadius(file.messageType == MessageObject.TYPE_ROUND_VIDEO ?  AndroidUtilities.dp(20) : AndroidUtilities.dp(4));
+            cell.getImageView().setRoundRadius(file.messageType == MessageObject.TYPE_ROUND_VIDEO ?  dp(20) : dp(4));
             cacheCell.drawDivider = divider;
             cacheCell.sizeTextView.setText(AndroidUtilities.formatFileSize(file.size));
             cacheCell.checkBox.setChecked(cacheModel.isSelected(file), animated);
@@ -938,7 +1029,7 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
 
     private void updateRow(CacheModel.FileInfo fileInfo, int pageType) {
         for (int i = 0; i < viewPagerFixed.getViewPages().length; i++) {
-            RecyclerListView recyclerListView = (RecyclerListView) viewPagerFixed.getViewPages()[i];
+            RecyclerListView recyclerListView = getPageListView(viewPagerFixed.getViewPages()[i]);
             if (recyclerListView != null && ((BaseAdapter)recyclerListView.getAdapter()).type == pageType) {
                 BaseAdapter adapter = (BaseAdapter) recyclerListView.getAdapter();
                 for (int k = 0; k < adapter.itemInners.size(); k++) {
@@ -1043,7 +1134,7 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             sizeTextView = new TextView(context);
             sizeTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             sizeTextView.setGravity(Gravity.RIGHT);
-            sizeTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText));
+            ThemeBind.textColor(sizeTextView, Theme.key_windowBackgroundWhiteBlueText);
 
             if (LocaleController.isRTL) {
                 addView(checkBox, LayoutHelper.createFrame(24, 24, Gravity.RIGHT | Gravity.CENTER_VERTICAL, 0, 0, 18, 0));
@@ -1063,9 +1154,9 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
             super.dispatchDraw(canvas);
             if (drawDivider) {
                 if (LocaleController.isRTL) {
-                    canvas.drawLine(0, getMeasuredHeight() - 1, getMeasuredWidth() - AndroidUtilities.dp(48), getMeasuredHeight() - 1, Theme.dividerPaint);
+                    canvas.drawLine(0, getMeasuredHeight() - 1, getMeasuredWidth() - dp(48), getMeasuredHeight() - 1, Theme.dividerPaint);
                 } else {
-                    canvas.drawLine(getMeasuredWidth() - AndroidUtilities.dp(90), getMeasuredHeight() - 1, getMeasuredWidth(), getMeasuredHeight() - 1, Theme.dividerPaint);
+                    canvas.drawLine(getMeasuredWidth() - dp(90), getMeasuredHeight() - 1, getMeasuredWidth(), getMeasuredHeight() - 1, Theme.dividerPaint);
                 }
             }
         }
@@ -1078,5 +1169,15 @@ public class CachedMediaLayout extends FrameLayout implements NestedSizeNotifier
     public static boolean fileIsMedia(File file) {
         String name = file.getName().toLowerCase();
         return file.getName().endsWith("mp4") || file.getName().endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".gif");
+    }
+
+    @Override
+    public void updateColors() {
+        try {
+            backDrawable.setColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
+            invalidate();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

@@ -33,7 +33,7 @@ import me.vkryl.core.ArrayUtils;
 import me.vkryl.core.lambda.Destroyable;
 
 public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
-  public static class Entry<T> implements Comparable<Entry<T>>/*, Animatable*/ {
+  public static class Entry<T> implements Comparable<Entry<T>>                 {
     public final T item;
     private int index;
 
@@ -85,7 +85,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       return MathUtils.clamp(visibility.get(), 0f, 1f);
     }
 
-    // State
 
     public boolean isAffectingList () {
       return !isBeingRemoved;
@@ -97,7 +96,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     }
 
-    // Measured
 
     public RectF getRectF () {
       return measuredPositionRect.toRectF();
@@ -107,7 +105,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       return measuredSpacingStart.get();
     }
 
-    // Animation
 
     private void finishAnimation (boolean applyFutureState) {
       this.position.finishAnimation(applyFutureState);
@@ -233,7 +230,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   private final ArrayList<Entry<T>> entries;
   private final @Nullable FactorAnimator animator;
   private final Metadata metadata;
-  private final ArrayList<Entry<T>> actualList; // list after all animations finished
+  private final ArrayList<Entry<T>> actualList;
 
   public ListAnimator (@NonNull Callback callback) {
     this(callback, null, 0);
@@ -477,8 +474,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   }
 
   public interface ResetCallback<T> {
-    void onItemRemoved (T item); // item is now removing
-    void onItemAdded (T item, boolean isReturned); // item is now adding
+    void onItemRemoved (T item);
+    void onItemAdded (T item, boolean isReturned);
   }
 
   public void reset (@Nullable List<T> newItems, boolean animated) {
@@ -532,7 +529,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
     boolean needSort = false;
     if (newItems != null && !newItems.isEmpty()) {
-      // First, detect removals & changes
 
       int foundItemCount = 0;
 
@@ -581,7 +577,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         Collections.sort(actualList);
       }
 
-      // Second, find additions
 
       if (foundItemCount < newItems.size()) {
         entries.ensureCapacity(entries.size() + (newItems.size() - foundItemCount));
@@ -607,7 +602,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     } else {
       if (!foundListChanges) {
-        // Triggering the removeJunk call
         for (Entry<T> entry : entries) {
           if (entry.visibility.differs(0f)) {
             onBeforeListChanged();
@@ -630,7 +624,6 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     }
 
-    // Then, sort and run animation, if needed
 
     if (needSort) {
       Collections.sort(entries);

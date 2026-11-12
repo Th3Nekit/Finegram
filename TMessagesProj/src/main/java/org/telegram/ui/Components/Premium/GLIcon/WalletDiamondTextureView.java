@@ -24,9 +24,7 @@ import org.telegram.messenger.FileLog;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Each card has GPU-backed buffers, sharing a GL context and idle texture without CPU readback. */
 public class WalletDiamondTextureView extends TextureView implements TextureView.SurfaceTextureListener, Choreographer.FrameCallback {
-    /** One per appearance: each renders a single shared idle texture. */
     private static final Engine[] engines = new Engine[3];
     private final Engine engine;
     private final Rect visibleRect = new Rect();
@@ -76,7 +74,6 @@ public class WalletDiamondTextureView extends TextureView implements TextureView
         if (!attached || paused) return;
         updatePose.run();
         if (target != null) {
-            // TextureView inherits alpha, transforms and clipping from the view tree.
             float alpha = 1f;
             boolean visible = isShown() && getWindowVisibility() == VISIBLE && getGlobalVisibleRect(visibleRect);
             target.pose = visible ? new Pose(yaw, pitch, alpha, custom, enlarged) : null;
@@ -94,7 +91,6 @@ public class WalletDiamondTextureView extends TextureView implements TextureView
     }
 
     @Override public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
-        // Layout and spring transforms must not resize the GPU buffers on every frame.
         texture.setDefaultBufferSize(bufferSize, bufferSize);
     }
 
@@ -103,13 +99,10 @@ public class WalletDiamondTextureView extends TextureView implements TextureView
         Target previous = target;
         target = null;
         if (previous != null) engine.remove(previous);
-        // Abandon the consumer immediately so a pending swap cannot block UI teardown.
         return true;
     }
 
     @Override public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-        // Recreating TextureView's hardware layer after resume resets the buffer to
-        // the view size without a size callback. Restore it after layer creation.
         texture.setDefaultBufferSize(bufferSize, bufferSize);
         if (!ready && target != null && target.hasContent) {
             ready = true;
@@ -159,7 +152,7 @@ public class WalletDiamondTextureView extends TextureView implements TextureView
         final Context context;
         final Handler worker;
         final int size, expandedSize, appearance;
-        final ArrayList<Target> views = new ArrayList<>(); // main thread only
+        final ArrayList<Target> views = new ArrayList<>();
         volatile Target[] targets = new Target[0];
         final AtomicBoolean scheduled = new AtomicBoolean();
         final int[] surfaceSize = new int[2];
@@ -280,8 +273,6 @@ public class WalletDiamondTextureView extends TextureView implements TextureView
                         throw new IllegalStateException("Wallet EGL makeCurrent failed");
                     }
                     EGL14.eglSwapInterval(display, 0);
-                    // Buffer resizing takes effect asynchronously; use the actual
-                    // drawable dimensions rather than the requested buffer size.
                     if (!EGL14.eglQuerySurface(display, t.egl, EGL14.EGL_WIDTH, surfaceSize, 0)
                             || !EGL14.eglQuerySurface(display, t.egl, EGL14.EGL_HEIGHT, surfaceSize, 1)) {
                         if (!t.valid) continue;

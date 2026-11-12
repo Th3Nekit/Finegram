@@ -13,7 +13,6 @@ import android.widget.TextView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.ui.Components.LayoutHelper;
 
-/** One text layout and icon slot throughout sending and settling; no end-frame view swap. */
 class WalletTransactionAmountView extends FrameLayout {
     final TextView amount;
     private final ImageView flatDiamond;
@@ -41,8 +40,6 @@ class WalletTransactionAmountView extends FrameLayout {
 
     void setAmount(CharSequence text, Drawable icon) {
         amount.setText(text);
-        // TransactionCell also uses this TextView while binding. Its icon is always
-        // rendered in the shared slot, never reintroduced as a compound drawable.
         amount.setCompoundDrawablesRelative(null, null, null, null);
         flatDiamond.setImageDrawable(icon);
     }
@@ -52,8 +49,6 @@ class WalletTransactionAmountView extends FrameLayout {
     void setPendingProgress(float value) {
         progress = value;
         if (value > 0 && diamond == null) {
-            // Settling removes this view during an animation frame. Texture GL
-            // cleanup is asynchronous, so it cannot join a surface thread here.
             diamond = new WalletDiamondView(getContext(), 40, true);
             diamond.setContinuousRotation(300f);
             addView(diamond, LayoutHelper.createFrame(40, 40));
@@ -73,7 +68,6 @@ class WalletTransactionAmountView extends FrameLayout {
     }
 
     private float textScale() { return 1f + (20f / 14f - 1f) * progress; }
-    // Reserve the visible gem width; its transparent 40 dp canvas may overflow.
     private float slotWidth() { return dp(16) + (dp(23) - dp(16)) * progress; }
     private float gap() { return dp(2) + (dp(7) - dp(2)) * progress; }
 

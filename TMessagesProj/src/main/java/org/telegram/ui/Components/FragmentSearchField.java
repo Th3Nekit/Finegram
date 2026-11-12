@@ -49,6 +49,7 @@ import me.vkryl.android.AnimatorUtils;
 import me.vkryl.android.animator.BoolAnimator;
 import me.vkryl.android.animator.FactorAnimator;
 import com.th3nekit.finegram.chats.helpers.ChatsHelper2;
+import java.util.HashSet;
 
 @SuppressLint("ViewConstructor")
 public class FragmentSearchField extends FrameLayout implements FactorAnimator.Target, Theme.Colorable {
@@ -299,7 +300,7 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
     }
 
     private void checkUi_editTextPaddings() {
-        final int filtersWidth = (int) animatorSearchFiltersWidth.getFactor() + dp(6); //searchFilterLayout.getWidth();
+        final int filtersWidth = (int) animatorSearchFiltersWidth.getFactor() + dp(6);
         final int pStart = Math.max(filtersWidth, dp(48));
         final int cardsWidth = infoCards != null && !infoCardsSuppressed
                 ? Math.round(infoCards.getMeasuredWidth() * animatorInfoCardsVisible.getFloatValue()) : 0;
@@ -368,6 +369,13 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
         }
 
         invalidate();
+    }
+    @Override
+    public void addColorKeys(HashSet<Integer> colors) {
+        colors.add(Theme.key_windowBackgroundWhite);
+        colors.add(Theme.key_windowBackgroundWhiteBlackText);
+        colors.add(Theme.key_listSelector);
+        colors.add(Theme.key_groupcreate_cursor);
     }
 
     private int getThemedColor(int key) {
@@ -449,7 +457,7 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
 
     public void addSearchFilter(FiltersView.MediaFilterData filter) {
         currentSearchFilters.add(filter);
-        if (true /*searchContainer.getTag() != null*/) {
+        if (true                                     ) {
             selectedFilterIndex = currentSearchFilters.size() - 1;
         }
         onFiltersChanged();
@@ -478,7 +486,6 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
                     }
                 }
             }
-//                clearSearchFilters();
         }
     }
 
@@ -500,7 +507,7 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
 
         ArrayList<FiltersView.MediaFilterData> localFilters = new ArrayList<>(currentSearchFilters);
 
-        if (true /*searchContainer != null && searchContainer.getTag() != null*/) {
+        if (true                                                                ) {
             TransitionSet transition = new TransitionSet();
             ChangeBounds changeBounds = new ChangeBounds();
             changeBounds.setDuration(150);

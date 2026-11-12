@@ -92,12 +92,6 @@ public class PreviewHighlightView extends FrameLayout {
         storyCaptionView.setTranslationY(dp(8));
         bottom.addView(storyCaptionView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 0, 0, 0, 64));
 
-//        ImageView shareButton = new ImageView(context);
-//        shareButton.setImageDrawable(getContext().getResources().getDrawable(R.drawable.msg_share_filled));
-//        int padding = AndroidUtilities.dp(8);
-//        shareButton.setPadding(padding, padding, padding, padding);
-//        shareButton.setBackground(Theme.createCircleDrawable(AndroidUtilities.dp(20), ColorUtils.setAlphaComponent(Color.BLACK, 76)));
-//        bottom.addView(shareButton, LayoutHelper.createFrame(40, 40, Gravity.BOTTOM | Gravity.RIGHT, 10, 10, 10, 64));
 
         ImageView shareButton = new ImageView(context);
         shareButton.setImageResource(R.drawable.msg_share);
@@ -113,20 +107,12 @@ public class PreviewHighlightView extends FrameLayout {
         editText.setText(LocaleController.getString(R.string.ReplyPrivately));
         editLayout.addView(editText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.CENTER_VERTICAL, 24, 0, 24, 0));
 
-//        ImageView likeButton = new ImageView(context);
-//        likeButton.setImageResource(R.drawable.msg_input_like);
-//        likeButton.setColorFilter(new PorterDuffColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY));
-//        editLayout.addView(likeButton, LayoutHelper.createFrame(24, 24, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 103, 0));
 
         ImageView attachButton = new ImageView(context);
         attachButton.setImageResource(R.drawable.input_attach);
         attachButton.setColorFilter(new PorterDuffColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY));
         editLayout.addView(attachButton, LayoutHelper.createFrame(28, 28, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 9, 0));
 
-//        ImageView micButton = new ImageView(context);
-//        micButton.setImageResource(R.drawable.input_mic);
-//        micButton.setColorFilter(new PorterDuffColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY));
-//        editLayout.addView(micButton, LayoutHelper.createFrame(28, 28, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 9, 0));
 
         bottom.addView(editLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 44, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 9, 8, 55, 8));
 

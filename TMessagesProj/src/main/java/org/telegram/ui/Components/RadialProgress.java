@@ -81,8 +81,6 @@ public class RadialProgress {
         animatedProgressValue = radialProgressUpload.animatedProgressValue;
         radOffset = radialProgressUpload.radOffset;
         lastUpdateTime = System.currentTimeMillis();
-//        currentProgressTime = radialProgressUpload.currentProgressTime;
-//        animationProgressStart = radialProgressUpload.animationProgressStart;
         invalidateParent();
     }
 

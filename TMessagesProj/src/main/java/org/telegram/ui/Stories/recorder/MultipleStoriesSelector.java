@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
@@ -448,7 +449,19 @@ public class MultipleStoriesSelector extends FrameLayout {
         }
     }
 
-    public static class EntryView extends View {
+    public static class EntryView extends View implements Theme.Colorable {
+
+        private Theme.ResourcesProvider themeResourcesProvider;
+
+        @Override
+        public void updateColors() {
+            try {
+                fillPaint.setColor(Theme.getColor(Theme.key_featuredStickers_addButton, themeResourcesProvider));
+                invalidate();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
 
         private final ImageReceiver imageReceiver = new ImageReceiver(this);
 
@@ -470,6 +483,7 @@ public class MultipleStoriesSelector extends FrameLayout {
 
             strokePaint.setStyle(Paint.Style.STROKE);
             strokePaint.setColor(0xFFFFFFFF);
+            themeResourcesProvider = resourcesProvider;
             fillPaint.setColor(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider));
 
             imageReceiver.setRoundRadius(dp(6));
@@ -633,8 +647,8 @@ public class MultipleStoriesSelector extends FrameLayout {
                 canvas.drawRoundRect(AndroidUtilities.rectTmp, dp(6), dp(6), strokePaint);
             }
 
-            cx = getWidth() - dp(4.33f + 12.833f) - dp(3);// * selected;
-            cy = dp(5 + 12.833f) + dp(3);// * selected;
+            cx = getWidth() - dp(4.33f + 12.833f) - dp(3);
+            cy = dp(5 + 12.833f) + dp(3);
             r = dp(12.833f);
 
             final float checked = animatedChecked.set(this.checked);

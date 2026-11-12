@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">한국어</string>
     <string name="LanguageCode">ko</string>
     <string name="ContinueOnThisLanguage">한국어로 계속</string>
-    <!--signin view-->
+    
     <string name="YourPhone">전화번호</string>
     <string name="StartText">국가 번호를 확인하고 전화번호를 입력해 주세요.</string>
     <string name="Country">국가</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">코드를 SMS 혹은 전화로 받지 못하였을 경우, **셀룰러 데이터 설정**과 전화번호를 확인해주세요:\n\n**%1$s**\n\n현재 남은 방법은 다른 번호로 시도하시거나 텔레그램 지원에 연락하는 것입니다. **도움말**을 탭하여 저희가 문제를 확인할 수 있도록 자세하게 기술적인 내용을 전달해주세요.</string>
     <string name="DidNotGetTheCodeHelpButton">도움말</string>
     <string name="DidNotGetTheCodeEditNumberButton">번호 변경</string>
-    <!--code enter view-->
+    
     <string name="YourCode">휴대전화 인증</string>
     <string name="SentSmsCode">**%1$s** 번호로 인증 코드가 담긴 SMS를 보냈습니다.</string>
     <string name="SentAppCode">회원님의 다른 기기에 설치된 **텔레그램** 앱으로 코드를 보냈습니다.</string>
@@ -69,7 +69,7 @@
     <string name="RequestMissedCall">전화로 코드 받기</string>
     <string name="LoginAccessibilityCountryCode">국가코드</string>
     <string name="SignInWithGoogle">Google 계정으로 로그인</string>
-    <!--signup view-->
+    
     <string name="YourName">성명</string>
     <string name="RegisterText2">이름을 입력하고 프로필 사진을 추가하세요.</string>
     <string name="FirstName">이름 (필수)</string>
@@ -78,7 +78,7 @@
     <string name="LastNameSmall">성</string>
     <string name="CancelRegistration">가입 취소</string>
     <string name="RegistrationProfileInfo">프로필 정보</string>
-    <!--widgets-->
+    
     <string name="EditWidget">위젯 편집</string>
     <string name="EditWidgetContactsInfo">가장 중요한 대화방으로 빠르게 접근하기 위한 바로가기를 표시합니다.\n\n아무도 선택하지 않으셨다면, 연락이 가장 잦은 대화방들이 이 위젯에 표시됩니다.</string>
     <string name="EditWidgetChatsInfo">선택하신 대화방의 가장 최근 메시지를 표시합니다.\n\n대화방을 지정하지 않으셨다면, 가장 최근 대화방들이 이 위젯에 표시됩니다.</string>
@@ -90,7 +90,7 @@
     <string name="WidgetChats">대화</string>
     <string name="WidgetShortcuts">바로가기</string>
     <string name="WidgetLoggedOff">계정이 로그아웃 됨</string>
-    <!--documents view-->
+    
     <string name="SelectFile">파일 선택</string>
     <string name="FreeOfTotal">%2$s 중 %1$s 남음</string>
     <string name="UnknownError">알 수 없는 오류</string>
@@ -108,7 +108,7 @@
     <string name="InternalFolderInfo">파일 시스템 탐색</string>
     <string name="ExternalFolderInfo">외부 저장 공간 탐색</string>
     <string name="SearchMusic">음악 검색</string>
-    <!--notification-->
+    
     <string name="NotificationMessageGiftCode">%1$s님이 텔레그램 프리미엄 %2$s의 선물 코드를 보냈습니다.</string>
     <string name="NotificationMessageGiveaway">%1$s님이 %2$sx %3$sm 프리미엄 구독권을 경품으로 보냈습니다.</string>
     <string name="NotificationMessageChannelGiveaway">%1$s님이 %2$sx %3$sm 프리미엄 구독권 경품을 게시했습니다.</string>
@@ -259,7 +259,7 @@
     <string name="NotificationActionPinnedGifUser">%1$s님이 GIF를 고정했습니다</string>
     <string name="NotificationActionPinnedMusicUser">%1$s님이 오디오 파일을 고정했습니다</string>
     <string name="SecretChatName">텔레그램</string>
-    <!--contacts view-->
+    
     <string name="SelectContact">연락처 선택</string>
     <string name="ShareContactTitle">연락처 공유</string>
     <string name="AddContactPhonebookTitle">연락처 추가</string>
@@ -301,7 +301,7 @@
     <string name="NewContactAlertTitle">새로운 연락처</string>
     <string name="NewContactAlertMessage">연락처에 **%1$s** 전화번호가 없습니다. 추가하시겠습니까?</string>
     <string name="NewContactAlertButton">연락처 추가</string>
-    <!--settings view-->
+    
     <string name="ResetNotificationsText">모든 알림 설정이 기본으로 설정되었습니다</string>
     <string name="ResetNotificationsAlertTitle">모든 알림 초기화</string>
     <string name="ResetNotificationsAlert">정말 모든 알림 설정을 기본으로 초기화하시겠습니까?</string>
@@ -762,7 +762,7 @@
     <string name="CheckPhoneNumberLearnMoreUrl">https://telegram.org/faq#q-i-have-a-new-phone-number-what-do-i-do</string>
     <string name="CheckPhoneNumberYes">네</string>
     <string name="CheckPhoneNumberNo">아니요</string>
-    <!--passcode view-->
+    
     <string name="Passcode">암호 잠금</string>
     <string name="ChangePasscode">암호 변경</string>
     <string name="ChangePasscodeInfo">암호를 설정하시면, 대화 목록 상단에 잠금 아이콘이 나타납니다. 이를 탭하여 텔레그램 앱을 잠그실 수 있습니다.\n\n주의: 암호를 잊어버릴 경우, 앱을 로그아웃하거나 재설치하셔야 합니다. 비밀 대화는 모두 사라집니다.</string>
@@ -793,7 +793,7 @@
     <string name="ScreenCaptureInfo">위 기능을 끄면, 앱 안에서 화면을 캡처하실 수 없지만 앱 전환 화면에서 대화 내용이 숨겨집니다.</string>
     <string name="ScreenCaptureAlert">앱 전환 화면에서 대화 내용이나 목록이 숨겨지지만, 텔레그램에서 스크린샷을 찍으실 수 없습니다.\n\n이 기능을 사용하려면 앱을 다시 시작하셔야 할 수도 있습니다.</string>
     <string name="TooManyTries">너무 많이 시도하셨습니다.\n%1$s초 뒤에 다시 시도해 주세요.</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">2단계 인증</string>
     <string name="TwoStepVerificationTitle">2단계 인증</string>
     <string name="TwoStepVerificationPasswordSet">비밀번호가 설정되었습니다!</string>
@@ -915,10 +915,10 @@
     <string name="CheckYourNewEmail">새 이메일을 확인하세요</string>
     <string name="CheckYourNewEmailSubtitle">새로운 이메일 %1$s으로 보낸 코드를 입력해주세요.</string>
     <string name="LoginOrSingInWithGoogle">혹은</string>
-    <!--edit video view-->
+    
     <string name="SendingVideo">동영상 보내는 중...</string>
     <string name="SendingGif">GIF 보내는 중...</string>
-    <!--Alert messages-->
+    
     <string name="LimitReachedPinnedTopics">죄송하지만, 상단에 %d개 이상의 주제를 고정할 수 없습니다.</string>
     <string name="DeleteAllMessagesAlert">잠깐! **참가자 서로에게서** 이 대화방의 **모든 메시지가 삭제**됩니다.</string>
     <string name="DeleteAllMessagesChannelAlert">주의! 이 채널의 **모든 메시지가 삭제**됩니다.</string>
@@ -1072,7 +1072,7 @@
     <string name="TosAgeText">귀하가 %1$s세 이상임을 인증하려면 동의를 누르세요.</string>
     <string name="TosUpdateDecline">유감스럽지만, 다른 방법이 없습니다. 다른 앱과 달리, 텔레그램은 광고 타겟팅이나 다른 상업적 목적으로 사용자 데이터를 사용하지 않습니다. 텔레그램은 기능이 풍부한 클라우드 서비스로서 작동하는 데 필요한 정보만을 저장합니다. 개인 정보 및 보안 설정에서 내 데이터에 대한 제어를 할 수 있습니다.\n\n만약 텔레그램의 간소한 요구 사항에 두루 동의하실 수 없다면 저희로서 이 서비스를 제공해 드리기가 어렵습니다.</string>
     <string name="TosDeclineDeleteAccount">주의요망, 텔레그램 클라우드에 저장하신 모든 데이터와 회원님의 텔레그램 계정이 삭제되며, 되돌릴 수 없습니다.\n\n중요: 지금 취소하여 데이터를 잃어버리기 전에 먼저 내보내실 수 있습니다. (최신 텔레그램 데스크톱을 열고 설정 &gt; 고급 설정 &gt; 텔레그램 데이터 내보내기에서 진행하실 수 있습니다.)</string>
-    <!--permissions-->
+    
     <string name="PermissionStorageWithHint">**텔레그램**이 사진, 동영상, 음악과 그 밖의 문서를 보내고 저장하려면 저장 공간 접근 권한이 필요합니다. 설정 &gt; 권한을 탭하고 **파일과 미디어**를 활성화 해주세요.</string>
     <string name="PermissionNoAudioWithHint">**텔레그램**이 음성 메시지를 보내려면 마이크 접근 권한이 필요합니다. 설정 &gt; 권한을 탭하고 **마이크**를 활성화 해주세요.</string>
     <string name="PermissionNoAudioVideoWithHint">**텔레그램**이 음성 메시지를 보내려면 마이크 접근 권한이 필요합니다. 설정 &gt; 권한을 탭하고 **마이크**를 활성화 해주세요.</string>
@@ -1092,11 +1092,11 @@
     <string name="PermissionBackgroundLocation">이 대화에서 실시간 위치를 공유 하려면, 텔레그램이 항상 위치에 대해 접근 권한이, 백그라운드 실행시도 포함,  부여되어야 합니다.\n\n회원님이 설정한 시간에만 위치에 접근을 하게 되며, 언제든지 중지를 할 수 있습니다. 텔레그램은 대화에 위치를 공유하는 것 이외에 해당 정보를 일절 사용 하지 않습니다.</string>
     <string name="PermissionDrawAboveOtherAppsTitle">화면-속-화면</string>
     <string name="PermissionDrawAboveOtherAppsGroupCallTitle">영상 대화 오버레이</string>
-    <!--contacts shortcuts-->
+    
     <string name="ContactShortcutMessage">메시지 보내기 %1$s</string>
     <string name="ContactShortcutVoiceCall">음성 통화 걸기 %1$s</string>
     <string name="ContactShortcutVideoCall">영상 통화 걸기 %1$s</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">yyyy, MMM dd</string>
     <string name="formatterGiveawayCard">yyyy MMM dd</string>
     <string name="formatterGiveawayMonthDay">MMMM dd</string>

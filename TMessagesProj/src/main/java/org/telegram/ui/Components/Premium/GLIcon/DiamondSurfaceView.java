@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-/** Transparent, independently composited surface for the Wallet diamond. */
 public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.FrameCallback {
     public final GLIconRenderer mRenderer;
     private final GestureDetector gestures;
@@ -46,14 +45,12 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
     private float renderScale = 1f;
     private float bufferScale = 1f;
 
-    /** Reserve the compositor buffer before the view is shown; never resize it on touch. */
     public void reserveRenderScale(float scale) {
         bufferScale = Math.max(1f, scale);
         mRenderer.diamondResolutionScale = renderScale / bufferScale;
         updateBufferSize();
     }
 
-    /** Change only GL's offscreen resolution, independently of SurfaceControl geometry. */
     public void setRenderScale(float scale) {
         scale = Math.max(1f, Math.min(bufferScale, scale));
         if (renderScale == scale) return;
@@ -79,13 +76,9 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
     public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable finishDrawing) {
         final ArrayList<Runnable> batch;
         synchronized (pendingRedraws) {
-            // Give each request its own identity, even if callbacks are reused.
             pendingRedraws.add(() -> finishDrawing.run());
             batch = new ArrayList<>(pendingRedraws);
         }
-        // Older GLSurfaceView implementations overwrite a pending completion when
-        // another redraw arrives. The replacement must also finish earlier requests,
-        // or WindowManager can keep this and subsequent dialogs hidden indefinitely.
         super.surfaceRedrawNeededAsync(holder, () -> finishRedraws(batch));
     }
 
@@ -96,8 +89,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
                 if (pendingRedraws.remove(callback)) callbacks.add(callback);
             }
         }
-        // GL completion and surface teardown can race. Remove before invoking so
-        // each report completes exactly once, without calling out under our lock.
         for (Runnable callback : callbacks) callback.run();
     }
 
@@ -114,7 +105,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        // The RGBA surface must sit above the window to blend with its UI background.
         setZOrderOnTop(true);
         mRenderer = new GLIconRenderer(context, GLIconRenderer.DIALOG_STYLE, Icon3D.TYPE_DIAMOND);
         setRenderer(new Renderer() {
@@ -128,8 +118,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
                 announced = false;
                 previous = 0;
                 failed = false;
-                // The previous context is gone; its object names must not be deleted
-                // in this new context. GLSurfaceView owns context/surface teardown.
                 mRenderer.model = null;
                 try {
                     mRenderer.onSurfaceCreated(gl, config);
@@ -153,8 +141,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
                     return;
                 }
                 if (!positionReady) {
-                    // Submit a transparent first buffer. Android can latch it before
-                    // the opening sheet's SurfaceControl position transaction.
                     GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
                     GLES20.glClearColor(0, 0, 0, 0);
                     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -211,9 +197,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
 
             @Override
             public boolean onScroll(MotionEvent first, MotionEvent current, float dx, float dy) {
-                // GestureDetector reports the previous position minus the current
-                // one. Keep this in the same inverted physical direction as the
-                // Wallet card and amount-field diamond controls.
                 mRenderer.angleX -= dx * .5f;
                 mRenderer.angleY -= dy * .05f;
                 return true;
@@ -277,7 +260,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
     private void startIdle() {
         if (!attached || paused || !idle || touching || animation != null) return;
         animation = ValueAnimator.ofFloat(mRenderer.angleX, mRenderer.angleX + 360);
-        // Swift demo: 2π / 18 × 1.70775 radians per second.
         animation.setDuration(Math.round(18000 / 1.70775));
         animation.setRepeatCount(ValueAnimator.INFINITE);
         animation.setInterpolator(new LinearInterpolator());
@@ -320,8 +302,6 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
     @Override
     public void doFrame(long frameTimeNanos) {
         if (!attached || paused || failed) return;
-        // The independently composited surface does not inherit its parents' alpha,
-        // including on Android 14+. Only its own alpha is handled natively there.
         float alpha = Build.VERSION.SDK_INT < 34 ? getAlpha() : 1f;
         for (ViewParent p = getParent(); p instanceof View; p = p.getParent()) alpha *= ((View) p).getAlpha();
         compositionAlpha = alpha;
@@ -370,12 +350,9 @@ public class DiamondSurfaceView extends GLSurfaceView implements Choreographer.F
             requestRender();
         });
         if (Build.VERSION.SDK_INT >= 29 && isHardwareAccelerated()) {
-            // Wait for a window frame containing the surface's actual position,
-            // after the transparent buffer has satisfied the initial redraw.
             getViewTreeObserver().registerFrameCommitCallback(reveal);
             getRootView().invalidate();
         } else {
-            // Pre-Q has no frame-commit callback; cross two UI traversal frames.
             postOnAnimation(reveal);
         }
     }

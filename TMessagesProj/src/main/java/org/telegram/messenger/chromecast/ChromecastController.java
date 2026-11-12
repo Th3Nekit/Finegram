@@ -34,7 +34,7 @@ public class ChromecastController implements SessionManagerListener<CastSession>
 
     private ChromecastController() {
         CastContext castContext = CastContext.getSharedInstance(ApplicationLoader.applicationContext);
-        castContext.addCastStateListener(i -> Log.d(CAST_STATE, "onCastStateChanged " + i));  // ???
+        castContext.addCastStateListener(i -> Log.d(CAST_STATE, "onCastStateChanged " + i));
 
         state = new ChromecastControllerState();
 
@@ -52,7 +52,6 @@ public class ChromecastController implements SessionManagerListener<CastSession>
         Log.d(CAST_CONTROLLER, "set current media");
         ChromecastMediaVariations currentMedia = state.getMedia();
         if (CastSync.isActive() && eq(currentMedia, newMedia)) {
-//            CastSync.syncInterface();
         } else {
             state.setMedia(newMedia);
         }
@@ -116,7 +115,6 @@ public class ChromecastController implements SessionManagerListener<CastSession>
     }
 
 
-    /* * */
 
     private static volatile ChromecastController Instance = null;
 
@@ -135,7 +133,6 @@ public class ChromecastController implements SessionManagerListener<CastSession>
 
 
 
-    /* * */
 
     static class RemoteMediaClientHandler extends RemoteMediaClient.Callback {
         public final RemoteMediaClient client;
@@ -252,7 +249,6 @@ public class ChromecastController implements SessionManagerListener<CastSession>
                     } else if (lastMediaErrorCode == MediaError.DetailedErrorCode.MEDIA_DECODE) {
                         loadNext(false);
                     } else {
-                        // close();
                     }
                 }
             }
@@ -261,7 +257,6 @@ public class ChromecastController implements SessionManagerListener<CastSession>
 
 
 
-    /* Session Listener */
 
     @Override
     public void onSessionStarting(@NonNull CastSession castSession) {

@@ -1,9 +1,10 @@
 package org.telegram.messenger;
 
+import android.os.Build;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.os.Build;
 import android.os.CancellationSignal;
 import android.util.Base64;
 

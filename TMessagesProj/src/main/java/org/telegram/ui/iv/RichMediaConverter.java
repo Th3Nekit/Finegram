@@ -13,15 +13,10 @@ import org.telegram.tgnet.TLRPC;
 import java.io.File;
 import java.util.ArrayList;
 
-// Converts a still photo that carries animated overlays (animated stickers / animated emoji) into a
-// muted mp4, reusing the same VideoEditedInfo + MediaController.scheduleVideoConvert machinery that
-// PhotoViewer uses for regular sends. The converter writes a complete file to cache; once writing is
-// done the editor uploads it through the existing video branch of RichMediaUploader.
 public class RichMediaConverter implements NotificationCenter.NotificationCenterDelegate {
 
     public interface Listener {
         default void onProgress(float progress) {}
-        // mp4Path is the finished converted file; w/h/durationSec describe the produced video.
         void onDone(String mp4Path, int width, int height, int durationSec);
         void onError();
     }
@@ -43,8 +38,6 @@ public class RichMediaConverter implements NotificationCenter.NotificationCenter
         this.listener = listener;
     }
 
-    // Mirrors PhotoViewer.getAnimatedMediaEntitiesCount: a sticker entity flagged RLottie (subType&1)
-    // or webm/mp4 (subType&4), or a text entity containing animated emoji.
     public static boolean hasAnimatedMediaEntities(MediaController.PhotoEntry entry) {
         if (entry == null || entry.isVideo) return false;
         ArrayList<VideoEditedInfo.MediaEntity> list = entry.croppedMediaEntities != null && !entry.croppedMediaEntities.isEmpty()
@@ -61,7 +54,6 @@ public class RichMediaConverter implements NotificationCenter.NotificationCenter
         return false;
     }
 
-    // Mirrors PhotoViewer.getCurrentVideoEditedInfo for the photo-with-animated-overlays case.
     private static VideoEditedInfo buildVideoEditedInfo(MediaController.PhotoEntry entry) {
         final float maxSize = 854;
 
@@ -79,10 +71,6 @@ public class RichMediaConverter implements NotificationCenter.NotificationCenter
         if (width <= 0 || height <= 0) {
             return null;
         }
-        // entry.width/height are the RAW (pre-EXIF) pixel dimensions. TextureRenderer rotates the source
-        // photo by its own EXIF orientation when rendering (no cropState -> useMatrixForImagePath == false),
-        // so the produced frame must use the ORIENTED dimensions, mirroring PhotoViewer reading the already
-        // rotated centerImage size. Otherwise a portrait photo yields a landscape video.
         if (entry.orientation == 90 || entry.orientation == 270) {
             int temp = width;
             width = height;
@@ -99,8 +87,6 @@ public class RichMediaConverter implements NotificationCenter.NotificationCenter
             videoEditedInfo.endTime = 3000;
         }
         videoEditedInfo.end = videoEditedInfo.endTime;
-        // For an isPhoto source the output dimensions/bitrate are set explicitly below; compressQuality
-        // is not used for sizing, so a sane default is fine.
         videoEditedInfo.compressQuality = 1;
         videoEditedInfo.rotationValue = 0;
         videoEditedInfo.originalPath = entry.path;
@@ -197,7 +183,6 @@ public class RichMediaConverter implements NotificationCenter.NotificationCenter
             final float progress = (Float) args[4];
             if (listener != null) listener.onProgress(progress);
             if (finalSize > 0) {
-                // last == true: the file is fully written.
                 finished = true;
                 teardown();
                 if (listener != null) {

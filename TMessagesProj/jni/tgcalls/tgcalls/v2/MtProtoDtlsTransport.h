@@ -17,26 +17,11 @@ namespace tgcalls {
 
 class EncryptedConnection;
 
-// mtproto in the DTLS slot. Injected through
-// PeerConnectionDependencies::dtls_transport_factory (a tgcalls seam in the
-// vendored webrtc) together with Options::external_transport_security, which
-// makes JsepTransportController build a plain RtpTransport above us while
-// DTLS stays enabled for SDP: certificates, fingerprints and the SCTP factory
-// are stock. We never handshake - the shared secret exists before the call
-// starts - and report kConnected the first time ICE becomes writable.
-//
-// Framing is byte-identical to 13.0.0's MtProtoPacketTransport, and `flags`
-// is ground truth in both directions: BaseChannel sends RTP/RTCP with
-// PF_SRTP_BYPASS (framed bare) and DcSctpTransport sends SCTP with 0 (framed
-// with the 0xdcdcdcdc prefix); on receive the prefix becomes flags 0 and its
-// absence PF_SRTP_BYPASS, so DcSctpTransport (which skips flags != 0) never
-// parses media and RtpTransport (which ignores flags) demuxes it.
 class MtProtoDtlsTransport : public cricket::DtlsTransportInternal {
 public:
     MtProtoDtlsTransport(cricket::IceTransportInternal *ice, EncryptionKey encryptionKey);
     ~MtProtoDtlsTransport() override;
 
-    // rtc::PacketTransportInternal
     const std::string &transport_name() const override;
     bool writable() const override;
     bool receiving() const override;
@@ -46,7 +31,6 @@ public:
     int GetError() override;
     absl::optional<rtc::NetworkRoute> network_route() const override;
 
-    // cricket::DtlsTransportInternal
     webrtc::DtlsTransportState dtls_state() const override;
     int component() const override;
     bool IsDtlsActive() const override;
@@ -65,8 +49,6 @@ public:
     cricket::IceTransportInternal *ice_transport() override;
 
 private:
-    // The seven rtc::PacketTransportInternal signals of the ICE transport,
-    // re-emitted with `this`: the controller keys transports by pointer.
     void onIceWritableState(rtc::PacketTransportInternal *transport);
     void onIceReceivingState(rtc::PacketTransportInternal *transport);
     void onIceReadyToSend(rtc::PacketTransportInternal *transport);
@@ -78,9 +60,6 @@ private:
     void emitDecryptedMessage(rtc::CopyOnWriteBuffer const &message, int64_t timestamp);
     void setDtlsState(webrtc::DtlsTransportState state);
 
-    // Everything runs on the network thread, like stock cricket::DtlsTransport:
-    // the controller constructs us there and every DtlsTransportInternal call
-    // webrtc makes hops there first. The checker attaches on construction.
     webrtc::SequenceChecker _sequenceChecker;
 
     cricket::IceTransportInternal *_ice = nullptr;
@@ -88,15 +67,9 @@ private:
     webrtc::DtlsTransportState _dtlsState = webrtc::DtlsTransportState::kNew;
     absl::optional<rtc::SSLRole> _dtlsRole;
     rtc::scoped_refptr<rtc::RTCCertificate> _localCertificate;
-    // Set when OUR framing/encryption fails, so GetError() does not surface the
-    // ICE channel's stale error (which RtpTransport reads as a lost connection).
     int _lastError = 0;
 };
 
-// Installed on PeerConnectionDependencies::dtls_transport_factory by
-// InstanceV2ReferenceImpl and CallCoreHost, always together with
-// Options::external_transport_security, from the one network_use_mtproto
-// decision.
 class MtProtoDtlsTransportFactory : public cricket::DtlsTransportFactory {
 public:
     explicit MtProtoDtlsTransportFactory(EncryptionKey encryptionKey);
@@ -110,6 +83,6 @@ private:
     EncryptionKey _encryptionKey;
 };
 
-} // namespace tgcalls
+}
 
 #endif

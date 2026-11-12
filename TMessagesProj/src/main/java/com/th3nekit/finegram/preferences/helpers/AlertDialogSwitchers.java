@@ -38,6 +38,7 @@ public class AlertDialogSwitchers {
             return;
         }
         Context context = fragment.getContext();
+        final int initialValue = Math.round(FinegramAppearanceConfig.INSTANCE.getAvatarCorners());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(getString(R.string.FG_AvatarCorners));
 
@@ -53,9 +54,6 @@ public class AlertDialogSwitchers {
             @Override
             public void setValue(int value) {
                 FinegramAppearanceConfig.INSTANCE.setAvatarCorners(value);
-                if (onChanged != null) {
-                    onChanged.run();
-                }
             }
 
             @Override
@@ -73,7 +71,6 @@ public class AlertDialogSwitchers {
                 return Math.round(FGAvatars.MAX);
             }
         };
-        contract.setValue(Math.round(FinegramAppearanceConfig.INSTANCE.getAvatarCorners()));
         sliderCell.setContract(contract);
 
         TextInfoPrivacyCell hint = new TextInfoPrivacyCell(context);
@@ -84,7 +81,12 @@ public class AlertDialogSwitchers {
 
         builder.setView(linearLayout);
         builder.setPositiveButton(getString(R.string.OK), null);
-        fragment.showDialog(builder.create());
+        AlertDialog dialog = builder.create();
+        fragment.showDialog(dialog, ignored -> {
+            if (onChanged != null && Math.round(FinegramAppearanceConfig.INSTANCE.getAvatarCorners()) != initialValue) {
+                onChanged.run();
+            }
+        });
     }
 
     public static void showMessageSize(BaseFragment fragment) {

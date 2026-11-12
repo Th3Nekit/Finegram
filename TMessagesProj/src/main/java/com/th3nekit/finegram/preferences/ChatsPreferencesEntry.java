@@ -67,6 +67,8 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
     private final int voiceMessagesAutoPlay = 22, playVideoOnVolumeBtnRow = 23, autoPauseVideoRow = 24;
     private final int multiMicRow = 33, recordInStereoRow = 34;
     private final int lastSeenExactTimeRow = 35, showIdSearchRow = 36;
+    private final int glassPeerTintRow = 48;
+    private final int glassSolidStrokeRow = 45, joinedInputRow = 46, menuBeforeAttachRow = 47;
     private final int liquidGlassRow = 37;
     private final int headerRadiusRow = 38;
     private final int livingGlassRow = 39, headerAutoHideRow = 41, timelineScrubberRow = 42, pauseAnimationsRow = 43, invisibleInkRow = 44;
@@ -118,18 +120,23 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
         items.add(SettingsHelper.asSwitchCG(glareEffectsRow, applyNewSpan(getString(R.string.CP_StrokeOnViews)))
                 .setChecked(FinegramChatsConfig.INSTANCE.getGlareEffects())
         .slug("glareEffects"));
+        items.add(SettingsHelper.asSwitchCG(glassSolidStrokeRow, getString(R.string.FG_GlassSolidStroke), getString(R.string.FG_GlassSolidStroke_Desc))
+                .setChecked(FinegramChatsConfig.INSTANCE.getGlassSolidStroke())
+                .setEnabled(FinegramChatsConfig.INSTANCE.getGlareEffects()).slug("glassSolidStroke"));
+        items.add(SettingsHelper.asSwitchCG(glassPeerTintRow, getString(R.string.FG_GlassPeerTint), getString(R.string.FG_GlassPeerTint_Desc))
+                .setChecked(FinegramChatsConfig.INSTANCE.getGlassPeerTint()).slug("glassPeerTint"));
         if (FinegramChatsConfig.INSTANCE.getGlareEffects()) {
             items.add(SettingsHelper.asSwitchCG(livingGlassRow,
                             applyNewSpan(getString(R.string.FG_LivingGlass)),
                             getString(R.string.FG_LivingGlass_Desc))
                     .setChecked(FinegramChatsConfig.INSTANCE.getLivingGlass())
+                    .setEnabled(!FinegramChatsConfig.INSTANCE.getGlassSolidStroke())
             .slug("livingGlass"));
         }
         items.add(SettingsHelper.asSwitchCG(liquidGlassRow,
                         applyNewSpan(getString(R.string.FG_LiquidGlass)),
                         getString(R.string.FG_LiquidGlass_Desc))
-                .setChecked(org.telegram.messenger.LiteMode.isEnabled(
-                        org.telegram.messenger.LiteMode.FLAG_LIQUID_GLASS))
+                .setChecked(isGlassBlurOn())
         );
         items.add(
                 SettingsHelper.asExpandableSwitch(
@@ -144,11 +151,13 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
         .slug("header"));
         if (expandedHeaderSettingsSection) {
             items.add(UItem.asShadow(null));
-            headerPreviewView = new ChatHeaderPreviewView(getContext(), this, getResourceProvider());
-            headerPreviewView.setTitleCentered(FinegramChatsConfig.INSTANCE.getCenterChatTitle());
-            headerPreviewView.updateIOSUnreadBadge();
-            items.add(SettingsHelper.asCustomWithBackground(headerPreviewView, 70));
-            items.add(UItem.asShadow(null));
+            if (adapter != null) {
+                headerPreviewView = new ChatHeaderPreviewView(getContext(), this, getResourceProvider());
+                headerPreviewView.setTitleCentered(FinegramChatsConfig.INSTANCE.getCenterChatTitle());
+                headerPreviewView.updateIOSUnreadBadge();
+                items.add(SettingsHelper.asCustomWithBackground(headerPreviewView, 70));
+                items.add(UItem.asShadow(null));
+            }
 
             items.add(SettingsHelper.asSwitchCG(centerTitleRow, getString(R.string.AP_CenterTitle))
                     .setChecked(FinegramChatsConfig.INSTANCE.getCenterChatTitle())
@@ -215,12 +224,20 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
         .slug("bottomBar"));
         if (expandedBottomBarSettingsSection) {
             items.add(UItem.asShadow(null));
-            ChatInputPreviewView inputPreviewView = new ChatInputPreviewView(getContext(), this, getResourceProvider());
-            items.add(SettingsHelper.asCustomWithBackground(inputPreviewView, 62));
-            items.add(UItem.asShadow(null));
+            if (adapter != null) {
+                ChatInputPreviewView inputPreviewView = new ChatInputPreviewView(getContext(), this, getResourceProvider());
+                items.add(SettingsHelper.asCustomWithBackground(inputPreviewView, 62));
+                items.add(UItem.asShadow(null));
+            }
             items.add(SettingsHelper.asSwitchCG(iOSMessageInputField, applyNewSpan(getString(R.string.CP_iOSMessageInputField)), getString(R.string.CP_iOSMessageInputField_Desc))
                     .setChecked(FinegramChatsConfig.INSTANCE.getIOSMessageInputField())
             .slug("iosInputField"));
+            items.add(SettingsHelper.asSwitchCG(joinedInputRow, getString(R.string.FG_JoinedInput), getString(R.string.FG_JoinedInput_Desc))
+                    .setChecked(FinegramChatsConfig.INSTANCE.getJoinedInputBubbles())
+                    .setEnabled(FinegramChatsConfig.INSTANCE.getIOSMessageInputField()).slug("joinedInput"));
+            items.add(SettingsHelper.asSwitchCG(menuBeforeAttachRow, getString(R.string.FG_MenuBeforeAttach), getString(R.string.FG_MenuBeforeAttach_Desc))
+                    .setChecked(FinegramChatsConfig.INSTANCE.getMenuBeforeAttach())
+                    .setEnabled(FinegramChatsConfig.INSTANCE.getIOSMessageInputField()).slug("menuBeforeAttach"));
             items.add(SettingsHelper.asSwitchCG(sendAsChannelButtonRow, getString(R.string.CP_HideSendAsChannel), getString(R.string.CP_HideSendAsChannelDesc))
                     .setChecked(FinegramChatsConfig.INSTANCE.getHideSendAsChannel())
             .slug("hideSendAs"));
@@ -318,7 +335,8 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
         items.add(SettingsHelper.asSwitchCG(lastSeenExactTimeRow,
                         applyNewSpan(getString(R.string.FG_LastSeenExactTime)),
                         getString(R.string.FG_LastSeenExactTime_Desc))
-                .setChecked(FinegramChatsConfig.INSTANCE.getLastSeenExactTime())
+                .setChecked(exactLastSeen())
+                .slug("lastSeenExactTime")
         );
         items.add(UItem.asShadow(null));
 
@@ -365,15 +383,49 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
         items.add(UItem.asShadow(null));
     }
 
+    private static boolean isGlassBlurOn() {
+        return org.telegram.messenger.LiteMode.isEnabledSetting(org.telegram.messenger.LiteMode.FLAG_LIQUID_GLASS)
+                && org.telegram.messenger.LiteMode.isEnabledSetting(org.telegram.messenger.LiteMode.FLAG_CHAT_BLUR);
+    }
+
+    private static boolean exactLastSeen() {
+        return FinegramChatsConfig.INSTANCE.getLastSeenExactTime()
+                || com.th3nekit.finegram.core.configs.FinegramDebugConfig.INSTANCE.getOldTimeStyle();
+    }
+
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
-        if (item.id == liquidGlassRow) {
-            final boolean next = !org.telegram.messenger.LiteMode.isEnabled(
-                    org.telegram.messenger.LiteMode.FLAG_LIQUID_GLASS);
+        if (item.id == glassPeerTintRow) {
+            FinegramChatsConfig.INSTANCE.setGlassPeerTint(!FinegramChatsConfig.INSTANCE.getGlassPeerTint());
+            SettingsHelper.updateCheckState(view, FinegramChatsConfig.INSTANCE.getGlassPeerTint());
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
+        } else if (item.id == glassSolidStrokeRow) {
+            FinegramChatsConfig.INSTANCE.setGlassSolidStroke(!FinegramChatsConfig.INSTANCE.getGlassSolidStroke());
+            updateRows(true);
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
+        } else if (item.id == joinedInputRow || item.id == menuBeforeAttachRow) {
+            if (item.id == joinedInputRow) {
+                FinegramChatsConfig.INSTANCE.setJoinedInputBubbles(!FinegramChatsConfig.INSTANCE.getJoinedInputBubbles());
+            } else {
+                FinegramChatsConfig.INSTANCE.setMenuBeforeAttach(!FinegramChatsConfig.INSTANCE.getMenuBeforeAttach());
+            }
+            updateRows(true);
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
+        } else if (item.id == liquidGlassRow) {
+            final boolean next = !isGlassBlurOn();
             org.telegram.messenger.LiteMode.toggleFlag(
                     org.telegram.messenger.LiteMode.FLAG_LIQUID_GLASS, next);
+            if (next && !org.telegram.messenger.LiteMode.isEnabledSetting(org.telegram.messenger.LiteMode.FLAG_CHAT_BLUR)) {
+                org.telegram.messenger.LiteMode.toggleFlag(org.telegram.messenger.LiteMode.FLAG_CHAT_BLUR, true);
+            }
             SettingsHelper.updateCheckState(view, next);
         } else if (item.id == livingGlassRow) {
+            if (FinegramChatsConfig.INSTANCE.getGlassSolidStroke()) {
+                org.telegram.ui.Components.BulletinFactory.of(this)
+                        .createSimpleBulletin(R.raw.info, getString(R.string.FG_LivingGlass_NeedsGlare))
+                        .show();
+                return;
+            }
             FinegramChatsConfig.INSTANCE.setLivingGlass(!FinegramChatsConfig.INSTANCE.getLivingGlass());
             SettingsHelper.updateCheckState(view, FinegramChatsConfig.INSTANCE.getLivingGlass());
         } else if (item.id == invisibleInkRow) {
@@ -468,9 +520,10 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
                     !FinegramChatsConfig.INSTANCE.getShowIdSearch());
             SettingsHelper.updateCheckState(view, FinegramChatsConfig.INSTANCE.getShowIdSearch());
         } else if (item.id == lastSeenExactTimeRow) {
-            FinegramChatsConfig.INSTANCE.setLastSeenExactTime(
-                    !FinegramChatsConfig.INSTANCE.getLastSeenExactTime());
-            SettingsHelper.updateCheckState(view, FinegramChatsConfig.INSTANCE.getLastSeenExactTime());
+            boolean exact = !exactLastSeen();
+            FinegramChatsConfig.INSTANCE.setLastSeenExactTime(exact);
+            if (!exact) com.th3nekit.finegram.core.configs.FinegramDebugConfig.INSTANCE.setOldTimeStyle(false);
+            SettingsHelper.updateCheckState(view, exactLastSeen());
         } else if (item.id == multiMicRow) {
             FinegramChatsConfig.INSTANCE.setRecordMultiMic(!FinegramChatsConfig.INSTANCE.getRecordMultiMic());
             SettingsHelper.updateCheckState(view, FinegramChatsConfig.INSTANCE.getRecordMultiMic());
@@ -544,9 +597,29 @@ public class ChatsPreferencesEntry extends BaseCGPreferencesEntry {
     }
 
     @Override
+    public ArrayList<UItem> collectItemsForSearch() {
+        boolean header = expandedHeaderSettingsSection;
+        boolean bottom = expandedBottomBarSettingsSection;
+        expandedHeaderSettingsSection = true;
+        expandedBottomBarSettingsSection = true;
+        try {
+            return super.collectItemsForSearch();
+        } finally {
+            expandedHeaderSettingsSection = header;
+            expandedBottomBarSettingsSection = bottom;
+        }
+    }
+
+    @Override
+    public BaseCGPreferencesEntry openAtSetting(int itemId) {
+        if (itemId == joinedInputRow || itemId == menuBeforeAttachRow || itemId == iOSMessageInputField) expandedBottomBarSettingsSection = true;
+        return super.openAtSetting(itemId);
+    }
+
+    @Override
     public void scrollToRow(String slug, Runnable unknown) {
         if (java.util.Set.of("centerTitle", "adaptiveWidth", "unreadBadge", "unreadBadgeIOS", "chatMenuShortcuts").contains(slug)) expandedHeaderSettingsSection = true;
-        if (java.util.Set.of("iosInputField", "hideSendAs", "hideBottomBar", "recentsCounter").contains(slug)) expandedBottomBarSettingsSection = true;
+        if (java.util.Set.of("iosInputField", "joinedInput", "menuBeforeAttach", "hideSendAs", "hideBottomBar", "recentsCounter").contains(slug)) expandedBottomBarSettingsSection = true;
         if (listView != null) updateRows(false);
         super.scrollToRow(slug, unknown);
     }

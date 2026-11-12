@@ -471,22 +471,6 @@ public class PhotoViewerCaptionEnterView extends FrameLayout implements Notifica
             chatActivityEnterViewAnimateFromTop = 0;
         }
 
-//        if (lengthText != null && getMeasuredHeight() > AndroidUtilities.dp(48)) {
-//            int width = (int) Math.ceil(lengthTextPaint.measureText(lengthText));
-//            int x = (AndroidUtilities.dp(56) - width) / 2;
-//            canvas.drawText(lengthText, x, getMeasuredHeight() - AndroidUtilities.dp(48), lengthTextPaint);
-//            if (animationProgress < 1.0f) {
-//                animationProgress += 17.0f / 120.0f;
-//                invalidate();
-//                if (animationProgress >= 1.0f) {
-//                    animationProgress = 1.0f;
-//                }
-//                lengthTextPaint.setAlpha((int) (255 * animationProgress));
-//            }
-//        } else {
-//            lengthTextPaint.setAlpha(0);
-//            animationProgress = 0.0f;
-//        }
     }
 
     public void setForceFloatingEmoji(boolean value) {
@@ -504,15 +488,6 @@ public class PhotoViewerCaptionEnterView extends FrameLayout implements Notifica
     }
 
     public boolean hideActionMode() {
-        /*if (Build.VERSION.SDK_INT >= 23 && currentActionMode != null) {
-            try {
-                currentActionMode.finish();
-            } catch (Exception e) {
-                FileLog.e(e);
-            }
-            currentActionMode = null;
-            return true;
-        }*/
         return false;
     }
 
@@ -531,8 +506,8 @@ public class PhotoViewerCaptionEnterView extends FrameLayout implements Notifica
     }
 
     public void onCreate() {
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.currentUserPremiumStatusChanged);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.currentUserPremiumStatusChanged);
         sizeNotifierLayout.setDelegate(this);
     }
 

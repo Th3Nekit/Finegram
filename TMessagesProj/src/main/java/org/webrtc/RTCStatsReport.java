@@ -12,11 +12,6 @@ package org.webrtc;
 
 import java.util.Map;
 
-/**
- * Java version of webrtc::RTCStatsReport. Each RTCStatsReport produced by
- * getStats contains multiple RTCStats objects; one for each underlying object
- * (codec, stream, transport, etc.) that was inspected to produce the stats.
- */
 public class RTCStatsReport {
   private final long timestampUs;
   private final Map<String, RTCStats> stats;
@@ -26,13 +21,10 @@ public class RTCStatsReport {
     this.stats = stats;
   }
 
-  // Timestamp in microseconds.
   public double getTimestampUs() {
     return timestampUs;
   }
 
-  // Map of stats object IDs to stats objects. Can be used to easily look up
-  // other stats objects, when they refer to each other by ID.
   public Map<String, RTCStats> getStatsMap() {
     return stats;
   }
@@ -53,7 +45,6 @@ public class RTCStatsReport {
     return builder.toString();
   }
 
-  // TODO(bugs.webrtc.org/8557) Use ctor directly with full Map type.
   @SuppressWarnings("unchecked")
   @CalledByNative
   private static RTCStatsReport create(long timestampUs, Map stats) {

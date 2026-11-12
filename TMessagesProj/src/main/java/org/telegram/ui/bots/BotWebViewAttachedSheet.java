@@ -20,6 +20,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -76,6 +77,7 @@ import org.telegram.ui.ActionBar.BottomSheetTabs;
 import org.telegram.ui.ActionBar.BottomSheetTabsOverlay;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.BulletinFactory;
@@ -268,7 +270,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             tab.viewHeight = webView.getHeight();
             tab.viewScroll = webView.getScrollY();
             webView.onPause();
-//            webView.pauseTimers();
         }
         return tab;
     }
@@ -291,18 +292,15 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             backDrawable.setRotation(backButtonShown ? 0f : 1f, false);
         }
         if (tab.buttons != null) {
-//            setMainButton(tab.main);
             botButtons.setState(tab.buttons, false);
         }
         needCloseConfirmation = tab.confirmDismiss;
         currentAccount = tab.props != null ? tab.props.currentAccount : UserConfig.selectedAccount;
         if (tab.webView != null) {
-//            tab.webView.resumeTimers();
             tab.webView.onResume();
             webViewContainer.replaceWebView(currentAccount, tab.webView, tab.proxy, tab.trustedOrigin, tab.sameOrigin);
             webViewContainer.setState(tab.ready || tab.webView.isPageLoaded(), tab.lastUrl);
             if (Theme.isCurrentThemeDark() != tab.themeIsDark) {
-//                webViewContainer.notifyThemeChanged();
                 if (webViewContainer.getWebView() != null) {
                     webViewContainer.getWebView().animate().cancel();
                     webViewContainer.getWebView().animate().alpha(0).start();
@@ -330,7 +328,9 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         if (settingsItem != null) {
             settingsItem.setVisibility(tab.settings ? View.VISIBLE : View.GONE);
         }
+        actionBarColorKey = tab.actionBarColorKey;
         setActionBarColor(!tab.overrideActionBarColor ? Theme.getColor(tab.actionBarColorKey < 0 ? Theme.key_windowBackgroundWhite : tab.actionBarColorKey, resourcesProvider) : tab.actionBarColor, tab.overrideActionBarColor, false);
+        navBarColorThemed = false;
         setNavigationBarColor(tab.navigationBarColor, false);
         return true;
     }
@@ -502,7 +502,14 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
 
             @Override
             public void onWebAppSetNavigationBarColor(int color) {
+                navBarColorThemed = false;
                 setNavigationBarColor(color, true);
+            }
+
+            @Override
+            public void onWebAppResetNavigationBarColor(int color) {
+                setNavigationBarColor(color, true);
+                navBarColorThemed = true;
             }
 
             @Override
@@ -568,7 +575,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
 
             @Override
             public void onWebAppExpand() {
-                if (/* System.currentTimeMillis() - lastSwipeTime <= 1000 || */ swipeContainer.isSwipeInProgress()) {
+                if (                                                            swipeContainer.isSwipeInProgress()) {
                     return;
                 }
                 swipeContainer.stickTo(-swipeContainer.getOffsetY() + swipeContainer.getTopActionBarOffsetY());
@@ -692,6 +699,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         mainButtonAutoAnimator = VerticalPositionAutoAnimator.attach(botButtons);
 
         setNavigationBarColor(getColor(Theme.key_windowBackgroundGray), false);
+        navBarColorThemed = true;
 
         actionBarShadow = ContextCompat.getDrawable(getContext(), R.drawable.header_shadow).mutate();
 
@@ -766,7 +774,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             }
             float offsetY = Math.max(0, swipeContainer.getSwipeOffsetY());
             mainButtonAutoAnimator.setOffsetY(offsetY);
-//            radialProgressAutoAnimator.setOffsetY(offsetY);
             lastSwipeTime = System.currentTimeMillis();
         });
         swipeContainer.setScrollEndListener(() -> webViewContainer.invalidateViewPortHeight(true));
@@ -786,7 +793,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
     public void attachInternal() {
         presentationGeneration++;
         windowView.setDrawingFromOverlay(false);
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.didSetNewTheme);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.didSetNewTheme);
 
         if (dialog != null) {
             dialog.attach();
@@ -816,34 +823,51 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         return windowView != null;
     }
 
-    //    @Override
-//    protected void onStart() {
-//        super.onStart();
-//
-//        Context context = getContext();
-//        if (context instanceof ContextWrapper && !(context instanceof LaunchActivity)) {
-//            context = ((ContextWrapper) context).getBaseContext();
-//        }
-//        if (context instanceof LaunchActivity) {
-//            ((LaunchActivity) context).addOverlayPasscodeView(passcodeView);
-//        }
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//
-//        Context context = getContext();
-//        if (context instanceof ContextWrapper && !(context instanceof LaunchActivity)) {
-//            context = ((ContextWrapper) context).getBaseContext();
-//        }
-//        if (context instanceof LaunchActivity) {
-//            ((LaunchActivity) context).removeOverlayPasscodeView(passcodeView);
-//        }
-//    }
 
     public void setParentActivity(Activity parentActivity) {
         this.parentActivity = parentActivity;
+    }
+
+    private boolean navBarColorThemed;
+    private int verifiedDrawableColor;
+
+    private void updateThemeColors() {
+        try {
+            if (actionBar == null || windowView == null) {
+                return;
+            }
+            if (!overrideBackgroundColor) {
+                if (backDrawable != null) {
+                    updateActionBarColors();
+                }
+                final int color = getColor(actionBarColorKey < 0 ? Theme.key_windowBackgroundWhite : actionBarColorKey);
+                if (color != actionBarColor) {
+                    actionBarColor = color;
+                    final Drawable bg = actionBar.getBackground();
+                    if (bg instanceof ColorDrawable && ((ColorDrawable) bg).getColor() != Color.TRANSPARENT) {
+                        actionBar.setBackgroundColor(actionBarColor);
+                    }
+                    windowView.invalidate();
+                }
+            }
+            if (navBarColorThemed && botButtons != null) {
+                final int color = getColor(Theme.key_windowBackgroundGray);
+                if (color != navBarColor) {
+                    setNavigationBarColor(color, false);
+                    windowView.invalidate();
+                }
+            }
+            if (verifiedDrawable != null) {
+                final int color = Theme.getColor(Theme.key_featuredStickers_addButton);
+                if (color != verifiedDrawableColor) {
+                    verifiedDrawableColor = color;
+                    verifiedDrawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
+                    actionBar.getTitleTextView().invalidate();
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     private void updateActionBarColors() {
@@ -978,7 +1002,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         TLRPC.UserFull userInfo = MessagesController.getInstance(currentAccount).getUserFull(botId);
         if (userbot != null && userbot.verified || userInfo != null && userInfo.user != null && userInfo.user.verified) {
             verifiedDrawable = getContext().getResources().getDrawable(R.drawable.verified_profile).mutate();
-            verifiedDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_featuredStickers_addButton), PorterDuff.Mode.SRC_IN));
+            verifiedDrawable.setColorFilter(new PorterDuffColorFilter(verifiedDrawableColor = Theme.getColor(Theme.key_featuredStickers_addButton), PorterDuff.Mode.SRC_IN));
             verifiedDrawable.setAlpha(0xFF);
             actionBar.getTitleTextView().setDrawablePadding(dp(2));
             actionBar.getTitleTextView().setRightDrawable(new Drawable() {
@@ -1138,7 +1162,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
                             loadFromResponse(false);
                         }
                     }));
-                    NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.webViewResultSent);
+                    NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.webViewResultSent);
 
                     break;
                 }
@@ -1213,7 +1237,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
                             loadFromResponse(false);
                         }
                     }));
-                    NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.webViewResultSent);
+                    NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.webViewResultSent);
                     break;
                 }
                 case TYPE_WEB_VIEW_BOT_APP: {
@@ -1298,11 +1322,11 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             url = resultUrl.url;
             sameOrigin = resultUrl.same_origin;
             fullsize = resultUrl.fullsize;
-        } else if (requestProps.response instanceof TLRPC.TL_appWebViewResultUrl) { // deprecated
+        } else if (requestProps.response instanceof TLRPC.TL_appWebViewResultUrl) {
             TLRPC.TL_appWebViewResultUrl result = (TLRPC.TL_appWebViewResultUrl) requestProps.response;
             queryId = 0;
             url = result.url;
-        } else if (requestProps.response instanceof TLRPC.TL_simpleWebViewResultUrl) { // deprecated
+        } else if (requestProps.response instanceof TLRPC.TL_simpleWebViewResultUrl) {
             TLRPC.TL_simpleWebViewResultUrl resultUrl = (TLRPC.TL_simpleWebViewResultUrl) requestProps.response;
             queryId = 0;
             url = resultUrl.url;
@@ -1467,7 +1491,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
 
     @Override
     public void setKeyboardHeightFromParent(int keyboardHeight) {
-        // TODO
     }
 
     @Override
@@ -1518,7 +1541,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
                     .create();
             dialog.show();
             TextView textView = (TextView) dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            textView.setTextColor(getColor(Theme.key_text_RedBold));
+            ThemeBind.textColor(textView, Theme.key_text_RedBold, resourcesProvider);
             return false;
         } else {
             dismiss();
@@ -1592,7 +1615,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             dialog.updateNavigationBarColor();
         } else if (attachedToParent() && LaunchActivity.instance != null) {
             LaunchActivity.instance.checkSystemBarColors(true, true, true);
-            //LaunchActivity.instance.setNavigationBarColor(fragment.getNavigationBarColor(), false);
         }
     }
 
@@ -1601,10 +1623,16 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         return false;
     }
 
-    public class WindowView extends SizeNotifierFrameLayout implements BaseFragment.AttachedSheetWindow, BottomSheetTabsOverlay.SheetView {
+    public class WindowView extends SizeNotifierFrameLayout implements BaseFragment.AttachedSheetWindow, BottomSheetTabsOverlay.SheetView, Theme.Colorable {
         public WindowView(Context context) {
             super(context);
             setWillNotDraw(false);
+        }
+
+        @Override
+        public void updateColors() {
+            super.updateColors();
+            updateThemeColors();
         }
 
         private final Paint navbarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -1673,11 +1701,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             if (drawingFromOverlay) return false;
             if (event.getAction() == MotionEvent.ACTION_DOWN && (event.getY() <= lerp(swipeContainer.getTranslationY() + dp(24), 0, actionBarTransitionProgress) ||
                     event.getX() > swipeContainer.getRight() || event.getX() < swipeContainer.getLeft())) {
-//                if (can_minimize) {
                     dismiss(true, null);
-//                } else {
-//                    onCheckDismissByUser();
-//                }
                 return true;
             }
             return super.onTouchEvent(event);
@@ -1760,7 +1784,7 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
                     canvas.saveLayerAlpha(actionBar.getX(), actionBar.getY() + clipRect.top, actionBar.getX() + actionBar.getWidth(), actionBar.getY() + clipRect.top + actionBar.getHeight() + actionBarShadow.getIntrinsicHeight(), (int) (0xFF * alpha * actionBarTransitionProgress), Canvas.ALL_SAVE_FLAG);
                     canvas.translate(actionBar.getX(), actionBar.getY() + clipRect.top);
                     actionBar.draw(canvas);
-                    actionBarShadow.setAlpha(0xff);//(int) (actionBar.getAlpha() * progress * 0xFF));
+                    actionBarShadow.setAlpha(0xff);
                     actionBarShadow.setBounds(0, actionBar.getHeight(), actionBar.getWidth(), (int) (actionBar.getHeight() + actionBarShadow.getIntrinsicHeight()));
                     actionBarShadow.draw(canvas);
                     canvas.restore();
@@ -1837,7 +1861,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
             animator.addUpdateListener(animation -> {
                 float progress = (float) animation.getAnimatedValue();
                 actionBarColor = ColorUtils.blendARGB(from, to, progress);
-//                navBarColor = ColorUtils.blendARGB(navBarFrom, navBarTo, progress);
                 checkNavBarColor();
                 windowView.invalidate();
                 actionBar.setBackgroundColor(actionBarColor);
@@ -1852,7 +1875,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
                 public void onAnimationEnd(Animator animation) {
                     float progress = 1f;
                     actionBarColor = ColorUtils.blendARGB(from, to, progress);
-//                    navBarColor = ColorUtils.blendARGB(navBarFrom, navBarTo, progress);
                     checkNavBarColor();
                     windowView.invalidate();
                     actionBar.setBackgroundColor(actionBarColor);
@@ -1867,7 +1889,6 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         } else {
             float progress = 1f;
             actionBarColor = to;
-//            navBarColor = navBarTo;
             checkNavBarColor();
             windowView.invalidate();
             actionBar.setBackgroundColor(actionBarColor);

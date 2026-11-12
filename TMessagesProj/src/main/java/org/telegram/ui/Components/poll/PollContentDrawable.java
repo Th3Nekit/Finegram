@@ -296,10 +296,8 @@ public class PollContentDrawable extends Drawable implements DownloadController.
 
                 TLRPC.PhotoSize photoSize = FileLoader.getClosestPhotoSizeWithSize(document.thumbs, AndroidUtilities.getPhotoSize(), true, null, true);
                 TLRPC.PhotoSize thumbSize = FileLoader.getClosestPhotoSizeWithSize(document.thumbs, (int) (targetWidth / AndroidUtilities.density), false, photoSize, false);
-                // ImageLocation mediaLocation = ImageLocation.getForDocument(document);
                 ImageLocation photoLocation = ImageLocation.getForDocument(photoSize, document);
                 ImageLocation thumbLocation = ImageLocation.getForDocument(thumbSize, document);
-                // boolean autoplay = false;
 
                 final int w = (int) (targetWidth / AndroidUtilities.density);
                 final int h;
@@ -324,7 +322,7 @@ public class PollContentDrawable extends Drawable implements DownloadController.
                     parentObject, 0);
             } else {
                 isFile = true;
-                fileName = FileLoader.getDocumentFileName(document); //MessageObject.getFileName(document);
+                fileName = FileLoader.getDocumentFileName(document);
                 fileInfo = AndroidUtilities.formatFileSize(document.size) + " " + FileLoader.getDocumentExtension(document);
                 authorInfo = fileInfo;
             }
@@ -639,7 +637,6 @@ public class PollContentDrawable extends Drawable implements DownloadController.
         return animatorIsPlaying.getValue();
     }
 
-    /* */
 
     int lastTime;
     public void updatePlayingMessageProgress() {

@@ -14,25 +14,16 @@ import androidx.annotation.Nullable;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-/**
- * Helper class that combines HW and SW decoders.
- */
 public class DefaultVideoDecoderFactory implements VideoDecoderFactory {
   private final VideoDecoderFactory hardwareVideoDecoderFactory;
   private final VideoDecoderFactory softwareVideoDecoderFactory = new SoftwareVideoDecoderFactory();
   private final @Nullable VideoDecoderFactory platformSoftwareVideoDecoderFactory;
 
-  /**
-   * Create decoder factory using default hardware decoder factory.
-   */
   public DefaultVideoDecoderFactory(@Nullable EglBase.Context eglContext) {
     this.hardwareVideoDecoderFactory = new HardwareVideoDecoderFactory(eglContext);
     this.platformSoftwareVideoDecoderFactory = new PlatformSoftwareVideoDecoderFactory(eglContext);
   }
 
-  /**
-   * Create decoder factory using explicit hardware decoder factory.
-   */
   DefaultVideoDecoderFactory(VideoDecoderFactory hardwareVideoDecoderFactory) {
     this.hardwareVideoDecoderFactory = hardwareVideoDecoderFactory;
     this.platformSoftwareVideoDecoderFactory = null;
@@ -46,9 +37,8 @@ public class DefaultVideoDecoderFactory implements VideoDecoderFactory {
       softwareDecoder = platformSoftwareVideoDecoderFactory.createDecoder(codecType);
     }
     if (hardwareDecoder != null && softwareDecoder != null) {
-      // Both hardware and software supported, wrap it in a software fallback
       return new VideoDecoderFallback(
-          /* fallback= */ softwareDecoder, /* primary= */ hardwareDecoder);
+                          softwareDecoder,                hardwareDecoder);
     }
     return hardwareDecoder != null ? hardwareDecoder : softwareDecoder;
   }

@@ -120,7 +120,7 @@ public class GestureDetector2 {
                     break;
 
                 default:
-                    throw new RuntimeException("Unknown message " + msg); //never
+                    throw new RuntimeException("Unknown message " + msg);
             }
         }
     }

@@ -10,9 +10,7 @@
 
 package org.webrtc;
 
-/** Java version of webrtc::StatsReport. */
 public class StatsReport {
-  /** Java version of webrtc::StatsReport::Value. */
   public static class Value {
     public final String name;
     public final String value;
@@ -33,7 +31,6 @@ public class StatsReport {
 
   public final String id;
   public final String type;
-  // Time since 1970-01-01T00:00:00Z in milliseconds.
   public final double timestamp;
   public final Value[] values;
 

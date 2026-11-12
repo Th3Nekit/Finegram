@@ -55,10 +55,12 @@ public class DeeplinkHelper {
             case "cg_gemini" -> new GeminiPreferencesEntry();
             case "cg_camera" -> new CameraPreferencesEntry();
             case "cg_privacy", "cg_security" -> new PrivacyPreferencesEntry();
+            case "cg_saved_messages" -> new com.th3nekit.finegram.preferences.anonymity.SavedMessagesPreferencesEntry();
             case "cg_about" -> new AboutPreferencesEntry();
             case "cg_debug" -> new DebugPreferencesEntry();
             case "cg_folders" -> new com.th3nekit.finegram.preferences.folders.FoldersPreferencesEntry();
             case "cg_tabs" -> new com.th3nekit.finegram.preferences.tabs.MainTabsPreferencesEntry();
+            case "cg_player", "cg_music_player" -> new com.th3nekit.finegram.preferences.MusicPlayerPreferencesEntry();
             default -> null;
         };
     }

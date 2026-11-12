@@ -15,12 +15,9 @@ import org.telegram.ui.Components.UniversalAdapter;
 import org.telegram.ui.Components.UniversalRecyclerView;
 import org.telegram.ui.Gifts.GiftSheet;
 
-/** Profile gift rendering with wallet sticker state, without changing profile interactions. */
 class WalletGiftCell extends GiftSheet.GiftCell {
     TL_wallet.nftItem nft;
     WalletGiftStickers board;
-    // The press bounce is drawn by the cell itself rather than set as scaleX/Y: the board owns the view's scale while
-    // a gift is picked up or flies home, and ItemOptions draws its scrim copy through draw()/customDraw(), which skip scaleX/Y.
     private float drawnScale = 1;
     private boolean wasPressed;
     private ValueAnimator drawnScaleAnimator;
@@ -28,7 +25,6 @@ class WalletGiftCell extends GiftSheet.GiftCell {
     WalletGiftCell(Context context, int account, Theme.ResourcesProvider provider) {
         super(context, account, provider);
         setStateListAnimator(null);
-        // Without a background the hardware path calls dispatchDraw() directly and the drawn scale is never applied.
         setWillNotDraw(false);
     }
 
@@ -40,7 +36,6 @@ class WalletGiftCell extends GiftSheet.GiftCell {
         animateDrawnScale(wasPressed ? .96f : 1, wasPressed ? 80 : 350, wasPressed ? null : new OvershootInterpolator(1.5f));
     }
 
-    /** Moves the view's scale into the drawn one and eases it to 1, so the menu's copy of the cell doesn't jump. */
     void releaseIntoDrawnScale(long duration) {
         animate().cancel();
         setDrawnScale(getScaleX() * drawnScale);
@@ -48,7 +43,6 @@ class WalletGiftCell extends GiftSheet.GiftCell {
         animateDrawnScale(1, duration, null);
     }
 
-    /** Moves the drawn press scale into the view's scale, for the board to animate from there. */
     void takeDrawnScale() {
         if (drawnScaleAnimator != null) drawnScaleAnimator.cancel();
         if (drawnScale == 1) return;
@@ -68,7 +62,6 @@ class WalletGiftCell extends GiftSheet.GiftCell {
     private void setDrawnScale(float scale) {
         drawnScale = scale;
         invalidate();
-        // Hidden under the menu's scrim, the cell's own invalidate is skipped; the copy still needs a frame.
         if (getParent() instanceof View) ((View) getParent()).invalidate();
     }
 
@@ -90,7 +83,6 @@ class WalletGiftCell extends GiftSheet.GiftCell {
         canvas.restore();
     }
 
-    /** The learn hint lifts the gift off its tile: the board draws it in place of the cell's own image, under the ribbon. */
     void setHintDemo(boolean on) {
         final float alpha = on ? 0 : 1;
         if (imageView.getAlpha() != alpha) imageView.setAlpha(alpha);

@@ -376,12 +376,9 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
         }
 
         long time = System.currentTimeMillis();
-        for (int k = 0; k < stack.backgroundDrawingArray.size(); k++) {
-            SpansChunk chunk = stack.backgroundDrawingArray.get(k);
-            if (chunk.layout == layout) {
-                chunk.draw(canvas, spoilers, time, boundTop, boundBottom, drawingYOffset, alpha, colorFilter);
-                break;
-            }
+        SpansChunk chunk = stack.groupedByLayout.get(layout);
+        if (chunk != null) {
+            chunk.draw(canvas, spoilers, time, boundTop, boundBottom, drawingYOffset, alpha, colorFilter);
         }
 
         if (needRestore) {
@@ -430,6 +427,22 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
             return drawableBounds.bottom < boundTop || drawableBounds.top > boundBottom;
         }
 
+        private void setVisible(boolean visible) {
+            if (skipDraw == !visible) {
+                return;
+            }
+            skipDraw = !visible;
+            if (drawable != null) {
+                drawable.setViewVisible(this, visible);
+            }
+        }
+
+        private void releaseDrawable() {
+            if (drawable != null) {
+                drawable.removeView(this);
+            }
+        }
+
         public void prepareForBackgroundDraw(long updateTime, int threadIndex) {
             if (drawable == null) {
                 return;
@@ -458,10 +471,10 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
 
         public void draw(Canvas canvas, long time, float boundTop, float boundBottom, float alpha, ColorFilter colorFilter) {
             if ((boundTop != 0 || boundBottom != 0) && outOfBounds(boundTop, boundBottom)) {
-                skipDraw = true;
+                setVisible(false);
                 return;
             } else {
-                skipDraw = false;
+                setVisible(true);
             }
 
             if (drawable == null) {
@@ -499,6 +512,9 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
         }
 
         public void invalidate() {
+            if (skipDraw) {
+                return;
+            }
             final View view = this.view.get();
             if (view == null) {
                 return;
@@ -545,7 +561,6 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
     public static EmojiGroupedSpans update(int cacheType, View view, boolean invalidateParent, EmojiGroupedSpans prev, boolean clone, Layout... layouts) {
         if (layouts == null || layouts.length <= 0) {
             if (prev != null) {
-                prev.holders.clear();
                 prev.release();
             }
             return null;
@@ -813,9 +828,7 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
                     backgroundDrawingArray.remove(chunkByLayout);
                 }
             }
-            if (holder.drawable != null) {
-                holder.drawable.removeView(holder);
-            }
+            holder.releaseDrawable();
         }
 
         public void remove(int i) {
@@ -830,9 +843,7 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
             } else {
                 throw new RuntimeException("!!!");
             }
-            if (holder.drawable != null) {
-                holder.drawable.removeView(holder);
-            }
+            holder.releaseDrawable();
         }
 
         public void release() {
@@ -845,6 +856,15 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
         public void clearPositions() {
             for (int i = 0; i < holders.size(); i++) {
                 holders.get(i).span.spanDrawn = false;
+            }
+        }
+
+        public void finishDraw() {
+            for (int i = 0; i < holders.size(); i++) {
+                AnimatedEmojiHolder holder = holders.get(i);
+                if (!holder.span.spanDrawn) {
+                    holder.setVisible(false);
+                }
             }
         }
 
@@ -916,7 +936,7 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
                         long time = System.currentTimeMillis();
                         for (int i = 0; i < holders.size(); ++i) {
                             AnimatedEmojiHolder holder = holders.get(i);
-                            if (!holder.span.spanDrawn) {
+                            if (!holder.span.spanDrawn || holder.skipDraw) {
                                 continue;
                             }
                             holder.draw(canvas, time, 0, 0, alpha, null);
@@ -929,7 +949,7 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
                         backgroundHolders.addAll(holders);
                         for (int i = 0; i < backgroundHolders.size(); i++) {
                             AnimatedEmojiHolder holder = backgroundHolders.get(i);
-                            if (!holder.span.spanDrawn) {
+                            if (!holder.span.spanDrawn || holder.skipDraw) {
                                 backgroundHolders.remove(i--);
                                 continue;
                             }
@@ -985,11 +1005,13 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
                 if (holder == null) {
                     continue;
                 }
+                holder.drawingYOffset = drawingYOffset;
                 AnimatedEmojiDrawable drawable = holder.drawable;
                 if (drawable != null) {
                     drawable.setColorFilter(colorFilter);
                 }
                 if (!holder.span.spanDrawn) {
+                    holder.setVisible(false);
                     continue;
                 }
 
@@ -999,12 +1021,16 @@ public class AnimatedEmojiSpan extends ReplacementSpan {
                 cy = holder.span.lastDrawnCy;
                 holder.drawableBounds.set((int) (cx - halfSide), (int) (cy - halfSide), (int) (cx + halfSide), (int) (cy + halfSide));
 
+                holder.setVisible((boundTop == 0 && boundBottom == 0) || !holder.outOfBounds(boundTop, boundBottom));
+                if (holder.skipDraw) {
+                    continue;
+                }
+
                 float spoilerAlpha = 1f;
                 if (spoilers != null && !spoilers.isEmpty() && holder.insideSpoiler) {
                     spoilerAlpha = Math.max(0, spoilers.get(0).getRippleProgress());
                 }
 
-                holder.drawingYOffset = drawingYOffset;
                 holder.alpha = spoilerAlpha;
 
                 if (backgroundThreadDrawable == null) {

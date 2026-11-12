@@ -13,11 +13,8 @@ package org.webrtc;
 import androidx.annotation.Nullable;
 import org.webrtc.MediaStreamTrack;
 
-/** Java wrapper for a C++ RtpReceiverInterface. */
 public class RtpReceiver {
-  /** Java wrapper for a C++ RtpReceiverObserverInterface*/
   public static interface Observer {
-    // Called when the first audio or video packet is received.
     @CalledByNative("Observer")
     public void onFirstPacketReceived(MediaStreamTrack.MediaType media_type);
   }
@@ -49,7 +46,6 @@ public class RtpReceiver {
     return nativeGetId(nativeRtpReceiver);
   }
 
-  /** Returns a pointer to webrtc::RtpReceiverInterface. */
   long getNativeRtpReceiver() {
     checkRtpReceiverExists();
     return nativeRtpReceiver;
@@ -69,7 +65,6 @@ public class RtpReceiver {
 
   public void SetObserver(Observer observer) {
     checkRtpReceiverExists();
-    // Unset the existing one before setting a new one.
     if (nativeObserver != 0) {
       nativeUnsetObserver(nativeRtpReceiver, nativeObserver);
     }
@@ -87,8 +82,6 @@ public class RtpReceiver {
     }
   }
 
-  // This should increment the reference count of the track.
-  // Will be released in dispose().
   private static native long nativeGetTrack(long rtpReceiver);
   private static native RtpParameters nativeGetParameters(long rtpReceiver);
   private static native String nativeGetId(long rtpReceiver);

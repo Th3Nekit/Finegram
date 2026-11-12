@@ -7,7 +7,6 @@ import org.telegram.messenger.FileLog;
 import java.io.InputStream;
 import java.util.Random;
 
-/** Canvas material assembled from packaged lighting masks; no runtime pixel baking. */
 final class WalletCard2DMaterial {
     private static volatile boolean prepared;
     private static final java.util.concurrent.atomic.AtomicBoolean preparing = new java.util.concurrent.atomic.AtomicBoolean();
@@ -107,7 +106,6 @@ final class WalletCard2DMaterial {
                 } catch (Exception e) { FileLog.e(e); }
             }
         }
-        // Decode only: lighting masks are generated offline and shared by every palette.
         if (faceMasks == null) {
             Bitmap[][] decoded = new Bitmap[2][8];
             for (int group = 0; group < 2; group++) for (int j = 0; j < 8; j++) {
@@ -196,7 +194,6 @@ final class WalletCard2DMaterial {
         hasRotation = true;
         pitch = x; yaw = y;
         double ax = Math.toRadians(x), ay = Math.toRadians(y);
-        // Inverse card rotation of the study's fixed studio light and viewer.
         float vx = (float)(Math.cos(ax) * Math.sin(ay));
         float vy = (float)Math.sin(ax), vz = (float)(Math.cos(ax) * Math.cos(ay));
         lx = (float)(.175 * Math.cos(ay) + .83 * vx);
@@ -250,8 +247,6 @@ final class WalletCard2DMaterial {
                 reflectionTints[pass] = materialReflectionTint(d, l);
 
             }
-            // Keep both palettes ready for the rim/reflection, but do not draw
-            // a fully covered old face or a still-invisible incoming face.
             if (style != null && ((pass == 0 && style[8] >= 1f)
                     || (pass == 1 && style[8] <= 0f))) continue;
             int save = canvas.save();
@@ -285,8 +280,6 @@ final class WalletCard2DMaterial {
             reflectionTint = reflectionColor;
             reflectionColorFilter = new PorterDuffColorFilter(reflectionColor, PorterDuff.Mode.SRC_IN);
         }
-        // Web prepareReflectionTexture: normalized sqrt(linear material / peak),
-        // with .18 peak opacity for gift palettes instead of the stock .25.
         float strength = mix(gift0 ? .18f : .25f, gift1 ? .18f : .25f, progress);
         screenPaint.setColorFilter(reflectionColorFilter);
         screenPaint.setShader(reflection);
@@ -295,14 +288,12 @@ final class WalletCard2DMaterial {
         screenPaint.setColorFilter(null);
         screenPaint.setShader(null); paint.setShader(null);
         if (android.os.Build.VERSION.SDK_INT >= 29 && grainFinish != null) {
-            // Match both web soft-light passes, rather than whitening/darkening the face.
             paint.setBlendMode(BlendMode.SOFT_LIGHT);
             bitmap(canvas, textures[6], face, Math.round(255 * .055f * .70f));
             paint.setShader(grainFinish); paint.setAlpha(Math.round(255 * .30f * .70f));
             canvas.drawRect(face, paint);
             paint.setShader(null); paint.setAlpha(255); paint.setBlendMode(BlendMode.SRC_OVER);
         } else {
-            // Older Canvas backends lack soft-light: keep the signed approximation subtle.
             bitmap(canvas, textures[0], face, 5); bitmap(canvas, textures[1], face, 5);
             for (Shader finish : finishes) if (finish != null) {
                 paint.setShader(finish); paint.setAlpha(25); canvas.drawRect(face, paint);
@@ -344,7 +335,6 @@ final class WalletCard2DMaterial {
         return value <= .0031308f ? value * 12.92f : 1.055f * (float)Math.pow(value, 1 / 2.4f) - .055f;
     }
 
-    /** Nine scalar colors, matching the web mask experiment; no pixel loop or bitmap allocation. */
     private static int[] faceStops(int dark, int light, boolean gift) {
         if (!gift) return STOCK_FACE_COLORS;
         float[] darkChannels = new float[3], lightChannels = new float[3];
@@ -383,9 +373,6 @@ final class WalletCard2DMaterial {
         paint.setShader(null); paint.setColor(Color.WHITE);
         for (float[] s : stars) {
             if (qr.contains(s[0], s[1])) continue;
-            // The two vertical address lines are centered at x=313. Exclude
-            // whole stars (including their tips) from that strip, avoiding
-            // clipped sparkles and light flashes through the number/shadow.
             if (hasCardNumber && s[0] + s[2] >= 298 && s[0] - s[2] <= 328) continue;
             double a = Math.atan2(s[1] - H / 2, s[0] - W / 2);
             float b = smooth(.25f, .85f, broad(a - sweep)), second = smooth(.12f, .85f, secondary(a - shine));
@@ -445,9 +432,6 @@ final class WalletCard2DMaterial {
 
     void updateDepthProjection(WalletCardProjection projection, int width, int height, boolean backFacing) {
         depthBackFacing = backFacing;
-        // These drawing buffers represent the visible and hidden faces, not
-        // permanently the model's front and back. The face drawn afterward must
-        // cover the near ends of the strips, including beyond a half turn.
         projection.projectDepthContour(width, height, depthUv,
                 backFacing ? depthBack : depthFront,
                 backFacing ? depthFront : depthBack, depthZ);
@@ -456,7 +440,6 @@ final class WalletCard2DMaterial {
             stripZ[i] = (depthZ[i] + depthZ[(i + 1) % DEPTH_POINTS]) * .5f;
             depthOrder[i] = i;
         }
-        // Far to near, including at edge-on poses; fixed-size insertion sort allocates nothing.
         for (int i = 1; i < DEPTH_POINTS; i++) {
             int value = depthOrder[i], j = i - 1;
             while (j >= 0 && stripZ[depthOrder[j]] < stripZ[value]) {
@@ -468,7 +451,6 @@ final class WalletCard2DMaterial {
 
     void drawDepth(Canvas canvas, float[] style) {
         if (depthScale == 0) return;
-        // A face-on card exposes no edge; strokes would only leave a subpixel outline around the face.
         if (Math.abs(Math.sin(Math.toRadians(pitch))) < FLAT_DEPTH_SIN && Math.abs(Math.sin(Math.toRadians(yaw))) < FLAT_DEPTH_SIN) return;
         int dark = WalletGiftPalette.card2DEdgeTone(0xff088fee, style);
         int light = WalletGiftPalette.card2DEdgeTone(0xff16abf9, style);
@@ -497,7 +479,6 @@ final class WalletCard2DMaterial {
             depthPath.lineTo(depthBack[p], depthBack[p + 1]); depthPath.close();
             stroke.setStrokeWidth(.6f * depthScale);
             canvas.drawPath(depthPath, paint); canvas.drawPath(depthPath, stroke);
-            // Web depth pass finishes each strip with a 75%-brightness rear seam.
             stroke.setColor(depthColor(dark, light, edgeDiffuse * .75f, edgeAmbient * .75f, edgeSpecular * .75f));
             stroke.setStrokeWidth(.7f * depthScale);
             canvas.drawLine(depthBack[p], depthBack[p + 1], depthBack[q], depthBack[q + 1], stroke);

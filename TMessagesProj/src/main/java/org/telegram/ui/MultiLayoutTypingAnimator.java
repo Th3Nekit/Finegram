@@ -21,26 +21,13 @@ import java.util.List;
 
 public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallback {
 
-    /**
-     * A single typed unit. Implemented both by {@code MessageObject.TextLayoutBlock}
-     * (single-view cells) and by {@code ArticleViewer.DrawingText} (multi-view article cells).
-     */
     public interface Block {
-        /** The layout to type through. */
         Layout getLayout();
-        /**
-         * The view this block is actually drawn into, so it can be invalidated per frame.
-         * Returns {@code null} when the block is drawn directly by the host cell — the
-         * animator then falls back to {@link #setInvalidateTarget(View) invalidateTarget}.
-         */
         View getParentView();
     }
 
-    /** Minimum speed in dp/s — speed will never drop below this. */
     public static final float MIN_SPEED_DP_PER_SEC = 40f;
-    /** Target duration for the remaining path (seconds). Adjust as you like. */
     public static final float TARGET_DURATION_SEC = 1.05f;
-    /** How long a block's view takes to fade in (alpha 0→1) once the caret reaches it. */
     public static final float FADE_IN_SEC = 0.2f;
 
     private static final float EPS = 0.001f;
@@ -50,48 +37,25 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
     private List<? extends Block> blocks = new ArrayList<Block>();
 
-    /**
-     * Per-block fade-in alpha, tracked here so blocks without a parent view (e.g. rich
-     * message blocks all sharing one host cell) can still fade their content in at draw
-     * time via {@link #getBlockAlpha}. Mirrored to {@code View.setAlpha} for blocks that
-     * do expose a parent view (article cells). Always sized to match {@link #blocks}.
-     */
     private final ArrayList<Float> blockAlphas = new ArrayList<>();
 
-    // Current caret state (block/line/position within the visual line)
     private int   curBlockIdx = 0;
     private int   curLineIdx  = 0;
-    private float xPosition   = 0f;  // px from visual line start
+    private float xPosition   = 0f;
 
     private boolean running   = false;
     private boolean finished  = true;
     private long lastFrameNs  = 0L;
 
-    // Current chosen speed (px/s); recalculated in setBlocks()
     private float speedPxPerSec = dp(MIN_SPEED_DP_PER_SEC);
 
     public void setInvalidateTarget(View invalidateTarget) {
         this.invalidateTarget = invalidateTarget;
     }
 
-    /**
-     * Invalidate the surface that draws the active block. When the block exposes its own
-     * parent view (article cells, where each block lives in its own child view) that view is
-     * invalidated; otherwise we fall back to {@link #invalidateTarget} (the whole host cell).
-     */
     private View lastInvalidatedView;
 
-    /**
-     * Fade block-level views in as the caret reaches them. Blocks after the caret keep their
-     * parent view at alpha 0 (so non-text decorations don't pop in before the text arrives);
-     * the active and past blocks fade up to 1. Only applies to blocks that expose a parent
-     * view (article cells) — single-view cells (getParentView()==null) are untouched.
-     *
-     * @param dtSec frame delta; pass 0 to set the target alpha instantly (no fade).
-     */
     private void applyBlockAlphas(float dtSec) {
-        // Step every block's tracked alpha — needed even for view-less blocks (rich messages
-        // all draw into one host cell and consult getBlockAlpha at draw time).
         View prev = null;
         for (int i = 0, n = blocks.size(); i < n; i++) {
             final Block b = blocks.get(i);
@@ -111,8 +75,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
                 blockAlphas.set(i, next);
             }
 
-            // Mirror to View when the block exposes one (article-cell path). Blocks
-            // sharing a view are contiguous; act once on the view's first block.
             final View v = b.getParentView();
             if (v == null || v == prev) continue;
             prev = v;
@@ -120,7 +82,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         }
     }
 
-    /** Restore every block to full opacity (used when the animation stops). */
     private void resetBlockAlphas() {
         for (int i = 0, n = blockAlphas.size(); i < n; i++) {
             blockAlphas.set(i, 1f);
@@ -134,11 +95,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         }
     }
 
-    /**
-     * Current fade-in alpha for {@code block} (0..1). Returns 1 when the block isn't part
-     * of the current set or no fade is in flight. Use this in draw paths where the block
-     * has no parent view of its own (rich message blocks).
-     */
     public float getBlockAlpha(Block block) {
         final int idx = indexOf(block);
         if (idx < 0 || idx >= blockAlphas.size()) return 1f;
@@ -153,7 +109,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         }
         if (v != null) {
             v.invalidate();
-            // The block we just left still shows a fade tail for one frame — redraw it too.
             if (lastInvalidatedView != null && lastInvalidatedView != v) {
                 lastInvalidatedView.invalidate();
             }
@@ -163,7 +118,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         }
     }
 
-    /** Full replacement/update of blocks. Can be called frequently. */
     public void setBlocks(List<? extends Block> newBlocks) {
         if (!blocks.isEmpty() && curBlockIdx >= blocks.size()) {
             curBlockIdx = blocks.size() - 1;
@@ -178,8 +132,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
         finished = isAtAbsoluteEnd();
 
-        // Resize the alpha array to match — preserve existing values so a re-bind doesn't
-        // re-fade blocks the caret has already passed; new entries default to (passed=1, future=0).
         while (blockAlphas.size() > this.blocks.size()) {
             blockAlphas.remove(blockAlphas.size() - 1);
         }
@@ -189,11 +141,10 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
         if (!finished && !running) start();
 
-        applyBlockAlphas(0f); // set initial visibility instantly (no fade on (re)bind)
+        applyBlockAlphas(0f);
         invalidate();
     }
 
-    /** Reset animation to the very beginning. */
     public void reset() {
         curBlockIdx = 0;
         curLineIdx  = 0;
@@ -204,7 +155,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         invalidate();
     }
 
-    /** Explicit start (usually not needed — setBlocks() will start automatically). */
     public void start() {
         if (running) return;
         running = true;
@@ -213,13 +163,12 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         choreo.postFrameCallback(this);
     }
 
-    /** Stop animation. */
     public void stop() {
         if (!running) return;
         running = false;
         choreo.removeFrameCallback(this);
         lastFrameNs = 0L;
-        resetBlockAlphas(); // reveal everything when the animation is cut short
+        resetBlockAlphas();
         if (onFinishRunnable != null) {
             onFinishRunnable.run();
             onFinishRunnable = null;
@@ -235,10 +184,8 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         this.onFinishRunnable = onFinishRunnable;
     }
 
-    /** Index of the current active block (the one with fade). */
     public int getCurrentBlockIndex() { return curBlockIdx; }
 
-    /** Fade parameters for the active line inside a given block. */
     public int   getFadeLineIndex(Block block) {
         return isFadeBlock(block) ? curLineIdx : -1;
     }
@@ -246,22 +193,16 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         return isFadeBlock(block) ? xPosition : 0f;
     }
 
-    /**
-     * Whether a block needs to be drawn at all.
-     * Returns false only if the block is completely hidden (fully after the caret).
-     */
     public boolean needDraw(Block block) {
         int idx = indexOf(block);
         if (idx < 0 || blocks.isEmpty()) return false;
 
-        if (idx < curBlockIdx) return true;   // everything before current is fully visible
-        if (idx > curBlockIdx) return false;  // future blocks are still fully hidden
+        if (idx < curBlockIdx) return true;
+        if (idx > curBlockIdx) return false;
 
-        // Current block is partially visible or fading
         return true;
     }
 
-    /** Is this the block we should draw with a fade? */
     public boolean isFadeBlock(Block block) {
         int idx = indexOf(block);
         if (idx != curBlockIdx) return false;
@@ -270,7 +211,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         return true;
     }
 
-    // ---------------- Choreographer ----------------
 
     @Override public void doFrame(long frameTimeNanos) {
         if (!running) return;
@@ -286,7 +226,7 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
         if (finished) {
             running = false;
-            resetBlockAlphas(); // ensure all views are fully visible at the end
+            resetBlockAlphas();
             if (onFinishRunnable != null) {
                 onFinishRunnable.run();
                 onFinishRunnable = null;
@@ -296,7 +236,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         choreo.postFrameCallback(this);
     }
 
-    // ---------------- Engine ----------------
 
     private void advance(float dtSec) {
         if (blocks.isEmpty() || dtSec <= 0f) {
@@ -310,7 +249,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
             if (curBlockIdx >= blocks.size()) { finished = true; break; }
             Layout lay = blocks.get(curBlockIdx).getLayout();
             if (lay == null || lay.getLineCount() == 0) {
-                // Empty block — skip to next
                 curBlockIdx++;
                 curLineIdx = 0;
                 xPosition = 0f;
@@ -318,21 +256,18 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
             }
 
             if (curLineIdx >= lay.getLineCount()) {
-                // Clamp to the end if we somehow stepped out of bounds
                 curLineIdx = lay.getLineCount() - 1;
                 xPosition = lineWidth(lay, curLineIdx);
             }
 
             float w = lineWidth(lay, curLineIdx);
             if (w <= EPS) {
-                // Zero-width line — move on
                 if (!nextLineOrBlock(lay)) continue;
                 else break;
             }
 
             float remain = w - xPosition;
             if (remain <= EPS) {
-                // Jump to next line/block
                 if (!nextLineOrBlock(lay)) continue;
                 else break;
             }
@@ -343,7 +278,7 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
             if (w - xPosition <= EPS) {
                 if (!nextLineOrBlock(lay)) {
-                    delta = 0f; // ran out of blocks
+                    delta = 0f;
                 }
             }
         }
@@ -351,7 +286,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         finished = isAtAbsoluteEnd();
     }
 
-    /** Advance to next line or next block. Returns true if there are no more blocks. */
     private boolean nextLineOrBlock(Layout lay) {
         curLineIdx++;
         xPosition = 0f;
@@ -364,9 +298,7 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         return false;
     }
 
-    // ---------------- Dynamic speed ----------------
 
-    /** Recalculate speed so that remaining distance fits TARGET_DURATION_SEC, but not below MIN_SPEED. */
     private void recalcSpeed() {
         float remainingPx = computeRemainingPixels();
         float minPxPerSec = dp(MIN_SPEED_DP_PER_SEC);
@@ -380,7 +312,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         speedPxPerSec = Math.max(minPxPerSec, desired);
     }
 
-    /** Sum of remaining pixel widths from the current caret to the end across all blocks. */
     private float computeRemainingPixels() {
         if (blocks.isEmpty()) return 0f;
 
@@ -400,7 +331,7 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
                 if (w <= EPS) continue;
 
                 if (bi == curBlockIdx && li == startLine) {
-                    float remain = w - xPosition; // tail of the current line
+                    float remain = w - xPosition;
                     if (remain > EPS) total += remain;
                 } else {
                     total += w;
@@ -411,7 +342,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         return total;
     }
 
-    // ---------------- Utils ----------------
 
     private boolean isAtAbsoluteEnd() {
         if (blocks.isEmpty()) return true;
@@ -451,7 +381,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
 
 
-    /* */
 
     private static final float FADE_WIDTH_DP = 50f;
     private static final Paint MASK_PAINT;
@@ -465,27 +394,10 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         MASK_PAINT.setShader(GRADIENT);
     }
 
-    /**
-     * Optional drawer for the fade helper. When provided, replaces the default
-     * {@code layout.draw(canvas)} call for both the above-line slice and the active
-     * (fading) line — so callers can add animated emojis, spoiler ripples, etc. and
-     * have them masked together with the text. Receives the same canvas already
-     * positioned/clipped by the helper.
-     */
     public interface Renderer {
         void draw(Canvas canvas);
     }
 
-    /**
-     * Draws the entire layout, but renders the specified line (lineIndex) with horizontal fading.
-     *
-     * @param canvas     the target Canvas (already positioned; no offsets are applied)
-     * @param layout     the text Layout
-     * @param lineIndex  the index of the line to be faded (required)
-     * @param xPosition  the fading position in pixels from the visual start of the line:
-     *                   0          → the line is fully hidden;
-     *                   lineWidth  → the line is fully visible.
-     */
     public static void drawLayoutWithLastLineFade(
             Canvas canvas,
             Layout layout,
@@ -495,14 +407,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         drawLayoutWithLastLineFade(canvas, layout, lineIndex, xPosition, null);
     }
 
-    /**
-     * Same as {@link #drawLayoutWithLastLineFade(Canvas, Layout, int, float)} but lets the caller
-     * substitute the layout's draw with a richer renderer (text + animated emojis + spoilers, etc.).
-     * The renderer is invoked once for the above-line region and once inside the masked layer for
-     * the active line, so anything it draws on the active line gets the same fade applied.
-     *
-     * @param drawer    custom renderer; when {@code null}, defaults to {@code layout.draw(canvas)}.
-     */
     public static void drawLayoutWithLastLineFade(
             Canvas canvas,
             Layout layout,
@@ -535,7 +439,7 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
         final float lineR = Math.max(rawL, rawR);
         if (lineR <= lineL) return;
 
-        final int dir = layout.getParagraphDirection(lineIndex); // 1=LTR, -1=RTL
+        final int dir = layout.getParagraphDirection(lineIndex);
         final float lineW = (lineR - lineL);
 
         final float x = MathUtils.clamp(xPosition, 0f, lineW);
@@ -578,18 +482,6 @@ public final class MultiLayoutTypingAnimator implements Choreographer.FrameCallb
 
     }
 
-    /**
-     * Apply the same horizontal fade mask used by {@link #drawLayoutWithLastLineFade} to an
-     * arbitrary canvas rect (e.g. behind code-block bg). Must be called inside an active
-     * {@code saveLayer}; everything drawn into that layer before this call is masked.
-     *
-     * @param left/top/right/bottom  rect (canvas coords) to paint the mask over
-     * @param lineL                  canvas-x where the gradient's "0" position sits
-     *                               (typically the visual start of the active line)
-     * @param lineW                  visual line width in px (gradient travels 0..lineW+FADE_WIDTH)
-     * @param xPosition              0..lineW — current caret position within the line
-     * @param dir                    paragraph direction (1 = LTR, -1 = RTL)
-     */
     public static void drawHorizontalFadeMask(
             Canvas canvas,
             float left, float top, float right, float bottom,

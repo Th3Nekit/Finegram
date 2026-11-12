@@ -69,7 +69,7 @@ public class MP4Box<I extends PositionInputStream> {
 		data.readFully(typeBytes);
 		String atomType = new String(typeBytes, ASCII);
 		RangeInputStream atomInput;
-		if (atomLength == 1) { // extended length
+		if (atomLength == 1) {
 			atomInput = new RangeInputStream(input, 16, data.readLong() - 16);
 		} else {
 			atomInput = new RangeInputStream(input, 8, atomLength - 8);

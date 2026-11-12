@@ -1,4 +1,3 @@
-// polyfill for web share api
 if (window.navigator && !window.navigator.canShare) {
     window.navigator.canShare = () => true;
 }

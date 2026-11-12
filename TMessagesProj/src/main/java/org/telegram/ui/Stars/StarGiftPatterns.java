@@ -313,88 +313,52 @@ public class StarGiftPatterns {
         final float padding8 = dpf2(8);
         final float padding4 = dpf2(4);
         final float padding48 = padding24 * 2;
-        //final float padding72 = padding48 + padding24;
         final float padding96 = padding48 * 2;
         final float r48Cos120 = (padding48 + aw / 2f) * (float) Math.cos(Math.toRadians(120));
-        //final float r96Cos120 = (padding96 + aw / 2f) * (float) Math.cos(Math.toRadians(120));
         final float r16Cos160 = (padding16 + ah / 2f) * (float) Math.cos(Math.toRadians(160));
-        //final float r56Cos150 = (padding48 + padding8 + ah / 2f) * (float) Math.cos(Math.toRadians(150));
 
         final float[] items = new float[] {
-            // first row
-            acx, ay - padding24, 20, // top
-            acx, ay + ah + padding24, 20, // bottom
-            ax - padding16, acy - ah / 4f - padding8, 23, // top left
-            ax + aw + padding16, acy - ah / 4f - padding8, 18, // top right
-            ax - padding16, acy + ah / 4f + padding8, 24, // bottom left
-            ax + aw + padding16 - padding4, acy + ah / 4f + padding8, 24, // bottom right
-            // second row
-            ax - padding48, acy, 19, // left
-            ax + aw + padding48, acy, 19, // right
-            acx + r48Cos120, ay - padding48 + padding12, 17, // top left
-            acx - r48Cos120, ay - padding48 + padding12, 17, // top right
-            acx + r48Cos120, ay + ah + padding48 - padding12, 20, // bottom left
-            acx - r48Cos120, ay + ah + padding48 - padding12, 20, // bottom right
-            // third row
-            //acx, ay - padding72, 19, // top
-            //acx, ay + ah + padding72, 19, // bottom
-            ax - padding48 - padding8, acy + r16Cos160, 20, // top left
-            ax + aw + padding48 + padding8, acy + r16Cos160, 19, // top right
-            ax - padding48 - padding8, acy - r16Cos160, 21, // bottom left
-            ax + aw + padding48 + padding8, acy - r16Cos160, 18, // bottom right
-            // 4th row
-            ax - padding96, acy, 19, // left
-            ax + aw + padding96, acy, 19, // right
-            /*acx + r96Cos120, ay - padding96, 17, // top left
-            acx - r96Cos120, ay - padding96, 17, // top right
-            acx + r96Cos120, ay + ah + padding96, 18, // bottom left
-            acx - r96Cos120, ay + ah + padding96, 18, // bottom right
-            // 5th row
-            acx, ay - padding96, 19, // top
-            acx, ay + ah + padding96, 18, // bottom
-            ax - padding72 - padding8, acy + r56Cos150, 19, // top left
-            ax - padding72 - padding8, acy - r56Cos150, 20, // bottom left
-            ax + aw + padding72 + padding8, acy - r56Cos150, 17, // bottom right
-            ax + aw + padding72 + padding8, acy + r56Cos150, 18, // top right*/
+            acx, ay - padding24, 20,
+            acx, ay + ah + padding24, 20,
+            ax - padding16, acy - ah / 4f - padding8, 23,
+            ax + aw + padding16, acy - ah / 4f - padding8, 18,
+            ax - padding16, acy + ah / 4f + padding8, 24,
+            ax + aw + padding16 - padding4, acy + ah / 4f + padding8, 24,
+            ax - padding48, acy, 19,
+            ax + aw + padding48, acy, 19,
+            acx + r48Cos120, ay - padding48 + padding12, 17,
+            acx - r48Cos120, ay - padding48 + padding12, 17,
+            acx + r48Cos120, ay + ah + padding48 - padding12, 20,
+            acx - r48Cos120, ay + ah + padding48 - padding12, 20,
+            ax - padding48 - padding8, acy + r16Cos160, 20,
+            ax + aw + padding48 + padding8, acy + r16Cos160, 19,
+            ax - padding48 - padding8, acy - r16Cos160, 21,
+            ax + aw + padding48 + padding8, acy - r16Cos160, 18,
+            ax - padding96, acy, 19,
+            ax + aw + padding96, acy, 19,
         };
 
-        //final float delayFraction = 0.15f;
-        //final float maxDelayFraction = 3.80f * delayFraction;
-        //final float intervalFraction = 1f - maxDelayFraction;
 
-        //int row = 0;
-        //int column = 0;
-        //float delayValue = 0f;
 
         final float[] timings = new float[] {
-            // first row
             0.02f, 0.42f,
             0.00f, 0.32f,
             0.00f, 0.40f,
             0.00f, 0.40f,
             0.00f, 0.40f,
             0.00f, 0.40f,
-            // second row
             0.14f, 0.60f,
             0.16f, 0.64f,
             0.14f, 0.70f,
             0.14f, 0.90f,
             0.20f, 0.75f,
             0.20f, 0.85f,
-            // third row
-            //0.00f, 0.00f,
-            //0.00f, 0.00f,
             0.09f, 0.45f,
             0.09f, 0.45f,
             0.09f, 0.45f,
             0.11f, 0.45f,
-            // 4th row
             0.14f, 0.75f,
             0.20f, 0.80f,
-            //1.00f, 1.00f,
-            //1.00f, 1.00f,
-            //1.00f, 1.00f,
-            //1.00f, 1.00f,
         };
 
         for (int i = 0, t = 0; i < items.length; i += 3, t += 2) {
@@ -405,8 +369,6 @@ public class StarGiftPatterns {
             final float start = timings[t];
             final float end = timings[t + 1];
 
-            // final float delay = delayValue * delayFraction;
-            // final float collapse = diff >= 1f - delay ? 1f : Utilities.clamp01((diff - maxDelayFraction + delay) / intervalFraction);
             float collapse = 1f - collapseDiff < start ? 1f : 1f - Utilities.clamp01((1f - collapseDiff - start) / (end - start));
             if (i == 18 || i == 19 || i == 6 || i == 7) {
                 collapse = CubicBezierInterpolator.EASE_IN.getInterpolation(collapse);
@@ -435,16 +397,6 @@ public class StarGiftPatterns {
             pattern.setAlpha((int) (0xFF * alpha));
             pattern.draw(canvas);
 
-            /*column++;
-            if (column == 6) {
-                column = 0;
-                row++;
-                if (row <= 3) {
-                    delayValue = row + (row * 0.25f);
-                } else {
-                    delayValue += 0.05f;
-                }
-            }*/
         }
     }
 }

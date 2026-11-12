@@ -20,9 +20,9 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 abstract class CameraCapturer implements CameraVideoCapturer {
   enum SwitchState {
-    IDLE, // No switch requested.
-    PENDING, // Waiting for previous capture session to open.
-    IN_PROGRESS, // Waiting for new switched capture session to start.
+    IDLE,
+    PENDING,
+    IN_PROGRESS,
   }
 
   private static final String TAG = "CameraCapturer";
@@ -43,7 +43,7 @@ abstract class CameraCapturer implements CameraVideoCapturer {
           Logging.d(TAG, "Create session done. Switch state: " + switchState);
           uiThreadHandler.removeCallbacks(openCameraTimeoutRunnable);
           synchronized (stateLock) {
-            capturerObserver.onCapturerStarted(true /* success */);
+            capturerObserver.onCapturerStarted(true              );
             sessionOpening = false;
             currentSession = session;
             cameraStatistics = new CameraStatistics(surfaceHelper, eventsHandler);
@@ -70,7 +70,7 @@ abstract class CameraCapturer implements CameraVideoCapturer {
           checkIsOnCameraThread();
           uiThreadHandler.removeCallbacks(openCameraTimeoutRunnable);
           synchronized (stateLock) {
-            capturerObserver.onCapturerStarted(false /* success */);
+            capturerObserver.onCapturerStarted(false              );
             openAttemptsRemaining--;
 
             if (openAttemptsRemaining <= 0) {
@@ -176,27 +176,24 @@ abstract class CameraCapturer implements CameraVideoCapturer {
     }
   };
 
-  // Initialized on initialize
-  // -------------------------
   private Handler cameraThreadHandler;
   private Context applicationContext;
   private org.webrtc.CapturerObserver capturerObserver;
   private SurfaceTextureHelper surfaceHelper;
 
   private final Object stateLock = new Object();
-  private boolean sessionOpening; /* guarded by stateLock */
-  @Nullable private CameraSession currentSession; /* guarded by stateLock */
-  private String cameraName; /* guarded by stateLock */
-  private String pendingCameraName; /* guarded by stateLock */
-  private int width; /* guarded by stateLock */
-  private int height; /* guarded by stateLock */
-  private int framerate; /* guarded by stateLock */
-  private int openAttemptsRemaining; /* guarded by stateLock */
-  private SwitchState switchState = SwitchState.IDLE; /* guarded by stateLock */
-  @Nullable private CameraSwitchHandler switchEventsHandler; /* guarded by stateLock */
-  // Valid from onDone call until stopCapture, otherwise null.
-  @Nullable private CameraStatistics cameraStatistics; /* guarded by stateLock */
-  private boolean firstFrameObserved; /* guarded by stateLock */
+  private boolean sessionOpening;
+  @Nullable private CameraSession currentSession;
+  private String cameraName;
+  private String pendingCameraName;
+  private int width;
+  private int height;
+  private int framerate;
+  private int openAttemptsRemaining;
+  private SwitchState switchState = SwitchState.IDLE;
+  @Nullable private CameraSwitchHandler switchEventsHandler;
+  @Nullable private CameraStatistics cameraStatistics;
+  private boolean firstFrameObserved;
 
   public CameraCapturer(String cameraName, @Nullable CameraEventsHandler eventsHandler,
       CameraEnumerator cameraEnumerator) {

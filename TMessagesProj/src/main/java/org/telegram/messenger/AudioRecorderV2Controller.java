@@ -14,7 +14,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/** Bridges the standalone recorder to Telegram's existing voice-recording lifecycle. */
 final class AudioRecorderV2Controller {
 
     interface Listener {

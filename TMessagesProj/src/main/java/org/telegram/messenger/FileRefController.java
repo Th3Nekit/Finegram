@@ -220,7 +220,6 @@ public class FileRefController extends BaseController {
             } else if (req.media instanceof TLRPC.TL_inputMediaPaidMedia) {
                 TLRPC.TL_inputMediaPaidMedia paidMedia = (TLRPC.TL_inputMediaPaidMedia) req.media;
                 if (parentObject instanceof ArrayList) {
-                    /* processed earlier */
                 } else if (paidMedia.extended_media.size() == 1) {
                     TLRPC.InputMedia inputMedia = paidMedia.extended_media.get(0);
                     if (inputMedia instanceof TLRPC.TL_inputMediaDocument) {
@@ -251,7 +250,6 @@ public class FileRefController extends BaseController {
             } else if (req.media instanceof TLRPC.TL_inputMediaPaidMedia) {
                 TLRPC.TL_inputMediaPaidMedia paidMedia = (TLRPC.TL_inputMediaPaidMedia) req.media;
                 if (parentObject instanceof ArrayList) {
-                    /* processed earlier */
                 } else if (paidMedia.extended_media.size() == 1) {
                     TLRPC.InputMedia inputMedia = paidMedia.extended_media.get(0);
                     if (inputMedia instanceof TLRPC.TL_inputMediaDocument) {
@@ -906,7 +904,6 @@ public class FileRefController extends BaseController {
             }
             AndroidUtilities.runOnUIThread(() -> getSendMessagesHelper().performSendMessageRequest((TLObject) requester.args[0], (MessageObject) requester.args[1], (String) requester.args[2], (SendMessagesHelper.DelayedMessage) requester.args[3], (Boolean) requester.args[4], (SendMessagesHelper.DelayedMessage) requester.args[5], null, null, (Boolean) requester.args[6]));
         } else if (requester.args[0] instanceof TLRPC.InputPhoto || requester.args[0] instanceof TLRPC.InputDocument) {
-            // refreshed reference for a single rich message photo/document; patch it and re-run the edit
             if (requester.args[0] instanceof TLRPC.InputPhoto) {
                 TLRPC.InputPhoto photo = (TLRPC.InputPhoto) requester.args[0];
                 if (fromCache && isSameReference(photo.file_reference, file_reference)) {
@@ -1056,16 +1053,12 @@ public class FileRefController extends BaseController {
             AndroidUtilities.runOnUIThread(() -> getSendMessagesHelper().performSendMessageRequest((TLObject) args[0], (MessageObject) args[1], (String) args[2], (SendMessagesHelper.DelayedMessage) args[3], (Boolean) args[4], (SendMessagesHelper.DelayedMessage) args[5], null, null, (Boolean) args[6]));
         } else if (args[0] instanceof TLRPC.TL_messages_saveGif) {
             TLRPC.TL_messages_saveGif req = (TLRPC.TL_messages_saveGif) args[0];
-            //do nothing
         } else if (args[0] instanceof TLRPC.TL_messages_saveRecentSticker) {
             TLRPC.TL_messages_saveRecentSticker req = (TLRPC.TL_messages_saveRecentSticker) args[0];
-            //do nothing
         } else if (args[0] instanceof TLRPC.TL_stickers_addStickerToSet) {
             TLRPC.TL_stickers_addStickerToSet req = (TLRPC.TL_stickers_addStickerToSet) args[0];
-            //do nothing
         } else if (args[0] instanceof TLRPC.TL_messages_faveSticker) {
             TLRPC.TL_messages_faveSticker req = (TLRPC.TL_messages_faveSticker) args[0];
-            //do nothing
         } else if (args[0] instanceof TLRPC.TL_messages_getAttachedStickers) {
             TLRPC.TL_messages_getAttachedStickers req = (TLRPC.TL_messages_getAttachedStickers) args[0];
             getConnectionsManager().sendRequest(req, (RequestDelegate) args[1]);

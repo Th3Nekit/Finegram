@@ -34,12 +34,6 @@ public class SQLitePreparedStatement {
         if (BuildVars.LOGS_ENABLED) {
             query = sql;
             startTime = SystemClock.elapsedRealtime();
-            /*if (BuildVars.DEBUG_PRIVATE_VERSION) {
-                if (hashMap == null) {
-                    hashMap = new HashMap<>();
-                }
-                hashMap.put(this, sql);
-            }*/
         }
     }
 

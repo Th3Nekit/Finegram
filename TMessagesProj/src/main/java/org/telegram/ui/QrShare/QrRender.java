@@ -17,11 +17,6 @@ import android.view.WindowInsets;
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.RequiresApi;
 
-/**
- * Everything of the QR screen that needs Android 10+ (render nodes, render effects, blend modes) or 12+ (screen corners).
- * The nodes are kept as {@code Object} by the callers, so their classes never reference the newer framework classes
- * and stay fully verified (and compiled ahead of time) on Android 6–9, where none of this is called.
- */
 public final class QrRender {
 
     public static final int BLEND_NONE = 0, BLEND_PLUS = 1, BLEND_SCREEN = 2, BLEND_COLOR_DODGE = 3, BLEND_OVERLAY = 4,
@@ -30,25 +25,21 @@ public final class QrRender {
     private QrRender() {
     }
 
-    /** Render nodes with render effects: the blur of the glass. */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
     public static boolean hasEffects() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
     }
 
-    /** Render nodes and blend modes. */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
     public static boolean hasNodes() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
-    /** drawVertices on a hardware canvas (HWUI skips it before Android 10). */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
     public static boolean hasVertices() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
-    /* Render nodes */
 
     @RequiresApi(Build.VERSION_CODES.Q)
     public static Object createNode(String name) {
@@ -87,16 +78,13 @@ public final class QrRender {
         ((RenderNode) node).setRenderEffect(radius > 0 ? RenderEffect.createBlurEffect(radius, radius, mode) : null);
     }
 
-    /** The blur, then the colour matrix over it. */
     @RequiresApi(Build.VERSION_CODES.S)
     public static void setBlurAndColorMatrix(Object node, float radius, float[] matrix) {
         ((RenderNode) node).setRenderEffect(RenderEffect.createColorFilterEffect(new ColorMatrixColorFilter(matrix),
             RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP)));
     }
 
-    /* Clips */
 
-    /** Clips the path out; before Android 8 the same through the difference op (deprecated only later). */
     @SuppressWarnings("deprecation")
     public static void clipOut(Canvas canvas, android.graphics.Path path) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -106,7 +94,6 @@ public final class QrRender {
         }
     }
 
-    /* Blend modes */
 
     @RequiresApi(Build.VERSION_CODES.Q)
     public static void setBlendMode(Paint paint, int mode) {
@@ -138,12 +125,7 @@ public final class QrRender {
         return new BlendModeColorFilter(color, BlendMode.SRC_IN);
     }
 
-    /* Screen */
 
-    /**
-     * The radius of the screen's corners as the system tells it: the window's rounded corner (Android 12+, the view
-     * attached), else the framework's rounded_corner_radius; 0 for a square screen or when neither is known.
-     */
     public static float screenCornerRadius(View view) {
         if (Build.VERSION.SDK_INT >= 31) {
             final float r = insetsCornerRadius(view);
@@ -154,10 +136,6 @@ public final class QrRender {
         return frameworkCornerRadius();
     }
 
-    /**
-     * The window's top left rounded corner (as ActionBarLayout clips its pages): 0 when the insets have none (a square
-     * screen), -1 when there are no insets yet (the view not attached).
-     */
     @RequiresApi(Build.VERSION_CODES.S)
     private static float insetsCornerRadius(View view) {
         final WindowInsets insets = view != null ? view.getRootWindowInsets() : null;
@@ -170,7 +148,6 @@ public final class QrRender {
 
     private static float frameworkRadius = -1f;
 
-    /** The display's corner radius from the framework resources (what SystemUI rounds with), read once. */
     private static float frameworkCornerRadius() {
         if (frameworkRadius < 0f) {
             float r = 0f;

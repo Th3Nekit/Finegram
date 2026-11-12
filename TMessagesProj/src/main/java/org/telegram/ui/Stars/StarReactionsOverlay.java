@@ -43,8 +43,6 @@ public class StarReactionsOverlay extends View {
     private BaseCell cell;
     private int messageId;
 
-//    private final Camera camera = new Camera();
-//    private final Matrix matrix = new Matrix();
     private final int[] pos = new int[2];
     private final int[] pos2 = new int[2];
     private final RectF reactionBounds = new RectF();
@@ -53,7 +51,6 @@ public class StarReactionsOverlay extends View {
     private final Paint redPaint = new Paint();
 
     private boolean counterShown;
-//    private final AnimatedFloat counterX = new AnimatedFloat(this, 0, 320, CubicBezierInterpolator.EASE_OUT_QUINT);
     private final AnimatedFloat counterAlpha = new AnimatedFloat(this, 0, 420, CubicBezierInterpolator.EASE_OUT_QUINT);
     private final AnimatedTextView.AnimatedTextDrawable counter = new AnimatedTextView.AnimatedTextDrawable();
 
@@ -203,7 +200,6 @@ public class StarReactionsOverlay extends View {
         cell.getLocationInWindow(pos);
         pos[1] += (int) chatActivity.drawingChatListViewYoffset;
         canvas.save();
-//        canvas.saveLayerAlpha(cell.getBackgroundDrawableLeft(), 0, cell.getBackgroundDrawableRight(), cell.getHeight(), 0xFF, Canvas.ALL_SAVE_FLAG);
 
         ReactionsLayoutInBubble.ReactionButton btn = reactionsLayoutInBubble.getReactionButton("stars");
         Integer hash = null;

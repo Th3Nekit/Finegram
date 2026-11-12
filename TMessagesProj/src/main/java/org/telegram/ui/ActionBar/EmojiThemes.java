@@ -857,11 +857,6 @@ public class EmojiThemes {
     }
 
     public static void loadWallpaperGiftPattern(int currentAccount, long hash, TL_stars.StarGift gift, ResultCallback<Pair<Long, Bitmap>> callback) {
-        //ChatThemeController.getInstance(currentAccount).getWallpaperBitmap(hash, cachedBitmap -> {
-            /*if (cachedBitmap != null && callback != null) {
-                callback.onComplete(new Pair<>(hash, cachedBitmap));
-                return;
-            }*/
 
         TLRPC.Document document = TlUtils.getGiftDocumentPattern(gift);
         ImageLocation imageLocation = ImageLocation.getForDocument(document);
@@ -881,10 +876,8 @@ public class EmojiThemes {
             if (callback != null) {
                 callback.onComplete(new Pair<>(hash, bitmap));
             }
-            // ChatThemeController.getInstance(currentAccount).saveWallpaperBitmap(bitmap, hash);
         });
         ImageLoader.getInstance().loadImageForImageReceiver(imageReceiver);
-        //});
     }
 
 }

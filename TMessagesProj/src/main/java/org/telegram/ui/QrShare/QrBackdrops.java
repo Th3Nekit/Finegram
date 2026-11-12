@@ -17,11 +17,6 @@ import org.telegram.tgnet.TLRPC;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The palette of the QR themes: the backdrops of the collectible gifts, from {@link TLRPC.TL_messages_getShareThemeBackdrops}.
- * Kept in memory and in the settings of the account, and refreshed by the hash like the peer colors,
- * so the saved theme is drawn right away on the next opening.
- */
 public final class QrBackdrops {
 
     private static final String KEY = "qrBackdrops";
@@ -61,7 +56,6 @@ public final class QrBackdrops {
         return MessagesController.getMainSettings(account);
     }
 
-    /** The cached palette, possibly stale; null before the first load. */
     @Nullable
     public List<TLRPC.TL_shareThemeBackdropOption> getList() {
         return backdrops != null ? backdrops.backdrops : null;
@@ -80,7 +74,6 @@ public final class QrBackdrops {
         return null;
     }
 
-    /** Checks the palette against the server once per launch; {@code onDone} runs on the UI thread either way. */
     public void load(@Nullable Runnable onDone) {
         if (refreshed) {
             if (onDone != null) {

@@ -203,9 +203,6 @@ public class UserObject {
     }
 
     public static MessagesController.PeerColor getPeerColorForAvatar(int currentAccount, TLRPC.User user) {
-//        if (user != null && user.profile_color != null && user.profile_color.color >= 0 && MessagesController.getInstance(currentAccount).profilePeerColors != null) {
-//            return MessagesController.getInstance(currentAccount).profilePeerColors.getColor(user.profile_color.color);
-//        }
         return null;
     }
 
@@ -371,6 +368,10 @@ public class UserObject {
 
     public static boolean isBotForum(TLRPC.User user) {
         return user != null && user.bot_forum_view;
+    }
+
+    public static boolean isBotForumSidebar(TLRPC.User user) {
+        return isBotForum(user) && user.bot_forum_sidebar;
     }
 
     public static boolean isBotForumWithEditableTopics(int currentAccount, long userId) {

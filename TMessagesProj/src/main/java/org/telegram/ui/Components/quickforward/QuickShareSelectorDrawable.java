@@ -383,7 +383,6 @@ public class QuickShareSelectorDrawable extends Drawable implements Animator.Ani
         }
 
 
-        /* Apply paints */
 
 
         final float alpha = !renderToBlurBuffer ? (1f - closeProgress) : alphaValue / 255f;
@@ -817,7 +816,6 @@ public class QuickShareSelectorDrawable extends Drawable implements Animator.Ani
 
 
 
-    /* Animations */
 
     private static final int OPEN_DURATION = 560;
     private static final int CLOSE_DURATION = 240;

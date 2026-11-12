@@ -33,28 +33,18 @@ import java.util.concurrent.TimeUnit;
 import org.telegram.messenger.FileLog;
 import org.webrtc.ThreadUtils.ThreadChecker;
 
-/**
- * Android hardware video encoder.
- */
 class HardwareVideoEncoder implements VideoEncoder {
   private static final String TAG = "HardwareVideoEncoder";
 
   private static final int MAX_VIDEO_FRAMERATE = 30;
 
-  // See MAX_ENCODER_Q_SIZE in androidmediaencoder.cc.
   private static final int MAX_ENCODER_Q_SIZE = 2;
 
   private static final int MEDIA_CODEC_RELEASE_TIMEOUT_MS = 5000;
   private static final int DEQUEUE_OUTPUT_BUFFER_TIMEOUT_US = 100000;
 
-  // Size of the input frames should be multiple of 16 for the H/W encoder.
   private static final int REQUIRED_RESOLUTION_ALIGNMENT = 16;
 
-  /**
-   * Keeps track of the number of output buffers that have been passed down the pipeline and not yet
-   * released. We need to wait for this to go down to zero before operations invalidating the output
-   * buffers, i.e., stop() and getOutputBuffer().
-   */
   private static class BusyCount {
     private final Object countLock = new Object();
     private int count;
@@ -65,7 +55,6 @@ class HardwareVideoEncoder implements VideoEncoder {
       }
     }
 
-    // This method may be called on an arbitrary thread.
     public void decrement() {
       synchronized (countLock) {
         count--;
@@ -75,9 +64,6 @@ class HardwareVideoEncoder implements VideoEncoder {
       }
     }
 
-    // The increment and waitForZero methods are called on the same thread (deliverEncodedImage,
-    // running on the output thread). Hence, after waitForZero returns, the count will stay zero
-    // until the same thread calls increment.
     public void waitForZero() {
       boolean wasInterrupted = false;
       synchronized (countLock) {
@@ -96,96 +82,53 @@ class HardwareVideoEncoder implements VideoEncoder {
       }
     }
   }
-  // --- Initialized on construction.
   private final MediaCodecWrapperFactory mediaCodecWrapperFactory;
   private final String codecName;
   private final VideoCodecMimeType codecType;
   private final Integer surfaceColorFormat;
   private final Integer yuvColorFormat;
   private final Map<String, String> params;
-  private final int keyFrameIntervalSec; // Base interval for generating key frames.
-  // Interval at which to force a key frame. Used to reduce color distortions caused by some
-  // Qualcomm video encoders.
+  private final int keyFrameIntervalSec;
   private final long forcedKeyFrameNs;
   private final BitrateAdjuster bitrateAdjuster;
-  // EGL context shared with the application.  Used to access texture inputs.
   private final EglBase14.Context sharedContext;
 
-  // Drawer used to draw input textures onto the codec's input surface.
   private final GlRectDrawer textureDrawer = new GlRectDrawer();
   private final VideoFrameDrawer videoFrameDrawer = new VideoFrameDrawer();
-  // A queue of EncodedImage.Builders that correspond to frames in the codec.  These builders are
-  // pre-populated with all the information that can't be sent through MediaCodec.
   private final BlockingDeque<EncodedImage.Builder> outputBuilders = new LinkedBlockingDeque<>();
 
   private final ThreadChecker encodeThreadChecker = new ThreadChecker();
   private final ThreadChecker outputThreadChecker = new ThreadChecker();
   private final BusyCount outputBuffersBusyCount = new BusyCount();
 
-  // --- Set on initialize and immutable until release.
   private Callback callback;
   private boolean automaticResizeOn;
 
-  // --- Valid and immutable while an encoding session is running.
   @Nullable private MediaCodecWrapper codec;
-  // Thread that delivers encoded frames to the user callback.
   @Nullable private Thread outputThread;
 
-  // EGL base wrapping the shared texture context.  Holds hooks to both the shared context and the
-  // input surface.  Making this base current allows textures from the context to be drawn onto the
-  // surface.
   @Nullable private EglBase14 textureEglBase;
-  // Input surface for the codec.  The encoder will draw input textures onto this surface.
   @Nullable private Surface textureInputSurface;
 
   private int width;
   private int height;
-  // Y-plane strides in the encoder's input
   private int stride;
-  // Y-plane slice-height in the encoder's input
   private int sliceHeight;
-  // True if encoder input color format is semi-planar (NV12).
   private boolean isSemiPlanar;
-  // Size of frame for current color format and stride, in bytes.
   private int frameSizeBytes;
   private boolean useSurfaceMode;
 
-  // --- Only accessed from the encoding thread.
-  // Presentation timestamp of next frame to encode.
   private long nextPresentationTimestampUs;
-  // Presentation timestamp of the last requested (or forced) key frame.
   private long lastKeyFrameNs;
 
-  // --- Only accessed on the output thread.
-  // Contents of the last observed config frame output by the MediaCodec. Used by H.264.
   @Nullable private ByteBuffer configBuffer;
   private int adjustedBitrate;
 
-  // Whether the encoder is running.  Volatile so that the output thread can watch this value and
-  // exit when the encoder stops.
   private volatile boolean running;
-  // Any exception thrown during shutdown.  The output thread releases the MediaCodec and uses this
-  // value to send exceptions thrown during release back to the encoder thread.
   @Nullable private volatile Exception shutdownException;
 
-  // True if collection of encoding statistics is enabled.
   private boolean isEncodingStatisticsEnabled;
 
-  /**
-   * Creates a new HardwareVideoEncoder with the given codecName, codecType, colorFormat, key frame
-   * intervals, and bitrateAdjuster.
-   *
-   * @param codecName the hardware codec implementation to use
-   * @param codecType the type of the given video codec (eg. VP8, VP9, H264, H265, AV1)
-   * @param surfaceColorFormat color format for surface mode or null if not available
-   * @param yuvColorFormat color format for bytebuffer mode
-   * @param keyFrameIntervalSec interval in seconds between key frames; used to initialize the codec
-   * @param forceKeyFrameIntervalMs interval at which to force a key frame if one is not requested;
-   *     used to reduce distortion caused by some codec implementations
-   * @param bitrateAdjuster algorithm used to correct codec implementations that do not produce the
-   *     desired bitrates
-   * @throws IllegalArgumentException if colorFormat is unsupported
-   */
   public HardwareVideoEncoder(MediaCodecWrapperFactory mediaCodecWrapperFactory, String codecName,
       VideoCodecMimeType codecType, Integer surfaceColorFormat, Integer yuvColorFormat,
       Map<String, String> params, int keyFrameIntervalSec, int forceKeyFrameIntervalMs,
@@ -201,7 +144,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     this.bitrateAdjuster = bitrateAdjuster;
     this.sharedContext = sharedContext;
 
-    // Allow construction on a different thread.
     encodeThreadChecker.detachThread();
   }
 
@@ -270,7 +212,6 @@ class HardwareVideoEncoder implements VideoEncoder {
       }
 
       if (codecName.equals("c2.google.av1.encoder")) {
-        // Enable RTC mode in AV1 HW encoder.
         format.setInteger("vendor.google-av1enc.encoding-preset.int32.value", 1);
       }
 
@@ -282,7 +223,7 @@ class HardwareVideoEncoder implements VideoEncoder {
 
       Logging.d(TAG, "Format: " + format);
       codec.configure(
-          format, null /* surface */, null /* crypto */, MediaCodec.CONFIGURE_FLAG_ENCODE);
+          format, null              , null             , MediaCodec.CONFIGURE_FLAG_ENCODE);
 
       if (useSurfaceMode) {
         textureEglBase = EglBase.createEgl14(sharedContext, EglBase.CONFIG_RECORDABLE);
@@ -316,13 +257,11 @@ class HardwareVideoEncoder implements VideoEncoder {
     if (outputThread == null) {
       returnValue = VideoCodecStatus.OK;
     } else {
-      // The outputThread actually stops and releases the codec once running is false.
       running = false;
       if (!ThreadUtils.joinUninterruptibly(outputThread, MEDIA_CODEC_RELEASE_TIMEOUT_MS)) {
         Logging.e(TAG, "Media encoder release timeout");
         returnValue = VideoCodecStatus.TIMEOUT;
       } else if (shutdownException != null) {
-        // Log the exception and turn it into an error.
         Logging.e(TAG, "Media encoder release exception", shutdownException);
         returnValue = VideoCodecStatus.ERROR;
       } else {
@@ -345,7 +284,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     codec = null;
     outputThread = null;
 
-    // Allow changing thread after release.
     encodeThreadChecker.detachThread();
 
     return returnValue;
@@ -361,7 +299,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     final VideoFrame.Buffer videoFrameBuffer = videoFrame.getBuffer();
     final boolean isTextureBuffer = videoFrame.getBuffer() instanceof VideoFrame.TextureBuffer;
 
-    // If input resolution changed, restart the codec with the new resolution.
     final int frameWidth = videoFrame.getBuffer().getWidth();
     final int frameHeight = videoFrame.getBuffer().getHeight();
     final boolean shouldUseSurfaceMode = canUseSurface() && isTextureBuffer;
@@ -373,9 +310,8 @@ class HardwareVideoEncoder implements VideoEncoder {
     }
 
     if (outputBuilders.size() > MAX_ENCODER_Q_SIZE) {
-      // Too many frames in the encoder.  Drop this frame.
       Logging.e(TAG, "Dropped frame, encoder queue full");
-      return VideoCodecStatus.NO_OUTPUT; // See webrtc bug 2887.
+      return VideoCodecStatus.NO_OUTPUT;
     }
 
     boolean requestedKeyFrame = false;
@@ -389,8 +325,6 @@ class HardwareVideoEncoder implements VideoEncoder {
       requestKeyFrame(videoFrame.getTimestampNs());
     }
 
-    // Number of bytes in the video buffer. Y channel is sampled at one byte per pixel; U and V are
-    // subsampled at one byte per four pixels.
     int bufferSize = videoFrameBuffer.getHeight() * videoFrameBuffer.getWidth() * 3 / 2;
     EncodedImage.Builder builder = EncodedImage.builder()
                                        .setCaptureTimeNs(videoFrame.getTimestampNs())
@@ -400,7 +334,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     outputBuilders.offer(builder);
 
     long presentationTimestampUs = nextPresentationTimestampUs;
-    // Round frame duration down to avoid bitrate overshoot.
     long frameDurationUs =
         (long) (TimeUnit.SECONDS.toMicros(1) / bitrateAdjuster.getAdjustedFramerateFps());
     nextPresentationTimestampUs += frameDurationUs;
@@ -412,9 +345,7 @@ class HardwareVideoEncoder implements VideoEncoder {
       returnValue = encodeByteBuffer(videoFrame, videoFrameBuffer, bufferSize);
     }
 
-    // Check if the queue was successful.
     if (returnValue != VideoCodecStatus.OK) {
-      // Keep the output builders in sync with buffers in the codec.
       outputBuilders.pollLast();
     }
 
@@ -426,13 +357,10 @@ class HardwareVideoEncoder implements VideoEncoder {
     encodeThreadChecker.checkIsOnValidThread();
     try {
       textureEglBase.makeCurrent();
-      // TODO(perkj): glClear() shouldn't be necessary since every pixel is covered anyway,
-      // but it's a workaround for bug webrtc:5147.
       GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-      // It is not necessary to release this frame because it doesn't own the buffer.
       VideoFrame derotatedFrame =
-          new VideoFrame(videoFrame.getBuffer(), 0 /* rotation */, videoFrame.getTimestampNs());
-      videoFrameDrawer.drawFrame(derotatedFrame, textureDrawer, null /* additionalRenderMatrix */);
+          new VideoFrame(videoFrame.getBuffer(), 0               , videoFrame.getTimestampNs());
+      videoFrameDrawer.drawFrame(derotatedFrame, textureDrawer, null                             );
       textureEglBase.swapBuffers(TimeUnit.MICROSECONDS.toNanos(presentationTimestampUs), false);
     } catch (RuntimeException e) {
       Logging.e(TAG, "encodeTexture failed", e);
@@ -454,22 +382,19 @@ class HardwareVideoEncoder implements VideoEncoder {
   private VideoCodecStatus encodeByteBuffer(
           VideoFrame videoFrame, VideoFrame.Buffer videoFrameBuffer, int bufferSize) {
     encodeThreadChecker.checkIsOnValidThread();
-    // Frame timestamp rounded to the nearest microsecond.
     long presentationTimestampUs = (videoFrame.getTimestampNs() + 500) / 1000;
 
-    // No timeout.  Don't block for an input buffer, drop frames if the encoder falls behind.
     int index;
     try {
-      index = codec.dequeueInputBuffer(0 /* timeout */);
+      index = codec.dequeueInputBuffer(0              );
     } catch (IllegalStateException e) {
       Logging.e(TAG, "dequeueInputBuffer failed", e);
       return VideoCodecStatus.ERROR;
     }
 
     if (index == -1) {
-      // Encoder is falling behind.  No input buffers available.  Drop the frame.
       Logging.d(TAG, "Dropped frame, no input buffers available");
-      return VideoCodecStatus.NO_OUTPUT; // See webrtc bug 2887.
+      return VideoCodecStatus.NO_OUTPUT;
     }
 
     ByteBuffer buffer;
@@ -491,10 +416,9 @@ class HardwareVideoEncoder implements VideoEncoder {
 
     try {
       codec.queueInputBuffer(
-              index, 0 /* offset */, frameSizeBytes, presentationTimestampUs, 0 /* flags */);
+              index, 0             , frameSizeBytes, presentationTimestampUs, 0            );
     } catch (IllegalStateException e) {
       Logging.e(TAG, "queueInputBuffer failed", e);
-      // IllegalStateException thrown when the codec is in the wrong state.
       return VideoCodecStatus.ERROR;
     }
     return VideoCodecStatus.OK;
@@ -530,12 +454,9 @@ class HardwareVideoEncoder implements VideoEncoder {
 
   @Override
   public EncoderInfo getEncoderInfo() {
-    // Since our MediaCodec is guaranteed to encode 16-pixel-aligned frames only, we set alignment
-    // value to be 16. Additionally, this encoder produces a single stream. So it should not require
-    // alignment for all layers.
     return new EncoderInfo(
-        /* requestedResolutionAlignment= */ REQUIRED_RESOLUTION_ALIGNMENT,
-        /* applyAlignmentToAllSimulcastLayers= */ false);
+                                            REQUIRED_RESOLUTION_ALIGNMENT,
+                                                  false);
   }
 
   private VideoCodecStatus resetCodec(int newWidth, int newHeight, boolean newUseSurfaceMode) {
@@ -558,10 +479,6 @@ class HardwareVideoEncoder implements VideoEncoder {
 
   private void requestKeyFrame(long presentationTimestampNs) {
     encodeThreadChecker.checkIsOnValidThread();
-    // Ideally MediaCodec would honor BUFFER_FLAG_SYNC_FRAME so we could
-    // indicate this in queueInputBuffer() below and guarantee _this_ frame
-    // be encoded as a key frame, but sadly that flag is ignored.  Instead,
-    // we request a key frame "soon".
     try {
       Bundle b = new Bundle();
       b.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0);
@@ -585,7 +502,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     };
   }
 
-  // Visible for testing.
   protected void deliverEncodedImage() {
     outputThreadChecker.checkIsOnValidThread();
     try {
@@ -606,9 +522,6 @@ class HardwareVideoEncoder implements VideoEncoder {
         Logging.d(TAG, "Config frame generated. Offset: " + info.offset + ". Size: " + info.size);
         if (info.size > 0
             && (codecType == VideoCodecMimeType.H264 || codecType == VideoCodecMimeType.H265)) {
-          // In case of H264 and H265 config buffer contains SPS and PPS headers. Presence of these
-          // headers makes IDR frame a truly keyframe. Some encoders issue IDR frames without SPS
-          // and PPS. We save config buffer here to prepend it to all IDR frames encoder delivers.
           configBuffer = ByteBuffer.allocateDirect(info.size);
           configBuffer.put(outputBuffer);
         }
@@ -625,7 +538,6 @@ class HardwareVideoEncoder implements VideoEncoder {
         Logging.d(TAG, "Sync frame generated");
       }
 
-      // Extract QP before releasing output buffer.
       Integer qp = null;
       if (isEncodingStatisticsEnabled) {
         MediaFormat format = codec.getOutputFormat(index);
@@ -645,17 +557,14 @@ class HardwareVideoEncoder implements VideoEncoder {
         frameBuffer.put(configBuffer);
         frameBuffer.put(outputBuffer);
         frameBuffer.rewind();
-        codec.releaseOutputBuffer(index, /* render= */ false);
+        codec.releaseOutputBuffer(index,               false);
         releaseCallback = null;
       } else {
         frameBuffer = outputBuffer.slice();
         outputBuffersBusyCount.increment();
         releaseCallback = () -> {
-          // This callback should not throw any exceptions since
-          // it may be called on an arbitrary thread.
-          // Check bug webrtc:11230 for more details.
           try {
-            codec.releaseOutputBuffer(index, /* render= */ false);
+            codec.releaseOutputBuffer(index,               false);
           } catch (Exception e) {
             Logging.e(TAG, "releaseOutputBuffer failed", e);
           }
@@ -672,9 +581,7 @@ class HardwareVideoEncoder implements VideoEncoder {
       builder.setQp(qp);
 
       EncodedImage encodedImage = builder.createEncodedImage();
-      // TODO(mellem):  Set codec-specific info.
       callback.onEncodedFrame(encodedImage, new CodecSpecificInfo());
-      // Note that the callback may have retained the image.
       encodedImage.release();
     } catch (IllegalStateException e) {
       Logging.e(TAG, "deliverOutput failed", e);
@@ -694,7 +601,6 @@ class HardwareVideoEncoder implements VideoEncoder {
       codec.release();
     } catch (Exception e) {
       Logging.e(TAG, "Media encoder release failed", e);
-      // Propagate exceptions caught during release back to the main thread.
       shutdownException = e;
     }
     configBuffer = null;
@@ -719,7 +625,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     return sharedContext != null && surfaceColorFormat != null;
   }
 
-  /** Fetches stride and slice height from input media format */
   private void updateInputFormat(MediaFormat format) {
     stride = width;
     sliceHeight = height;
@@ -753,11 +658,6 @@ class HardwareVideoEncoder implements VideoEncoder {
   }
 
   protected boolean isEncodingStatisticsSupported() {
-    // WebRTC quality scaler, which adjusts resolution and/or frame rate based on encoded QP,
-    // expects QP to be in native bitstream range for given codec. Native QP range for VP8 is
-    // [0, 127] and for VP9 is [0, 255]. MediaCodec VP8 and VP9 encoders (perhaps not all)
-    // return QP in range [0, 64], which is libvpx API specific range. Due to this mismatch we
-    // can't use QP feedback from these codecs.
     if (codecType == VideoCodecMimeType.VP8 || codecType == VideoCodecMimeType.VP9) {
       return false;
     }
@@ -775,7 +675,6 @@ class HardwareVideoEncoder implements VideoEncoder {
     return codecCaps.isFeatureSupported(CodecCapabilities.FEATURE_EncodingStatistics);
   }
 
-  // Visible for testing.
   protected void fillInputBuffer(ByteBuffer buffer, VideoFrame.Buffer frame) {
     VideoFrame.I420Buffer i420 = frame.toI420();
     if (isSemiPlanar) {

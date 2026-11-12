@@ -380,7 +380,6 @@ public class PieChartView extends StackLinearChartView<PieChartViewData> {
             yl = (int) Math.min(rectF.centerY(), yl);
 
             yl -= AndroidUtilities.dp(50);
-           // if (yl < 0) yl = 0;
 
             pieLegendView.setTranslationX(xl);
             pieLegendView.setTranslationY(yl);

@@ -18,17 +18,11 @@ import org.webrtc.MediaStreamTrack;
 public class RtpCapabilities {
   public static class CodecCapability {
     public int preferredPayloadType;
-    // Name used to identify the codec. Equivalent to MIME subtype.
     public String name;
-    // The media type of this codec. Equivalent to MIME top-level type.
     public MediaStreamTrack.MediaType kind;
-    // Clock rate in Hertz.
     public Integer clockRate;
-    // The number of audio channels used. Set to null for video codecs.
     public Integer numChannels;
-    // The "format specific parameters" field from the "a=fmtp" line in the SDP
     public Map<String, String> parameters;
-    // The MIME type of the codec. This is a convenience field.
     public String mimeType;
 
     public CodecCapability() {}

@@ -55,6 +55,7 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.EmptyCell;
 import org.telegram.ui.Cells.StickerEmojiCell;
 import org.telegram.ui.Cells.StickerSetNameCell;
@@ -173,17 +174,10 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
         private ImageView clearSearchImageView;
         private CloseProgressDrawable2 progressDrawable;
         private EditTextBoldCursor searchEditText;
-//        private View shadowView;
         private AnimatorSet shadowAnimator;
 
         public SearchField(Context context, int type) {
             super(context);
-//
-//            shadowView = new View(context);
-//            shadowView.setAlpha(0.0f);
-//            shadowView.setTag(1);
-//            shadowView.setBackgroundColor(0x12000000);
-//            addView(shadowView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, AndroidUtilities.getShadowHeight(), Gravity.BOTTOM | Gravity.LEFT));
 
             View backgroundView = new View(context);
             backgroundView.setBackgroundColor(0xff252525);
@@ -280,29 +274,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
         }
 
         private void showShadow(boolean show, boolean animated) {
-//            if (show && shadowView.getTag() == null || !show && shadowView.getTag() != null) {
-//                return;
-//            }
-//            if (shadowAnimator != null) {
-//                shadowAnimator.cancel();
-//                shadowAnimator = null;
-//            }
-//            shadowView.setTag(show ? null : 1);
-//            if (animated) {
-//                shadowAnimator = new AnimatorSet();
-//                shadowAnimator.playTogether(ObjectAnimator.ofFloat(shadowView, View.ALPHA, show ? 1.0f : 0.0f));
-//                shadowAnimator.setDuration(200);
-//                shadowAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT);
-//                shadowAnimator.addListener(new AnimatorListenerAdapter() {
-//                    @Override
-//                    public void onAnimationEnd(Animator animation) {
-//                        shadowAnimator = null;
-//                    }
-//                });
-//                shadowAnimator.start();
-//            } else {
-//                shadowView.setAlpha(show ? 1.0f : 0.0f);
-//            }
         }
     }
 
@@ -315,9 +286,9 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
 
         currentType = MediaDataController.TYPE_IMAGE;
 
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.stickersDidLoad);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.recentDocumentsDidLoad);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.stickersDidLoad);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.recentDocumentsDidLoad);
         MediaDataController.getInstance(currentAccount).loadRecents(MediaDataController.TYPE_IMAGE, false, true, false);
         MediaDataController.getInstance(currentAccount).loadRecents(MediaDataController.TYPE_MASK, false, true, false);
         MediaDataController.getInstance(currentAccount).loadRecents(MediaDataController.TYPE_FAVE, false, true, false);
@@ -704,7 +675,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
             if (currentPosition == scrollToPosition) {
                 return;
             }
-//            stickersLayoutManager.scrollToPositionWithOffset(scrollToPosition, -gridView.getPaddingTop() + searchFieldHeight + AndroidUtilities.dp(48));
             scrollEmojisToPosition(scrollToPosition, -gridView.getPaddingTop() + searchFieldHeight + AndroidUtilities.dp(48));
         });
 
@@ -722,9 +692,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
             }
         });
 
-//        View topShadow = new View(context);
-//        topShadow.setBackgroundDrawable(Theme.getThemedDrawable(context, R.drawable.greydivider_bottom, 0xffe2e5e7));
-//        containerView.addView(topShadow, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 6));
 
         bottomTabContainer = new FrameLayout(context) {
             @Override
@@ -986,7 +953,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
             }
             boolean drawInUi = imageViewEmojis.size() <= 4 || SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW || !LiteMode.isEnabled(LiteMode.FLAG_ANIMATED_EMOJI_KEYBOARD);
             if (!drawInUi) {
-//                boolean animatedExpandIn = animateExpandStartTime > 0 && (SystemClock.elapsedRealtime() - animateExpandStartTime) < animateExpandDuration();
                 for (int i = 0; i < imageViewEmojis.size(); i++) {
                     ImageViewEmoji img = imageViewEmojis.get(i);
                     if (img.pressedProgress != 0 || img.backAnimator != null) {
@@ -1023,7 +989,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
                 AndroidUtilities.rectTmp2.set(imageView.getLeft() + imageView.getPaddingLeft() - startOffset, topOffset, imageView.getRight() - imageView.getPaddingRight() - startOffset, topOffset + imageView.getMeasuredHeight() - imageView.getPaddingTop() - imageView.getPaddingBottom());
                 imageView.backgroundThreadDrawHolder[threadIndex].setBounds(AndroidUtilities.rectTmp2);
                 imageView.drawable = drawable;
-    //                imageView.drawable.setColorFilter(animatedEmojiTextColorFilter);
                 imageView.imageReceiver = drawable.getImageReceiver();
                 drawInBackgroundViews.add(imageView);
             }
@@ -1059,23 +1024,6 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
                     if (imageView.pressedProgress != 0) {
                         scale *= 0.8f + 0.2f * (1f - imageView.pressedProgress);
                     }
-//                    boolean animatedExpandIn = animateExpandStartTime > 0 && (SystemClock.elapsedRealtime() - animateExpandStartTime) < animateExpandDuration();
-//                    if (animatedExpandIn && animateExpandFromPosition >= 0 && animateExpandToPosition >= 0 && animateExpandStartTime > 0) {
-//                        int position = getChildAdapterPosition(imageView);
-//                        final int pos = position - animateExpandFromPosition;
-//                        final int count = animateExpandToPosition - animateExpandFromPosition;
-//                        if (pos >= 0 && pos < count) {
-//                            final float appearDuration = animateExpandAppearDuration();
-//                            final float crossfadeDuration = animateExpandCrossfadeDuration();
-//                            final float CrossfadeT = MathUtils.clamp((SystemClock.elapsedRealtime() - animateExpandStartTime - (appearDuration * .45f)) / crossfadeDuration, 0, 1);
-//                            final float AppearT = CubicBezierInterpolator.EASE_OUT.getInterpolation(MathUtils.clamp((SystemClock.elapsedRealtime() - animateExpandStartTime) / appearDuration, 0, 1));
-//                            final float crossfadeT = AndroidUtilities.cascade(CrossfadeT, pos, count, count / 5f);
-//                            final float alphaT = AndroidUtilities.cascade(AppearT, pos, count, count / 4f);
-//                            final float scaleT = AndroidUtilities.cascade(AppearT, pos + (count / 4), count + (count / 4), count / 4f);
-//                            scale *= .5f + appearScaleInterpolator.getInterpolation(scaleT) * .5f;
-//                            alpha *= alphaT;
-//                        }
-//                    }
                     drawable.setAlpha((int) (255 * alpha));
                     drawable.setBounds(AndroidUtilities.rectTmp2);
                     if (scale != 1) {
@@ -1571,7 +1519,7 @@ public class StickerMasksAlert extends BottomSheet implements NotificationCenter
         public ImageViewEmoji(Context context) {
             super(context);
             setPadding(AndroidUtilities.dp(3), AndroidUtilities.dp(3), AndroidUtilities.dp(3), AndroidUtilities.dp(3));
-            setBackground(Theme.createRadSelectorDrawable(getThemedColor(Theme.key_listSelector), AndroidUtilities.dp(2), AndroidUtilities.dp(2)));
+            ThemeBind.selectorBackground(this, Theme.createRadSelectorDrawable(getThemedColor(Theme.key_listSelector), AndroidUtilities.dp(2), AndroidUtilities.dp(2)), null, ThemeBind.of(Theme.key_listSelector), StickerMasksAlert.this.resourcesProvider);
         }
 
         private void setDrawable(AnimatedEmojiDrawable drawable) {

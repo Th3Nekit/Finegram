@@ -82,12 +82,12 @@ public class ID3v2Info extends AudioInfo {
 			version = String.format("2.%d.%d", tagHeader.getVersion(), tagHeader.getRevision());
 			ID3v2TagBody tagBody = tagHeader.tagBody(input);
 			try {
-				while (tagBody.getRemainingLength() > 10) { // TODO > tag.minimumFrameSize()
+				while (tagBody.getRemainingLength() > 10) {
 					ID3v2FrameHeader frameHeader = new ID3v2FrameHeader(tagBody);
-					if (frameHeader.isPadding()) { // we ran into padding
+					if (frameHeader.isPadding()) {
 						break;
 					}
-					if (frameHeader.getBodySize() > tagBody.getRemainingLength()) { // something wrong...
+					if (frameHeader.getBodySize() > tagBody.getRemainingLength()) {
 						if (LOGGER.isLoggable(debugLevel)) {
 							LOGGER.log(debugLevel, "ID3 frame claims to extend frames area");
 						}
@@ -126,7 +126,7 @@ public class ID3v2Info extends AudioInfo {
 		}
 		switch (frame.getFrameHeader().getFrameId()) {
 			case "PIC":
-			case "APIC": // cover: prefer TYPE_COVER_FRONT, then TYPE_OTHER, then anything else
+			case "APIC":
 				if (cover == null || coverPictureType != AttachedPicture.TYPE_COVER_FRONT) {
 					AttachedPicture picture = parseAttachedPictureFrame(frame);
 					if (cover == null || picture.type == AttachedPicture.TYPE_COVER_FRONT || picture.type == AttachedPicture.TYPE_OTHER) {
@@ -166,7 +166,7 @@ public class ID3v2Info extends AudioInfo {
 			case "COM":
 			case "COMM":
 				CommentOrUnsynchronizedLyrics comm = parseCommentOrUnsynchronizedLyricsFrame(frame);
-				if (comment == null || comm.description == null || "".equals(comm.description)) { // prefer "default" comment (without description)
+				if (comment == null || comm.description == null || "".equals(comm.description)) {
 					comment = comm.text;
 				}
 				break;
@@ -191,20 +191,19 @@ public class ID3v2Info extends AudioInfo {
 						ID3v1Genre id3v1Genre = null;
 						if (tcon.charAt(0) == '(') {
 							int pos = tcon.indexOf(')');
-							if (pos > 1) { // (123)
+							if (pos > 1) {
 								id3v1Genre = ID3v1Genre.getGenre(Integer.parseInt(tcon.substring(1, pos)));
-								if (id3v1Genre == null && tcon.length() > pos + 1) { // (789)Special
+								if (id3v1Genre == null && tcon.length() > pos + 1) {
 									genre = tcon.substring(pos + 1);
 								}
 							}
-						} else { // 123
+						} else {
 							id3v1Genre = ID3v1Genre.getGenre(Integer.parseInt(tcon));
 						}
 						if (id3v1Genre != null) {
 							genre = id3v1Genre.getDescription();
 						}
 					} catch (NumberFormatException e) {
-						// ignore
 					}
 				}
 				break;
@@ -212,7 +211,7 @@ public class ID3v2Info extends AudioInfo {
 			case "TCOP":
 				copyright = parseTextFrame(frame);
 				break;
-			case "TDRC": // v2.4, replaces TYER
+			case "TDRC":
 				String tdrc = parseTextFrame(frame);
 				if (tdrc.length() >= 4) {
 					try {
@@ -353,7 +352,7 @@ public class ID3v2Info extends AudioInfo {
 	AttachedPicture parseAttachedPictureFrame(ID3v2FrameBody data) throws IOException, ID3v2Exception {
 		ID3v2Encoding encoding = data.readEncoding();
 		String imageType;
-		if (data.getTagHeader().getVersion() == 2) { // file type, e.g. "JPG"
+		if (data.getTagHeader().getVersion() == 2) {
 			String fileType = data.readFixedLengthString(3, ID3v2Encoding.ISO_8859_1);
 			switch (fileType.toUpperCase()) {
 				case "PNG":
@@ -365,7 +364,7 @@ public class ID3v2Info extends AudioInfo {
 				default:
 					imageType = "image/unknown";
 			}
-		} else { // mime type, e.g. "image/jpeg"
+		} else {
 			imageType = data.readZeroTerminatedString(20, ID3v2Encoding.ISO_8859_1);
 		}
 		byte pictureType = data.getData().readByte();

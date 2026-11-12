@@ -133,51 +133,6 @@
 
 	</LinearLayout>
 
-	<!--LinearLayout
-		android:id="@+id/group_photos"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal"
-		android:layout_alignParentLeft="true"
-		android:layout_marginLeft="16dip"
-		android:layout_marginTop="20dip"
-		android:layoutDirection="ltr"
-		android:layerType="hardware">
-
-		<TextView
-			android:id="@+id/group_more"
-			android:layout_width="22dip"
-			android:layout_height="22dip"
-			android:layout_marginLeft="4dip"
-			android:gravity="center"
-			android:textColor="#CFFF"
-			android:textSize="9dip"
-			android:fontFamily="sans-serif-condensed"
-			android:textStyle="bold"
-			android:background="@drawable/group_call_more_users_circle_thin"
-			tools:text="+99"/>
-
-		<ImageView
-			android:id="@+id/group_photo3"
-			android:layout_width="22dip"
-			android:layout_height="22dip"
-			android:layout_marginLeft="4dip"
-			tools:src="#f0f"/>
-
-		<ImageView
-			android:id="@+id/group_photo2"
-			android:layout_width="22dip"
-			android:layout_height="22dip"
-			android:layout_marginLeft="4dip"
-			tools:src="#f0f"/>
-
-		<ImageView
-			android:id="@+id/group_photo1"
-			android:layout_width="22dip"
-			android:layout_height="22dip"
-			android:layout_marginLeft="4dip"
-			tools:src="#f0f"/>
-
-	</LinearLayout-->
+	
 
 </RelativeLayout>

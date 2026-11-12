@@ -33,7 +33,7 @@ import java.util.List;
 
 public class DraftsController {
 
-    public static final int EXPIRATION_PERIOD = 1000 * 60 * 60 * 24 * 7; // 7 days
+    public static final int EXPIRATION_PERIOD = 1000 * 60 * 60 * 24 * 7;
 
     public final int currentAccount;
 

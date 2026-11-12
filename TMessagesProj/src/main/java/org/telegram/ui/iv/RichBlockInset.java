@@ -4,11 +4,6 @@ import android.animation.ValueAnimator;
 
 import org.telegram.ui.Components.CubicBezierInterpolator;
 
-/**
- * Animates a cell's nesting inset (px) when the SAME block's depth changes — e.g. a block dragged in or out of
- * a list/quote — and snaps instantly when a different block is bound (view recycling on scroll). A cell owns one
- * instance and drives it from {@code bind()} and, after a reorder, from {@link RichInsetCell#resyncBlockInset()}.
- */
 class RichBlockInset {
 
     interface Applier {
@@ -23,7 +18,6 @@ class RichBlockInset {
         return Math.max(0, currentPx);
     }
 
-    /** Applies the row's target inset, animating (when requested) from the current value if the same block is bound. */
     void apply(BlockRow row, Applier applier) {
         apply(row, applier, true);
     }

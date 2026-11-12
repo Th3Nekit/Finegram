@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -14,19 +15,26 @@ import android.widget.TextView;
 import androidx.core.graphics.ColorUtils;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.FileLog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RadialProgressView;
 import org.telegram.ui.Components.SimpleFloatPropertyCompat;
+import org.telegram.ui.Components.chat.ViewPositionWatcher;
 import org.telegram.ui.web.BotWebViewContainer;
 
-public class ChatActivityBotWebViewButton extends FrameLayout {
+import java.util.HashSet;
+
+public class ChatActivityBotWebViewButton extends FrameLayout implements Theme.Colorable {
     public final static SimpleFloatPropertyCompat<ChatActivityBotWebViewButton> PROGRESS_PROPERTY = new SimpleFloatPropertyCompat<>("progress", obj -> obj.progress, ChatActivityBotWebViewButton::setProgress)
             .setMultiplier(100f);
 
     private Path path = new Path();
+    private final RectF menuButtonBounds = new RectF();
     private float progress;
     private int buttonColor = Theme.getColor(Theme.key_featuredStickers_addButton);
+    private boolean buttonColorThemed = true;
     private int backgroundColor;
     private int menuButtonWidth;
 
@@ -56,10 +64,31 @@ public class ChatActivityBotWebViewButton extends FrameLayout {
         addView(progressView, LayoutHelper.createFrame(28, 28, Gravity.RIGHT | Gravity.CENTER_VERTICAL, 0, 0, 12, 0));
 
         rippleView = new View(context);
-        rippleView.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_featuredStickers_addButtonPressed), 2));
+        ThemeBind.selectorBackground(rippleView, Theme.createSelectorDrawable(Theme.getColor(Theme.key_featuredStickers_addButtonPressed), 2), null, ThemeBind.of(Theme.key_featuredStickers_addButtonPressed));
         addView(rippleView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT, 0, 0, 0, 0));
 
         setWillNotDraw(false);
+    }
+
+    @Override
+    public void updateColors() {
+        try {
+            if (buttonColorThemed) {
+                buttonColor = Theme.getColor(Theme.key_featuredStickers_addButton);
+            }
+            if (backgroundColor != 0) {
+                backgroundColor = ColorUtils.blendARGB(Theme.getColor(Theme.key_chat_messagePanelVoiceBackground), buttonColor, progress);
+                invalidate();
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    @Override
+    public void addColorKeys(HashSet<Integer> colors) {
+        colors.add(Theme.key_chat_messagePanelVoiceBackground);
+        colors.add(Theme.key_featuredStickers_addButton);
     }
 
     public void setBotMenuButton(BotCommandsMenuView menuButton) {
@@ -73,6 +102,7 @@ public class ChatActivityBotWebViewButton extends FrameLayout {
         textView.setText(text);
         textView.setTextColor(textColor);
         buttonColor = color;
+        buttonColorThemed = false;
         backgroundColor = ColorUtils.blendARGB(Theme.getColor(Theme.key_chat_messagePanelVoiceBackground), buttonColor, progress);
         rippleView.setBackground(Theme.createSelectorDrawable(BotWebViewContainer.getMainButtonRippleColor(buttonColor), 2));
         invalidate();
@@ -118,10 +148,14 @@ public class ChatActivityBotWebViewButton extends FrameLayout {
     @Override
     public void draw(Canvas canvas) {
         canvas.save();
-        float menuY = (getHeight() - AndroidUtilities.dp(32)) / 2f;
-        float offset = Math.max(getWidth() - menuButtonWidth - AndroidUtilities.dp(4), getHeight()) * progress;
+        if (menuButton == null || !ViewPositionWatcher.computeRectInParent(menuButton, this, menuButtonBounds)) {
+            float menuY = (getHeight() - AndroidUtilities.dp(32)) / 2f;
+            menuButtonBounds.set(AndroidUtilities.dp(8), menuY, AndroidUtilities.dp(8) + menuButtonWidth, menuY + AndroidUtilities.dp(32));
+        }
+        float offset = Math.max(Math.max(menuButtonBounds.right, getWidth() - menuButtonBounds.left), getHeight()) * progress;
         float rad = AndroidUtilities.dp(16) + offset;
-        AndroidUtilities.rectTmp.set(AndroidUtilities.dp(14) - offset, menuY + AndroidUtilities.dp(4) - offset, AndroidUtilities.dp(6) + menuButtonWidth + offset, getHeight() - AndroidUtilities.dp(12) + offset);
+        AndroidUtilities.rectTmp.set(menuButtonBounds);
+        AndroidUtilities.rectTmp.inset(-offset, -offset);
 
         path.rewind();
         path.addRoundRect(AndroidUtilities.rectTmp, rad, rad, Path.Direction.CW);
@@ -129,7 +163,7 @@ public class ChatActivityBotWebViewButton extends FrameLayout {
         canvas.drawColor(backgroundColor);
 
         canvas.saveLayerAlpha(AndroidUtilities.rectTmp, (int) ((1f - Math.min(0.5f, progress) / 0.5f) * 0xFF), Canvas.ALL_SAVE_FLAG);
-        canvas.translate(AndroidUtilities.dp(10), menuY);
+        canvas.translate(menuButtonBounds.left, menuButtonBounds.top);
         if (menuButton != null) {
             menuButton.setDrawBackgroundDrawable(false);
             menuButton.draw(canvas);

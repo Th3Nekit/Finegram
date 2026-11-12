@@ -50,8 +50,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
     private static final int CARD_NUMBER_FONT_WEIGHT = 400;
     private static final int QR_BUTTON_RIGHT_PADDING = 46;
     private static final float QR_BUTTON_WIDTH = 48f;
-    // Design-space tops of the balance and fiat lines; baselines match the design
-    // (the balance font sits higher in its line than the design font).
     private static final float BALANCE_TOP = 71f;
     private static final float USD_BALANCE_TOP = 101f;
     private static Typeface cardNumberTypeface;
@@ -66,7 +64,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
     private final RectF diamondCardBounds = new RectF();
     private float diamondStickerFallback;
     private boolean hasBalanceDiamondTransform;
-    // Temporary material comparison: all wallet cards use the optimized Canvas renderer.
 
 
     private float additionalTilt;
@@ -142,7 +139,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
                 24, 0, 64, 17.2f
         ));
 
-        // Card number above the stickers; shadowed while a sticker slides under it.
         cardNumberView = new View(context) {
             @Override
             protected void onDraw(Canvas canvas) {
@@ -173,8 +169,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         balanceView = new AnimatedTextView(context, false, true, true, true, true) {
             @Override
             protected void onDraw(Canvas canvas) {
-                // Fit the complete line, including its icon and unit, inside the
-                // existing card/overlay projection without changing its geometry.
                 final float textWidth = getDrawable().getCurrentWidth();
                 final float cardScale = balanceCardScale();
                 final float actionBarScale = textWidth > 0 ? Math.min(1f, balanceActionBarWidth / textWidth) : 1f;
@@ -187,7 +181,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
                 canvas.restoreToCount(save);
             }
         };
-        // Lay out the full balance before scaling; the normal view width would ellipsize it.
         balanceView.getDrawable().setOverrideFullWidth(dp(4096));
         balanceView.setAnimationProperties(.35f, 0, 320, 3.5f, CubicBezierInterpolator.EASE_OUT_QUINT);
         balanceView.setScaleProperty(0.6f);
@@ -216,7 +209,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         balanceLayout.addView(usdBalanceView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 16, 0, USD_BALANCE_TOP - BALANCE_TOP - 28, 0, 0));
     }
 
-    /** Opt in only for the main wallet screen; other cards retain the text icon. */
     public void setDiamondOnCard(boolean enabled) {
         diamondOnCard = enabled;
 
@@ -243,8 +235,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
     java.util.ArrayList<RectF> getStickerObstacles() {
         java.util.ArrayList<RectF> bounds = new java.util.ArrayList<>();
         float k = frontFace.getWidth()/336f;
-        // Measure the visible glyphs, not the match-parent text containers.
-        // Use the balance's resting place on the card: while scrolling it moves into an overlay and rescales.
         float cardScale = balanceCardScale();
         float balanceWidth = balanceView.getDrawable().getCurrentWidth()*cardScale;
         float usdWidth = usdBalanceView.getDrawable().getCurrentWidth();
@@ -258,7 +248,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         android.graphics.Path qr = new android.graphics.Path();
         getQrButtonPath(qr,frontFace.getWidth(),frontFace.getHeight());
         RectF qrBounds = new RectF();qr.computeBounds(qrBounds,true);bounds.add(qrBounds);
-        // Separate from the balance so a narrower currency line leaves the space beside it free.
         bounds.add(new RectF(left, top+usdBalanceView.getTop(), left+usdWidth, top+usdBalanceView.getBottom()));
         bounds.add(diamondOnCard ? new RectF(diamondCardBounds) : new RectF());
         return bounds;
@@ -268,8 +257,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         path.rewind();
         float top = 74 / 205f, bottom = 110 / 205f, ry = 8 / 205f;
         if (!isUse2D()) {
-            // QR material UVs use a symmetric 1.219512 model height; the UI face
-            // uses the mesh's asymmetric bounds. Convert before cutting the mask.
             float span = WalletCardGeometry.TOP - WalletCardGeometry.BOTTOM;
             top = (WalletCardGeometry.TOP - (.5f-top)*1.219512f)/span;
             bottom = (WalletCardGeometry.TOP - (.5f-bottom)*1.219512f)/span;
@@ -287,10 +274,8 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
 
     private int kickSignX, kickSignY;
 
-    /** Tilts the card by a sticker's impact: h/v are -1..1 with positive pushing the right/bottom edge away. */
     void setStickerKick(float h, float v) {
         if (kickSignX == 0) {
-            // Find which rotation sign pushes an edge away, from the projection itself.
             WalletCardProjection projection = new WalletCardProjection();
             float[] c = new float[8];
             projection.project(1000, 600, 0, 5, false, c);
@@ -302,20 +287,17 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         ((WalletCard2DView) cardView).setStickerKick(x, y);
     }
 
-    /** Stickers go below the balance and holder so these stay readable on top. */
     int getStickerLayerIndex() {
         int holder = frontFace.indexOfChild(cardHolderView), balance = frontFace.indexOfChild(balanceLayout);
         if (holder < 0) return balance < 0 ? frontFace.getChildCount() : balance;
         return balance < 0 ? holder : Math.min(holder, balance);
     }
 
-    /** Targets, 0..1 per text: how much a sticker under it should darken its shadow. */
     private float balanceStickerShadow, holderStickerShadow;
     private final org.telegram.ui.Components.AnimatedFloat balanceShadowAnimated = new org.telegram.ui.Components.AnimatedFloat(
             this::onBalanceShadowFrame, 0, 240, CubicBezierInterpolator.EASE_OUT_QUINT);
     private final org.telegram.ui.Components.AnimatedFloat holderShadowAnimated = new org.telegram.ui.Components.AnimatedFloat(
             this::onHolderShadowFrame, 0, 240, CubicBezierInterpolator.EASE_OUT_QUINT);
-    // The flat diamond takes over whenever the balance is shadowed, so it can carry the shadow too.
     private final org.telegram.ui.Components.AnimatedFloat diamondFallbackAnimated = new org.telegram.ui.Components.AnimatedFloat(
             this::onDiamondFallbackFrame, 0, 240, CubicBezierInterpolator.EASE_OUT_QUINT);
     private float diamondFallback;
@@ -348,20 +330,17 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         cardNumberView.invalidate();
     }
 
-    /** Card number laid out in a 1640x1000 design space mapped onto the face. */
     private void drawCardNumber(Canvas canvas, float t) {
         final float w = getFrontFace().getWidth(), h = getFrontFace().getHeight();
         final float scale = 1640 / 336f, px = w / 1640f;
         float cy = 102.5f * scale / 1000f;
         if (!isUse2D()) {
-            // The engraving texture spans the mesh's symmetric 1.219512 height, like the QR button.
             final float span = WalletCardGeometry.TOP - WalletCardGeometry.BOTTOM;
             cy = (WalletCardGeometry.TOP - (.5f - cy) * 1.219512f) / span;
         }
         cardNumberPaint.setTypeface(getCardNumberTypeface(getContext()));
         cardNumberPaint.setTextSize(9.7f * scale * px);
         cardNumberPaint.setTextAlign(Paint.Align.CENTER);
-        // Same ink as the 2D and 3D engraving.
         cardNumberPaint.setColor(isUse2D() ? WalletGiftPalette.cardNumber2DColor(stickerStyle)
                 : WalletGiftPalette.cardNumberColor(stickerStyle));
         final Paint.FontMetrics metrics = cardNumberPaint.getFontMetrics();
@@ -370,8 +349,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         canvas.save();
         canvas.translate(313f * scale * px, cy * h);
         canvas.rotate(90f);
-        // Rotated 90°: local (a, b) lands at screen (-b, a), so swap offsets to keep the shadow pointing down.
-        // Both card-number shadow passes use twice the blur and half the opacity.
         drawStickerShadowed(t, (r, dx, dy, color) -> cardNumberPaint.setShadowLayer(
                 r * 2f, dy, -dx,
                 androidx.core.graphics.ColorUtils.setAlphaComponent(color, Math.round(Color.alpha(color) * .5f))), () -> {
@@ -387,7 +364,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
             numberStickerShadow = number;
             cardNumberView.invalidate();
         }
-        // The diamond is either 3D or flat; a partial mix of the two looks broken, so only the swap is animated.
         diamond = Math.max(diamond, balance) > 0f ? 1f : 0f;
         if (diamond != diamondStickerFallback) {
             diamondStickerFallback = diamond;
@@ -406,14 +382,12 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         }
     }
 
-    /** Set while text is redrawn for its outline shadow; images in it are already drawn. */
     private boolean outlineShadowPass;
 
     private interface ShadowLayer {
         void set(float radius, float dx, float dy, int color);
     }
 
-    /** Draws text with a soft drop shadow, then again with a tight centered outline shadow as t (sticker under it) grows. */
     private void drawStickerShadowed(float t, ShadowLayer shadow, Runnable draw) {
         shadow.set(t > 0 ? dp(5) : 0, 0, dp(1), Color.argb((int) (89 * t), 0, 0, 0));
         draw.run();
@@ -428,7 +402,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         stickerStyle = style;
         updateDiamondSpriteTint();
         balanceView.invalidate();
-        // Refresh the number's recorded ink color even when sticker coverage is unchanged.
         cardNumberView.invalidate();
         ((WalletCard2DView) cardView).setStickerStyle(style);
         usdBalanceView.setTextColor(WalletGiftPalette.tint(0xFF87EFFF, style));
@@ -461,7 +434,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         usdBalanceView.invalidate();
     }
 
-    /** Maps the moving balance back onto the card face for the diamond crossfade. */
     public void setBalanceDiamondTransform(Matrix faceToOverlay, Matrix balanceToOverlay) {
         if (!faceToOverlay.invert(inverseDiamondFaceTransform)) return;
         nextDiamondTransform.setConcat(inverseDiamondFaceTransform, balanceToOverlay);
@@ -502,7 +474,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         cardNumberView.invalidate();
     }
 
-    /** Maps design-space face coordinates, including its canvas projection, into target. */
     public boolean getFrontFaceTransform(View target, Matrix result) {
         if (!isAttachedToWindow() || !target.isAttachedToWindow()
                 || getRootView() != target.getRootView()) {
@@ -572,7 +543,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
     }
 
 
-    /** Adds a vertical tilt in degrees to the live sensor and drag rotation. */
     public void setAdditionalTilt(float tilt) {
         additionalTilt = tilt;
 
@@ -580,7 +550,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
 
     }
 
-    /** Scales sensor tilt: 0 disables it, 0.5 applies half, and 1 applies full tilt. */
     public void setUseGyroscope(float t) {
         gyroscopeTiltScale = t;
 
@@ -610,7 +579,7 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
             }
         }
         if (wallet != null) {
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.walletUpdate);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.walletUpdate);
         }
     }
 
@@ -645,7 +614,7 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
         this.currentAccount = currentAccount;
         this.wallet = wallet;
         if (isAttachedToWindow() && this.wallet != null)
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.walletUpdate);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.walletUpdate);
     }
 
     @Override
@@ -659,7 +628,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
 
     static SpannableStringBuilder formatBalance(long nanotons) {
         final DecimalFormat format = new DecimalFormat("#,##0.#########", new DecimalFormatSymbols(Locale.US));
-        // Share the wallet's rounding, then add grouping without rounding a second time.
         final String gramsBalance = format.format(new BigDecimal(GramWallet.formatGramsBalance(nanotons, false)));
         return GramWallet.formatGramsScaled(gramsBalance, 0.8f);
     }
@@ -672,8 +640,6 @@ public class WalletCardComponent extends FrameLayout implements NotificationCent
                 if (outlineShadowPass) return;
                 setAlpha(1f);
                 if (diamondOnCard && isUse2D()) {
-                    // Use the same faceted artwork as the GL card's flat fallback.
-                    // Keep the existing crossfade to the toolbar's currency symbol.
                     float t = Math.max(0f, Math.min(1f, balanceTransitionProgress));
                     if (t == 0f) {
                         float width = drawable.getIntrinsicWidth() * balanceDrawScale;

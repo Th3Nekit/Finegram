@@ -70,32 +70,9 @@ public class PhotoView extends EntityView {
 
     public final FrameLayoutDrawer containerView;
     public Bitmap bitmap;
-//    public final ImageReceiver centerImage = new ImageReceiver() {
-//        @Override
-//        protected boolean setImageBitmapByKey(Drawable drawable, String key, int type, boolean memCache, int guid) {
-//            if (type == TYPE_IMAGE && drawable instanceof BitmapDrawable) {
-//                segmentImage(((BitmapDrawable) drawable).getBitmap());
-//            }
-//            return super.setImageBitmapByKey(drawable, key, type, memCache, guid);
-//        }
-//    };
 
     private File segmentedFile;
     public void preloadSegmented(String path) {
-//        if (TextUtils.isEmpty(path)) return;
-//        segmentingLoading = true;
-//        final int side = Math.round(Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) * .8f / AndroidUtilities.density);
-//        BitmapFactory.Options opts = new BitmapFactory.Options();
-//        opts.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(path, opts);
-//        opts.inSampleSize = StoryEntry.calculateInSampleSize(opts, side, side);
-//        opts.inJustDecodeBounds = false;
-//        opts.inDither = true;
-//        segmentedImage = BitmapFactory.decodeFile(path, opts);
-//        if (segmentedImage != null) {
-//            segmentedFile = new File(path);
-//            segmentingLoaded = true;
-//        }
         segmentingLoading = false;
     }
 
@@ -120,12 +97,6 @@ public class PhotoView extends EntityView {
         if (bitmap != null) {
             segmentImage(bitmap);
         }
-//        centerImage.setAspectFit(true);
-//        centerImage.setInvalidateAll(true);
-//        centerImage.setParentView(containerView);
-//        centerImage.setRoundRadius(dp(12));
-//        centerImage.setOrientation(orientation, invert, true);
-//        centerImage.setImage(ImageLocation.getForPath(path), getImageFilter(), null, null, null, 1);
         updatePosition();
     }
 
@@ -143,17 +114,6 @@ public class PhotoView extends EntityView {
         mirrorT = new AnimatedFloat(containerView, 0, 500, CubicBezierInterpolator.EASE_OUT_QUINT);
         segmentedT = new AnimatedFloat(containerView, 0, 350, CubicBezierInterpolator.EASE_OUT_QUINT);
 
-//        centerImage.setAspectFit(true);
-//        centerImage.setInvalidateAll(true);
-//        centerImage.setParentView(containerView);
-//        centerImage.setRoundRadius(dp(12));
-//
-//        if (object instanceof TLRPC.Photo) {
-//            TLRPC.Photo photo = (TLRPC.Photo) object;
-//            TLRPC.PhotoSize photoSize = FileLoader.getClosestPhotoSizeWithSize(photo.sizes, 1000);
-//            TLRPC.PhotoSize thumbPhotoSize = FileLoader.getClosestPhotoSizeWithSize(photo.sizes, 90);
-//            centerImage.setImage(ImageLocation.getForPhoto(photoSize, photo), getImageFilter(), ImageLocation.getForPhoto(thumbPhotoSize, photo), getImageFilter(), (String) null, null, 1);
-//        }
         updatePosition();
     }
 
@@ -174,8 +134,6 @@ public class PhotoView extends EntityView {
             .addOnSuccessListener(result -> {
                 segmentingLoaded = true;
                 segmentingLoading = false;
-//                segmentedImage = result.getForegroundBitmap();
-//                highlightSegmented();
             })
             .addOnFailureListener(error -> {
                 segmentingLoading = false;
@@ -273,13 +231,11 @@ public class PhotoView extends EntityView {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-//        centerImage.onDetachedFromWindow();
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-//        centerImage.onAttachedToWindow();
     }
 
     public int getAnchor() {
@@ -432,10 +388,6 @@ public class PhotoView extends EntityView {
             highlightStart = -1;
             needHighlight = false;
             if (!overridenSegmented) {
-                // TODO
-//                centerImage.setImageCoords(0, 0, (int) baseSize.width, (int) baseSize.height);
-//                centerImage.setAlpha(1f);
-//                centerImage.draw(canvas);
             }
             drawSegmented(canvas);
         }

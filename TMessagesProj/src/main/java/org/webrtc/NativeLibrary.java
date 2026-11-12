@@ -19,7 +19,6 @@ class NativeLibrary {
       Logging.d(TAG, "Loading library: " + name);
       System.loadLibrary(name);
 
-      // Not relevant, but kept for API compatibility.
       return true;
     }
   }
@@ -27,10 +26,6 @@ class NativeLibrary {
   private static Object lock = new Object();
   private static boolean libraryLoaded;
 
-  /**
-   * Loads the native library. Clients should call PeerConnectionFactory.initialize. It will call
-   * this method for them.
-   */
   static void initialize(NativeLibraryLoader loader, String libraryName) {
     synchronized (lock) {
       if (libraryLoaded) {
@@ -42,7 +37,6 @@ class NativeLibrary {
     }
   }
 
-  /** Returns true if the library has been loaded successfully. */
   static boolean isLoaded() {
     synchronized (lock) {
       return libraryLoaded;

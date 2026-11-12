@@ -30,25 +30,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Semaphore;
 
-/**
- * Object that keeps references to items and allows modifying itself during iteration.
- *
- * All methods are thread-safe, except {@link #iterator()}.
- * If there's chance you will call {@link #iterator()} from multiple threads, pass true to a constructor.
- *
- * By default, {@link ReferenceCreator#newReference(Object)} creates {@link java.lang.ref.WeakReference}.
- * However, this behavior can be overridden.
- *
- * {@link #iterator()} will throw {@link IllegalStateException} if previous iteration has not been completed
- * {@link #iterator()} will wait until previous iteration finishes, when using {@code isThreadSafe} in constructor
- * {@link #iterator()} will throw {@link IllegalStateException} when {@link InterruptedException} gets caught
- * {@link #iterator()} will cause deadlock or ANR if you try to iterate inside iteration
- *
- * {@link Iterator#next()} iterates from newer to older items
- * {@link Iterator#next()} will not return null
- * {@link Iterator#next()} will not return items removed during iteration
- * {@link Iterator#next()} will not return items added during iteration, they will be available on the next iteration
- */
 
 public final class ReferenceList<T> implements Iterable<T>, ReferenceCreator<T> {
   public interface FullnessListener {
@@ -68,7 +49,7 @@ public final class ReferenceList<T> implements Iterable<T>, ReferenceCreator<T> 
   private boolean isFull;
   private final @Nullable FullnessListener fullnessListener;
 
-  ReferenceList<T> next; // Used by ReferenceMap<T>
+  ReferenceList<T> next;
 
   public ReferenceList () {
     this(false, true, null);
@@ -130,9 +111,6 @@ public final class ReferenceList<T> implements Iterable<T>, ReferenceCreator<T> 
     return -1;
   }
 
-  /**
-   * @return Number of added elements
-   * */
   public final int addAll (ReferenceList<T> itemsToAdd) {
     int count = 0;
     for (T item : itemsToAdd) {
@@ -142,9 +120,6 @@ public final class ReferenceList<T> implements Iterable<T>, ReferenceCreator<T> 
     return count;
   }
 
-  /**
-   * @return False when item is already present in the list
-   */
   public final boolean add (@NonNull T itemToAdd) {
     synchronized (items) {
       int i = indexOf(itemToAdd);
@@ -227,11 +202,9 @@ public final class ReferenceList<T> implements Iterable<T>, ReferenceCreator<T> 
   @Override
   public final Iterator<T> iterator () {
     if (semaphore != null) {
-      try {
-        semaphore.acquire();
-      } catch (InterruptedException t) {
-        throw new IllegalStateException();
-      }
+      // Uninterruptible: a pending interrupt on the caller (e.g. a cancelled ImageLoader task) must not
+      // fail the iteration; the interrupt status is preserved for the caller.
+      semaphore.acquireUninterruptibly();
     }
     synchronized (items) {
       if (cacheIterator) {

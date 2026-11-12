@@ -24,7 +24,6 @@ public class MediaUploadState {
     public int width;
     public int height;
     public int duration;
-    // EXIF orientation of the local file, applied to the preview thumb at draw time
     public int orientation;
     public int invert;
     public boolean hasSpoiler;

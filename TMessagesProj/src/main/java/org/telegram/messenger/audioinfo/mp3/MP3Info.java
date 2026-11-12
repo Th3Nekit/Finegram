@@ -60,7 +60,7 @@ public class MP3Info extends AudioInfo {
 			tracks = info.getTracks();
 			year = info.getYear();
 		}
-		if (duration <= 0 || duration >= 3600000L) { // don't trust strange durations (e.g. old lame versions always write TLEN 97391548)
+		if (duration <= 0 || duration >= 3600000L) {
 			try {
 				duration = calculateDuration(data, fileLength, new StopReadCondition() {
 					final long stopPosition = fileLength - 128;
@@ -77,7 +77,7 @@ public class MP3Info extends AudioInfo {
 			}
 		}
 		if (title == null || album == null || artist == null) {
-			if (data.getPosition() <= fileLength - 128) { // position to last 128 bytes
+			if (data.getPosition() <= fileLength - 128) {
 				data.skipFully(fileLength - 128 - data.getPosition());
 				if (ID3v1Info.isID3v1StartPosition(input)) {
 					ID3v1Info info = new ID3v1Info(input);
@@ -111,8 +111,8 @@ public class MP3Info extends AudioInfo {
 		int b0 = 0;
 		int b1 = stopCondition.stopRead(data) ? -1 : data.read();
 		while (b1 != -1) {
-			if (b0 == 0xFF && (b1 & 0xE0) == 0xE0) { // first 11 bits should be 1
-				data.mark(2); // set mark at b2
+			if (b0 == 0xFF && (b1 & 0xE0) == 0xE0) {
+				data.mark(2);
 				int b2 = stopCondition.stopRead(data) ? -1 : data.read();
 				if (b2 == -1) {
 					break;
@@ -122,59 +122,43 @@ public class MP3Info extends AudioInfo {
 					break;
 				}
 				MP3Frame.Header header = new MP3Frame.Header(b1, b2, b3);
-				if (header != null) { // we have a candidate
-					/*
-					 * The code gets a bit complex here, because we need to be able to reset() to b2 if
-					 * the check fails. Thus, we have to reset() to b2 before doing a call to mark().
-					 */
-					data.reset(); // reset input to b2
-					data.mark(header.getFrameSize() + 2); // rest of frame (size - 2) + next header
-					/*
-					 * read frame data
-					 */
+				if (header != null) {
+					data.reset();
+					data.mark(header.getFrameSize() + 2);
 					byte[] frameBytes = new byte[header.getFrameSize()];
 					frameBytes[0] = (byte) 0xFF;
 					frameBytes[1] = (byte) b1;
 					try {
-						data.readFully(frameBytes, 2, frameBytes.length - 2); // may throw EOFException
+						data.readFully(frameBytes, 2, frameBytes.length - 2);
 					} catch (EOFException e) {
 						break;
 					}
 
 					MP3Frame frame = new MP3Frame(header, frameBytes);
-					/*
-					 * read next header  
-					 */
 					if (!frame.isChecksumError()) {
 						int nextB0 = stopCondition.stopRead(data) ? -1 : data.read();
 						int nextB1 = stopCondition.stopRead(data) ? -1 : data.read();
 						if (nextB0 == -1 || nextB1 == -1) {
 							return frame;
 						}
-						if (nextB0 == 0xFF && (nextB1 & 0xFE) == (b1 & 0xFE)) { // quick check: nextB1 must match b1's version & layer
+						if (nextB0 == 0xFF && (nextB1 & 0xFE) == (b1 & 0xFE)) {
 							int nextB2 = stopCondition.stopRead(data) ? -1 : data.read();
 							int nextB3 = stopCondition.stopRead(data) ? -1 : data.read();
 							if (nextB2 == -1 || nextB3 == -1) {
 								return frame;
 							}
 							if (new MP3Frame.Header(nextB1, nextB2, nextB3).isCompatible(header)) {
-								data.reset(); // reset input to b2
-								data.skipFully(frameBytes.length - 2); // skip to end of frame
+								data.reset();
+								data.skipFully(frameBytes.length - 2);
 								return frame;
 							}
 						}
 					}
 				}
 
-				/*
-				 * seems to be a false sync...
-				 */
-				data.reset(); // reset input to b2
+				data.reset();
 			}
 
-			/*
-			 * read next byte
-			 */
 			b0 = b1;
 			b1 = stopCondition.stopRead(data) ? -1 : data.read();
 		}
@@ -189,7 +173,7 @@ public class MP3Info extends AudioInfo {
 		if (b0 == -1 || b1 == -1) {
 			return null;
 		}
-		if (b0 == 0xFF && (b1 & 0xE0) == 0xE0) { // first 11 bits should be 1
+		if (b0 == 0xFF && (b1 & 0xE0) == 0xE0) {
 			int b2 = stopCondition.stopRead(data) ? -1 : data.read();
 			int b3 = stopCondition.stopRead(data) ? -1 : data.read();
 			if (b2 == -1 || b3 == -1) {
@@ -199,7 +183,6 @@ public class MP3Info extends AudioInfo {
 			try {
 				nextHeader = new MP3Frame.Header(b1, b2, b3);
 			} catch (MP3Exception e) {
-				// not a valid frame header
 				data.exceptionsCount++;
 				if (data.exceptionsCount > 5) {
 					throw e;
@@ -226,11 +209,10 @@ public class MP3Info extends AudioInfo {
 	long calculateDuration(MP3Input data, long totalLength, StopReadCondition stopCondition) throws IOException, MP3Exception {
 		MP3Frame frame = readFirstFrame(data, stopCondition);
 		if (frame != null) {
-			// check for Xing header
 			int numberOfFrames = frame.getNumberOfFrames();
-			if (numberOfFrames > 0) { // from Xing/VBRI header
+			if (numberOfFrames > 0) {
 				return frame.getHeader().getTotalDuration(numberOfFrames * frame.getSize());
-			} else { // scan file
+			} else {
 				numberOfFrames = 1;
 
 				long firstFramePosition = data.getPosition() - frame.getSize();
@@ -239,7 +221,7 @@ public class MP3Info extends AudioInfo {
 				int firstFrameBitrate = frame.getHeader().getBitrate();
 				long bitrateSum = firstFrameBitrate;
 				boolean vbr = false;
-				int cbrThreshold = 10000 / frame.getHeader().getDuration(); // assume CBR after 10 seconds
+				int cbrThreshold = 10000 / frame.getHeader().getDuration();
 
 				while (true) {
 					if (numberOfFrames == cbrThreshold && !vbr && totalLength > 0) {

@@ -14,12 +14,7 @@ import androidx.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-/**
- * An encoded frame from a video stream. Used as an input for decoders and as an output for
- * encoders.
- */
 public class EncodedImage implements RefCounted {
-  // Must be kept in sync with common_types.h FrameType.
   public enum FrameType {
     EmptyFrame(0),
     VideoFrameKey(3),
@@ -50,13 +45,12 @@ public class EncodedImage implements RefCounted {
   public final ByteBuffer buffer;
   public final int encodedWidth;
   public final int encodedHeight;
-  public final long captureTimeMs; // Deprecated
+  public final long captureTimeMs;
   public final long captureTimeNs;
   public final FrameType frameType;
   public final int rotation;
   public final @Nullable Integer qp;
 
-  // TODO(bugs.webrtc.org/9378): Use retain and release from jni code.
   @Override
   public void retain() {
     refCountDelegate.retain();

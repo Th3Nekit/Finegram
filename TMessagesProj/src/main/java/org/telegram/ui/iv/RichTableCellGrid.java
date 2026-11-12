@@ -16,6 +16,7 @@ import android.view.ViewParent;
 import org.telegram.tgnet.tl.TL_iv;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.CubicBezierInterpolator;
+import org.telegram.ui.Components.TableColumnBalancer;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.ui.ActionBar.Theme;
@@ -163,8 +164,6 @@ public class RichTableCellGrid extends ViewGroup {
         final int padL = dp(HANDLE_PAD_DP);
         final int padT = dp(GRID_PADDING_DP);
         final int padR = dp(GRID_PADDING_DP);
-        // Keep a small gap between the table and the following block while allowing the
-        // bottom handles to extend beyond the grid's measured bounds.
         final int padB = dp(10);
         if (model == null || model.rowCount == 0 || model.colCount == 0) {
             setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), padT + padB);
@@ -183,49 +182,24 @@ public class RichTableCellGrid extends ViewGroup {
         rowHeights = new int[rowCount];
 
         final int minColWidth = dp(model.block.compact ? COMPACT_MIN_COL_DP : MIN_COL_DP);
-        // Match RichMessageLayout's table behavior: size columns from their content, but cap
-        // each one so very long text wraps after the table has grown to a useful width.
         final int cellHorizontalPaddingDp = model.block.compact ? 5 : CELL_HORIZONTAL_PADDING_DP;
-        final int maxTextWidth = colCount == 2
-            ? Math.max(0, parentWidth / 2 - dp(cellHorizontalPaddingDp * 4))
-            : Math.max(0, Math.round(parentWidth / 1.5f));
-        final int maxColWidth = Math.max(minColWidth, maxTextWidth + dp(cellHorizontalPaddingDp * 2));
-        for (int c = 0; c < colCount; c++) colWidths[c] = minColWidth;
+        final int cellPadding = dp(cellHorizontalPaddingDp * 2);
+        final int maxColWidth = Math.max(minColWidth, colCount > 1 ? Math.round(parentWidth * 0.8f) : parentWidth);
+        final int maxContentWidth = Math.max(1, maxColWidth - cellPadding);
+        final java.util.ArrayList<TableColumnBalancer.Cell> metrics = new java.util.ArrayList<>();
         for (int i = 0; i < getChildCount(); i++) {
             final View child = getChildAt(i);
             if (!(child instanceof RichTableCellHost)) continue;
             final RichTableCellHost host = (RichTableCellHost) child;
-            if (TableModel.spanCol(host.cell) != 1) continue;
             final int column = model.anchorColOf(host.cell);
             if (column < 0 || column >= colCount) continue;
-            final int desired = Math.round(Layout.getDesiredWidth(host.editText.getText(), host.editText.getPaint()))
-                + dp(cellHorizontalPaddingDp * 2);
-            colWidths[column] = Math.max(colWidths[column], Math.min(maxColWidth, desired));
+            final CharSequence text = host.editText.getText();
+            final int desired = text == null ? 0 : (int) Math.ceil(Layout.getDesiredWidth(text, host.editText.getPaint()));
+            metrics.add(TableColumnBalancer.measure(text, host.editText.getPaint(), column,
+                TableModel.spanCol(host.cell), cellPadding, maxContentWidth, desired));
         }
-        // A merged cell can also make its covered columns wider. Apply those constraints after
-        // single-column cells establish the natural width of each individual column.
-        for (int i = 0; i < getChildCount(); i++) {
-            final View child = getChildAt(i);
-            if (!(child instanceof RichTableCellHost)) continue;
-            final RichTableCellHost host = (RichTableCellHost) child;
-            final int span = TableModel.spanCol(host.cell);
-            if (span <= 1) continue;
-            final int column = model.anchorColOf(host.cell);
-            final int end = Math.min(colCount, column + span);
-            if (column < 0 || column >= end) continue;
-            int coveredWidth = 0;
-            for (int c = column; c < end; c++) coveredWidth += colWidths[c];
-            final int desired = Math.min(maxColWidth * (end - column),
-                Math.round(Layout.getDesiredWidth(host.editText.getText(), host.editText.getPaint()))
-                    + dp(cellHorizontalPaddingDp * 2));
-            int deficit = desired - coveredWidth;
-            for (int c = column; c < end && deficit > 0; c++) {
-                final int columnsLeft = end - c;
-                final int extra = (deficit + columnsLeft - 1) / columnsLeft;
-                colWidths[c] += extra;
-                deficit -= extra;
-            }
-        }
+        final int[] balanced = TableColumnBalancer.compute(metrics, colCount, parentWidth, minColWidth);
+        System.arraycopy(balanced, 0, colWidths, 0, colCount);
 
         int intrinsicWidth = 0;
         for (int width : colWidths) intrinsicWidth += width;
@@ -533,7 +507,6 @@ public class RichTableCellGrid extends ViewGroup {
         bulgePath.arcTo(arcRect, 90, -90);
         bulgePath.lineTo(right, tableY - tRright);
         if (tRright > 0) {
-            // Curve up into the table corner so the fill follows the table's rounded corner.
             arcRect.set(right - 2 * tRright, tableY - 2 * tRright, right, tableY);
             bulgePath.arcTo(arcRect, 0, 90);
         } else {
@@ -555,16 +528,7 @@ public class RichTableCellGrid extends ViewGroup {
             final float outer = colStarts[0] - dp(BULGE_DP);
             final float rr = Math.min(dpf2(BULGE_RADIUS_DP), (bulgeRowBot - bulgeRowTop) / 2f);
             bulgePath.rewind();
-//            bulgePath.moveTo(colStarts[0], bulgeRowTop);
-//            bulgePath.lineTo(outer + rr, bulgeRowTop);
 
-//            arcRect.set(outer, bulgeRowTop, outer + 2 * rr, bulgeRowTop + 2 * rr);
-//            bulgePath.arcTo(arcRect, 270, -90);
-//            bulgePath.lineTo(outer, bulgeRowBot - rr);
-//
-//            arcRect.set(outer, bulgeRowBot - 2 * rr, outer + 2 * rr, bulgeRowBot);
-//            bulgePath.arcTo(arcRect, 180, -90);
-//            bulgePath.lineTo(colStarts[0], bulgeRowBot);
 
             canvas.drawPath(bulgePath, selectedStrokePaint);
         }
@@ -689,8 +653,6 @@ public class RichTableCellGrid extends ViewGroup {
     private void drawCellBackgrounds(Canvas canvas) {
         if (model == null || model.rowCount == 0 || model.colCount == 0) return;
         boolean striped = model.block != null && model.block.striped;
-        // Clip cell backgrounds to the table's rounded outline so highlight fills don't spill past
-        // the rounded corners.
         canvas.save();
         selRect.set(colStarts[0], rowStarts[0], colStarts[model.colCount], rowStarts[model.rowCount]);
         bulgePath.rewind();
@@ -775,10 +737,10 @@ public class RichTableCellGrid extends ViewGroup {
         }
 
         final int colN = model.colCount, rowN = model.rowCount;
-        drawSelCornerArc(canvas, colStarts[0], rowStarts[0], 180);     // top-left
-        drawSelCornerArc(canvas, colStarts[colN], rowStarts[0], 270);  // top-right
-        drawSelCornerArc(canvas, colStarts[0], rowStarts[rowN], 90);   // bottom-left
-        drawSelCornerArc(canvas, colStarts[colN], rowStarts[rowN], 0); // bottom-right
+        drawSelCornerArc(canvas, colStarts[0], rowStarts[0], 180);
+        drawSelCornerArc(canvas, colStarts[colN], rowStarts[0], 270);
+        drawSelCornerArc(canvas, colStarts[0], rowStarts[rowN], 90);
+        drawSelCornerArc(canvas, colStarts[colN], rowStarts[rowN], 0);
     }
 
     private float cornerRadiusFor(int px, int py) {

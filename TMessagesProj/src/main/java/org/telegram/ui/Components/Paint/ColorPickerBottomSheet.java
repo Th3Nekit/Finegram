@@ -121,7 +121,6 @@ public class ColorPickerBottomSheet extends BottomSheet {
             pipette.animateShow();
             dismiss();
         });
-//        bottomLayout.addView(pipetteView, LayoutHelper.createLinear(28, 28, 0, 0, 16, 0));
 
         doneView = new ImageView(context);
         doneView.setImageResource(R.drawable.ic_ab_done);
@@ -349,7 +348,7 @@ public class ColorPickerBottomSheet extends BottomSheet {
                         int centerY = VERTICAL_SQUARES / 2 + 1;
                         if (y < centerY) {
                             color = ColorUtils.blendARGB(colors[x], Color.BLACK, (centerY - y - 1) / (VERTICAL_SQUARES / 2f - 1) * 0.5f);
-                        } else { // y >= centerY
+                        } else {
                             color = ColorUtils.blendARGB(colors[x], Color.WHITE, 0.5f - (VERTICAL_SQUARES - y - 1) / (VERTICAL_SQUARES / 2f) * 0.5f);
                         }
                         colorMap.put((long) (x << 16) + y, color);
@@ -461,10 +460,10 @@ public class ColorPickerBottomSheet extends BottomSheet {
 
                 selectorPath.rewind();
                 AndroidUtilities.rectTmp.set(getPaddingLeft() + x * xSize, getPaddingTop() + y * ySize, getPaddingLeft() + (x + 1) * xSize, getPaddingTop() + (y + 1) * ySize);
-                radii[0] = radii[1] = x == 0 && y == 0 ? AndroidUtilities.dp(10) : 0; // top left
-                radii[2] = radii[3] = x == HORIZONTAL_SQUARES - 1 && y == 0 ? AndroidUtilities.dp(10) : 0; // top right
-                radii[4] = radii[5] = x == HORIZONTAL_SQUARES - 1 && y == VERTICAL_SQUARES - 1 ? AndroidUtilities.dp(10) : 0; // bottom right
-                radii[6] = radii[7] = x == 0 && y == VERTICAL_SQUARES - 1 ? AndroidUtilities.dp(10) : 0; // bottom left
+                radii[0] = radii[1] = x == 0 && y == 0 ? AndroidUtilities.dp(10) : 0;
+                radii[2] = radii[3] = x == HORIZONTAL_SQUARES - 1 && y == 0 ? AndroidUtilities.dp(10) : 0;
+                radii[4] = radii[5] = x == HORIZONTAL_SQUARES - 1 && y == VERTICAL_SQUARES - 1 ? AndroidUtilities.dp(10) : 0;
+                radii[6] = radii[7] = x == 0 && y == VERTICAL_SQUARES - 1 ? AndroidUtilities.dp(10) : 0;
                 selectorPath.addRoundRect(AndroidUtilities.rectTmp, radii, Path.Direction.CW);
                 canvas.drawPath(selectorPath, selectorPaint);
 

@@ -14,10 +14,6 @@ import androidx.annotation.Nullable;
 import java.util.Arrays;
 import org.webrtc.PeerConnection;
 
-/**
- * Representation of a single ICE Candidate, mirroring
- * {@code IceCandidateInterface} in the C++ API.
- */
 public class IceCandidate {
   public final String sdpMid;
   public final int sdpMLineIndex;
@@ -59,7 +55,6 @@ public class IceCandidate {
     return sdp;
   }
 
-  /** equals() checks sdpMid, sdpMLineIndex, and sdp for equality. */
   @Override
   public boolean equals(@Nullable Object object) {
     if (!(object instanceof IceCandidate)) {

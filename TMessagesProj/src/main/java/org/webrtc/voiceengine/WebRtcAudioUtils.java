@@ -29,64 +29,36 @@ import org.webrtc.Logging;
 public final class WebRtcAudioUtils {
   private static final String TAG = "WebRtcAudioUtils";
 
-  // List of devices where we have seen issues (e.g. bad audio quality) using
-  // the low latency output mode in combination with OpenSL ES.
-  // The device name is given by Build.MODEL.
   private static final String[] BLACKLISTED_OPEN_SL_ES_MODELS = new String[] {
-      // It is recommended to maintain a list of blacklisted models outside
-      // this package and instead call
-      // WebRtcAudioManager.setBlacklistDeviceForOpenSLESUsage(true)
-      // from the client for devices where OpenSL ES shall be disabled.
   };
 
-  // List of devices where it has been verified that the built-in effect
-  // bad and where it makes sense to avoid using it and instead rely on the
-  // native WebRTC version instead. The device name is given by Build.MODEL.
   private static final String[] BLACKLISTED_AEC_MODELS = new String[] {
-      // It is recommended to maintain a list of blacklisted models outside
-      // this package and instead call setWebRtcBasedAcousticEchoCanceler(true)
-      // from the client for devices where the built-in AEC shall be disabled.
   };
   private static final String[] BLACKLISTED_NS_MODELS = new String[] {
-    // It is recommended to maintain a list of blacklisted models outside
-    // this package and instead call setWebRtcBasedNoiseSuppressor(true)
-    // from the client for devices where the built-in NS shall be disabled.
   };
 
-  // Use 16kHz as the default sample rate. A higher sample rate might prevent
-  // us from supporting communication mode on some older (e.g. ICS) devices.
   private static final int DEFAULT_SAMPLE_RATE_HZ = 16000;
   private static int defaultSampleRateHz = DEFAULT_SAMPLE_RATE_HZ;
-  // Set to true if setDefaultSampleRateHz() has been called.
   private static boolean isDefaultSampleRateOverridden;
 
-  // By default, utilize hardware based audio effects for AEC and NS when
-  // available.
   private static boolean useWebRtcBasedAcousticEchoCanceler;
   private static boolean useWebRtcBasedNoiseSuppressor;
 
-  // Call these methods if any hardware based effect shall be replaced by a
-  // software based version provided by the WebRTC stack instead.
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setWebRtcBasedAcousticEchoCanceler(boolean enable) {
     useWebRtcBasedAcousticEchoCanceler = enable;
   }
 
-    // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setWebRtcBasedNoiseSuppressor(boolean enable) {
     useWebRtcBasedNoiseSuppressor = enable;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setWebRtcBasedAutomaticGainControl(boolean enable) {
-    // TODO(henrika): deprecated; remove when no longer used by any client.
     Logging.w(TAG, "setWebRtcBasedAutomaticGainControl() is deprecated");
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean useWebRtcBasedAcousticEchoCanceler() {
     if (useWebRtcBasedAcousticEchoCanceler) {
@@ -95,7 +67,6 @@ public final class WebRtcAudioUtils {
     return useWebRtcBasedAcousticEchoCanceler;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean useWebRtcBasedNoiseSuppressor() {
     if (useWebRtcBasedNoiseSuppressor) {
@@ -104,49 +75,32 @@ public final class WebRtcAudioUtils {
     return useWebRtcBasedNoiseSuppressor;
   }
 
-  // TODO(henrika): deprecated; remove when no longer used by any client.
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean useWebRtcBasedAutomaticGainControl() {
-    // Always return true here to avoid trying to use any built-in AGC.
     return true;
   }
 
-  // Returns true if the device supports an audio effect (AEC or NS).
-  // Four conditions must be fulfilled if functions are to return true:
-  // 1) the platform must support the built-in (HW) effect,
-  // 2) explicit use (override) of a WebRTC based version must not be set,
-  // 3) the device must not be blacklisted for use of the effect, and
-  // 4) the UUID of the effect must be approved (some UUIDs can be excluded).
   public static boolean isAcousticEchoCancelerSupported() {
     return WebRtcAudioEffects.canUseAcousticEchoCanceler();
   }
   public static boolean isNoiseSuppressorSupported() {
     return WebRtcAudioEffects.canUseNoiseSuppressor();
   }
-  // TODO(henrika): deprecated; remove when no longer used by any client.
   public static boolean isAutomaticGainControlSupported() {
-    // Always return false here to avoid trying to use any built-in AGC.
     return false;
   }
 
-  // Call this method if the default handling of querying the native sample
-  // rate shall be overridden. Can be useful on some devices where the
-  // available Android APIs are known to return invalid results.
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setDefaultSampleRateHz(int sampleRateHz) {
     isDefaultSampleRateOverridden = true;
     defaultSampleRateHz = sampleRateHz;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean isDefaultSampleRateOverridden() {
     return isDefaultSampleRateOverridden;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized int getDefaultSampleRateHz() {
     return defaultSampleRateHz;
@@ -160,24 +114,20 @@ public final class WebRtcAudioUtils {
     return Arrays.asList(WebRtcAudioUtils.BLACKLISTED_NS_MODELS);
   }
 
-  // Helper method for building a string of thread information.
   public static String getThreadInfo() {
     return "@[name=" + Thread.currentThread().getName() + ", id=" + Thread.currentThread().getId()
         + "]";
   }
 
-  // Returns true if we're running on emulator.
   public static boolean runningOnEmulator() {
     return Build.HARDWARE.equals("goldfish") && Build.BRAND.startsWith("generic_");
   }
 
-  // Returns true if the device is blacklisted for OpenSL ES usage.
   public static boolean deviceIsBlacklistedForOpenSLESUsage() {
     List<String> blackListedModels = Arrays.asList(BLACKLISTED_OPEN_SL_ES_MODELS);
     return blackListedModels.contains(Build.MODEL);
   }
 
-  // Information about the current build, taken from system properties.
   static void logDeviceInfo(String tag) {
     Logging.d(tag, "Android SDK: " + Build.VERSION.SDK_INT + ", "
             + "Release: " + Build.VERSION.RELEASE + ", "
@@ -190,9 +140,6 @@ public final class WebRtcAudioUtils {
             + "Product: " + Build.PRODUCT);
   }
 
-  // Logs information about the current audio state. The idea is to call this
-  // method when errors are detected to log under what conditions the error
-  // occurred. Hopefully it will provide clues to what might be the root cause.
   static void logAudioState(String tag) {
     logDeviceInfo(tag);
     final Context context = ContextUtils.getApplicationContext();
@@ -203,7 +150,6 @@ public final class WebRtcAudioUtils {
     logAudioDeviceInfo(tag, audioManager);
   }
 
-  // Reports basic audio statistics.
   private static void logAudioStateBasic(String tag, AudioManager audioManager) {
     Logging.d(tag, "Audio State: "
             + "audio mode: " + modeToString(audioManager.getMode()) + ", "
@@ -221,7 +167,6 @@ public final class WebRtcAudioUtils {
     return audioManager.isVolumeFixed();
   }
 
-  // Adds volume information for all possible stream types.
   private static void logAudioStateVolume(String tag, AudioManager audioManager) {
     final int[] streams = {
         AudioManager.STREAM_VOICE_CALL,
@@ -232,7 +177,6 @@ public final class WebRtcAudioUtils {
         AudioManager.STREAM_SYSTEM
     };
     Logging.d(tag, "Audio State: ");
-    // Some devices may not have volume controls and might use a fixed volume.
     boolean fixedVolume = isVolumeFixed(audioManager);
     Logging.d(tag, "  fixed volume=" + fixedVolume);
     if (!fixedVolume) {
@@ -268,13 +212,11 @@ public final class WebRtcAudioUtils {
       StringBuilder info = new StringBuilder();
       info.append("  ").append(deviceTypeToString(device.getType()));
       info.append(device.isSource() ? "(in): " : "(out): ");
-      // An empty array indicates that the device supports arbitrary channel counts.
       if (device.getChannelCounts().length > 0) {
         info.append("channels=").append(Arrays.toString(device.getChannelCounts()));
         info.append(", ");
       }
       if (device.getEncodings().length > 0) {
-        // Examples: ENCODING_PCM_16BIT = 2, ENCODING_PCM_FLOAT = 4.
         info.append("encodings=").append(Arrays.toString(device.getEncodings()));
         info.append(", ");
       }
@@ -287,7 +229,6 @@ public final class WebRtcAudioUtils {
     }
   }
 
-  // Converts media.AudioManager modes into local string representation.
   static String modeToString(int mode) {
     switch (mode) {
       case MODE_IN_CALL:
@@ -322,7 +263,6 @@ public final class WebRtcAudioUtils {
     }
   }
 
-  // Converts AudioDeviceInfo types to local string representation.
   private static String deviceTypeToString(int type) {
     switch (type) {
       case AudioDeviceInfo.TYPE_UNKNOWN:
@@ -376,7 +316,6 @@ public final class WebRtcAudioUtils {
     }
   }
 
-  // Returns true if the device can record audio via a microphone.
   private static boolean hasMicrophone() {
     return ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
         PackageManager.FEATURE_MICROPHONE);

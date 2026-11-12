@@ -4,6 +4,7 @@ import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.AndroidUtilities.dpf2;
 import static org.telegram.messenger.AndroidUtilities.lerp;
 
+import org.telegram.messenger.FileLog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -32,11 +33,12 @@ import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SvgHelper;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.Premium.StarParticlesView;
 
 import java.util.Arrays;
 
-public class CacheChart extends View {
+public class CacheChart extends View implements Theme.Colorable {
 
     public static final int TYPE_CACHE = 0;
     public static final int TYPE_NETWORK = 1;
@@ -243,7 +245,6 @@ public class CacheChart extends View {
         private void setGradientBounds(float centerX, float centerY, float radius, float angle) {
             gradientMatrix.reset();
             gradientMatrix.setTranslate(centerX, centerY);
-//            gradientMatrix.preRotate(angle);
             gradient.setLocalMatrix(gradientMatrix);
         }
 
@@ -591,7 +592,6 @@ public class CacheChart extends View {
         }
 
         SpannableString percent = new SpannableString("%");
-//        percent.setSpan(new RelativeSizeSpan(0.733f), 0, percent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         int segmentsCount = segments.length;
         long segmentsSum = 0;
@@ -653,7 +653,7 @@ public class CacheChart extends View {
             tempFloat[i] = segments[i] == null || !segments[i].selected ? 0 : segments[i].size / (float) segmentsSum;
         }
         AndroidUtilities.roundPercents(tempFloat, tempPercents);
-        if (type == TYPE_CACHE) { // putting "other" section to being the first one
+        if (type == TYPE_CACHE) {
             Arrays.sort(segments, (a, b) -> Long.compare(a.size, b.size));
             for (int i = 0; i <= segments.length; ++i) {
                 if (segments[i].index == segments.length - 1) {
@@ -969,5 +969,29 @@ public class CacheChart extends View {
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         requestLayout();
+    }
+
+    @Override
+    public void updateColors() {
+        try {
+            loadingBackgroundPaint.setColor(Theme.getColor(Theme.key_listSelector));
+            updateTextColors();
+            invalidate();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    private void updateTextColors() {
+        try {
+            if (topText != null) {
+                topText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            }
+            if (bottomText != null) {
+                bottomText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

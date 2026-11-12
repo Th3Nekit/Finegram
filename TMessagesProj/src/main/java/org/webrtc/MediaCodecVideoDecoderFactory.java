@@ -21,22 +21,13 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Factory for decoders backed by Android MediaCodec API. */
-@SuppressWarnings("deprecation") // API level 16 requires use of deprecated methods.
+@SuppressWarnings("deprecation")
 class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
   private static final String TAG = "MediaCodecVideoDecoderFactory";
 
   private final @Nullable EglBase.Context sharedContext;
   private final @Nullable Predicate<MediaCodecInfo> codecAllowedPredicate;
 
-  /**
-   * MediaCodecVideoDecoderFactory with support of codecs filtering.
-   *
-   * @param sharedContext The textures generated will be accessible from this context. May be null,
-   *                      this disables texture support.
-   * @param codecAllowedPredicate optional predicate to test if codec allowed. All codecs are
-   *                              allowed when predicate is not provided.
-   */
   public MediaCodecVideoDecoderFactory(@Nullable EglBase.Context sharedContext,
       @Nullable Predicate<MediaCodecInfo> codecAllowedPredicate) {
     this.sharedContext = sharedContext;
@@ -62,8 +53,6 @@ class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
   @Override
   public VideoCodecInfo[] getSupportedCodecs() {
     List<VideoCodecInfo> supportedCodecInfos = new ArrayList<VideoCodecInfo>();
-    // Generate a list of supported codecs in order of preference:
-    // VP8, VP9, H264 (high profile), H264 (baseline profile), AV1 and H265.
     for (VideoCodecMimeType type :
         new VideoCodecMimeType[] {VideoCodecMimeType.VP8, VideoCodecMimeType.VP9,
             VideoCodecMimeType.H264, VideoCodecMimeType.AV1, VideoCodecMimeType.H265}) {
@@ -72,11 +61,11 @@ class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
         String name = type.name();
         if (type == VideoCodecMimeType.H264 && isH264HighProfileSupported(codec)) {
           supportedCodecInfos.add(new VideoCodecInfo(
-              name, MediaCodecUtils.getCodecProperties(type, /* highProfile= */ true)));
+              name, MediaCodecUtils.getCodecProperties(type,                    true)));
         }
 
         supportedCodecInfos.add(new VideoCodecInfo(
-            name, MediaCodecUtils.getCodecProperties(type, /* highProfile= */ false)));
+            name, MediaCodecUtils.getCodecProperties(type,                    false)));
       }
     }
 
@@ -101,15 +90,13 @@ class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
       }
     }
 
-    return null; // No support for this type.
+    return null;
   }
 
-  // Returns true if the given MediaCodecInfo indicates a supported encoder for the given type.
   private boolean isSupportedCodec(MediaCodecInfo info, VideoCodecMimeType type) {
     if (!MediaCodecUtils.codecSupportsType(info, type)) {
       return false;
     }
-    // Check for a supported color format.
     if (MediaCodecUtils.selectColorFormat(
             MediaCodecUtils.DECODER_COLOR_FORMATS, info.getCapabilitiesForType(type.mimeType()))
         == null) {
@@ -127,11 +114,9 @@ class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
 
   private boolean isH264HighProfileSupported(MediaCodecInfo info) {
     String name = info.getName();
-    // Support H.264 HP decoding on QCOM chips.
     if (name.startsWith(QCOM_PREFIX)) {
       return true;
     }
-    // Support H.264 HP decoding on Exynos chips for Android M and above.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && name.startsWith(EXYNOS_PREFIX)) {
       return true;
     }

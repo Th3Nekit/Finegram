@@ -28,11 +28,7 @@
         <item name="android:navigationBarColor">@color/fg_splash_navigation_bar</item>
         <item name="android:textViewStyle">@style/MyTextViewStyle</item>
         <item name="android:forceDarkAllowed">false</item>
-        <!-- Значок заставки не задаём: система возьмёт тот, что человек выбрал на
-             рабочем столе, и покажет его нужного размера. Свой значок в теме прибит
-             намертво и следить за выбором не умеет, а его анимация росла от нуля —
-             клиент часто поднимался раньше, чем она успевала, и значок застывал
-             крошечным. -->
+        
         <item name="android:windowSplashScreenBackground">?android:windowBackground</item>
     </style>
 
@@ -89,7 +85,7 @@
         <item name="android:forceDarkAllowed">false</item>
     </style>
 
-    <!-- APP WIDGET -->
+    
 
     <style name="Base.Theme.TMessages.AppWidget" parent="android:Theme.DeviceDefault.DayNight" />
 

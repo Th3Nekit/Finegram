@@ -167,8 +167,6 @@ public class AvatarPreviewPagerIndicator extends View implements ProfileGalleryV
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        canvas.save();
-//        canvas.clipPath(path);
 
         for (int i = 0; i < 2; i++) {
             if (pressedOverlayAlpha[i] > 0f) {
@@ -179,7 +177,6 @@ public class AvatarPreviewPagerIndicator extends View implements ProfileGalleryV
 
         topOverlayGradient.draw(canvas);
         canvas.drawRect(topOverlayRect, backgroundPaint);
-        //canvas.restore();
 
 
         int count = profileGalleryView.getRealCount();

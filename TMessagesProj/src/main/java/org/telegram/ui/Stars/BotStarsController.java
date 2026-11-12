@@ -262,7 +262,6 @@ public class BotStarsController {
                 state.endReached[type] = (r.flags & 1) == 0;
                 state.offset[type] = state.endReached[type] ? null : r.next_offset;
 
-//                state.updateBalance(r.balance);
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.botStarsTransactionsLoaded, did);
             }
         }));

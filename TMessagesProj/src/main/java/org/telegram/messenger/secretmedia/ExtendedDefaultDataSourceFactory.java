@@ -25,19 +25,10 @@ public final class ExtendedDefaultDataSourceFactory implements DataSource.Factor
     private final TransferListener listener;
     private final DataSource.Factory baseDataSourceFactory;
 
-    /**
-     * @param context A context.
-     * @param userAgent The User-Agent string that should be used.
-     */
     public ExtendedDefaultDataSourceFactory(Context context, String userAgent) {
         this(context, userAgent, null);
     }
 
-    /**
-     * @param context A context.
-     * @param userAgent The User-Agent string that should be used.
-     * @param listener An optional listener.
-     */
     public ExtendedDefaultDataSourceFactory(Context context, String userAgent,
                                     TransferListener listener) {
         this(context, listener, new DefaultHttpDataSource.Factory()
@@ -46,13 +37,6 @@ public final class ExtendedDefaultDataSourceFactory implements DataSource.Factor
                 .setAllowCrossProtocolRedirects(true));
     }
 
-    /**
-     * @param context A context.
-     * @param listener An optional listener.
-     * @param baseDataSourceFactory A {@link DataSource.Factory} to be used to create a base {@link DataSource}
-     *     for {@link DefaultDataSource}.
-     * @see DefaultDataSource#DefaultDataSource(Context, TransferListener, DataSource)
-     */
     public ExtendedDefaultDataSourceFactory(Context context, TransferListener listener,
                                     DataSource.Factory baseDataSourceFactory) {
         this.context = context.getApplicationContext();

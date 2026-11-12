@@ -230,7 +230,6 @@ public class DrawerLayoutContainer extends FrameLayout {
             }
             if (child instanceof ActionBarLayout) {
                 ActionBarLayout actionBarLayout = (ActionBarLayout) child;
-                //fix keyboard measuring
                 if (actionBarLayout.storyViewerAttached()) {
                     child.forceLayout();
                 }

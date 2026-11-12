@@ -2,7 +2,6 @@ package org.telegram.ui.Wallet;
 
 import android.graphics.Path;
 
-/** Face bounds and corner radius from the card_*.binobj meshes, in model units. */
 final class WalletCardGeometry {
     static final float HALF_WIDTH = 1.0f;
     static final float TOP = 0.618561f;
@@ -20,8 +19,6 @@ final class WalletCardGeometry {
 
     static void setFacePath(Path path, float width, float height) {
         path.rewind();
-        // The layout's 1.64 aspect differs slightly from the mesh's aspect.
-        // Separate radii recover circular model-space corners after projection.
         path.addRoundRect(0, 0, width, height, radiusX(width), radiusY(height), Path.Direction.CW);
     }
 }

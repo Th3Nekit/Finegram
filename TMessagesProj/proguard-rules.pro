@@ -6,17 +6,24 @@
 -keep class org.webrtc.* { *; }
 -keep class org.webrtc.audio.* { *; }
 -keep class org.webrtc.voiceengine.* { *; }
-#-keep class org.telegram.messenger.* { *; }
-#-keep class org.telegram.messenger.camera.* { *; }
-#-keep class org.telegram.messenger.secretmedia.* { *; }
-#-keep class org.telegram.messenger.support.* { *; }
-#-keep class org.telegram.messenger.support.* { *; }
-#-keep class org.telegram.messenger.time.* { *; }
-#-keep class org.telegram.messenger.video.* { *; }
-#-keep class org.telegram.messenger.voip.* { *; }
-#-keep class org.telegram.SQLite.** { *; }
-#-keep class org.telegram.tgnet.ConnectionsManager { *; }
-#-keep class org.telegram.tgnet.NativeByteBuffer { *; }
+# org.telegram.messenger: only the names that native code and reflection resolve at runtime.
+# Before changing these rules see TMessagesProj/proguard-checklist.md and run Tools/r8_keep_check.py.
+# Static JNI exports Java_org_telegram_messenger_<Class>_<method> (Utilities, Intro, MediaController, MrzRecognizer).
+-keepclasseswithmembers,includedescriptorclasses class org.telegram.messenger.* {
+    native <methods>;
+}
+# gifvideo.cpp: FindClass + GetMethodID, called from the native reader.
+-keep class org.telegram.messenger.AnimatedFileDrawableStream {
+    int read(int, int);
+    void cancel();
+    boolean isFinishedLoadingFile();
+    boolean isCanceled();
+    java.lang.String getFinishedFilePath();
+}
+# NotificationBadge.BADGERS holds class literals, instances are made with Class.newInstance().
+-keep class org.telegram.messenger.NotificationBadge$* implements org.telegram.messenger.NotificationBadge$Badger {
+    <init>();
+}
 -keep class org.telegram.tgnet.RequestTimeDelegate { *; }
 -keep class org.telegram.tgnet.RequestDelegate { *; }
 -keep class androidx.media3.** { *; }
@@ -35,18 +42,15 @@
 # https://developers.google.com/ml-kit/known-issues#android_issues
 -keep class com.google.mlkit.nl.languageid.internal.LanguageIdentificationJni { *; }
 
-# Constant folding for resource integers may mean that a resource passed to this method appears to be unused. Keep the method to prevent this from happening.
 -keep class com.google.android.exoplayer2.upstream.RawResourceDataSource {
   public static android.net.Uri buildRawResourceUri(int);
 }
 
-# Methods accessed via reflection in DefaultExtractorsFactory
 -dontnote com.google.android.exoplayer2.ext.flac.FlacLibrary
 -keepclassmembers class com.google.android.exoplayer2.ext.flac.FlacLibrary {
 
 }
 
-# Some members of this class are being accessed from native methods. Keep them unobfuscated.
 -keep class com.google.android.exoplayer2.decoder.VideoDecoderOutputBuffer {
   *;
 }
@@ -64,13 +68,11 @@
   <init>(android.os.Handler, com.google.android.exoplayer2.audio.AudioRendererEventListener, com.google.android.exoplayer2.audio.AudioProcessor[]);
 }
 
-# Constructors accessed via reflection in DefaultExtractorsFactory
 -dontnote com.google.android.exoplayer2.ext.flac.FlacExtractor
 -keepclassmembers class com.google.android.exoplayer2.ext.flac.FlacExtractor {
   <init>();
 }
 
-# Constructors accessed via reflection in DefaultDownloaderFactory
 -dontnote com.google.android.exoplayer2.source.dash.offline.DashDownloader
 -keepclassmembers class com.google.android.exoplayer2.source.dash.offline.DashDownloader {
   <init>(android.net.Uri, java.util.List, com.google.android.exoplayer2.offline.DownloaderConstructorHelper);
@@ -84,7 +86,6 @@
   <init>(android.net.Uri, java.util.List, com.google.android.exoplayer2.offline.DownloaderConstructorHelper);
 }
 
-# Constructors accessed via reflection in DownloadHelper
 -dontnote com.google.android.exoplayer2.source.dash.DashMediaSource$Factory
 -keepclasseswithmembers class com.google.android.exoplayer2.source.dash.DashMediaSource$Factory {
   <init>(com.google.android.exoplayer2.upstream.DataSource$Factory);
@@ -98,12 +99,15 @@
   <init>(com.google.android.exoplayer2.upstream.DataSource$Factory);
 }
 
+# WidgetSandbox: JNI_OnLoad uses RegisterNatives; backend methods are called by native workers.
+-keep class org.telegram.utils.twidget.WidgetSandboxNative { *; }
+-keep class org.telegram.utils.twidget.WidgetSandboxBackend { *; }
+
 # Huawei Services
 -keep class com.huawei.hianalytics.**{ *; }
 -keep class com.huawei.updatesdk.**{ *; }
 -keep class com.huawei.hms.**{ *; }
 
-# Used by AtomicReferenceFieldUpdater and sun.misc.Unsafe
 -keepclassmembers class com.google.common.util.concurrent.AbstractFuture** {
   *** waiters;
   *** value;
@@ -112,10 +116,6 @@
   *** next;
 }
 
-# Since Unsafe is using the field offsets of these inner classes, we don't want
-# to have class merging or similar tricks applied to these classes and their
-# fields. It's safe to allow obfuscation, since the by-name references are
-# already preserved in the -keep statement above.
 -keep,allowshrinking,allowobfuscation class com.google.common.util.concurrent.AbstractFuture** {
   <fields>;
 }
@@ -124,8 +124,6 @@
   @com.google.gson.annotations.SerializedName <fields>;
 }
 
-# Gson uses generic type information stored in a class file when working with fields. Proguard
-# removes such information by default, so configure it to keep all of it.
 -keepattributes Signature, *Annotation*, EnclosingMethod, InnerClasses
 
 -keep class org.telegram.messenger.voip.* { *; }
@@ -139,7 +137,6 @@
 -keepclassmembernames,allowshrinking class org.telegram.ui.Cells.* { <fields>; }
 -keepclassmembernames,allowshrinking class org.telegram.ui.Components.* { <fields>; }
 
-# Keep Cherrygram fields name
 -keep class com.fasterxml.jackson.**{ *; }
 
 -keepclassmembers class org.telegram.tgnet.** {
@@ -154,7 +151,6 @@
 -keep class com.th3nekit.finegram.chats.gemini.GeminiErrorDTO$ErrorDetails{*;}
 -keep class com.th3nekit.finegram.chats.gemini.GeminiErrorDTO$Metadata {*;}
 
-# Keep all class member names of CameraX
 -keep class androidx.camera.extensions.** { *; }
 -keep class androidx.camera.camera2.internal.** { *; }
 -keep class androidx.camera.camera2.interop.** { *; }

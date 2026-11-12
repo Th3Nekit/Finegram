@@ -44,7 +44,12 @@ import me.vkryl.android.animator.BoolAnimator;
 import com.th3nekit.finegram.core.configs.FinegramAppearanceConfig;
 import com.th3nekit.finegram.core.configs.FinegramChatsConfig;
 
-public class Switch extends View {
+public class Switch extends View implements Theme.Colorable {
+
+    @Override
+    public void updateColors() {
+        colorSet = 0; // the ripple color is re-read from the theme on the next press
+    }
     private final BoolAnimator animatorIconVisibility = new BoolAnimator(this, CubicBezierInterpolator.EASE_OUT_QUINT, 380L, true);
 
     private RectF rectF;
@@ -285,6 +290,7 @@ public class Switch extends View {
     }
 
     private void animateToCheckedState(boolean newCheckedState) {
+        cancelCheckAnimator();
         checkAnimator = ObjectAnimator.ofFloat(this, "progress", newCheckedState ? 1 : 0);
         checkAnimator.setDuration(200);
 
@@ -326,6 +332,8 @@ public class Switch extends View {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         attachedToWindow = false;
+        cancelCheckAnimator();
+        setProgress(isChecked ? 1f : 0f);
     }
 
     public void setOnCheckedChangeListener(OnCheckedChangeListener listener) {
@@ -349,6 +357,9 @@ public class Switch extends View {
             if (onCheckedChangeListener != null) {
                 onCheckedChangeListener.onCheckedChanged(this, checked);
             }
+        } else if (!animated) {
+            cancelCheckAnimator();
+            setProgress(checked ? 1f : 0f);
         }
         setDrawIconType(iconType, animated);
     }
@@ -712,7 +723,6 @@ public class Switch extends View {
         info.setClassName("android.widget.Switch");
         info.setCheckable(true);
         info.setChecked(isChecked);
-        //info.setContentDescription(isChecked ? LocaleController.getString(R.string.NotificationsOn) : LocaleController.getString(R.string.NotificationsOff));
     }
 
     private void vibrateChecked() {

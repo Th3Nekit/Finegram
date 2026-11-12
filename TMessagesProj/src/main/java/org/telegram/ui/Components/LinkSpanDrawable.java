@@ -661,7 +661,6 @@ public class LinkSpanDrawable<S extends CharacterStyle> {
                 return;
             }
             try {
-                // on hardware accelerated edittext to invalidate imagespan display list must be invalidated
                 if (mEditorInvalidateDisplayList != null) {
                     if (editor == null) {
                         editor = mEditor.get(this);

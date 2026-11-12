@@ -25,6 +25,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CheckBox2;
 import org.telegram.ui.Components.LayoutHelper;
@@ -47,7 +48,7 @@ public class AvailableReactionCell extends FrameLayout {
 
         textView = new SimpleTextView(context);
         NotificationCenter.listenEmojiLoading(textView);
-        textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlackText);
         textView.setTextSize(16);
         textView.setTypeface(AndroidUtilities.bold());
         textView.setMaxLines(1);
@@ -82,11 +83,6 @@ public class AvailableReactionCell extends FrameLayout {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec((int) (AndroidUtilities.dp(58) + Theme.dividerPaint.getStrokeWidth()), MeasureSpec.EXACTLY));
     }
 
-    /**
-     * Binds reaction to the view
-     * @param react Reaction to bind
-     * @param checked If view should be checked
-     */
     public void bind(TLRPC.TL_availableReaction react, boolean checked, int currentAccount) {
         boolean animated = false;
         if (react != null && this.react != null && react.reaction.equals(this.react.reaction)) {
@@ -100,7 +96,7 @@ public class AvailableReactionCell extends FrameLayout {
         locked = canLock && react.premium && !UserConfig.getInstance(currentAccount).isPremium();
         if (locked) {
             Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.other_lockedfolders2);
-            drawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_stickers_menu), PorterDuff.Mode.MULTIPLY));
+            ThemeBind.drawableColorFilter(this, drawable, Theme.key_stickers_menu, PorterDuff.Mode.MULTIPLY);
             textView.setRightDrawable(drawable);
 
         } else {
@@ -110,19 +106,10 @@ public class AvailableReactionCell extends FrameLayout {
         setChecked(checked, animated);
     }
 
-    /**
-     * Sets view checked
-     * @param checked If checked or not
-     */
     public void setChecked(boolean checked) {
         setChecked(checked, false);
     }
 
-    /**
-     * Sets view checked
-     * @param checked If checked or not
-     * @param animated If we should animate change
-     */
     public void setChecked(boolean checked, boolean animated) {
         if (switchView != null) {
             switchView.setChecked(checked, animated);
@@ -144,7 +131,6 @@ public class AvailableReactionCell extends FrameLayout {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawColor(Theme.getColor(Theme.key_windowBackgroundWhite));
         float w = Theme.dividerPaint.getStrokeWidth();
         int l = 0, r = 0;
         int pad = AndroidUtilities.dp(81);

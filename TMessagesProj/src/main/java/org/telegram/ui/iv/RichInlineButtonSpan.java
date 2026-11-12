@@ -15,7 +15,6 @@ import org.telegram.tgnet.tl.TL_iv;
 import org.telegram.tgnet.tl.TL_keyboard;
 import org.telegram.ui.ActionBar.Theme;
 
-/** Atomic inline representation of a {@link TL_iv.textButton} while its text is being edited. */
 public class RichInlineButtonSpan extends ReplacementSpan {
 
     private static final int MAX_WIDTH = 240;

@@ -99,7 +99,6 @@ public class BotForumHelper extends BaseController {
         return messageObject;
     }
 
-    // user_id > topic_id -> random_id - message
     private final DialogTopicIdKeyMap<BotDraftMessage> botTextDraftsByRandomIds = new DialogTopicIdKeyMap<>();
     private final DialogTopicIdKeyMap<Object> botTextDraftsByRandomIdsBlocklist = new DialogTopicIdKeyMap<>();
 
@@ -395,13 +394,11 @@ public class BotForumHelper extends BaseController {
     }
 
 
-    /** Send message interceptors **/
 
     public boolean beforeSendingFinalRequest(TLObject req, MessageObject msg, Runnable send) {
         return beforeSendingFinalRequest(req, Collections.singletonList(msg), send);
     }
 
-    // requests resent without a topic after topic creation failed; they must not be intercepted again
     private final Set<TLObject> sendWithoutTopic = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     public boolean beforeSendingFinalRequest(TLObject req, List<MessageObject> messages, Runnable send) {
@@ -454,7 +451,6 @@ public class BotForumHelper extends BaseController {
 
         performSendBotTopicCreate(inputPeer, topicName, randomId, topicId -> {
             if (topicId <= 0) {
-                // topic creation failed: send as is instead of binding to an invalid topic
                 sendWithoutTopic.add(req);
                 AndroidUtilities.runOnUIThread(send);
                 return;
@@ -482,7 +478,6 @@ public class BotForumHelper extends BaseController {
 
 
 
-    //  userId -> topicId
     private final LongSparseArray<List<MessagesStorage.IntCallback>> pendingBotTopics = new LongSparseArray<>();
 
     private void performSendBotTopicCreate(final TLRPC.InputPeer inputPeer,
@@ -515,7 +510,6 @@ public class BotForumHelper extends BaseController {
                 return;
             }
 
-            // must be read before processUpdates, which removes TL_updateMessageID from updates.updates
             int matchedId = 0, topicCreateId = 0;
             for (TLRPC.Update update: updates.updates) {
                 if (update instanceof TL_update.TL_updateMessageID) {
@@ -586,7 +580,6 @@ public class BotForumHelper extends BaseController {
 
 
 
-    /** Notification classes **/
 
     public static class BotForumTopicCreateNotification {
         public final long dialogId;
@@ -625,7 +618,6 @@ public class BotForumHelper extends BaseController {
     }
 
 
-    /** Helper Utils **/
 
     public static boolean isBotForum(int currentAccount, long dialogId) {
         if (dialogId > 0) {
@@ -647,7 +639,6 @@ public class BotForumHelper extends BaseController {
     }
 
 
-    /** Instance **/
 
     private BotForumHelper(int currentAccount) {
         super(currentAccount);
@@ -672,7 +663,7 @@ public class BotForumHelper extends BaseController {
 
     public static class BotDraftAnimationsPool {
         private final DialogTopicIdKeyMap<MultiLayoutTypingAnimator> animators = new DialogTopicIdKeyMap<>();
-        private final SparseIntArray ids = new SparseIntArray();   // messageId -> pendingId;
+        private final SparseIntArray ids = new SparseIntArray();
 
         @Nullable
         public MultiLayoutTypingAnimator getAnimator(long dialogId, int messageId, boolean allowCreate) {

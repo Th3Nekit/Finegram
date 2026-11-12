@@ -25,81 +25,52 @@ import java.util.TimerTask;
 import org.webrtc.ContextUtils;
 import org.webrtc.Logging;
 
-// WebRtcAudioManager handles tasks that uses android.media.AudioManager.
-// At construction, storeAudioParameters() is called and it retrieves
-// fundamental audio parameters like native sample rate and number of channels.
-// The result is then provided to the caller by nativeCacheAudioParameters().
-// It is also possible to call init() to set up the audio environment for best
-// possible "VoIP performance". All settings done in init() are reverted by
-// dispose(). This class can also be used without calling init() if the user
-// prefers to set up the audio environment separately. However, it is
-// recommended to always use AudioManager.MODE_IN_COMMUNICATION.
 @Keep
 public class WebRtcAudioManager {
   private static final boolean DEBUG = false;
 
   private static final String TAG = "WebRtcAudioManager";
 
-  // TODO(bugs.webrtc.org/8914): disabled by default until AAudio support has
-  // been completed. Goal is to always return false on Android O MR1 and higher.
   private static final boolean blacklistDeviceForAAudioUsage = true;
 
-  // Use mono as default for both audio directions.
   private static boolean useStereoOutput;
   private static boolean useStereoInput;
 
   private static boolean blacklistDeviceForOpenSLESUsage;
   private static boolean blacklistDeviceForOpenSLESUsageIsOverridden;
 
-  // Call this method to override the default list of blacklisted devices
-  // specified in WebRtcAudioUtils.BLACKLISTED_OPEN_SL_ES_MODELS.
-  // Allows an app to take control over which devices to exclude from using
-  // the OpenSL ES audio output path
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setBlacklistDeviceForOpenSLESUsage(boolean enable) {
     blacklistDeviceForOpenSLESUsageIsOverridden = true;
     blacklistDeviceForOpenSLESUsage = enable;
   }
 
-  // Call these methods to override the default mono audio modes for the specified direction(s)
-  // (input and/or output).
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setStereoOutput(boolean enable) {
     Logging.w(TAG, "Overriding default output behavior: setStereoOutput(" + enable + ')');
     useStereoOutput = enable;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized void setStereoInput(boolean enable) {
     Logging.w(TAG, "Overriding default input behavior: setStereoInput(" + enable + ')');
     useStereoInput = enable;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean getStereoOutput() {
     return useStereoOutput;
   }
 
-  // TODO(bugs.webrtc.org/8491): Remove NoSynchronizedMethodCheck suppression.
   @SuppressWarnings("NoSynchronizedMethodCheck")
   public static synchronized boolean getStereoInput() {
     return useStereoInput;
   }
 
-  // Default audio data format is PCM 16 bit per sample.
-  // Guaranteed to be supported by all devices.
   private static final int BITS_PER_SAMPLE = 16;
 
   private static final int DEFAULT_FRAME_PER_BUFFER = 256;
 
-  // Private utility class that periodically checks and logs the volume level
-  // of the audio stream that is currently controlled by the volume control.
-  // A timer triggers logs once every 30 seconds and the timer's associated
-  // thread is named "WebRtcVolumeLevelLoggerThread".
   private static class VolumeLogger {
     private static final String THREAD_NAME = "WebRtcVolumeLevelLoggerThread";
     private static final int TIMER_PERIOD_IN_SECONDS = 30;
@@ -219,7 +190,7 @@ public class WebRtcAudioManager {
     if (blacklisted) {
       Logging.d(TAG, Build.MODEL + " is blacklisted for OpenSL ES usage!");
     }
-    return true;//blacklisted;
+    return true;
   }
 
   private void storeAudioParameters() {
@@ -227,8 +198,6 @@ public class WebRtcAudioManager {
     inputChannels = getStereoInput() ? 2 : 1;
     sampleRate = getNativeOutputSampleRate();
     hardwareAEC = isAcousticEchoCancelerSupported();
-    // TODO(henrika): use of hardware AGC is no longer supported. Currently
-    // hardcoded to false. To be removed.
     hardwareAGC = false;
     hardwareNS = isNoiseSuppressorSupported();
     lowLatencyOutput = isLowLatencyOutputSupported();
@@ -241,39 +210,26 @@ public class WebRtcAudioManager {
                                       : getMinInputFrameSize(sampleRate, inputChannels);
   }
 
-  // Gets the current earpiece state.
   private boolean hasEarpiece() {
     return ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
         PackageManager.FEATURE_TELEPHONY);
   }
 
-  // Returns true if low-latency audio output is supported.
   private boolean isLowLatencyOutputSupported() {
     return ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
         PackageManager.FEATURE_AUDIO_LOW_LATENCY);
   }
 
-  // Returns true if low-latency audio input is supported.
-  // TODO(henrika): remove the hardcoded false return value when OpenSL ES
-  // input performance has been evaluated and tested more.
   public boolean isLowLatencyInputSupported() {
-    // TODO(henrika): investigate if some sort of device list is needed here
-    // as well. The NDK doc states that: "As of API level 21, lower latency
-    // audio input is supported on select devices. To take advantage of this
-    // feature, first confirm that lower latency output is available".
     return Build.VERSION.SDK_INT >= 21 && isLowLatencyOutputSupported();
   }
 
-  // Returns true if the device has professional audio level of functionality
-  // and therefore supports the lowest possible round-trip latency.
   private boolean isProAudioSupported() {
     return Build.VERSION.SDK_INT >= 23
         && ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
                PackageManager.FEATURE_AUDIO_PRO);
   }
 
-  // AAudio is supported on Androio Oreo MR1 (API 27) and higher.
-  // TODO(bugs.webrtc.org/8914): currently disabled by default.
   private boolean isAAudioSupported() {
     if (blacklistDeviceForAAudioUsage) {
       Logging.w(TAG, "AAudio support is currently disabled on all devices!");
@@ -281,23 +237,16 @@ public class WebRtcAudioManager {
     return !blacklistDeviceForAAudioUsage && Build.VERSION.SDK_INT >= 27;
   }
 
-  // Returns the native output sample rate for this device's output stream.
   private int getNativeOutputSampleRate() {
-    // Override this if we're running on an old emulator image which only
-    // supports 8 kHz and doesn't support PROPERTY_OUTPUT_SAMPLE_RATE.
     if (WebRtcAudioUtils.runningOnEmulator()) {
       Logging.d(TAG, "Running emulator, overriding sample rate to 8 kHz.");
       return 8000;
     }
-    // Default can be overriden by WebRtcAudioUtils.setDefaultSampleRateHz().
-    // If so, use that value and return here.
     if (WebRtcAudioUtils.isDefaultSampleRateOverridden()) {
       Logging.d(TAG, "Default sample rate is overriden to "
               + WebRtcAudioUtils.getDefaultSampleRateHz() + " Hz");
       return WebRtcAudioUtils.getDefaultSampleRateHz();
     }
-    // No overrides available. Deliver best possible estimate based on default
-    // Android AudioManager APIs.
     final int sampleRateHz = getSampleRateForApiLevel();
     Logging.d(TAG, "Sample rate is set to " + sampleRateHz + " Hz");
     return sampleRateHz;
@@ -312,7 +261,6 @@ public class WebRtcAudioManager {
                                       : Integer.parseInt(sampleRateString);
   }
 
-  // Returns the native output buffer size for low-latency output streams.
   private int getLowLatencyOutputFramesPerBuffer() {
     assertTrue(isLowLatencyOutputSupported());
     if (Build.VERSION.SDK_INT < 17) {
@@ -323,12 +271,6 @@ public class WebRtcAudioManager {
     return framesPerBuffer == null ? DEFAULT_FRAME_PER_BUFFER : Integer.parseInt(framesPerBuffer);
   }
 
-  // Returns true if the device supports an audio effect (AEC or NS).
-  // Four conditions must be fulfilled if functions are to return true:
-  // 1) the platform must support the built-in (HW) effect,
-  // 2) explicit use (override) of a WebRTC based version must not be set,
-  // 3) the device must not be blacklisted for use of the effect, and
-  // 4) the UUID of the effect must be approved (some UUIDs can be excluded).
   private static boolean isAcousticEchoCancelerSupported() {
     return WebRtcAudioEffects.canUseAcousticEchoCanceler();
   }
@@ -336,9 +278,6 @@ public class WebRtcAudioManager {
     return WebRtcAudioEffects.canUseNoiseSuppressor();
   }
 
-  // Returns the minimum output buffer size for Java based audio (AudioTrack).
-  // This size can also be used for OpenSL ES implementations on devices that
-  // lacks support of low-latency output.
   private static int getMinOutputFrameSize(int sampleRateInHz, int numChannels) {
     final int bytesPerFrame = numChannels * (BITS_PER_SAMPLE / 8);
     final int channelConfig =
@@ -348,15 +287,11 @@ public class WebRtcAudioManager {
         / bytesPerFrame;
   }
 
-  // Returns the native input buffer size for input streams.
   private int getLowLatencyInputFramesPerBuffer() {
     assertTrue(isLowLatencyInputSupported());
     return getLowLatencyOutputFramesPerBuffer();
   }
 
-  // Returns the minimum input buffer size for Java based audio (AudioRecord).
-  // This size can calso be used for OpenSL ES implementations on devices that
-  // lacks support of low-latency input.
   private static int getMinInputFrameSize(int sampleRateInHz, int numChannels) {
     final int bytesPerFrame = numChannels * (BITS_PER_SAMPLE / 8);
     final int channelConfig =
@@ -366,7 +301,6 @@ public class WebRtcAudioManager {
         / bytesPerFrame;
   }
 
-  // Helper method which throws an exception  when an assertion has failed.
   private static void assertTrue(boolean condition) {
     if (!condition) {
       throw new AssertionError("Expected condition to be true");

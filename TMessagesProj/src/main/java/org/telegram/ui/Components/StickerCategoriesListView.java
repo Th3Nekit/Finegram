@@ -42,13 +42,14 @@ import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 
-public class StickerCategoriesListView extends RecyclerListView {
+public class StickerCategoriesListView extends RecyclerListView implements Theme.Colorable {
 
     @IntDef({
         CategoriesType.DEFAULT,
@@ -135,7 +136,7 @@ public class StickerCategoriesListView extends RecyclerListView {
 
         setSelectorRadius(dp(15));
         setSelectorType(Theme.RIPPLE_MASK_CIRCLE_20DP);
-        setSelectorDrawableColor(getThemedColor(Theme.key_listSelector));
+        ThemeBind.listSelectorColor(this, Theme.key_listSelector, resourcesProvider);
         selectedPaint.setColor(getThemedColor(Theme.key_listSelector));
 
         setWillNotDraw(false);
@@ -190,9 +191,6 @@ public class StickerCategoriesListView extends RecyclerListView {
         } else if (view.getLeft() < minimumPadding) {
             smoothScrollBy(-(minimumPadding - view.getLeft()), 0, CubicBezierInterpolator.EASE_OUT_QUINT);
         }
-//        if (view instanceof CategoryButton) {
-//            ((CategoryButton) view).play(true);
-//        }
         if (onCategoryClick != null) {
             onCategoryClick.run(category);
         }
@@ -423,11 +421,6 @@ public class StickerCategoriesListView extends RecyclerListView {
                 left += (getWidth() + dp(32)) * (1f - categoriesShownT);
                 right += (getWidth() + dp(32)) * (1f - categoriesShownT);
 
-//                if (left > 0 && rightBoundDrawable != null) {
-//                    rightBoundDrawable.setAlpha(0xFF);
-//                    rightBoundDrawable.setBounds(left - rightBoundDrawable.getIntrinsicWidth(), 0, left, getHeight());
-//                    rightBoundDrawable.draw(canvas);
-//                }
                 canvas.drawRect(left, 0, right, getHeight(), backgroundPaint);
                 if (right < getWidth() && leftBoundDrawable != null) {
                     leftBoundDrawable.setAlpha(0xFF);
@@ -449,13 +442,6 @@ public class StickerCategoriesListView extends RecyclerListView {
             }
         }
 
-//        if (rightBoundDrawable != null) {
-//            rightBoundDrawable.setAlpha((int) (0xFF * rightBoundAlpha.set(canScrollHorizontally(1) ? 1 : 0) * categoriesShownT));
-//            if (rightBoundDrawable.getAlpha() > 0) {
-//                rightBoundDrawable.setBounds(getWidth() - rightBoundDrawable.getIntrinsicWidth(), 0, getWidth(), getHeight());
-//                rightBoundDrawable.draw(canvas);
-//            }
-//        }
     }
 
     private final RectF rect1 = new RectF(), rect2 = new RectF(), rect3 = new RectF();
@@ -495,11 +481,6 @@ public class StickerCategoriesListView extends RecyclerListView {
             getChildBounds(fromChild, rect1);
             getChildBounds(toChild, rect2);
             AndroidUtilities.lerp(rect1, rect2, t, rect3);
-//            float T = selectedIndex.getTransitionProgress();
-//            float isMiddle = 4f * T * (1f - T);
-//            float hw = rect3.width() / 2 * (1f + isMiddle * .05f);
-//            float hh = rect3.height() / 2 * (1f - isMiddle * .1f);
-//            rect3.set(rect3.centerX() - hw, rect3.centerY() - hh, rect3.centerX() + hw, rect3.centerY() + hh);
             canvas.drawRoundRect(rect3, AndroidUtilities.dp(15), AndroidUtilities.dp(15), selectedPaint);
         }
         selectedPaint.setAlpha(wasAlpha);
@@ -625,7 +606,18 @@ public class StickerCategoriesListView extends RecyclerListView {
                 (int) (255 * alpha));
     }
 
-    private class CategoryButton extends RLottieImageView {
+    private class CategoryButton extends RLottieImageView implements Theme.Colorable {
+
+        @Override
+        public void updateColors() {
+            try {
+                if (selectedAnimator == null) {
+                    updateSelectedT(selectedT);
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
 
         private int imageColor;
         private float selectedT;
@@ -656,7 +648,6 @@ public class StickerCategoriesListView extends RecyclerListView {
             }
             if (category.remote) {
                 setImageResource(0);
-//                cached = true;
                 clearAnimationDrawable();
                 boolean animated = isTabIconsAnimationEnabled(true);
                 loaded = false;
@@ -1011,6 +1002,16 @@ public class StickerCategoriesListView extends RecyclerListView {
                     onResult.run(false, null, 0L, true);
                 }
             });
+        }
+    }
+
+    @Override
+    public void updateColors() {
+        try {
+            selectedPaint.setColor(getThemedColor(Theme.key_listSelector));
+            invalidate();
+        } catch (Exception e) {
+            FileLog.e(e);
         }
     }
 }

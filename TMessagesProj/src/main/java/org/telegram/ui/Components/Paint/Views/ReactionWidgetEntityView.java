@@ -245,40 +245,6 @@ public class ReactionWidgetEntityView extends EntityView {
         return storyReactionWidgetBackground.isDarkStyle();
     }
 
-//    private void animateBounce() {
-//        AnimatorSet animatorSet = new AnimatorSet();
-//        ValueAnimator inAnimator = ValueAnimator.ofFloat(1, 1.05f);
-//        inAnimator.setDuration(100);
-//        inAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT);
-//
-//        ValueAnimator outAnimator = ValueAnimator.ofFloat(1.05f, 1f);
-//        outAnimator.setDuration(250);
-//        outAnimator.setInterpolator(new OvershootInterpolator());
-//
-//        ValueAnimator.AnimatorUpdateListener updater = animation -> {
-//            bounceScale = (float) animation.getAnimatedValue();
-//            invalidate();
-//        };
-//        setClipInParent(false);
-//        inAnimator.addUpdateListener(updater);
-//        outAnimator.addUpdateListener(updater);
-//        animatorSet.playSequentially(inAnimator, outAnimator);
-//        animatorSet.addListener(new AnimatorListenerAdapter() {
-//            @Override
-//            public void onAnimationEnd(Animator animation) {
-//                bounceScale = 1f;
-//                invalidate();
-//                setClipInParent(true);
-//            }
-//        });
-//        animatorSet.start();
-//
-//        if (animationRunnable != null) {
-//            AndroidUtilities.cancelRunOnUIThread(animationRunnable);
-//            animationRunnable.run();
-//            animationRunnable = null;
-//        }
-//    }
 
     public class StickerViewSelectionView extends SelectionView {
 

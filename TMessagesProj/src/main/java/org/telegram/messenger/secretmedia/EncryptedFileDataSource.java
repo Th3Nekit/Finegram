@@ -45,7 +45,7 @@ public final class EncryptedFileDataSource extends BaseDataSource {
     EncryptedFileInputStream fileInputStream;
 
     public EncryptedFileDataSource() {
-        super(/* isNetwork= */ false);
+        super(                 false);
     }
 
     @Deprecated

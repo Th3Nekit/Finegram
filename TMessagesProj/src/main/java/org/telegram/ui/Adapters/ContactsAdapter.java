@@ -84,6 +84,26 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
         this.fragment = fragment;
     }
 
+    private float sectionLettersProgress = 1f;
+    private float sectionLetterTextSize;
+
+    public void setSectionLettersProgress(float progress) {
+        sectionLettersProgress = progress;
+        for (int i = 0; i < letterCells.size(); i++) {
+            letterCells.get(i).setLetterProgress(progress);
+        }
+    }
+
+    private final ArrayList<LetterSectionCell> letterCells = new ArrayList<>();
+
+    public void setSectionLetterTextSize(float sizeDp) {
+        sectionLetterTextSize = sizeDp;
+    }
+
+    public int getSortType() {
+        return sortType;
+    }
+
     public void setDisableSections(boolean value) {
         disableSections = value;
     }
@@ -294,13 +314,11 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
             count++;
         }
         if (needPhonebook) {
-            //count++;
         }
 
         hasPhonebook = !ContactsController.getInstance(currentAccount).phoneBookContacts.isEmpty();
         isEmptyWithMainTabs = isEmpty && needPhonebook && !isAdmin && onlyUsers == 0;
         if (isEmptyWithMainTabs) {
-            // empty + invite friends
             return hasPhonebook ? 2 : 1;
         }
 
@@ -314,9 +332,9 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
 
     private int getCountForSectionInternal(int section) {
         if (isEmptyWithMainTabs) {
-            if (section == 0) { // empty
+            if (section == 0) {
                 return (includeSearch ? 1 : 0) + 1;
-            } else if (section == 1) {  // invite contacts
+            } else if (section == 1) {
                 return 2 + ContactsController.getInstance(currentAccount).phoneBookContacts.size();
             }
             return 0;
@@ -356,14 +374,13 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
                 }
                 if (sortType == SORT_TYPE_BY_TIME) {
                     if (section == 1) {
-                        return onlineContacts.isEmpty() ? 0 : onlineContacts.size(); // + 1;
+                        return onlineContacts.isEmpty() ? 0 : onlineContacts.size();
                     }
                 } else {
                     if (section - 1 < sortedUsersSectionsArray.size()) {
                         ArrayList<TLRPC.TL_contact> arr = usersSectionsDict.get(sortedUsersSectionsArray.get(section - 1));
                         int count = arr.size();
                         if (section - 1 != (sortedUsersSectionsArray.size() - 1) || needPhonebook) {
-                        //    count++;
                         }
                         return count;
                     }
@@ -383,8 +400,13 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
 
         if (view == null) {
             view = new LetterSectionCell(mContext);
+            letterCells.add((LetterSectionCell) view);
         }
         LetterSectionCell cell = (LetterSectionCell) view;
+        if (sectionLetterTextSize > 0) {
+            cell.setLetterTextSize(sectionLetterTextSize);
+        }
+        cell.setLetterProgress(sectionLettersProgress);
         if (sortType == SORT_TYPE_BY_TIME || disableSections || isEmpty) {
             cell.setLetter("");
         } else {

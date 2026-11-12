@@ -3,7 +3,6 @@
 #include <cassert>
 
 static BIGNUM *get_y2(BIGNUM *x, const BIGNUM *mod, BN_CTX *big_num_context) {
-    // returns y^2 = x^3 + 486662 * x^2 + x
     BIGNUM *y = BN_dup(x);
     assert(y != NULL);
     BIGNUM *coef = BN_new();
@@ -18,7 +17,6 @@ static BIGNUM *get_y2(BIGNUM *x, const BIGNUM *mod, BN_CTX *big_num_context) {
 }
 
 static BIGNUM *get_double_x(BIGNUM *x, const BIGNUM *mod, BN_CTX *big_num_context) {
-    // returns x_2 =(x^2 - 1)^2/(4*y^2)
     BIGNUM *denominator = get_y2(x, mod, big_num_context);
     assert(denominator != NULL);
     BIGNUM *coef = BN_new();

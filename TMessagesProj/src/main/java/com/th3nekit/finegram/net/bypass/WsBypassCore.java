@@ -569,7 +569,7 @@ public final class WsBypassCore {
             if (mixed && fileTransfer) {
                 dbg("mixed: " + (upload ? "отправка" : "загрузка") + " файла (dc=" + dc + ")");
             }
-            final boolean preferTgws = preferTgws(fileTransfer);
+            final boolean preferTgws = preferTgws(fileTransfer && !upload);
             final boolean usePool = !mixed || isMedia || !fileTransfer;
             RawWebSocket ws = openRoute(dc, isMedia, routeDeadline, generation, preferTgws, usePool);
             if (ws == null) {

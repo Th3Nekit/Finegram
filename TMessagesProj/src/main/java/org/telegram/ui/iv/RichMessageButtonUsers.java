@@ -8,7 +8,6 @@ import org.telegram.tgnet.tl.TL_keyboard;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
-/** Collects the access hashes required by user-profile buttons in an input rich message. */
 public final class RichMessageButtonUsers {
 
     private RichMessageButtonUsers() {}

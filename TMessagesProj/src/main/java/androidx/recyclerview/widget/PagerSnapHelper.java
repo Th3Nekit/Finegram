@@ -23,22 +23,9 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * Implementation of the {@link SnapHelper} supporting pager style snapping in either vertical or
- * horizontal orientation.
- *
- * <p>
- *
- * PagerSnapHelper can help achieve a similar behavior to
- * {@link androidx.viewpager.widget.ViewPager}. Set both {@link RecyclerView} and the items of the
- * {@link RecyclerView.Adapter} to have
- * {@link android.view.ViewGroup.LayoutParams#MATCH_PARENT} height and width and then attach
- * PagerSnapHelper to the {@link RecyclerView} using {@link #attachToRecyclerView(RecyclerView)}.
- */
 public class PagerSnapHelper extends SnapHelper {
-    private static final int MAX_SCROLL_ON_FLING_DURATION = 100; // ms
+    private static final int MAX_SCROLL_ON_FLING_DURATION = 100;
 
-    // Orientation helpers are lazily created per LayoutManager.
     @Nullable
     private OrientationHelper mVerticalHelper;
     @Nullable
@@ -89,13 +76,11 @@ public class PagerSnapHelper extends SnapHelper {
             return RecyclerView.NO_POSITION;
         }
 
-        // A child that is exactly in the center is eligible for both before and after
         View closestChildBeforeCenter = null;
         int distanceBefore = Integer.MIN_VALUE;
         View closestChildAfterCenter = null;
         int distanceAfter = Integer.MAX_VALUE;
 
-        // Find the first view before the center, and the first view after the center
         final int childCount = layoutManager.getChildCount();
         for (int i = 0; i < childCount; i++) {
             final View child = layoutManager.getChildAt(i);
@@ -105,18 +90,15 @@ public class PagerSnapHelper extends SnapHelper {
             final int distance = distanceToCenter(layoutManager, child, orientationHelper);
 
             if (distance <= 0 && distance > distanceBefore) {
-                // Child is before the center and closer then the previous best
                 distanceBefore = distance;
                 closestChildBeforeCenter = child;
             }
             if (distance >= 0 && distance < distanceAfter) {
-                // Child is after the center and closer then the previous best
                 distanceAfter = distance;
                 closestChildAfterCenter = child;
             }
         }
 
-        // Return the position of the first child from the center, in the direction of the fling
         final boolean forwardDirection = isForwardFling(layoutManager, velocityX, velocityY);
         if (forwardDirection && closestChildAfterCenter != null) {
             return layoutManager.getPosition(closestChildAfterCenter);
@@ -124,10 +106,6 @@ public class PagerSnapHelper extends SnapHelper {
             return layoutManager.getPosition(closestChildBeforeCenter);
         }
 
-        // There is no child in the direction of the fling. Either it doesn't exist (start/end of
-        // the list), or it is not yet attached (very rare case when children are larger then the
-        // viewport). Extrapolate from the child that is visible to get the position of the view to
-        // snap to.
         View visibleView = forwardDirection ? closestChildBeforeCenter : closestChildAfterCenter;
         if (visibleView == null) {
             return RecyclerView.NO_POSITION;
@@ -207,15 +185,6 @@ public class PagerSnapHelper extends SnapHelper {
         return childCenter - containerCenter;
     }
 
-    /**
-     * Return the child view that is currently closest to the center of this parent.
-     *
-     * @param layoutManager The {@link RecyclerView.LayoutManager} associated with the attached
-     *                      {@link RecyclerView}.
-     * @param helper The relevant {@link OrientationHelper} for the attached {@link RecyclerView}.
-     *
-     * @return the child view that is currently closest to the center of this parent.
-     */
     @Nullable
     private View findCenterView(RecyclerView.LayoutManager layoutManager,
             OrientationHelper helper) {
@@ -239,7 +208,6 @@ public class PagerSnapHelper extends SnapHelper {
                     + (helper.getDecoratedMeasurement(child) / 2);
             int absDistance = Math.abs(childCenter - center);
 
-            /* if child center is closer than previous closest, set it as closest  */
             if (absDistance < absClosest) {
                 absClosest = absDistance;
                 closestChild = child;

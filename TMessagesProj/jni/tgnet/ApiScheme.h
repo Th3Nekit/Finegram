@@ -126,17 +126,13 @@ public:
     int32_t notify_default_delay_ms;
     int32_t push_chat_period_ms;
     int32_t push_chat_limit;
-    // int32_t saved_gifs_limit;
     int32_t edit_time_limit;
     int32_t revoke_time_limit;
     int32_t revoke_pm_time_limit;
     int32_t rating_e_decay;
     int32_t stickers_recent_limit;
-    // int32_t stickers_faved_limit;
     int32_t channels_read_media_period;
     int32_t tmp_sessions;
-    // int32_t pinned_dialogs_count_max;
-    // int32_t pinned_infolder_count_max;
     int32_t call_receive_timeout_ms;
     int32_t call_ring_timeout_ms;
     int32_t call_connect_timeout_ms;

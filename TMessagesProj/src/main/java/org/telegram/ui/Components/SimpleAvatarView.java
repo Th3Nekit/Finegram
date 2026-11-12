@@ -80,27 +80,15 @@ public class SimpleAvatarView extends View {
         }
     }
 
-    /**
-     * Sets new User or Chat to be bound as the avatar
-     * @param obj User or chat
-     */
     public void setAvatar(TLObject obj) {
         avatarDrawable.setInfo(obj);
         avatarImage.setForUserOrChat(obj, avatarDrawable);
     }
 
-    /**
-     * @return If avatar is currently selected
-     */
     public boolean isSelected() {
         return selectProgress == 1;
     }
 
-    /**
-     * Sets avatar selected value
-     * @param s If avatar is selected
-     * @param animate If we should animate status change
-     */
     public void setSelected(boolean s, boolean animate) {
         if (animator != null) {
             animator.cancel();
@@ -129,10 +117,6 @@ public class SimpleAvatarView extends View {
         }
     }
 
-    /**
-     * Sets avatar hidden
-     * @param h If we should hide avatar from view
-     */
     public void setHideAvatar(boolean h) {
         isAvatarHidden = h;
         invalidate();

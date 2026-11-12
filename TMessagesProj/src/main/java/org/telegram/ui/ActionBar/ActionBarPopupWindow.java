@@ -80,13 +80,11 @@ public class ActionBarPopupWindow extends PopupWindow {
             f = PopupWindow.class.getDeclaredField("mOnScrollChangedListener");
             f.setAccessible(true);
         } catch (NoSuchFieldException e) {
-            /* ignored */
         }
         superListenerField = f;
     }
 
     private static final ViewTreeObserver.OnScrollChangedListener NOP = () -> {
-        /* do nothing */
     };
 
     private ViewTreeObserver.OnScrollChangedListener mSuperScrollListener;
@@ -174,7 +172,7 @@ public class ActionBarPopupWindow extends PopupWindow {
             }
             if (backgroundDrawable != null) {
                 backgroundDrawable.getPadding(bgPaddings);
-                setBackgroundColor(getThemedColor(Theme.key_actionBarDefaultSubmenuBackground));
+                ThemeBind.backgroundColor(this, Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider);
             }
             if (rounded_corners) {
                 roundedBackgroundPaint.setColor(getThemedColor(Theme.key_actionBarDefaultSubmenuBackground));
@@ -387,6 +385,8 @@ public class ActionBarPopupWindow extends PopupWindow {
             backgroundDrawable = drawable;
             if (backgroundDrawable != null) {
                 backgroundDrawable.getPadding(bgPaddings);
+            } else {
+                bgPaddings.setEmpty();
             }
             if (rounded_corners && drawable != null && drawable.getColorFilter() instanceof PorterDuffColorFilter f1) {
                 roundedBackgroundPaint.setColorFilter(f1);
@@ -1096,7 +1096,7 @@ public class ActionBarPopupWindow extends PopupWindow {
                 windowAnimatorSet.setDuration(dismissAnimationDuration);
             } else {
                 windowAnimatorSet.playTogether(
-                        ObjectAnimator.ofFloat(viewGroup, View.TRANSLATION_Y, dp((content != null && content.shownFromBottom) ? 5 : -5)),
+                        ObjectAnimator.ofFloat(viewGroup, View.TRANSLATION_Y, viewGroup.getTranslationY() + dp((content != null && content.shownFromBottom) ? 5 : -5)),
                         ObjectAnimator.ofFloat(viewGroup, View.ALPHA, 0.0f));
                 windowAnimatorSet.setDuration(dismissAnimationDuration);
             }

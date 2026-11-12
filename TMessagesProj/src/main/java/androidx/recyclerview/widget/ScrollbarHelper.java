@@ -17,15 +17,8 @@ package androidx.recyclerview.widget;
 
 import android.view.View;
 
-/**
- * A helper class to do scroll offset calculations.
- */
 class ScrollbarHelper {
 
-    /**
-     * @param startChild View closest to start of the list. (top or left)
-     * @param endChild   View closest to end of the list (bottom or right)
-     */
     static int computeScrollOffset(RecyclerView.State state, OrientationHelper orientation,
             View startChild, View endChild, RecyclerView.LayoutManager lm,
             boolean smoothScrollbarEnabled, boolean reverseLayout) {
@@ -53,10 +46,6 @@ class ScrollbarHelper {
                 - orientation.getDecoratedStart(startChild)));
     }
 
-    /**
-     * @param startChild View closest to start of the list. (top or left)
-     * @param endChild   View closest to end of the list (bottom or right)
-     */
     static int computeScrollExtent(RecyclerView.State state, OrientationHelper orientation,
             View startChild, View endChild, RecyclerView.LayoutManager lm,
             boolean smoothScrollbarEnabled) {
@@ -72,10 +61,6 @@ class ScrollbarHelper {
         return Math.min(orientation.getTotalSpace(), extend);
     }
 
-    /**
-     * @param startChild View closest to start of the list. (top or left)
-     * @param endChild   View closest to end of the list (bottom or right)
-     */
     static int computeScrollRange(RecyclerView.State state, OrientationHelper orientation,
             View startChild, View endChild, RecyclerView.LayoutManager lm,
             boolean smoothScrollbarEnabled) {
@@ -86,13 +71,11 @@ class ScrollbarHelper {
         if (!smoothScrollbarEnabled) {
             return state.getItemCount();
         }
-        // smooth scrollbar enabled. try to estimate better.
         final int laidOutArea = orientation.getDecoratedEnd(endChild)
                 - orientation.getDecoratedStart(startChild);
         final int laidOutRange = Math.abs(lm.getPosition(startChild)
                 - lm.getPosition(endChild))
                 + 1;
-        // estimate a size for full list.
         return (int) ((float) laidOutArea / laidOutRange * state.getItemCount());
     }
 

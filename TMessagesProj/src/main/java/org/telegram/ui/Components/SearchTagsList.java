@@ -55,6 +55,7 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.AlertDialogDecor;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
 import org.telegram.ui.Components.Reactions.ReactionsLayoutInBubble;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
@@ -191,7 +192,7 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
                 setPivotX((left + right) / 2f);
             }
         };
-        tagView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText2, resourcesProvider));
+        ThemeBind.textColor(tagView, Theme.key_windowBackgroundWhiteBlueText2, resourcesProvider);
         tagView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         tagView.setTypeface(AndroidUtilities.bold());
         SpannableStringBuilder ssb = new SpannableStringBuilder();
@@ -209,7 +210,7 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
         tagView.setPadding(dp(4), dp(4), dp(9), dp(4));
 
         TextView textView = new TextView(getContext());
-        textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText2, resourcesProvider));
+        ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlueText2, resourcesProvider);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         textView.setTypeface(AndroidUtilities.bold());
         ssb = new SpannableStringBuilder(LocaleController.getString(R.string.AddTagsToYourSavedMessages2));
@@ -229,7 +230,6 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
         premiumLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
         premiumLayout.setPadding(dp(7), 0, 0, 0);
         premiumLayout.setClipToPadding(false);
-        // premiumLayout.setTranslationY(dp(1));
 
         addView(premiumLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.CENTER_VERTICAL | Gravity.LEFT, 5, 0, 5, 0));
     }
@@ -469,42 +469,22 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
         MediaDataController.getInstance(currentAccount).fetchNewEmojiKeywords(AndroidUtilities.getCurrentKeyboardLanguage(), true);
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         editText.setText(name == null ? "" : name);
-        editText.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
-        editText.setHintColor(Theme.getColor(Theme.key_groupcreate_hintText, resourcesProvider));
+        ThemeBind.textColor(editText, Theme.key_dialogTextBlack, resourcesProvider);
+        ThemeBind.editHintColor(editText, Theme.key_groupcreate_hintText, resourcesProvider);
         editText.setHintText(LocaleController.getString(R.string.SavedTagLabelPlaceholder));
         editText.setSingleLine(true);
         editText.setFocusable(true);
         editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        editText.setLineColors(Theme.getColor(Theme.key_windowBackgroundWhiteInputField, resourcesProvider), Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated, resourcesProvider), Theme.getColor(Theme.key_text_RedRegular, resourcesProvider));
+        ThemeBind.lineColors(editText, Theme.key_windowBackgroundWhiteInputField, Theme.key_windowBackgroundWhiteInputFieldActivated, Theme.key_text_RedRegular, resourcesProvider);
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
         editText.setBackgroundDrawable(null);
         editText.setPadding(0, 0, dp(42), 0);
-//        editText.addTextChangedListener(new TextWatcher() {
-//            boolean ignoreTextChange;
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//                if (ignoreTextChange) {
-//                    return;
-//                }
-//                if (s.length() > MAX_NAME_LENGTH) {
-//                    ignoreTextChange = true;
-//                    s.delete(MAX_NAME_LENGTH, s.length());
-//                    AndroidUtilities.shakeView(editText);
-//                    editText.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
-//                    ignoreTextChange = false;
-//                }
-//            }
-//        });
 
         LinearLayout container = new LinearLayout(context);
         container.setOrientation(LinearLayout.VERTICAL);
 
         TextView textView = new TextView(context);
-        textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
+        ThemeBind.textColor(textView, Theme.key_dialogTextBlack, resourcesProvider);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setText(LocaleController.getString(R.string.SavedTagLabelTagText));
         container.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 24, 5, 24, 12));
@@ -571,8 +551,8 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.savedReactionTagsUpdate);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.savedReactionTagsUpdate);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.emojiLoaded);
     }
 
     @Override
@@ -740,14 +720,8 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
     private class Adapter extends RecyclerListView.SelectionAdapter {
 
         public Adapter() {
-//            setHasStableIds(true);
         }
 
-//        @Override
-//        public long getItemId(int position) {
-//            if (position < 0 || position >= items.size()) return position;
-//            return items.get(position).hash();
-//        }
 
         @NonNull
         @Override

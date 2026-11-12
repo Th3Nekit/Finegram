@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** One tokenizer, one worker, coalesced requests and a bounded cache independent of the theme. */
 public final class PrismaHighlightingService implements AutoCloseable {
     public interface Tokenizer extends AutoCloseable {
         PrismaHighlighter.Tokenization tokenize(String text, String language);
@@ -51,7 +50,6 @@ public final class PrismaHighlightingService implements AutoCloseable {
             this.callback = callback;
         }
 
-        /** Cancels this consumer. A shared tokenization may still serve other consumers. */
         public void cancel() {
             callback = null;
         }
@@ -158,7 +156,6 @@ public final class PrismaHighlightingService implements AutoCloseable {
         }
     }
 
-    /** Completion runs on the worker, including cache hits. The UI adapter dispatches to main. */
     public Request request(String text, String language, Callback callback) {
         if (text == null || callback == null) throw new NullPointerException();
         Key key = new Key(text, normalizeLanguage(language));
@@ -184,7 +181,6 @@ public final class PrismaHighlightingService implements AutoCloseable {
         }
     }
 
-    /** Null until prepare or the first request finishes initialization. */
     public Set<String> getLanguages() {
         return languages;
     }
@@ -245,7 +241,6 @@ public final class PrismaHighlightingService implements AutoCloseable {
         } else {
             try {
                 PrismaHighlighter.Tokenization tokens = tokenizer.tokenize(key.text, key.language);
-                // Resolve once before weighing the cache entry; no colors are stored.
                 tokens.styledRanges();
                 result = new Result(tokens, null);
             } catch (RuntimeException | LinkageError | OutOfMemoryError error) {
@@ -286,7 +281,6 @@ public final class PrismaHighlightingService implements AutoCloseable {
         try {
             failures.failed(error);
         } catch (RuntimeException | LinkageError ignored) {
-            // Logging must not prevent completion/unlocking of consumers.
         }
     }
 

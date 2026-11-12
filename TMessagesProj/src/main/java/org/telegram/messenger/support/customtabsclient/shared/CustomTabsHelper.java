@@ -1,16 +1,5 @@
 // Copyright 2015 Google Inc. All Rights Reserved.
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 package org.telegram.messenger.support.customtabsclient.shared;
 
@@ -30,9 +19,6 @@ import org.telegram.messenger.ApplicationLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Helper class for Custom Tabs.
- */
 public class CustomTabsHelper {
     private static final String TAG = "CustomTabsHelper";
     static final String STABLE_PACKAGE = "com.android.chrome";
@@ -54,21 +40,10 @@ public class CustomTabsHelper {
         intent.putExtra(EXTRA_CUSTOM_TABS_KEEP_ALIVE, keepAliveIntent);
     }
 
-    /**
-     * Goes through all apps that handle VIEW intents and have a warmup service. Picks
-     * the one chosen by the user if there is one, otherwise makes a best effort to return a
-     * valid package name.
-     *
-     * This is <strong>not</strong> threadsafe.
-     *
-     * @param context {@link Context} to use for accessing {@link PackageManager}.
-     * @return The package name recommended to use for connecting to custom tabs related components.
-     */
     public static String getPackageNameToUse(Context context) {
         if (sPackageNameToUse != null) return sPackageNameToUse;
 
         PackageManager pm = context.getPackageManager();
-        // Get default VIEW intent handler.
         Intent activityIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.example.com"));
         ResolveInfo defaultViewHandlerInfo = pm.resolveActivity(activityIntent, 0);
         String defaultViewHandlerPackageName = null;
@@ -76,7 +51,6 @@ public class CustomTabsHelper {
             defaultViewHandlerPackageName = defaultViewHandlerInfo.activityInfo.packageName;
         }
 
-        // Get all apps that can handle VIEW intents.
         List<ResolveInfo> resolvedActivityList = pm.queryIntentActivities(activityIntent, 0);
         List<String> packagesSupportingCustomTabs = new ArrayList<>();
         for (ResolveInfo info : resolvedActivityList) {
@@ -88,8 +62,6 @@ public class CustomTabsHelper {
             }
         }
 
-        // Now packagesSupportingCustomTabs contains all apps that can handle both VIEW intents
-        // and service calls.
         if (packagesSupportingCustomTabs.isEmpty()) {
             sPackageNameToUse = null;
         } else if (packagesSupportingCustomTabs.size() == 1) {
@@ -122,11 +94,6 @@ public class CustomTabsHelper {
         return sPackageNameToUse;
     }
 
-    /**
-     * Used to check whether there is a specialized handler for a given intent.
-     * @param intent The intent to check with.
-     * @return Whether there is a specialized handler for the given intent.
-     */
     private static boolean hasSpecializedHandlerIntents(Context context, Intent intent) {
         try {
             PackageManager pm = context.getPackageManager();
@@ -149,9 +116,6 @@ public class CustomTabsHelper {
         return false;
     }
 
-    /**
-     * @return All possible chrome package names that provide custom tabs feature.
-     */
     public static String[] getPackages() {
         return new String[]{"", STABLE_PACKAGE, BETA_PACKAGE, DEV_PACKAGE, LOCAL_PACKAGE};
     }

@@ -42,7 +42,6 @@ public class CropRotationWheel extends FrameLayout {
     private ImageView aspectRatioButton;
     private ImageView rotation90Button;
     private ImageView  mirrorButton;
-//    private TextView degreesLabel;
     private String degreesText;
     private TextPaint degreesTextPaint;
 
@@ -120,7 +119,6 @@ public class CropRotationWheel extends FrameLayout {
     }
 
     public void setFreeform(boolean freeform) {
-        //aspectRatioButton.setVisibility(freeform ? VISIBLE : GONE);
     }
 
     public void setMirrored(boolean value) {

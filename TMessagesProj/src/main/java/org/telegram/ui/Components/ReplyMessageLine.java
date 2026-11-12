@@ -21,6 +21,7 @@ import androidx.core.math.MathUtils;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
@@ -31,6 +32,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.messenger.utils.RadiiUtils;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ChatMessageCell;
 
 import com.th3nekit.finegram.core.configs.FinegramAppearanceConfig;
@@ -119,11 +121,12 @@ public class ReplyMessageLine {
     }
 
     public void setBackgroundColor(int backgroundColor) {
+        themedDefault = false;
         this.backgroundColor = backgroundColor;
     }
 
-    /** Applies a flat color without changing the defaults used by {@link #check}. */
     public void setSimpleColor(int color, boolean dark) {
+        themedDefault = false;
         reversedOut = false;
         hasColor2 = hasColor3 = false;
         color1 = color2 = color3 = color;
@@ -222,7 +225,6 @@ public class ReplyMessageLine {
         }
         if (sticker != null) {
             if (sticker.set(stickerDocumentId, true)) {
-//                emojiLoaded = false;
             }
         }
 
@@ -235,7 +237,25 @@ public class ReplyMessageLine {
     public static final int TYPE_LINK = 3;
     public static final int TYPE_CONTACT = 4;
 
+    private boolean themedDefault;
+    private int themedDefaultType;
+    private Theme.ResourcesProvider themedDefaultProvider;
+    private int themedDefaultGeneration;
+
+    private void checkThemedDefault() {
+        if (!themedDefault || themedDefaultGeneration == ThemeBind.generation()) {
+            return;
+        }
+        try {
+            check(null, null, null, themedDefaultProvider, themedDefaultType);
+        } catch (Exception e) {
+            themedDefault = false;
+            FileLog.e(e);
+        }
+    }
+
     public int check(MessageObject messageObject, TLRPC.User currentUser, TLRPC.Chat currentChat, Theme.ResourcesProvider resourcesProvider, final int type) {
+        themedDefault = false;
         final boolean dark = resourcesProvider != null ? resourcesProvider.isDark() : Theme.isCurrentThemeDark();
         if (messageObject != null && !(messageObject.isOutOwner() || type == TYPE_CODE) && messageObject.overrideLinkPeerColor != null) {
             return resolveCollectionColor(messageObject, messageObject.overrideLinkPeerColor, resourcesProvider);
@@ -246,6 +266,10 @@ public class ReplyMessageLine {
         stickerDocumentId = 0;
         sponsored = messageObject != null && messageObject.isSponsored();
         if (messageObject == null) {
+            themedDefault = true;
+            themedDefaultType = type;
+            themedDefaultProvider = resourcesProvider;
+            themedDefaultGeneration = ThemeBind.generation();
             hasColor2 = hasColor3 = false;
             color1 = color2 = color3 = Theme.getColor(Theme.key_chat_inReplyLine, resourcesProvider);
             backgroundColor = Theme.multAlpha(color1, dark ? 0.12f : 0.10f);
@@ -430,18 +454,23 @@ public class ReplyMessageLine {
             if (type == TYPE_CODE && !messageObject.isOutOwner()) {
                 color1 = color2 = color3 = Theme.getColor(Theme.key_chat_inCodeBackground, resourcesProvider);
             } else {
-                color1 = color2 = color3 = Theme.getColor(hasColor2 || hasColor3 ? Theme.key_chat_outReplyLine2 : Theme.key_chat_outReplyLine, resourcesProvider);
+                final Integer compactLine = Theme.getCompactColor(Theme.key_chat_outReplyLine, resourcesProvider);
+                color1 = color2 = color3 = compactLine != null ? compactLine : Theme.getColor(hasColor2 || hasColor3 ? Theme.key_chat_outReplyLine2 : Theme.key_chat_outReplyLine, resourcesProvider);
             }
             if (hasColor3) {
                 reversedOut = true;
                 color1 = Theme.multAlpha(color1, .20f);
-                color2 = Theme.multAlpha(color2, .50f); // 50% over 20% = 60%
+                color2 = Theme.multAlpha(color2, .50f);
             } else if (hasColor2) {
                 reversedOut = true;
                 color1 = Theme.multAlpha(color1, .35f);
             }
             backgroundColor = Theme.multAlpha(color3, dark ? 0.12f : 0.10f);
             nameColor = Theme.getColor(Theme.key_chat_outReplyNameText, resourcesProvider);
+            if (messageObject.isCompactMode() && messageObject.isOutOwner()) {
+                backgroundColor = ColorUtils.compositeColors(Theme.getColor(Theme.key_chat_compact_outReplyBackground, resourcesProvider), Theme.getCompactOutBubbleColor(resourcesProvider));
+                nameColor = Theme.getCompactColor(Theme.key_chat_outReplyNameText, resourcesProvider);
+            }
         }
         if ((type == TYPE_REPLY || type == TYPE_LINK || type == TYPE_CONTACT) && messageObject != null && messageObject.overrideLinkEmoji != -1) {
             emojiDocumentId = messageObject.overrideLinkEmoji;
@@ -469,6 +498,7 @@ public class ReplyMessageLine {
     }
 
     public int setFactCheck(Theme.ResourcesProvider resourcesProvider) {
+        themedDefault = false;
         nameColor = Theme.getColor(Theme.key_text_RedBold, resourcesProvider);
         color1 = Theme.getColor(Theme.key_text_RedBold, resourcesProvider);
         hasColor2 = false;
@@ -539,6 +569,7 @@ public class ReplyMessageLine {
     }
 
     public void drawLine(Canvas canvas, RectF rect, float alpha) {
+        checkThemedDefault();
         final int rad = (int) Math.floor(SharedConfig.bubbleRadius / (sponsored ? 2f : 3f));
         final float lineRight = rect.left + Math.max(dp(3), dp(2 * rad));
 
@@ -550,7 +581,6 @@ public class ReplyMessageLine {
         final float color3Alpha = this.color3Alpha.set(hasColor3);
 
         if (loadingAlpha > 0 && !hasColor2) {
-            // dim background — full line with rounded corners
             int wasAlpha = color1Paint.getAlpha();
             color1Paint.setAlpha((int) (wasAlpha * .3f));
             rectF.set(rect.left, rect.top, lineRight, rect.bottom);
@@ -565,7 +595,6 @@ public class ReplyMessageLine {
             final float from = MathUtils.clamp(.5f * ((Math.max(x, .5f) + 1.5f) % 3.5f), 0, 1);
             final float to   = MathUtils.clamp(.5f * (((x + 1.5f) % 3.5f) - 1.5f), 0, 1);
 
-            // bright loading indicator with rounded ends, drawn over dim background
             rectF.set(
                 rect.left,
                 rect.top + rect.height() * AndroidUtilities.lerp(0, 1f - CubicBezierInterpolator.EASE_IN.getInterpolation(from), loadingAlpha),
@@ -579,14 +608,12 @@ public class ReplyMessageLine {
                 parentView.invalidate();
             }
         } else if (color2Alpha <= 0) {
-            // single color
             rectF.set(rect.left, rect.top, lineRight, rect.bottom);
             canvas.save();
             canvas.clipRect(rectF.left, rectF.top, rectF.left + dp(3), rectF.bottom);
             canvas.drawRoundRect(rectF, dp(rad), dp(rad), color1Paint);
             canvas.restore();
         } else {
-            // multi color: one tile holds every color -> one draw call
             canvas.save();
             canvas.translate(rect.left, rect.top);
             incrementLoadingT();
@@ -653,6 +680,7 @@ public class ReplyMessageLine {
     }
 
     public void drawBackground(Canvas canvas, RectF rect, float alpha, boolean hasQuote, boolean emojiOnly) {
+        checkThemedDefault();
         if (!emojiOnly) {
             backgroundPaint.setColor(Theme.multAlpha(backgroundColorAnimated.set(backgroundColor), alpha));
             if (RadiiUtils.radiiAreSame(radii)) {
@@ -766,9 +794,6 @@ public class ReplyMessageLine {
         }
     }
 
-    // Rebuilds the pattern tile via NDK when any baked-in value changes.
-    // Colors are pre-composited on this side so the native code writes flat
-    // pixels with no blending — just a 45° lookup per pixel.
     private void checkPatternBitmap(int c1, int c2, int c3, float c2a, float c3a, float alpha) {
         final int bg   = Theme.multAlpha(c1, alpha);
         final int bar2 = ColorUtils.compositeColors(Theme.multAlpha(c2, alpha * c2a), bg);

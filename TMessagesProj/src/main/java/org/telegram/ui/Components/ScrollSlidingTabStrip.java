@@ -433,9 +433,6 @@ public class ScrollSlidingTabStrip extends HorizontalScrollView {
     private int scrollByOnNextMeasure = -1;
 
     public void expandStickers(float x, boolean expanded) {
-//        if (expandStickerAnimator != null || draggingView != null) {
-//            return;
-//        }
         if (this.expanded != expanded) {
             this.expanded = expanded;
 
@@ -634,7 +631,6 @@ public class ScrollSlidingTabStrip extends HorizontalScrollView {
 
                     String thumbType = null;
                     if (thumbObject instanceof TLRPC.Document) {
-                        //no thumb, using first sticker from set
                         if (!tabView.inited) {
                             tabView.svgThumb = DocumentObject.getSvgThumb((TLRPC.Document) thumbObject, Theme.key_emptyListPlaceholder, 0.2f);
                         }

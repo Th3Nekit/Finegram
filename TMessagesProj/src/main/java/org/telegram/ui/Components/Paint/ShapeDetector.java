@@ -222,7 +222,6 @@ public class ShapeDetector {
 
     private ArrayList<Point> toSave = null;
 
-    // == detect logic ==
     private static final int pointsCount = 48;
     private static final double squareSize = 250.0;
     private static final double diagonal = Math.sqrt(squareSize * squareSize + squareSize * squareSize);
@@ -370,7 +369,6 @@ public class ShapeDetector {
         return d / points.size();
     }
 
-    // at best this function must not exist
     private ArrayList<Point> fullClone(ArrayList<Point> points) {
         ArrayList<Point> newPoints = new ArrayList<>();
         for (int i = 0; i < points.size(); ++i) {
@@ -447,7 +445,6 @@ public class ShapeDetector {
     }
 
 
-    // === position finding logic ===
     private int findAnglePoint(ArrayList<Point> points) {
         return findAnglePoint(points, 0);
     }
@@ -485,9 +482,6 @@ public class ShapeDetector {
                 middle = points.get(pointerIndex / 2);
                 first = points.get(0);
             } else {
-//                pointer = points.get(points.size() - 1);
-//                middle = points.get(points.size() / 2);
-//                first = points.get(0);
                 return null;
             }
             shape.centerX = (float) pointer.x;

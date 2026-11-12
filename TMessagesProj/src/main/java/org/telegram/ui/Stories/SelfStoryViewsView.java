@@ -27,6 +27,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.AdjustPanLayoutHelper;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.util.ArrayList;
@@ -98,10 +99,9 @@ public class SelfStoryViewsView extends FrameLayout {
                 storyViewer.cancelSwipeToViews(false);
             }
         };
-        //selfStoriesPreviewView.setAlpha(0.2f);
 
         shadowDrawable = context.getResources().getDrawable(R.drawable.sheet_shadow_round).mutate();
-        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogBackground, resourcesProvider), PorterDuff.Mode.MULTIPLY));
+        ThemeBind.drawableColorFilter(this, shadowDrawable, Theme.key_dialogBackground, resourcesProvider, PorterDuff.Mode.MULTIPLY);
         viewPagerContainer = new ContainerView(context);
 
         viewPager = new ViewPagerInner(context) {
@@ -153,9 +153,6 @@ public class SelfStoryViewsView extends FrameLayout {
 
             @Override
             public void onPageSelected(int position) {
-//                if (currentState == ViewPager.SCROLL_STATE_DRAGGING) {
-//                    selfStoriesPreviewView.scrollToPosition(position, true, false);
-//                }
             }
 
             @Override
@@ -164,9 +161,6 @@ public class SelfStoryViewsView extends FrameLayout {
                 if (currentState == ViewPager.SCROLL_STATE_DRAGGING) {
                     listenPager = true;
                 }
-//                if (currentState != ViewPager.SCROLL_STATE_DRAGGING) {
-//                    selfStoriesPreviewView.scrollToPosition(viewPager.getCurrentItem(), true, true);
-//                }
             }
         });
         viewPager.setAdapter(pagerAdapter = new PagerAdapter() {
@@ -200,7 +194,6 @@ public class SelfStoryViewsView extends FrameLayout {
                 item.setShadowDrawable(shadowDrawable);
                 item.setPadding(0, AndroidUtilities.dp(16), 0 , 0);
                 item.setStoryItem(dialogId,storyItems.get(position));
-               // bottomPadding = (selfStoriesPreviewView.getTop() + toHeight + AndroidUtilities.dp(24));
                 item.setListBottomPadding(bottomPadding);
 
                 container.addView(item);
@@ -223,26 +216,7 @@ public class SelfStoryViewsView extends FrameLayout {
         viewPagerContainer.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT,0, 0, 0, 0, 0));
 
 
-//        buttonContainer = new FrameLayout(getContext());
-//        buttonContainer.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
-//        ButtonWithCounterView button = new ButtonWithCounterView(getContext(), resourcesProvider);
-//
-//        buttonContainer.addView(button, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.FILL_HORIZONTAL, 10, 10, 10, 10));
-//        viewPagerContainer.addView(buttonContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
-//        button.setText(LocaleController.getString(R.string.Close), false);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                storyViewer.cancelSwipeToViews(false);
-//            }
-//        });
 
-//        ImageView closeImageView = new ImageView(context);
-//        closeImageView.setScaleType(ImageView.ScaleType.CENTER);
-//        closeImageView.setImageResource(R.drawable.msg_close);
-//        closeImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider), PorterDuff.Mode.MULTIPLY));
-//        closeImageView.setOnClickListener(e -> storyViewer.cancelSwipeToViews(false));
-//        viewPagerContainer.addView(closeImageView, LayoutHelper.createFrame(48, 48, Gravity.RIGHT | Gravity.TOP, 0, 0, 2, 0));
 
         addView(selfStoriesPreviewView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         addView(viewPagerContainer);
@@ -282,7 +256,7 @@ public class SelfStoryViewsView extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int topMargin = 0;//AndroidUtilities.dp(20);
+        int topMargin = 0;
         if (storyViewer.ATTACH_TO_FRAGMENT) {
             topMargin += AndroidUtilities.statusBarHeight;
         }
@@ -424,7 +398,6 @@ public class SelfStoryViewsView extends FrameLayout {
 
         @Override
         public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
-           // onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type, null);
         }
 
         @Override
@@ -446,7 +419,6 @@ public class SelfStoryViewsView extends FrameLayout {
 
         @Override
         public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
-            //AndroidUtilities.hideKeyboard(this);
             if (keyboardHeight > 0) {
                 return;
             }

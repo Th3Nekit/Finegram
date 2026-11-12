@@ -242,7 +242,6 @@ public class CropEditor extends FrameLayout {
         this.contentView.setVisibility(View.VISIBLE);
         this.contentView.invalidate();
         previewView.setCropEditorDrawing(this);
-//        previewView.setVisibility(View.GONE);
     }
 
     public boolean closing;
@@ -257,7 +256,6 @@ public class CropEditor extends FrameLayout {
         cropView.onHide();
         contentView.setVisibility(View.GONE);
         previewView.setCropEditorDrawing(null);
-//        previewView.setVisibility(View.VISIBLE);
     }
 
     public boolean applied;
@@ -336,25 +334,15 @@ public class CropEditor extends FrameLayout {
                 canvas.clipPath(previewClipPath);
             }
 
-            final float pa = 1.0f - appearProgress; // preview alpha
-            final float ca = appearProgress; // crop alpha
+            final float pa = 1.0f - appearProgress;
+            final float ca = appearProgress;
 
             previewMatrix.reset();
             cropMatrix.reset();
 
             previewMatrix.preTranslate(-thisLocation[0], -thisLocation[1]);
             previewMatrix.preTranslate(previewLocation[0], previewLocation[1]);
-//            canvas.translate(-thisLocation[0] * pa, -thisLocation[1] * pa);
-//            canvas.translate(previewLocation[0] * pa, previewLocation[1] * pa);
 
-//            if (pa > 0) {
-//                float sx = lerp(1.0f, (float) previewView.getWidth() / entry.resultWidth, pa);
-//                float sy = lerp(1.0f, (float) previewView.getHeight() / entry.resultHeight, pa);
-//                canvas.scale(sx, sy);
-//                AndroidUtilities.lerp(identityMatrix, entry.matrix, pa, matrix);
-//                canvas.concat(matrix);
-//                canvas.translate(previewView.getContentWidth() / 2.0f * pa, previewView.getContentHeight() / 2.0f * pa);
-//            }
             previewMatrix.preScale((float) previewView.getWidth() / entry.resultWidth, (float) previewView.getHeight() / entry.resultHeight);
             previewMatrix.preConcat(entry.matrix);
             previewMatrix.preTranslate(previewView.getContentWidth() / 2.0f, previewView.getContentHeight() / 2.0f);
@@ -363,7 +351,6 @@ public class CropEditor extends FrameLayout {
             final float paddingTop = !inBubbleMode ? AndroidUtilities.statusBarHeight : 0;
 
             cropMatrix.preTranslate((dp(16) + getContainerWidth() / 2.0f), (paddingTop + (getContainerHeight() + dp(32)) / 2.0f));
-//            canvas.translate((dp(16) + getContainerWidth() / 2.0f) * ca, (paddingTop + (getContainerHeight() + dp(32)) / 2.0f) * ca);
 
             if (fromPreview) {
                 AndroidUtilities.lerp(previewMatrix, identityMatrix, appearProgress, clipMatrix);
@@ -386,20 +373,13 @@ public class CropEditor extends FrameLayout {
 
             applyCrop(previewMatrix, true);
             applyCrop(cropMatrix, false);
-//            applyCrop(canvas, ca, 1.0f);
             float mirror = animatedMirror.set(closing ? (entry.crop != null && entry.crop.mirrored) : cropView.isMirrored());
             cropMatrix.preScale(1 - mirror * 2, 1f);
             previewMatrix.preScale(1 - mirror * 2, 1f);
-//            canvas.scale(1 - mirror * 2, 1f);
             cropMatrix.preSkew(0, 4 * mirror * (1f - mirror) * .25f);
             previewMatrix.preSkew(0, 4 * mirror * (1f - mirror) * .25f);
-//            canvas.skew(0, 4 * mirror * (1f - mirror) * .25f);
             cropMatrix.preTranslate(-previewView.getContentWidth() / 2.0f, -previewView.getContentHeight() / 2.0f);
             previewMatrix.preTranslate(-previewView.getContentWidth() / 2.0f, -previewView.getContentHeight() / 2.0f);
-//            canvas.translate(
-//                    -previewView.getContentWidth() / 2.0f,
-//                    -previewView.getContentHeight() / 2.0f
-//            );
 
             AndroidUtilities.lerp(previewMatrix, cropMatrix, appearProgress, matrix);
             canvas.concat(matrix);
@@ -408,66 +388,6 @@ public class CropEditor extends FrameLayout {
 
             canvas.restore();
 
-//            final float originalWidth = 100, originalHeight = 100f / previewView.getContentWidth() * previewView.getContentHeight();
-//            cropView.applyToCropState(cropState);
-//            if (cropState.useMatrix != null) {
-//                float pw = cropState.cropPw, ph = cropState.cropPh;
-//                if ((cropState.orientation / 90) % 2 == 1) {
-//                    pw = cropState.cropPh;
-//                    ph = cropState.cropPw;
-//                }
-//                float _pw = (1.0f - pw) / 2.0f, _ph = (1.0f - ph) / 2.0f;
-//                DEBUG_vertices[0] = originalWidth * _pw;
-//                DEBUG_vertices[1] = originalHeight * _ph;
-//                DEBUG_vertices[2] = originalWidth * (_pw + pw);
-//                DEBUG_vertices[3] = originalHeight * _ph;
-//                DEBUG_vertices[4] = originalWidth * _pw;
-//                DEBUG_vertices[5] = originalHeight * (_ph + ph);
-//                DEBUG_vertices[6] = originalWidth * (_pw + pw);
-//                DEBUG_vertices[7] = originalHeight * (_ph + ph);
-//                cropState.useMatrix.mapPoints(DEBUG_vertices);
-//                for (int a = 0; a < 4; a++) {
-//                    DEBUG_vertices[a * 2] = DEBUG_vertices[a * 2] / originalWidth * 2f - 1f;
-//                    DEBUG_vertices[a * 2 + 1] = 1f - DEBUG_vertices[a * 2 + 1] / originalHeight * 2f;
-//                }
-//
-//                float uvOw = originalWidth, uvOh = originalHeight;
-//                DEBUG_uv[0] = uvOw*pw*-0.5f;
-//                DEBUG_uv[1] = uvOh*ph*-0.5f;
-//                DEBUG_uv[2] = uvOw*pw*+0.5f;
-//                DEBUG_uv[3] = uvOh*ph*-0.5f;
-//                DEBUG_uv[4] = uvOw*pw*-0.5f;
-//                DEBUG_uv[5] = uvOh*ph*+0.5f;
-//                DEBUG_uv[6] = uvOw*pw*+0.5f;
-//                DEBUG_uv[7] = uvOh*ph*+0.5f;
-//                float angle = (float) (-cropState.cropRotate * (Math.PI / 180.0f));
-//                for (int a = 0; a < 4; ++a) {
-//                    float x = DEBUG_uv[a * 2 + 0], y = DEBUG_uv[a * 2 + 1];
-//                    x -= cropState.cropPx * uvOw;
-//                    y -= cropState.cropPy * uvOh;
-//                    float x2 = (float) (x * Math.cos(angle) - y * Math.sin(angle)) / uvOw;
-//                    float y2 = (float) (x * Math.sin(angle) + y * Math.cos(angle)) / uvOh;
-//                    x2 /= cropState.cropScale;
-//                    y2 /= cropState.cropScale;
-//                    x2 += 0.5f;
-//                    y2 += 0.5f;
-//                    DEBUG_uv[a * 2 + 0] = x2;
-//                    DEBUG_uv[a * 2 + 1] = y2;
-//                }
-//
-//                final float cx = getWidth() / 2.0f, cy = getHeight() / 2.0f;
-//                canvas.save();
-//                canvas.translate(cx-originalWidth/2.0f, cy-originalHeight/2.0f);
-//                DEBUG_path.rewind();
-//                DEBUG_path.moveTo(DEBUG_uv[0] * originalWidth, DEBUG_uv[1] * originalHeight);
-//                DEBUG_path.lineTo(DEBUG_uv[2] * originalWidth, DEBUG_uv[3] * originalHeight);
-//                DEBUG_path.lineTo(DEBUG_uv[4] * originalWidth, DEBUG_uv[5] * originalHeight);
-//                DEBUG_path.lineTo(DEBUG_uv[6] * originalWidth, DEBUG_uv[7] * originalHeight);
-//                DEBUG_path.close();
-//                canvas.drawRect(0,0,originalWidth,originalHeight,Theme.DEBUG_BLUE);
-//                canvas.drawPath(DEBUG_path, Theme.DEBUG_RED);
-//                canvas.restore();
-//            }
 
             if (fromPreview) {
                 canvas.restore();
@@ -480,10 +400,6 @@ public class CropEditor extends FrameLayout {
             drawImage(canvas, false);
         }
 
-//        private final MediaController.CropState cropState = new MediaController.CropState();
-//        private float[] DEBUG_vertices = new float[8];
-//        private float[] DEBUG_uv = new float[8];
-//        private final Path DEBUG_path = new Path();
 
         private float getContainerWidth() {
             return getWidth() - dp(32);
@@ -532,7 +448,7 @@ public class CropEditor extends FrameLayout {
                 }
             }
             matrix.preTranslate(px * rotatedWidth, py * rotatedHeight);
-            float rotate = entry.orientation + cropTransform.getRotation() + orientation;//animatedOrientation.set((lastOrientation / 360) * 360 + orientation);
+            float rotate = entry.orientation + cropTransform.getRotation() + orientation;
             if (entry.crop == null) {
                 if (preview) rotate = 0;
             } else {

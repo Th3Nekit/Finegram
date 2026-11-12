@@ -52,18 +52,15 @@ public class MP3Frame {
 		private static final int MPEG_BITRATE_RESERVED = 15;
 		private static final int MPEG_FRQUENCY_RESERVED = 3;
 
-		// [frequency][version]
 		private static final int[][] FREQUENCIES = new int[][] {
-				// 2.5   reserved   2       1
 				{ 11025,    -1,  22050,  44100 },
 				{ 12000,    -1,  24000,  48000 },
 				{  8000,    -1,  16000,  32000 },
-				{    -1,    -1,     -1,     -1 } // reserved
+				{    -1,    -1,     -1,     -1 }
 		};
 
-		// [bitrate][version,layer]
 		private static final int[][] BITRATES = new int[][] {
-				{      0,      0,      0,      0,      0 }, // free
+				{      0,      0,      0,      0,      0 },
 				{  32000,  32000,  32000,  32000,   8000 },
 				{  64000,  48000,  40000,  48000,  16000 },
 				{  96000,  56000,  48000,  56000,  24000 },
@@ -78,40 +75,32 @@ public class MP3Frame {
 				{ 384000, 256000, 224000, 192000, 128000 },
 				{ 416000, 320000, 256000, 224000, 144000 },
 				{ 448000, 384000, 320000, 256000, 160000 },
-				{     -1,     -1,     -1,     -1,     -1 } // reserved
+				{     -1,     -1,     -1,     -1,     -1 }
 		};
 
-		// [version][layer]
 		private static final int[][] BITRATES_COLUMN = new int[][] {
-				// reserved  III        II         I
-				{  -1,        4,         4,        3 }, // 2.5
-				{  -1,       -1,        -1,       -1 }, // reserved
-				{  -1,        4,         4,        3 }, // 2
-				{  -1,        2,         1,        0 }  // 1
+				{  -1,        4,         4,        3 },
+				{  -1,       -1,        -1,       -1 },
+				{  -1,        4,         4,        3 },
+				{  -1,        2,         1,        0 }
 		};
 		
-		// [version][layer]
 		private static final int[][] SIZE_COEFFICIENTS = new int[][] {
-				// reserved III        II         I
-				{ -1,       72,       144,       12 }, // 2.5
-				{ -1,       -1,        -1,       -1 }, // reserved
-				{ -1,       72,       144,       12 }, // 2
-				{ -1,      144,       144,       12 }  // 1
+				{ -1,       72,       144,       12 },
+				{ -1,       -1,        -1,       -1 },
+				{ -1,       72,       144,       12 },
+				{ -1,      144,       144,       12 }
 		};
 
-		// [layer]
 		private static final int[] SLOT_SIZES = new int[] {
-			// reserved III        II         I
 			  -1,        1,         1,        4
 		};
 
-		// [channelMode][version]
 		private static final int[][] SIDE_INFO_SIZES = new int[][] {
-				// 2.5  reserved  2        1
-				{  17,    -1,    17,      32 }, // stereo
-				{  17,    -1,    17,      32 }, // joint stereo
-				{  17,    -1,    17,      32 }, // dual channel
-				{   9,    -1,     9,      17 }, // mono
+				{  17,    -1,    17,      32 },
+				{  17,    -1,    17,      32 },
+				{  17,    -1,    17,      32 },
+				{   9,    -1,     9,      17 },
 		};
 
 		public static final int MPEG_LAYER_1 = 3;
@@ -192,7 +181,7 @@ public class MP3Frame {
 		public int getSampleCount() {
 			if (layer == MPEG_LAYER_1) {
 				return 384;
-			} else { // TODO correct?
+			} else {
 				return 1152;
 			}
 		}
@@ -248,7 +237,6 @@ public class MP3Frame {
 				CRC16 crc16 = new CRC16();
 				crc16.update(bytes[2]);
 				crc16.update(bytes[3]);
-				// skip crc bytes 4+5
 				int sideInfoSize = header.getSideInfoSize();
 				for (int i = 0; i < sideInfoSize; i++) {
 					crc16.update(bytes[6 + i]);
@@ -270,7 +258,7 @@ public class MP3Frame {
 
 	boolean isXingFrame() {
 		int xingOffset = header.getXingOffset();
-		if (bytes.length < xingOffset + 12) { // minimum Xing header size == 12
+		if (bytes.length < xingOffset + 12) {
 			return false;
 		}
 		if (xingOffset < 0 || bytes.length < xingOffset + 8) {
@@ -287,7 +275,7 @@ public class MP3Frame {
 
 	boolean isVBRIFrame() {
 		int vbriOffset = header.getVBRIOffset();
-		if (bytes.length < vbriOffset + 26) { // minimum VBRI header size == 26
+		if (bytes.length < vbriOffset + 26) {
 			return false;
 		}
 		return bytes[vbriOffset] == 'V' && bytes[vbriOffset + 1] == 'B' && bytes[vbriOffset + 2] == 'R' && bytes[vbriOffset + 3] == 'I';

@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-/** Drop-in adapter for Telegram Android's CodeHighlighting public API. */
 public class CodeHighlighting {
 
     public static final int MATCH_NONE = 0;
@@ -130,9 +129,6 @@ public class CodeHighlighting {
         }
     }
 
-    // setting 100-300 spans is slow
-    // fast way to fix this is to do it on another thread, and not give access to data until it's
-    // finished processing
     @SuppressWarnings({"unchecked"})
     public static class LockedSpannableString extends SpannableString {
         public LockedSpannableString(CharSequence text) {
@@ -271,7 +267,6 @@ public class CodeHighlighting {
                                 output.write(buffer, 0, length);
                             grammars = output.toByteArray();
                         }
-                        // Telegram's NativeLoader loads the main tmessages library before this.
                         final PrismaHighlighter highlighter = new PrismaHighlighter(grammars);
                         return new PrismaHighlightingService.Tokenizer() {
                             @Override
@@ -315,7 +310,6 @@ public class CodeHighlighting {
         }
     }
 
-    // Published spannables are shared by MessageObject and must be treated as read-only.
     private static final LinkedHashMap<CacheKey, SpannableString> RENDERED =
             new LinkedHashMap<>(8, 0.75f, true);
     private static int renderedCharacters;
@@ -350,9 +344,6 @@ public class CodeHighlighting {
         return result;
     }
 
-    /**
-     * Callback receives a snapshot on the UI thread; editors should check their own text revision.
-     */
     public static void highlightEditable(
             CharSequence text, String language, Utilities.Callback<SpannableString> whenDone) {
         if (whenDone == null) return;
@@ -373,7 +364,23 @@ public class CodeHighlighting {
                                 }));
     }
 
-    public static void prepare() {
+    public static void highlightMasked(
+            Spannable text, String masked, String language, Runnable whenDone) {
+        if (text == null || masked == null || masked.length() != text.length()) return;
+        String normalized = PrismaHighlightingService.normalizeLanguage(language);
+        if (normalized.isEmpty() || masked.isEmpty()) return;
+        SERVICE.request(
+                masked,
+                normalized,
+                answer ->
+                        AndroidUtilities.runOnUIThread(
+                                () -> {
+                                    apply(text, 0, text.length(), answer.tokens);
+                                    if (whenDone != null) whenDone.run();
+                                }));
+    }
+
+        public static void prepare() {
         SERVICE.prepare();
     }
 
@@ -382,7 +389,6 @@ public class CodeHighlighting {
     }
 
     private static final Object TARGET_LOCK = new Object();
-    // Identity lookup is intentional: SpannableString's content/span hash can change after setSpan.
     private static final ArrayList<TargetRequests> TARGETS = new ArrayList<>();
 
     private static final class TargetRequests {
@@ -417,7 +423,6 @@ public class CodeHighlighting {
         return requests;
     }
 
-    /** Replaces this range's syntax spans. Superseded requests never overwrite newer results. */
     public static void highlight(
             Spannable text,
             int start,
@@ -445,8 +450,6 @@ public class CodeHighlighting {
                             synchronized (TARGET_LOCK) {
                                 Spannable current = target.target.get();
                                 if (current == null || target.ranges.get(range) != pending) return;
-                                // A locked immutable snapshot hides spans until publication.
-                                // Prepare it off-main.
                                 if (current instanceof LockedSpannableString
                                         && !((LockedSpannableString) current).ready) {
                                     apply(current, start, end, answer.tokens);

@@ -777,11 +777,12 @@ class FGQuoteMaker(
 
     private fun part(message: MessageObject): Part {
         val author = authorOf(message)
-        val body = bodyOf(message)
+        val emojiMedia = singleEmojiOf(message)
+        val body = if (emojiMedia != null) null else bodyOf(message)
         val big = body != null && message.isMediaEmpty() && message.emojiOnlyCount in 1..3
         val paint = if (big) emojiPaint else textPaint
         val text = body?.let { snug(restyle(it, paint), paint, maxText.toInt()) }
-        val media = if (message.isMediaEmpty()) null else mediaOf(message)
+        val media = emojiMedia ?: if (message.isMediaEmpty()) null else mediaOf(message)
         val label = if (!message.isMediaEmpty() && media == null) labelOf(message) else null
         val reply = replyOf(message)
         val time = LocaleController.getInstance().formatterDay.format(message.messageOwner.date * 1000L)
@@ -927,6 +928,22 @@ class FGQuoteMaker(
         return layout(line, labelPaint, width, 1)
     }
 
+    private fun singleEmojiOf(message: MessageObject): Media? {
+        if (!message.isMediaEmpty() || message.emojiOnlyCount != 1 || message.totalAnimatedEmojiCount != 1) return null
+        val text = message.messageText as? Spanned ?: return null
+        val spans = text.getSpans(0, text.length, AnimatedEmojiSpan::class.java)
+        if (spans.size != 1 || spans[0].documentId == 0L) return null
+        val receiver = ImageReceiver(host)
+        receiver.setCurrentAccount(account)
+        receiver.setAspectFit(true)
+        receiver.setImageBitmap(AnimatedEmojiDrawable(AnimatedEmojiDrawable.CACHE_TYPE_MESSAGES_LARGE, account, spans[0].documentId))
+        receivers.add(receiver)
+        if (attached) {
+            receiver.onAttachedToWindow()
+        }
+        return Media(receiver, 1f, KIND_STICKER)
+    }
+
     private fun mediaOf(message: MessageObject): Media? {
         val owner = message.messageOwner ?: return null
         if (message.needDrawBluredPreview() || message.hasMediaSpoilers() || owner.media is TLRPC.TL_messageMediaPaidMedia) {
@@ -976,6 +993,11 @@ class FGQuoteMaker(
     private fun restyle(source: CharSequence, paint: TextPaint): CharSequence {
         val cloned = AnimatedEmojiSpan.cloneSpans(source, AnimatedEmojiDrawable.CACHE_TYPE_MESSAGES, paint.fontMetricsInt)
         val text: Spannable = if (cloned !== source && cloned is Spannable) cloned else SpannableStringBuilder(source)
+        if (cloned !== source) {
+            for (span in text.getSpans(0, text.length, AnimatedEmojiSpan::class.java)) {
+                span.replaceFontMetrics(paint.fontMetricsInt)
+            }
+        }
         for (span in text.getSpans(0, text.length, Emoji.EmojiSpan::class.java)) {
             text.removeSpan(span)
         }

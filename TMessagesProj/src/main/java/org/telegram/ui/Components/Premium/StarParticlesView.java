@@ -36,11 +36,32 @@ import org.telegram.ui.PremiumPreviewFragment;
 
 import java.util.ArrayList;
 
-public class StarParticlesView extends View {
+public class StarParticlesView extends View implements Theme.Colorable {
 
 
     public boolean doNotFling;
     public Drawable drawable;
+
+    // star bitmaps are regenerated when the color changes: on theme switches do it once, after the animation settles
+    private final Runnable updateColorsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (drawable != null) {
+                    drawable.updateColors();
+                    invalidate();
+                }
+            } catch (Exception e) {
+                org.telegram.messenger.FileLog.e(e);
+            }
+        }
+    };
+
+    @Override
+    public void updateColors() {
+        removeCallbacks(updateColorsRunnable);
+        postDelayed(updateColorsRunnable, 150);
+    }
     int size;
     public final static int TYPE_APP_ICON_REACT = 1001;
     public static final int TYPE_APP_ICON_STAR_PREMIUM = 1002;
@@ -219,7 +240,6 @@ public class StarParticlesView extends View {
         public boolean useBlur = false;
         public boolean forceMaxAlpha = false;
         public boolean roundEffect = true;
-        /** Golden glitter: an outward burst with drag and a little upward drift, twinkle, a smooth ease-out fade. */
         public boolean goldGlitter;
         public int type = -1;
         public Theme.ResourcesProvider resourcesProvider;
@@ -546,8 +566,8 @@ public class StarParticlesView extends View {
             private int starIndex;
             private int alpha;
             private float randomRotate;
-            private long born; // goldGlitter: the particle's birth (its life fraction)
-            private float twinkle; // goldGlitter: twinkle phase
+            private long born;
+            private float twinkle;
             float inProgress;
             float flipProgress;
 
@@ -601,7 +621,6 @@ public class StarParticlesView extends View {
                     }
                     float gold = 1f;
                     if (goldGlitter) {
-                        // ease-out to exactly 0 over the whole life (no pop) × a soft twinkle
                         final float life = Utilities.clamp((time - born) / (float) Math.max(1, lifeTime - born), 1f, 0f);
                         final float fade = (1f - life) * (1f - life) * (3f - 2f * (1f - life));
                         gold = fade * (0.72f + 0.28f * (float) Math.sin(time * 0.011f + twinkle));
@@ -624,7 +643,6 @@ public class StarParticlesView extends View {
                         speed *= speedScale;
                     }
                     if (goldGlitter) {
-                        // drag: fast at birth, settling as it ages; and a gentle upward drift
                         final float lf = Utilities.clamp((time - born) / (float) Math.max(1, lifeTime - born), 1f, 0f);
                         speed *= 2.2f * (1f - lf) * (1f - lf) + 0.15f;
                         y -= dp(5) * (dt / 1000f);

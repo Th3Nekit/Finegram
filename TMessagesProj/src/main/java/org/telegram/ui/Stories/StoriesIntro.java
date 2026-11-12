@@ -50,7 +50,7 @@ public class StoriesIntro extends FrameLayout {
         backgroundImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         addView(backgroundImageView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         View scrim = new View(context);
-        scrim.setBackgroundColor(0x64000000); // 40%
+        scrim.setBackgroundColor(0x64000000);
         addView(scrim, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         LinearLayout linearLayout = new LinearLayout(context);
@@ -66,7 +66,7 @@ public class StoriesIntro extends FrameLayout {
         linearLayout.addView(header, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
         TextView subHeader = new TextView(context);
-        subHeader.setTextColor(0x96FFFFFF); // 60%
+        subHeader.setTextColor(0x96FFFFFF);
         subHeader.setText(LocaleController.getString(R.string.StoriesIntroSubHeader));
         subHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         subHeader.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -78,7 +78,6 @@ public class StoriesIntro extends FrameLayout {
         items.add(new StoriesIntroItemView(context, R.raw.stories_intro_go_back, LocaleController.getString(R.string.StoriesIntroGoBackHeader), LocaleController.getString(R.string.StoriesIntroGoBackSubHeader)));
         items.add(new StoriesIntroItemView(context, R.raw.stories_intro_go_to_next, LocaleController.getString(R.string.StoriesIntroGoToNextAuthorHeader), LocaleController.getString(R.string.StoriesIntroGoToNextAuthorSubHeader)));
 
-        // adjust the width for small devices
         int storiesIntroItemViewWidth = parentView.getMeasuredWidth() - AndroidUtilities.dp(100);
         for (StoriesIntroItemView storiesIntroItemView : items) {
             int w = storiesIntroItemView.getRequiredWidth();
@@ -106,7 +105,6 @@ public class StoriesIntro extends FrameLayout {
         bitmap.setColorFilter(new PorterDuffColorFilter(0xdd000000, PorterDuff.Mode.DST_OVER));
         backgroundImageView.setImageDrawable(bitmap);
 
-        // adjusts for small devices
         getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     public void onGlobalLayout() {

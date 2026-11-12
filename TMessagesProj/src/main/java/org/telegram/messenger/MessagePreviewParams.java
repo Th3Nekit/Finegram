@@ -538,7 +538,6 @@ public class MessagePreviewParams {
             }
         };
         previewMessage.previewForward = msgtype == 0;
-//        previewMessage.forceAvatar = msgtype == 1 && !message.out;
         previewMessage.preview = true;
         return previewMessage;
     }

@@ -59,6 +59,7 @@ object FGLivingGlass : SensorEventListener {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
             FinegramChatsConfig.livingGlass &&
             FinegramChatsConfig.glareEffects &&
+            !FinegramChatsConfig.glassSolidStroke &&
             !LiteMode.isPowerSaverApplied()
 
     @JvmStatic
@@ -90,6 +91,16 @@ object FGLivingGlass : SensorEventListener {
         shader.setLocalMatrix(matrix)
         paint.shader = shader
         return true
+    }
+
+    @JvmStatic
+    fun lightAngle(base: Float): Float {
+        if (!enabled()) {
+            if (running) stop()
+            return base
+        }
+        if (!running && !unavailable) start()
+        return base + kotlin.math.round(tilt * 10f) * 2f
     }
 
     @JvmStatic

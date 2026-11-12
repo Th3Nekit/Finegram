@@ -122,7 +122,6 @@ public class PullForegroundDrawable {
 
     public PullForegroundDrawable(CharSequence pullText, CharSequence releaseText) {
         tooltipTextPaint.setTypeface(AndroidUtilities.bold());
-//        tooltipTextPaint.setTextAlign(Paint.Align.CENTER);
         tooltipTextPaint.setTextSize(AndroidUtilities.dp(16));
 
         final ViewConfiguration vc = ViewConfiguration.get(ApplicationLoader.applicationContext);
@@ -270,7 +269,7 @@ public class PullForegroundDrawable {
         canvas.save();
 
         if (header) {
-            canvas.clipRect(0, 0 /*fix overscroll*/, listView.getMeasuredWidth(), overscroll + 1);
+            canvas.clipRect(0, 0                   , listView.getMeasuredWidth(), overscroll + 1);
         }
         if (outProgress == 0f) {
             if (!(accentRevalProgress == 1f || accentRevalProgressOut == 1)) {
@@ -429,18 +428,6 @@ public class PullForegroundDrawable {
             canvas.restore();
         }
 
-//        if (isTopic) {
-//            int color = arrowDrawable.paint.getColor();
-//            if (generalTopicDrawableColor != color) {
-//                generalTopicDrawable.setColorFilter(new PorterDuffColorFilter(generalTopicDrawableColor = color, PorterDuff.Mode.MULTIPLY));
-//            }
-//
-//            int ih = AndroidUtilities.lerp(AndroidUtilities.dp(14), AndroidUtilities.dp(28), outProgress);
-//            int iw = AndroidUtilities.lerp(AndroidUtilities.dp(14), AndroidUtilities.dp(28), outProgress);
-//            generalTopicDrawable.setBounds(smallCircleX - (iw >> 1), smallCircleY - (ih >> 1), smallCircleX + (iw >> 1), smallCircleY + (ih >> 1));
-//            generalTopicDrawable.setAlpha((int) (255 * outProgress));
-//            generalTopicDrawable.draw(canvas);
-//        }
     }
 
 

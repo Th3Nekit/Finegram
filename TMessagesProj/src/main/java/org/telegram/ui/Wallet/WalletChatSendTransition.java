@@ -94,7 +94,6 @@ public final class WalletChatSendTransition {
                 renderFailed = true;
             }
         };
-        // TextureView needs a draw to report its first presented frame.
         coolDiamond.setAlpha(.001f);
         coolDiamond.setPaused(false);
         overlay.addView(coolDiamond, LayoutHelper.createFrame(60, 60, Gravity.TOP | Gravity.LEFT));
@@ -109,8 +108,6 @@ public final class WalletChatSendTransition {
         animation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animator) {
-                // Hide from the still-focused sheet window, at the same time as
-                // the diamond and sheet begin moving (including the fallback).
                 if (sheet != null) org.telegram.messenger.AndroidUtilities.hideKeyboard(source);
             }
 
@@ -152,7 +149,6 @@ public final class WalletChatSendTransition {
                 to.setEmpty();
             }
         }
-        // Never hold navigation hostage to a slow GL driver, missing row, or destroyed window.
         if (SystemClock.uptimeMillis() - created > 700 || renderFailed || !root.isAttachedToWindow()) {
             started = true;
             diamond.setAlpha(0f);
@@ -171,7 +167,6 @@ public final class WalletChatSendTransition {
         if (sheet != null) sheet.setGramSendTransitionProgress(exitProgress);
         else outgoing.setTranslationY(outgoing.getHeight() * exitProgress);
         if (landing == null || to.isEmpty()) return;
-        // RecyclerView can replace a cell while the transfer changes from pending to sent.
         ChatActionCell cell = chat.findWalletSendLanding(transaction);
         if (cell != landing) {
             landing.walletActionLayout.holdDiamondForFlight(false);
@@ -214,7 +209,6 @@ public final class WalletChatSendTransition {
             WalletSendTransition.updateSourceBounds(source, outgoing, root, from);
         } else {
             from.set(WalletSendTransition.bounds(source, root));
-            // Include the keyboard's View/canvas pan, excluding only our sheet exit.
             from.offset(0, sheet.currentPanTranslationY - sheet.getGramSendExitTranslationY());
         }
     }
@@ -253,7 +247,6 @@ public final class WalletChatSendTransition {
             yaw += (float) Math.IEEEremainder(landing.walletActionLayout.getFlightYaw() - yaw, Math.PI * 2) * blend;
             pitch += (landing.walletActionLayout.getFlightPitch() - pitch) * blend;
         }
-        // Use the same .cool renderer and pose as the chat icon at the handoff.
         coolDiamond.setPose(yaw, pitch, true, true);
     }
 
@@ -286,7 +279,6 @@ public final class WalletChatSendTransition {
         source.setAlpha(sourceAlpha);
         if (sheet == null) outgoing.setTranslationY(0f);
         else sheet.setGramSendTransitionProgress(1f);
-        // Keep the last trail particles alive after the dialog window disappears.
         ViewGroup particleRoot = root;
         if (sheet != null && landed && particles.isActive() && chat.getParentLayout() != null) {
             ViewGroup chatRoot = chat.getParentLayout().getView();

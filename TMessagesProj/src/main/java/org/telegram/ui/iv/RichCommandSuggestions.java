@@ -14,8 +14,6 @@ import java.util.ArrayList;
 
 public class RichCommandSuggestions {
 
-    // Builds the popup menu anchored correctly for the host: a fragment-based ItemOptions for the
-    // full editor, or an alert-container-based one for the attach sheet (so it isn't drawn behind it).
     public interface MenuFactory {
         ItemOptions make(View anchor);
     }

@@ -144,15 +144,11 @@ public class VideoPlayerRewinder {
     public float getRewindSpeed() {
         float v = value;
         v = v < 0.4f ? v - 1.9f : v;
-//        v /= 2.0f;
-//        v = v * v * v;
         return Utilities.clamp(v, +10.0f, -6.0f);
     }
 
     public float getValueBySpeed(float speed) {
         float value = speed;
-//        value = (float) Math.cbrt(value);
-//        value *= 2.0f;
         if (value < -1.5f) {
             value += 1.9f;
         }

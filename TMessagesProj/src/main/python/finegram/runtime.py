@@ -8,6 +8,8 @@ import os
 import re
 import sys
 import time
+import tokenize
+import unicodedata
 import threading
 import traceback
 from finegram import security
@@ -129,6 +131,7 @@ _plugins_dir = None
 _ids_by_file = {}
 _bundle_roots = {}
 _plugin_aliases = {}
+_root_packages = {}
 
 def _remember_dir(path):
     global _plugins_dir
@@ -153,6 +156,60 @@ def _adapt_plugin_module(plugin_id, module):
     utils.get_plugin_path = staticmethod(lambda identifier: _plugin_file_for(identifier) or original(identifier))
     utils.__fg_paths__ = True
 
+def _startup_dependencies(source):
+    dependencies = []
+
+    def collect(tree):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                dependencies.extend(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                dependencies.append(node.module.split(".", 1)[0])
+            elif isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "__dependencies__" for target in node.targets):
+                if isinstance(node.value, (ast.List, ast.Tuple)):
+                    dependencies.extend(item.value for item in node.value.elts if isinstance(item, ast.Constant) and isinstance(item.value, str))
+
+    statement = []
+    size = 0
+    depth = 0
+    candidate = False
+
+    def finish():
+        if not candidate or size > 8192:
+            return
+        try:
+            code = tokenize.untokenize(statement).encode("utf-8")
+            collect(security._parse_source(code, "<dependencies>"))
+        except (SyntaxError, ValueError, TypeError, RecursionError, tokenize.TokenError):
+            pass
+
+    for token in security._source_tokens(source):
+        if token.type in {tokenize.ENCODING, tokenize.COMMENT, tokenize.NL, tokenize.INDENT, tokenize.DEDENT}:
+            continue
+        value = token.string
+        boundary = token.type in {tokenize.NEWLINE, tokenize.ENDMARKER} or value == ";" and depth == 0
+        suite = value == ":" and depth == 0 and statement and statement[0][1] in {
+            "if", "elif", "else", "for", "while", "with", "try", "except", "finally", "def", "class", "async"
+        }
+        if boundary or suite:
+            finish()
+            statement = []
+            size = 0
+            depth = 0
+            candidate = False
+            continue
+        if token.type == tokenize.NAME and unicodedata.normalize("NFKC", value) in {"import", "from", "__dependencies__"}:
+            candidate = True
+        size += len(value) + 1
+        if size <= 8192:
+            statement.append((token.type, value))
+        if token.type == tokenize.OP:
+            if value in {"(", "[", "{"}:
+                depth += 1
+            elif value in {")", "]", "}"}:
+                depth = max(0, depth - 1)
+    return dependencies
+
 def startup_order(paths):
     from finegram import bundle
     records = {}
@@ -168,18 +225,8 @@ def startup_order(paths):
             with open(source_path, "rb") as handle:
                 source = handle.read(2 * 1024 * 1024 + 1)
             if len(source) <= 2 * 1024 * 1024:
-                tree = ast.parse(source)
-                for index, node in enumerate(ast.walk(tree)):
-                    if index >= 60000:
-                        break
-                    if isinstance(node, ast.Import):
-                        dependencies.extend(alias.name.split(".", 1)[0] for alias in node.names)
-                    elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
-                        dependencies.append(node.module.split(".", 1)[0])
-                    elif isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "__dependencies__" for target in node.targets):
-                        if isinstance(node.value, (ast.List, ast.Tuple)):
-                            dependencies.extend(item.value for item in node.value.elts if isinstance(item, ast.Constant) and isinstance(item.value, str))
-        except (OSError, SyntaxError, ValueError, TypeError, RecursionError):
+                dependencies = _startup_dependencies(source)
+        except (OSError, SyntaxError, ValueError, TypeError, RecursionError, tokenize.TokenError):
             pass
         records[identifier] = (path, dependencies)
     result = []
@@ -418,6 +465,36 @@ if not any(isinstance(finder, _PluginImporter) for finder in sys.meta_path):
 if not any(isinstance(finder, _LibraryImporter) for finder in sys.meta_path):
     sys.meta_path.append(_LibraryImporter())
 
+_CLASS_REFLECTION = frozenset((
+    "getName", "getSimpleName", "getCanonicalName", "getTypeName", "getSuperclass", "getInterfaces",
+    "getDeclaredField", "getDeclaredFields", "getField", "getFields",
+    "getDeclaredMethod", "getDeclaredMethods", "getMethod", "getMethods",
+    "getDeclaredConstructor", "getDeclaredConstructors", "getConstructor", "getConstructors",
+    "getDeclaredClasses", "getClasses", "getModifiers", "getClassLoader", "getComponentType",
+    "isInterface", "isArray", "isEnum", "isPrimitive", "isInstance", "isAssignableFrom",
+    "getEnumConstants", "cast"))
+
+def _install_class_reflection():
+    try:
+        from java.chaquopy import JavaClass
+    except Exception:
+        return
+    if getattr(JavaClass, "__fg_reflection__", False):
+        return
+
+    def __getattr__(cls, name):
+        if name not in _CLASS_REFLECTION:
+            raise AttributeError(name)
+        return getattr(cls.getClass(), name)
+
+    try:
+        JavaClass.__getattr__ = __getattr__
+        JavaClass.__fg_reflection__ = True
+    except Exception:
+        pass
+
+_install_class_reflection()
+
 def load(path):
 
     meta = read_metadata(path)
@@ -522,7 +599,18 @@ def _load_bundle(root, plugin_id, module_name, meta):
     if previous is not None:
         _forget_package(module_name)
 
+    _forget_root_package(plugin_id)
     try:
+        init = os.path.join(root, "__init__.py")
+        if plugin_id.isidentifier() and os.path.isfile(init) and sys.modules.get(plugin_id) is None:
+            _bundle_roots[plugin_id] = os.path.abspath(root)
+            package_loader = _ReviewedPluginLoader(plugin_id, init, root)
+            package_spec = importlib.util.spec_from_file_location(
+                plugin_id, init, loader=package_loader, submodule_search_locations=[os.path.abspath(root)])
+            package = importlib.util.module_from_spec(package_spec)
+            sys.modules[plugin_id] = package
+            _root_packages[plugin_id] = package
+            package_loader.exec_module(package)
         _bundle_roots[module_name] = os.path.abspath(root)
         loader = _ReviewedPluginLoader(module_name, main, root)
         spec = importlib.util.spec_from_file_location(
@@ -537,13 +625,16 @@ def _load_bundle(root, plugin_id, module_name, meta):
         _security_blocked[os.path.abspath(root)] = error.path
         _errors[plugin_id] = str(error)
         _forget_package(module_name)
+        _forget_root_package(plugin_id)
         return ""
     except Exception:
         _errors[plugin_id] = traceback.format_exc()
         log(f"плагин {plugin_id} не запустился:\n{traceback.format_exc()}")
         _forget_package(module_name)
+        _forget_root_package(plugin_id)
         return ""
 
+    _adapt_plugin_module(plugin_id, _root_packages.get(plugin_id, module))
     _alias(plugin_id, module)
     return _activate(module, meta, root)
 
@@ -594,6 +685,18 @@ def _forget_plugin_module(plugin_id):
     if alias is not None and (alias is module or alias is owned):
         sys.modules.pop(plugin_id, None)
     _forget_package(module_name)
+    _forget_root_package(plugin_id)
+
+def _forget_root_package(plugin_id):
+    package = _root_packages.pop(plugin_id, None)
+    if package is None:
+        return
+    if sys.modules.get(plugin_id) is package:
+        sys.modules.pop(plugin_id, None)
+    prefix = plugin_id + "."
+    for name in [name for name in sys.modules if name.startswith(prefix)]:
+        sys.modules.pop(name, None)
+    _bundle_roots.pop(plugin_id, None)
 
 def _forget_package(module_name):
 

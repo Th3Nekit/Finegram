@@ -6,7 +6,6 @@ import org.telegram.tgnet.tl.TL_keyboard;
 
 import java.util.ArrayList;
 
-// Measures rich-message content against the server-defined limits (see AppGlobalConfig.richMessage*).
 public class RichEditorLimits {
 
     public static final int LIMIT_NONE = 0;
@@ -22,7 +21,6 @@ public class RichEditorLimits {
     public int media;
     public int tableCols;
 
-    // Measures the flattened send structure plus the count of medias added in the editor.
     public static RichEditorLimits measure(ArrayList<TL_iv.PageBlock> top, int mediaCount) {
         final RichEditorLimits m = new RichEditorLimits();
         m.media = mediaCount;
@@ -33,7 +31,6 @@ public class RichEditorLimits {
         return m;
     }
 
-    // The first server limit this content exceeds, or LIMIT_NONE when it fits.
     public int findExceeded(AppGlobalConfig config) {
         if (length > config.richMessageLengthLimit.get()) return LIMIT_LENGTH;
         if (blocks > config.richMessageMaxBlocks.get()) return LIMIT_BLOCKS;
@@ -112,7 +109,6 @@ public class RichEditorLimits {
             final String src = ((TL_iv.pageBlockMath) b).source;
             if (src != null) m.length += src.length();
         } else {
-            // photo / video / audio / map carry a PageCaption (text + credit)
             addCaption(b.caption, depth, m);
         }
     }

@@ -16,13 +16,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import org.webrtc.Logging;
 
-// TODO(magjed): Do we really need to spawn a new thread just to log volume? Can we re-use the
-// AudioTrackThread instead?
-/**
- * Private utility class that periodically checks and logs the volume level of the audio stream that
- * is currently controlled by the volume control. A timer triggers logs once every 30 seconds and
- * the timer's associated thread is named "WebRtcVolumeLevelLoggerThread".
- */
 class VolumeLogger {
   private static final String TAG = "VolumeLogger";
   private static final String THREAD_NAME = "WebRtcVolumeLevelLoggerThread";

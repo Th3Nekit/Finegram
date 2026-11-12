@@ -228,9 +228,9 @@ public class AnimatedEmojiEffect {
             float pivotX = longAnimation ? 0.8f : 0.5f;
             toX = bestX;
             if (toX > bounds.width() * pivotX) {
-                fromX = bounds.width() * pivotX;// + bounds.width() * 0.1f * (Math.abs(Utilities.fastRandom.nextInt() % 100) / 100f);
+                fromX = bounds.width() * pivotX;
             } else {
-                fromX = bounds.width() * pivotX;// - bounds.width() * 0.3f * (Math.abs(Utilities.fastRandom.nextInt() % 100) / 100f);
+                fromX = bounds.width() * pivotX;
                 if (toX > fromX) {
                     toX = fromX - 0.1f;
                 }

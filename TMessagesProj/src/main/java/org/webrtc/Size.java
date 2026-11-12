@@ -10,10 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Class for representing size of an object. Very similar to android.util.Size but available on all
- * devices.
- */
 public class Size {
   public int width;
   public int height;
@@ -39,7 +35,6 @@ public class Size {
 
   @Override
   public int hashCode() {
-    // Use prime close to 2^16 to avoid collisions for normal values less than 2^16.
     return 1 + 65537 * width + height;
   }
 }

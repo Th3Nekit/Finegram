@@ -158,9 +158,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
                 Gravity.CENTER
         ));
 
-        // Card-space layer: clipping before the perspective keeps Skia from rasterizing
-        // software clip masks on every tilt. The transparent border keeps the projected
-        // layer edges filtered instead of aliased.
         faceContent = new FaceLayout(context);
         faceContent.setPadding(FACE_LAYER_PADDING, FACE_LAYER_PADDING, FACE_LAYER_PADDING, FACE_LAYER_PADDING);
         faceContent.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -197,9 +194,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
         };
         frontFace.setClipChildren(false);
         frontFace.setClipToPadding(false);
-        // Rasterize text/shadows in card space, before the parent's perspective.
-        // Otherwise Skia falls back to drawing glyph paths and blurred masks on
-        // every tilt. Content invalidations still refresh this hardware layer.
         frontFace.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         frontFace.setPivotX(0.0f);
         frontFace.setPivotY(0.0f);
@@ -238,7 +232,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
             material = new WalletCard2DMaterial(context.getApplicationContext(), cardIconResId,
                     qrButtonRightPadding, redrawMaterial);
         } else {
-            // Publish the complete material together; never reveal a flat face or missing QR layers.
             projectedCard.setVisibility(INVISIBLE);
             WalletCard2DMaterial.ASSET_QUEUE.postRunnable(() -> {
                 WalletCard2DMaterial ready = new WalletCard2DMaterial(context.getApplicationContext(),
@@ -260,7 +253,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
         }
     }
 
-    /** Maps the face layer's coordinates into projectedCard's. */
     void getFrontFaceProjection(Matrix result) {
         result.set(projectedCard.projection);
         result.preTranslate(faceContent.getLeft(), faceContent.getTop());
@@ -361,7 +353,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
     }
 
     private void updateMotionTracking() {
-        // Visibility callbacks can arrive while the View constructor is running.
         if (sensorManager == null || externallyControlled) return;
         boolean active = cardAttached && isShown()
                 && getWindowVisibility() == VISIBLE && hasWindowFocus();
@@ -369,8 +360,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
         trackingMotion = active;
         removeCallbacks(transformUpdater);
         if (active) {
-            // Keep the established neutral pose across focus/visibility changes,
-            // but never integrate raw gyro samples across the paused interval.
             lastGyroscopeTimestamp = 0L;
             if (motionSensor != null) {
                 sensorManager.registerListener(this, motionSensor, SensorManager.SENSOR_DELAY_GAME);
@@ -386,7 +375,7 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
         if (usesRotationVector) {
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
             SensorManager.getOrientation(rotationMatrix, orientation);
-            if (Float.isNaN(orientation[1]) || Float.isNaN(orientation[2])) return; // asin() out of range at ±90° pitch
+            if (Float.isNaN(orientation[1]) || Float.isNaN(orientation[2])) return;
             lightDirectionX = clamp(
                     (float) Math.sin(orientation[2]),
                     -MAX_LIGHT_TILT,
@@ -425,7 +414,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
                 setPressed(true);
                 return true;
             case MotionEvent.ACTION_POINTER_DOWN:
-                // A fresh finger takes over at the current pose, extending the drag range.
                 rebaseDrag(event, event.getActionIndex());
                 touchMoved = true;
                 setPressed(false);
@@ -509,7 +497,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
 
     private float stickerKickX, stickerKickY;
 
-    /** Extra tilt in degrees from a sticker landing on the card. */
     void setStickerKick(float x, float y) {
         if (stickerKickX == x && stickerKickY == y) return;
         stickerKickX = x;
@@ -522,7 +509,6 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
         currentRotationY = rotationY;
         rotationX += stickerKickX;
         rotationY += stickerKickY;
-        // The transformed face normal points away after either axis turns through 90 degrees.
         boolean back = Math.cos(Math.toRadians(rotationX)) * Math.cos(Math.toRadians(rotationY)) < 0;
         if (backFacing != back) {
             backFacing = back;
@@ -655,12 +641,10 @@ public class WalletCard2DView extends FrameLayout implements SensorEventListener
 
         @Override
         protected void dispatchDraw(Canvas canvas) {
-            // Depth is already projected in screen space, independently of the front face.
             if (material != null) material.drawDepth(canvas, gradientSurface.style);
             if (!validProjection) return;
             int save = canvas.save();
             canvas.concat(projection);
-            // Project the cached material and live content together.
             super.dispatchDraw(canvas);
             canvas.restoreToCount(save);
         }

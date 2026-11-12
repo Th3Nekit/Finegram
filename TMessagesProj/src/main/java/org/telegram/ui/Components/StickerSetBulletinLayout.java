@@ -66,7 +66,6 @@ public class StickerSetBulletinLayout extends Bulletin.TwoLineLayout {
             if (documents != null && !documents.isEmpty()) {
                 sticker = documents.get(0);
             } else {
-                // sticker = null;
             }
         } else if (setObject instanceof TLRPC.StickerSetCovered) {
             final TLRPC.StickerSetCovered obj = (TLRPC.StickerSetCovered) setObject;
@@ -80,10 +79,8 @@ public class StickerSetBulletinLayout extends Bulletin.TwoLineLayout {
                 if (covered.documents != null && !covered.documents.isEmpty()) {
                     sticker = covered.documents.get(0);
                 } else {
-                    // sticker = null;
                 }
             } else {
-                // sticker = null;
             }
         } else {
             if (sticker == null && setObject != null && BuildVars.DEBUG_VERSION) {

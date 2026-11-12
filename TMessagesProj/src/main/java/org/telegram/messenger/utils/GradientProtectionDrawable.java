@@ -148,7 +148,6 @@ public class GradientProtectionDrawable extends Drawable {
         return PixelFormat.TRANSLUCENT;
     }
 
-    /* source: androidx.core.view.insets.GradientProtection */
 
     public static final Interpolator DEFAULT_INTERPOLATOR = new PathInterpolator(0.42f, 0f, 0.58f, 1f);
 

@@ -219,7 +219,6 @@ public class QuoteSpan implements LeadingMarginSpan {
                     continue;
                 }
                 if (!(block.span.end == text.length() || text.charAt(block.span.end) == '\n')) {
-                    // new line was removed after a quote, finding a new quote end
                     int newEnd = block.span.end;
                     for (; newEnd <= text.length() && !(newEnd == text.length() || text.charAt(newEnd) == '\n'); ++newEnd);
                     spannable.removeSpan(spans[i]);
@@ -314,7 +313,6 @@ public class QuoteSpan implements LeadingMarginSpan {
         return blocks;
     }
 
-    // Collapse/expand toggle button, extracted into a reusable widget (see CollapseButton).
     public QuoteCollapseButton collapseButton;
 
     public static class Block {
@@ -378,8 +376,8 @@ public class QuoteSpan implements LeadingMarginSpan {
             canvas.translate(0, offsetY);
 
             AndroidUtilities.rectTmp.set(0, top, width, bottom);
-            span.backgroundPathRadii[0] = span.backgroundPathRadii[1] = span.backgroundPathRadii[6] = span.backgroundPathRadii[7] = 0; // left
-            span.backgroundPathRadii[2] = span.backgroundPathRadii[3] = span.backgroundPathRadii[4] = span.backgroundPathRadii[5] = dp(4); // right
+            span.backgroundPathRadii[0] = span.backgroundPathRadii[1] = span.backgroundPathRadii[6] = span.backgroundPathRadii[7] = 0;
+            span.backgroundPathRadii[2] = span.backgroundPathRadii[3] = span.backgroundPathRadii[4] = span.backgroundPathRadii[5] = dp(4);
             span.backgroundPath.rewind();
             span.backgroundPath.addRoundRect(AndroidUtilities.rectTmp, span.backgroundPathRadii, Path.Direction.CW);
             canvas.drawPath(span.backgroundPath, span.backgroundPaint);
@@ -393,8 +391,8 @@ public class QuoteSpan implements LeadingMarginSpan {
             }
 
             AndroidUtilities.rectTmp.set(-dp(3), top, 0, bottom);
-            span.linePathRadii[0] = span.linePathRadii[1] = span.linePathRadii[6] = span.linePathRadii[7] = dp(4); // left
-            span.linePathRadii[2] = span.linePathRadii[3] = span.linePathRadii[4] = span.linePathRadii[5] = 0; // right
+            span.linePathRadii[0] = span.linePathRadii[1] = span.linePathRadii[6] = span.linePathRadii[7] = dp(4);
+            span.linePathRadii[2] = span.linePathRadii[3] = span.linePathRadii[4] = span.linePathRadii[5] = 0;
             span.linePath.rewind();
             span.linePath.addRoundRect(AndroidUtilities.rectTmp, span.linePathRadii, Path.Direction.CW);
             canvas.drawPath(span.linePath, span.linePaint);
@@ -699,7 +697,6 @@ public class QuoteSpan implements LeadingMarginSpan {
 
         @Override
         public void updateDrawState(TextPaint tp) {
-            // NOP
         }
     }
 

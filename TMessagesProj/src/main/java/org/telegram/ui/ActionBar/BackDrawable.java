@@ -168,7 +168,7 @@ public class BackDrawable extends Drawable {
             canvas.rotate(arrowRotation);
         }
         float rotation = currentRotation;
-        canvas.translate(-AndroidUtilities.dp(0.66f)/* * (rotation)*/, 0);
+        canvas.translate(-AndroidUtilities.dp(0.66f)                 , 0);
         if (!alwaysClose) {
             canvas.rotate(currentRotation * (reverseAngle ? -225 : 135));
         } else {

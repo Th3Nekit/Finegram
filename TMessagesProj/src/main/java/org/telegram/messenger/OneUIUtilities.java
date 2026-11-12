@@ -23,7 +23,6 @@ public class OneUIUtilities {
             f.setAccessible(true);
             int semPlatformInt = (int) f.get(null);
             if (semPlatformInt < 100000) {
-                // Samsung Experience then
                 return false;
             }
 

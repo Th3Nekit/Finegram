@@ -56,6 +56,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BottomSheetTabs;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CheckBox2;
 import org.telegram.ui.Components.CombinedDrawable;
@@ -73,6 +74,7 @@ import java.net.URLDecoder;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import com.th3nekit.finegram.chats.helpers.ChatsHelper2;
 
@@ -226,14 +228,6 @@ public class AddressBarList extends FrameLayout {
                 items.add(UItem.asFlicker(items.size(), FlickerLoadingView.BROWSER_BOOKMARK));
             }
         }
-//        items.add(UItem.asCustom(footer));
-//        if (clearView != null) {
-//            clearView.setVisibility(count > 0 && !queries.isEmpty() ? View.VISIBLE : View.GONE);
-//        }
-//        if (poweredView != null) {
-//            poweredView.setVisibility(View.VISIBLE);
-//            poweredView.setText(formatString(R.string.WebPoweredBy, SearchEngine.getCurrent().name));
-//        }
     }
 
     public static String getLink(MessageObject msg) {
@@ -285,12 +279,6 @@ public class AddressBarList extends FrameLayout {
     public void setOpenProgress(float progress) {
         if (Math.abs(openProgress - progress) > 0.0001f) {
             this.openProgress = progress;
-//            for (int i = 0; i < listView.getChildCount(); ++i) {
-//                View child = listView.getChildAt(i);
-//                final float alpha = AndroidUtilities.cascade(openProgress, i, listView.getChildCount(), 3);
-//                child.setAlpha(alpha);
-//                child.setTranslationY(-dp(Math.min(48, 8 + 6 * i)) * (1 - alpha));
-//            }
             int desired = progress <= 0.0001f
                 ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                 : IMPORTANT_FOR_ACCESSIBILITY_AUTO;
@@ -437,100 +425,6 @@ public class AddressBarList extends FrameLayout {
         return super.dispatchTouchEvent(ev);
     }
 
-//    public static class AddressView extends FrameLayout {
-//
-//        public final ImageView iconView;
-//        public final BackupImageView iconView2;
-//        public final TextView textView;
-//        public final ImageView insertView;
-//
-//        public AddressView(Context context) {
-//            super(context);
-//
-//            ScaleStateListAnimator.apply(this, .04f, 1.25f);
-//
-//            iconView = new ImageView(context);
-//            iconView.setScaleType(ImageView.ScaleType.CENTER);
-//            iconView.setImageResource(R.drawable.msg_clear_recent);
-//            addView(iconView, LayoutHelper.createFrame(32, 32, Gravity.CENTER_VERTICAL | Gravity.LEFT, 10, 8, 8, 8));
-//
-//            iconView2 = new BackupImageView(context);
-//            iconView2.setVisibility(View.GONE);
-//            addView(iconView2, LayoutHelper.createFrame(32, 32, Gravity.CENTER_VERTICAL | Gravity.LEFT, 10, 8, 8, 8));
-//
-//            textView = new TextView(context);
-//            textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-//            addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.LEFT, 59, 8, 54, 8));
-//
-//            insertView = new ImageView(context);
-//            insertView.setScaleType(ImageView.ScaleType.CENTER);
-//            insertView.setImageResource(R.drawable.menu_browser_arrowup);
-//            addView(insertView, LayoutHelper.createFrame(32, 32, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 8, 8, 8, 8));
-//        }
-//
-//        public void setTopBottom(int grayBackgroundColor, int rippleColor, boolean top, boolean bottom) {
-//            setBackground(Theme.createRadSelectorDrawable(grayBackgroundColor, rippleColor, top ? 15 : 1, bottom ? 15 : 1));
-//        }
-//
-//        public void setColors(int backgroundColor, int textColor) {
-//            textView.setTextColor(textColor);
-//            iconView.setColorFilter(new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN));
-//            insertView.setColorFilter(new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN));
-//            insertView.setBackground(Theme.createRadSelectorDrawable(0, Theme.multAlpha(textColor, .15f), dp(4), dp(4)));
-//        }
-//
-//        public void set(int type, String query, View.OnClickListener onInsertClick, boolean top, boolean bottom, AddressBarList parent, boolean divider) {
-//            iconView.setVisibility(View.VISIBLE);
-//            iconView2.setVisibility(View.GONE);
-//            setColors(parent.listBackgroundColor, parent.textColor);
-//            iconView.setImageResource(type == 0 ? R.drawable.msg_clear_recent : R.drawable.msg_search);
-//            textView.setText(query);
-//            insertView.setOnClickListener(onInsertClick);
-//            setTopBottom(parent.grayBackgroundColor, parent.rippleColor, top, bottom);
-//            dividerPaint.setColor(parent.listBackgroundColor);
-//            setWillNotDraw(!(needDivider = divider));
-//        }
-//
-//        private final Paint dividerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//        private boolean needDivider;
-//
-//        @Override
-//        protected void onDraw(Canvas canvas) {
-//            super.onDraw(canvas);
-//            if (needDivider) {
-//                canvas.drawRect(dp(59), getHeight() - Math.max(dp(.66f), 1), getWidth(), getHeight(), dividerPaint);
-//            }
-//        }
-//
-//        @Override
-//        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), heightMeasureSpec);
-//        }
-//
-//        public static class Factory extends UItem.UItemFactory<AddressView> {
-//            @Override
-//            public AddressView createView(Context context, int currentAccount, int classGuid, Theme.ResourcesProvider resourcesProvider) {
-//                return new AddressView(context);
-//            }
-//
-//            @Override
-//            public void bindView(View view, UItem item, boolean divider) {
-//                ((AddressView) view).set(item.intValue, item.text.toString(), item.clickCallback, item.accent, item.red, (AddressBarList) item.object, divider);
-//            }
-//
-//            public static UItem as(int type, String query, View.OnClickListener onInsertClick, boolean top, boolean bottom, AddressBarList parent) {
-//                UItem item = UItem.ofFactory(AddressView.Factory.class);
-//                item.intValue = type;
-//                item.text = query;
-//                item.clickCallback = onInsertClick;
-//                item.accent = top;
-//                item.red = bottom;
-//                item.object = parent;
-//                return item;
-//            }
-//        }
-//
-//    }
 
 
     public static class Address2View extends FrameLayout {
@@ -542,7 +436,6 @@ public class AddressBarList extends FrameLayout {
         public Address2View(Context context) {
             super(context);
 
-//            ScaleStateListAnimator.apply(this, .04f, 1.25f);
 
             iconView = new ImageView(context);
             iconView.setScaleType(ImageView.ScaleType.CENTER);
@@ -560,7 +453,6 @@ public class AddressBarList extends FrameLayout {
         }
 
         public void setTopBottom(int grayBackgroundColor, int rippleColor, boolean top, boolean bottom) {
-//            setBackground(Theme.createRadSelectorDrawable(grayBackgroundColor, rippleColor, top ? 15 : 1, bottom ? 15 : 1));
         }
 
         public void setColors(int backgroundColor, int textColor) {
@@ -714,6 +606,11 @@ public class AddressBarList extends FrameLayout {
             setColors(backgroundColor, textColor);
             dividerPaint.setColor(Theme.multAlpha(textColor, .1f));
             iconView.invalidate();
+        }
+        @Override
+        public void addColorKeys(HashSet<Integer> colors) {
+            colors.add(Theme.key_windowBackgroundWhite);
+            colors.add(Theme.key_windowBackgroundWhiteBlackText);
         }
 
         private int textColor;
@@ -1092,8 +989,8 @@ public class AddressBarList extends FrameLayout {
         public void attach() {
             if (attached) return;
             attached = true;
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.mediaDidLoad);
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.bookmarkAdded);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.mediaDidLoad);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.bookmarkAdded);
             if (TextUtils.isEmpty(query)) {
                 load();
             }

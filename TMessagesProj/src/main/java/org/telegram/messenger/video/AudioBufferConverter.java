@@ -21,7 +21,6 @@ public class AudioBufferConverter {
     private final AudioResampler mResampler;
 
     public AudioBufferConverter() {
-        // Create remixer and resampler.
         mRemixer = new DefaultAudioRemixer();
         mResampler = new DefaultAudioResampler();
     }
@@ -32,11 +31,8 @@ public class AudioBufferConverter {
 
         int requiredOutputSize = inputSize;
 
-        // Ask remixer how much space it needs for the given input
         requiredOutputSize = mRemixer.getRemixedSize(requiredOutputSize, inputChannelCount, outputChannelCount);
 
-        // After remixing we'll resample.
-        // Resampling will change the input size based on the sample rate ratio.
         requiredOutputSize = (int) Math.ceil((double) requiredOutputSize *
                 outputSampleRate / (double)inputSampleRate);
         return requiredOutputSize;
@@ -49,17 +45,12 @@ public class AudioBufferConverter {
 
         final int inputSize = inputBuffer.remaining();
 
-        // Do the remixing.
         int remixSize = mRemixer.getRemixedSize(inputSize, inputChannelCount, outputChannelCount);
         ShortBuffer remixedBuffer = createBuffer(remixSize);
         mRemixer.remix(inputBuffer, inputChannelCount, remixedBuffer, outputChannelCount);
         remixedBuffer.rewind();
 
-        // Do the resampling.
         int resampleSize = (int) Math.ceil((double) remixSize * outputSampleRate / (double)inputSampleRate);
-        // We add some extra values to avoid BufferOverflowException.
-        // Problem may occur for calculation.
-        // To be safe we add 10 but 1 is enough may be. Not sure.
         resampleSize += 10;
 
         ShortBuffer outputBuffer = createBuffer(resampleSize);

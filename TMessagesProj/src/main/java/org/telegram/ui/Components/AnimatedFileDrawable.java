@@ -717,7 +717,7 @@ public final class AnimatedFileDrawable extends BitmapDrawable implements Animat
             stream.cancel(true);
             stream = null;
         }
-        invalidateInternal();
+        AndroidUtilities.executeOnUIThread(this::invalidateInternal);
     }
 
     public void resetStream(boolean stop) {

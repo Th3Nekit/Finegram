@@ -71,7 +71,6 @@ public class RichTextStyle {
         return emojiSpans.size();
     }
 
-    // ---------- model -> Spannable ----------
 
     public static CharSequence toSpannable(TL_iv.RichText rt) {
         return toSpannable(rt, null);
@@ -285,7 +284,6 @@ public class RichTextStyle {
         return new FormattedDateSpan(text, run, entity);
     }
 
-    // ---------- Spannable -> model ----------
 
     public static TL_iv.RichText fromSpannable(CharSequence cs) {
         int n = cs == null ? 0 : cs.length();
@@ -387,9 +385,7 @@ public class RichTextStyle {
         return wrapper;
     }
 
-    // ---------- range queries / toggling ----------
 
-    /** True if every character in [from, to) carries {@code flag}. Empty ranges are not covered. */
     public static boolean hasStyle(CharSequence cs, int from, int to, int flag) {
         int n = cs == null ? 0 : cs.length();
         from = Math.max(0, Math.min(from, n));
@@ -408,7 +404,6 @@ public class RichTextStyle {
         return true;
     }
 
-    /** True if every character in [from, to) is covered by a link. Empty ranges are not covered. */
     public static boolean hasLink(CharSequence cs, int from, int to) {
         int n = cs == null ? 0 : cs.length();
         from = Math.max(0, Math.min(from, n));
@@ -427,7 +422,6 @@ public class RichTextStyle {
         return true;
     }
 
-    /** True if every character in [from, to) is covered by a date. Empty ranges are not covered. */
     public static boolean hasDate(CharSequence cs, int from, int to) {
         int n = cs == null ? 0 : cs.length();
         from = Math.max(0, Math.min(from, n));
@@ -448,9 +442,6 @@ public class RichTextStyle {
 
     private static final int[] STYLE_FLAGS = { BOLD, ITALIC, UNDERLINE, STRIKE, MONO, SPOILER, SUBSCRIPT, SUPERSCRIPT, MARKED };
 
-    /** Combined inline style flags that fully cover [from, to). A flag is reported only when
-     *  TextStyleSpans carrying it span the whole range with no gap. Links/dates are ignored —
-     *  inline styles live in their own TextStyleSpan layer, independent of URL/date spans. */
     public static int stylesFullyCovering(CharSequence cs, int from, int to) {
         int result = 0;
         for (int flag : STYLE_FLAGS) {
@@ -459,7 +450,6 @@ public class RichTextStyle {
         return result;
     }
 
-    /** Adds or removes {@code flag} over [from, to), preserving the other inline styles. */
     public static void setStyle(Spannable sb, int from, int to, int flag, boolean add) {
         setStyle(sb, from, to, flag, add, null);
     }
@@ -490,7 +480,6 @@ public class RichTextStyle {
         }
     }
 
-    /** Removes any link span over [from, to], keeping the surrounding parts intact. */
     public static void removeLink(android.text.Spannable sb, int from, int to) {
         int n = sb.length();
         from = Math.max(0, Math.min(from, n));
@@ -513,8 +502,6 @@ public class RichTextStyle {
         return new URLSpanReplacement(url, run);
     }
 
-    /** Removes any date span overlapping [from, to]. Dates wrap a single rendered token, so any
-     *  overlapping date is dropped whole rather than split. */
     public static void removeDate(android.text.Spannable sb, int from, int to) {
         int n = sb.length();
         from = Math.max(0, Math.min(from, n));
@@ -549,7 +536,6 @@ public class RichTextStyle {
     private static Run runAt(Spanned sp, int start, int end) {
         Run run = new Run();
         run.flags = flagsBetween(sp, start, end);
-        // inline `code` parsed from markdown is represented as URLSpanMono, not a TextStyleSpan
         if (sp.getSpans(start, end, URLSpanMono.class).length > 0) run.flags |= MONO;
         URLSpanReplacement[] urls = sp.getSpans(start, end, URLSpanReplacement.class);
         if (urls.length > 0) run.url = urls[0].getURL();
@@ -596,7 +582,6 @@ public class RichTextStyle {
             if (emojiDocId != 0 || o.emojiDocId != 0) {
                 return false;
             }
-            // each math token is its own atomic run, never merged with neighbours
             if (mathSource != null || o.mathSource != null) {
                 return false;
             }

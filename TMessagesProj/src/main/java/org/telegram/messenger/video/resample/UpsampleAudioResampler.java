@@ -4,9 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.nio.ShortBuffer;
 
-/**
- * An {@link AudioResampler} that upsamples from a lower sample rate to a higher sample rate.
- */
 public class UpsampleAudioResampler implements AudioResampler {
 
     private static float ratio(int remaining, int all) {
@@ -31,8 +28,6 @@ public class UpsampleAudioResampler implements AudioResampler {
         float remainingInputSamplesRatio = ratio(remainingInputSamples, inputSamples);
         float remainingFakeSamplesRatio = ratio(remainingFakeSamples, fakeSamples);
         while (remainingInputSamples > 0 && remainingFakeSamples > 0) {
-            // Will this be an input sample or a fake sample?
-            // Choose the one with the bigger ratio.
             if (remainingInputSamplesRatio >= remainingFakeSamplesRatio) {
                 outputBuffer.put(inputBuffer.get());
                 if (channels == 2) outputBuffer.put(inputBuffer.get());
@@ -47,26 +42,6 @@ public class UpsampleAudioResampler implements AudioResampler {
         }
     }
 
-    /**
-     * We have different options here.
-     * 1. Return a 0 sample.
-     * 2. Return a noise sample.
-     * 3. Return the previous sample for this channel.
-     * 4. Return an interpolated value between previous and next sample for this channel.
-     *
-     * None of this provides a real quality improvement, since the fundamental issue is that we
-     * can not achieve a higher quality by simply inserting fake samples each X input samples.
-     * A real upsampling algorithm should do something more intensive like interpolating between
-     * all values, not just the spare one.
-     *
-     * However this is probably beyond the scope of this library.
-     *
-     * @param output output buffer
-     * @param input output buffer
-     * @param channel current channel
-     * @param channels number of channels
-     * @return a fake sample
-     */
     @SuppressWarnings("unused")
     private static short fakeSample(@NonNull ShortBuffer output, @NonNull ShortBuffer input, int channel, int channels) {
         return output.get(output.position() - channels);

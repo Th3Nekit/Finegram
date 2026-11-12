@@ -43,6 +43,8 @@ public final class FGFileSender {
         args.putBoolean("onlySelect", true);
         args.putInt("dialogsType", DialogsActivity.DIALOGS_TYPE_FORWARD);
         args.putBoolean("canSelectTopics", true);
+        args.putString("selectAlertString", org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.SendMessagesToText));
+        args.putString("selectAlertStringGroup", org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.SendMessagesToGroupText));
 
         DialogsActivity chooser = new DialogsActivity(args);
         chooser.setCurrentAccount(account);

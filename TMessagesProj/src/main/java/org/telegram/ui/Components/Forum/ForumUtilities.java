@@ -39,6 +39,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AnimatedEmojiSpan;
@@ -107,7 +108,11 @@ public class ForumUtilities {
         }
         if (forumTopic.id == 1) {
             backupImageView.setAnimatedEmojiDrawable(null);
-            backupImageView.setImageDrawable(createGeneralTopicDrawable(backupImageView.getContext(), 0.75f, Theme.getColor(Theme.key_actionBarDefaultIcon, resourcesProvider), false, largeIcon));
+            final GeneralTopicDrawable generalDrawable = createGeneralTopicDrawable(backupImageView.getContext(), 0.75f, Theme.getColor(Theme.key_actionBarDefaultIcon, resourcesProvider), false, largeIcon);
+            backupImageView.setImageDrawable(generalDrawable);
+            if (generalDrawable != null) {
+                ThemeBind.drawableColorFilter(backupImageView, generalDrawable, Theme.key_actionBarDefaultIcon, resourcesProvider, PorterDuff.Mode.MULTIPLY);
+            }
         } else if (forumTopic.icon_emoji_id != 0) {
             backupImageView.setImageDrawable(null);
             if (backupImageView.animatedEmojiDrawable == null || forumTopic.icon_emoji_id != backupImageView.animatedEmojiDrawable.getDocumentId()) {
@@ -125,7 +130,11 @@ public class ForumUtilities {
             return;
         }
         if (forumTopic.id == 1) {
-            imageReceiver.setImageBitmap(createGeneralTopicDrawable(context, 0.75f, Theme.getColor(Theme.key_actionBarDefaultIcon, resourcesProvider), false, largeIcon));
+            final GeneralTopicDrawable generalDrawable = createGeneralTopicDrawable(context, 0.75f, Theme.getColor(Theme.key_actionBarDefaultIcon, resourcesProvider), false, largeIcon);
+            imageReceiver.setImageBitmap(generalDrawable);
+            if (generalDrawable != null && imageReceiver.getParentView() != null) {
+                ThemeBind.drawableColorFilter(imageReceiver.getParentView(), generalDrawable, Theme.key_actionBarDefaultIcon, resourcesProvider, PorterDuff.Mode.MULTIPLY);
+            }
         } else if (forumTopic.icon_emoji_id != 0) {
             if (imageReceiver.getImageDrawable() == null || !(imageReceiver.getImageDrawable() instanceof AnimatedEmojiDrawable) || forumTopic.icon_emoji_id != ((AnimatedEmojiDrawable) imageReceiver.getDrawable()).getDocumentId()) {
                 final AnimatedEmojiDrawable drawable = new AnimatedEmojiDrawable(largeIcon ? AnimatedEmojiDrawable.CACHE_TYPE_FORUM_TOPIC_LARGE : AnimatedEmojiDrawable.CACHE_TYPE_FORUM_TOPIC, UserConfig.selectedAccount, forumTopic.icon_emoji_id);
@@ -220,6 +229,12 @@ public class ForumUtilities {
             icon.setColorFilter(colorFilter);
         }
 
+        @Nullable
+        @Override
+        public ColorFilter getColorFilter() {
+            return icon != null ? icon.getColorFilter() : null;
+        }
+
         @Override
         public int getOpacity() {
             return PixelFormat.TRANSPARENT;
@@ -284,7 +299,6 @@ public class ForumUtilities {
         if (fromMessageId != 0) {
             args.putInt("message_id", fromMessageId);
         } else if (topic.read_inbox_max_id == 0) {
-            //scroll to first message in topic
             args.putInt("message_id", topic.id);
         }
         args.putInt("unread_count", topic.unread_count);
@@ -474,26 +488,6 @@ public class ForumUtilities {
 
     public static void switchAllFragmentsInStackToForum(long chatId, INavigationLayout actionBarLayout) {
 
-//        List<BaseFragment> fragmentStack = actionBarLayout.getFragmentStack();
-//        for (int i = 0; i < fragmentStack.size() - 1; i++) {
-//            if (fragmentStack.get(i) instanceof ChatActivity) {
-//                ChatActivity chatActivity = (ChatActivity) fragmentStack.get(i);
-//                if (-chatActivity.getDialogId() == chatId) {
-//                    Bundle bundle = new Bundle();
-//                    bundle.putLong("chat_id", chatId);
-//                    actionBarLayout.removeFragmentFromStack(i);
-//                    actionBarLayout.addFragmentToStack(new TopicsFragment(bundle), i);
-//                }
-//            } else if (fragmentStack.get(i) instanceof TopicsFragment) {
-//                TopicsFragment chatActivity = (TopicsFragment) fragmentStack.get(i);
-//                if (-chatActivity.getDialogId() == chatId) {
-//                    Bundle bundle = new Bundle();
-//                    bundle.putLong("dialog_id", -chatId);
-//                    actionBarLayout.removeFragmentFromStack(i);
-//                    actionBarLayout.addFragmentToStack(new ChatActivity(bundle), i);
-//                }
-//            }
-//        }
 
         BaseFragment lastFragment = actionBarLayout.getLastFragment();
         if (lastFragment instanceof ChatActivity) {

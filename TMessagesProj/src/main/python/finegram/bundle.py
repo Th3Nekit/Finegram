@@ -8,6 +8,7 @@ REFMAP_YAML = "refmap.yml"
 _DEFAULT_MAIN = "main.py"
 _DEFAULT_METAS = ("metainfo.json", "metainfo.yml", "meta.yml")
 _MAX_METADATA_BYTES = 2 * 1024 * 1024
+_PLACEHOLDER = re.compile(r"\{([A-Za-z0-9_.-]{1,64})\}")
 
 def is_bundle(path):
 
@@ -140,6 +141,31 @@ def read_metadata(root):
                 if isinstance(value, (str, int, float))}
     if not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9._-]{0,99}", meta.get("id", "")):
         return {}
+    if any(key != "id" and _PLACEHOLDER.search(value) for key, value in meta.items()):
+        table = _strings(root)
+        if table:
+            for key, value in list(meta.items()):
+                if key != "id":
+                    meta[key] = _PLACEHOLDER.sub(lambda match: table.get(match.group(1), match.group(0)), value)
     if not meta.get("name"):
         meta["name"] = meta["id"]
     return meta
+
+def _language():
+    try:
+        from org.telegram.messenger import LocaleController
+        return str(LocaleController.getInstance().getCurrentLocale().getLanguage())
+    except Exception:
+        return "en"
+
+def _strings(root):
+    folder = strings_dir(root)
+    table = {}
+    if not folder:
+        return table
+    for language in ("en", _language()):
+        path = _resolve(folder, "strings_%s.json" % language)
+        if not path or _resolve(root, os.path.relpath(path, root)) is None:
+            continue
+        table.update({key: value for key, value in _read_object(path).items() if isinstance(value, str)})
+    return table

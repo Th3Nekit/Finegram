@@ -14,12 +14,7 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Description of media constraints for {@code MediaStream} and
- * {@code PeerConnection}.
- */
 public class MediaConstraints {
-  /** Simple String key/value pair. */
   public static class KeyValuePair {
     private final String key;
     private final String value;

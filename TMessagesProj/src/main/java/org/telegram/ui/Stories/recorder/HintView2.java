@@ -63,17 +63,17 @@ import org.telegram.ui.Components.LinkPath;
 import org.telegram.ui.Components.LinkSpanDrawable;
 import org.telegram.ui.Components.RLottieDrawable;
 import org.telegram.ui.Components.TypefaceSpan;
+import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
+import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
+import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundProvider;
+import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
 
 public class HintView2 extends View {
 
-    // direction of an arrow to point
-    // the gravity of location would be the same, location of arrow opposite:
-    // f.ex. hint with DIRECTION_LEFT has arrow on left of hint and would be forced to the left ({view} <{hint})
     public static final int DIRECTION_LEFT = 0;
     public static final int DIRECTION_TOP = 1;
     public static final int DIRECTION_RIGHT = 2;
     public static final int DIRECTION_BOTTOM = 3;
-    // the layout (bounds of hint) are up to a user of this component
 
     private int direction;
     private float joint = .5f, jointTranslate = 0;
@@ -175,8 +175,51 @@ public class HintView2 extends View {
         return this;
     }
 
+    private BlurredBackgroundDrawable glass;
+    private final float glassTipRadius = dpf2(4);
+    private final float glassFilletRadius = dpf2(4);
+    private final float glassThickness = dpf2(5);
+    private final float glassExtraRounding = dpf2(2);
+
+    public HintView2 setGlass(BlurredBackgroundDrawableViewFactory factory) {
+        return setGlass(factory, null);
+    }
+
+    public HintView2 setGlass(BlurredBackgroundDrawableViewFactory factory, @Nullable BlurredBackgroundProvider style) {
+        glass = factory.create(this, style != null ? style : BlurredBackgroundProviderImpl.hint(null));
+        glass.setCallback(this);
+        glass.setRadius(rounding + glassExtraRounding);
+        glass.setThickness((int) glassThickness);
+        glass.setIntensity(1f);
+        glass.setEvenRim(true);
+        glass.setAlpha(0);
+        pathSet = false;
+        invalidate();
+        return this;
+    }
+
+    private void updateGlassShape() {
+        if (glass == null) {
+            return;
+        }
+        final int arrow = Math.round(arrowHeight);
+        int l = Math.round(bounds.left), t = Math.round(bounds.top), r = Math.round(bounds.right), b = Math.round(bounds.bottom);
+        switch (direction) {
+            case DIRECTION_LEFT: l -= arrow; break;
+            case DIRECTION_TOP: t -= arrow; break;
+            case DIRECTION_RIGHT: r += arrow; break;
+            default: b += arrow; break;
+        }
+        final boolean vertical = direction == DIRECTION_LEFT || direction == DIRECTION_RIGHT;
+        glass.setArrow(direction, vertical ? arrowY : arrowX, arrow, glassTipRadius, glassFilletRadius);
+        glass.setBounds(l, t, r, b);
+    }
+
     public HintView2 setRounding(float roundingDp) {
         this.rounding = dp(roundingDp);
+        if (glass != null) {
+            glass.setRadius(rounding + glassExtraRounding);
+        }
         backgroundPaint.setPathEffect(roundWithCornerEffect ? new CornerPathEffect(rounding) : null);
         if (cutSelectorPaint != null) {
             cutSelectorPaint.setPathEffect(roundWithCornerEffect ? new CornerPathEffect(rounding) : null);
@@ -218,7 +261,6 @@ public class HintView2 extends View {
         return this;
     }
 
-    // mutliline disables text animations
     public HintView2 setMultilineText(boolean enable) {
         this.multiline = enable;
         if (enable) {
@@ -317,7 +359,6 @@ public class HintView2 extends View {
             if (this.icon instanceof RLottieDrawable) {
                 duration = Math.max(duration, ((RLottieDrawable) this.icon).getDuration());
             }
-            // TODO: to be custom
             this.iconWidth  = this.icon.getIntrinsicWidth();
             this.iconHeight = this.icon.getIntrinsicHeight();
             this.iconLeft = true;
@@ -334,28 +375,14 @@ public class HintView2 extends View {
         }
         Spanned spanned = (Spanned) text;
         TypefaceSpan[] spans = spanned.getSpans(0, text.length(), TypefaceSpan.class);
-//        AnimatedEmojiSpan[] animatedSpans = spanned.getSpans(0, text.length(), AnimatedEmojiSpan.class);
-//        Emoji.EmojiSpan[] emojiSpans = spanned.getSpans(0, text.length(), Emoji.EmojiSpan.class);
         ReplacementSpan[] replacementSpans = spanned.getSpans(0, text.length(), ReplacementSpan.class);
         int add = 0;
-//        for (int i = 0; i < emojiSpans.length; ++i) {
-//            Emoji.EmojiSpan span = emojiSpans[i];
-//            final int start = spanned.getSpanStart(span);
-//            final int end = spanned.getSpanEnd(span);
-//            add += Math.max(0, span.size - paint.measureText(spanned, start, end));
-//        }
         for (int i = 0; i < replacementSpans.length; ++i) {
             ReplacementSpan span = replacementSpans[i];
             final int start = spanned.getSpanStart(span);
             final int end = spanned.getSpanEnd(span);
             add += Math.max(0, span.getSize(paint, text, start, end, paint.getFontMetricsInt()) - paint.measureText(spanned, start, end));
         }
-//        for (int i = 0; i < animatedSpans.length; ++i) {
-//            AnimatedEmojiSpan span = animatedSpans[i];
-//            final int start = spanned.getSpanStart(span);
-//            final int end = spanned.getSpanEnd(span);
-//            add += Math.max(0, span.getSize(paint, text, start, end, paint.getFontMetricsInt()) - paint.measureText(spanned, start, end));
-//        }
         if (spans == null || spans.length == 0) {
             return paint.measureText(text.toString()) + add;
         }
@@ -386,7 +413,6 @@ public class HintView2 extends View {
         return len + add;
     }
 
-    // returns max width
     public static int cutInFancyHalf(CharSequence text, TextPaint paint) {
         if (TextUtils.indexOf(text, '\n') >= 0) {
             return Integer.MAX_VALUE;
@@ -494,7 +520,6 @@ public class HintView2 extends View {
         return this;
     }
 
-    // duration < 0 means you would hide it on yourself
     public HintView2 setDuration(long duration) {
         this.duration = duration;
         return this;
@@ -505,9 +530,6 @@ public class HintView2 extends View {
         return this;
     }
 
-    // distances from text to inner hint bounds
-    // use setPadding() or custom layout to move possible bounds of the hint location
-    // call last, as paddings are dependent on multiline and closeButton
     public HintView2 setInnerPadding(float leftDp, float topDp, float rightDp, float bottomDp) {
         innerPadding.set(dpf2(leftDp), dpf2(topDp), dpf2(rightDp), dpf2(bottomDp));
         return this;
@@ -554,7 +576,6 @@ public class HintView2 extends View {
             @Override
             public void draw(@NonNull Canvas canvas) {
                 canvas.save();
-//                canvas.translate(-boundsWithArrow.left, -boundsWithArrow.top);
                 canvas.drawPath(path, cutSelectorPaint);
                 canvas.restore();
             }
@@ -576,7 +597,6 @@ public class HintView2 extends View {
         return this;
     }
 
-    // works only for multiline=true
     public HintView2 setTextAlign(Layout.Alignment alignment) {
         textLayoutAlignment = alignment;
         return this;
@@ -596,9 +616,6 @@ public class HintView2 extends View {
         return this;
     }
 
-    // joint is where should be a connection with an arrow
-    // f.ex. on DIRECTION_TOP: joint=0: left, joint=.5: at the center, joint=1: right
-    // jointTranslate translates joint in pixels amount
     public HintView2 setJoint(float joint, float jointTranslateDp) {
         if (Math.abs(this.joint - joint) >= 1 || Math.abs(this.jointTranslate - dp(jointTranslateDp)) >= 1) {
             this.pathSet = false;
@@ -619,6 +636,114 @@ public class HintView2 extends View {
         return this;
     }
 
+    private View anchorView;
+    private float anchorX = Float.NaN, anchorY;
+    private float anchorGap, anchorOffsetX;
+    private final int[] anchorLocation = new int[2];
+
+    public HintView2 setAnchorGap(float gapPx) {
+        anchorGap = gapPx;
+        return this;
+    }
+
+    public HintView2 setAnchorOffsetX(float offsetPx) {
+        anchorOffsetX = offsetPx;
+        return this;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed && shown) {
+            updatePosition();
+        }
+    }
+
+    public boolean showForView(View view, boolean animated) {
+        final boolean same = shown && anchorView == view;
+        anchorView = view;
+        anchorX = Float.NaN;
+        updatePosition();
+        if (same) {
+            return false;
+        }
+        show();
+        if (!animated) {
+            show.force(true);
+        }
+        return true;
+    }
+
+    public void showAt(float x, float y, boolean animated) {
+        anchorView = null;
+        anchorX = x;
+        anchorY = y;
+        updatePosition();
+        if (shown) {
+            return;
+        }
+        show();
+        if (!animated) {
+            show.force(true);
+        }
+    }
+
+    public boolean isShowing() {
+        return shown;
+    }
+
+    @Nullable
+    public View getAnchorView() {
+        return anchorView;
+    }
+
+    public void updatePosition() {
+        if (!(getParent() instanceof View) || anchorView == null && Float.isNaN(anchorX)) {
+            return;
+        }
+        if (!isLaidOut()) {
+            post(this::updatePosition);
+            return;
+        }
+        float x, y;
+        if (anchorView != null) {
+            anchorView.getLocationInWindow(anchorLocation);
+            final float left = anchorLocation[0], top = anchorLocation[1];
+            ((View) getParent()).getLocationInWindow(anchorLocation);
+            float l = left - anchorLocation[0];
+            final float t = top - anchorLocation[1];
+            final int w = anchorView.getWidth(), h = anchorView.getHeight();
+            l += anchorOffsetX;
+            switch (direction) {
+                case DIRECTION_LEFT: x = l + w + anchorGap; y = t + h / 2f; break;
+                case DIRECTION_TOP: x = l + w / 2f; y = t + h + anchorGap; break;
+                case DIRECTION_RIGHT: x = l - anchorGap; y = t + h / 2f; break;
+                default: x = l + w / 2f; y = t - anchorGap; break;
+            }
+        } else {
+            x = anchorX;
+            y = anchorY;
+        }
+        switch (direction) {
+            case DIRECTION_LEFT:
+                setTranslationX(x - (getLeft() + getPaddingLeft()));
+                setJointPx(0, y - getTop() - getPaddingTop());
+                break;
+            case DIRECTION_TOP:
+                setTranslationY(y - (getTop() + getPaddingTop()));
+                setJointPx(0, x - getLeft() - getPaddingLeft());
+                break;
+            case DIRECTION_RIGHT:
+                setTranslationX(x - (getLeft() + getWidth() - getPaddingRight()));
+                setJointPx(0, y - getTop() - getPaddingTop());
+                break;
+            default:
+                setTranslationY(y - (getTop() + getHeight() - getPaddingBottom()));
+                setJointPx(0, x - getLeft() - getPaddingLeft());
+                break;
+        }
+    }
+
     public TextPaint getTextPaint() {
         if (multiline) {
             return textPaint;
@@ -635,7 +760,9 @@ public class HintView2 extends View {
     }
 
     public HintView2 show() {
-        prepareBlur();
+        if (glass == null) {
+            prepareBlur();
+        }
         if (shown) {
             bounceShow();
         }
@@ -791,6 +918,12 @@ public class HintView2 extends View {
     private long flickerStart;
 
     protected void drawBgPath(Canvas canvas, float alpha) {
+        if (glass != null) {
+            glass.setAlpha(Math.max(1, (int) (0xFF * alpha)));
+            glass.draw(canvas);
+            drawFlicker(canvas);
+            return;
+        }
         if (blurBackgroundPaint != null) {
             canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), 0xFF, Canvas.ALL_SAVE_FLAG);
             canvas.drawPath(path, blurBackgroundPaint);
@@ -809,6 +942,10 @@ public class HintView2 extends View {
         backgroundPaint.setAlpha((int) (wasAlpha * alpha));
         canvas.drawPath(path, backgroundPaint);
         backgroundPaint.setAlpha(wasAlpha);
+        drawFlicker(canvas);
+    }
+
+    private void drawFlicker(Canvas canvas) {
         if (flicker) {
             final int delay = 4, duration = 1000;
             final int gradientWidth = dp(64);
@@ -840,6 +977,9 @@ public class HintView2 extends View {
             invalidate();
         }
         if (showT <= 0) {
+            if (glass != null) {
+                glass.setAlpha(0);
+            }
             return;
         }
 
@@ -862,6 +1002,7 @@ public class HintView2 extends View {
         final float height = innerPadding.top + contentHeight + innerPadding.bottom;
         if (!pathSet || Math.abs(width - pathLastWidth) > 0.1f || Math.abs(height - pathLastHeight) > 0.1f) {
             fillPath(path, pathLastWidth = width, pathLastHeight = height, 0.0f, bounds, boundsWithArrow);
+            updateGlassShape();
             if (flicker) {
                 fillPath(flickerStrokePath, width, height, flickerStrokePathExtrude, flickerBounds, null);
             }
@@ -1079,7 +1220,7 @@ public class HintView2 extends View {
 
     @Override
     protected boolean verifyDrawable(@NonNull Drawable who) {
-        return who == textDrawable || who == selectorDrawable || who == icon || super.verifyDrawable(who);
+        return who == textDrawable || who == selectorDrawable || who == icon || who == glass || super.verifyDrawable(who);
     }
 
     @Override

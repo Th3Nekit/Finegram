@@ -61,7 +61,7 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
 
     public FileStreamLoadOperation() {
         this.isNetwork = true;
-        this.listeners = new ArrayList<>(/* initialCapacity= */ 1);
+        this.listeners = new ArrayList<>(                       1);
     }
 
     @Deprecated
@@ -148,10 +148,8 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException {
         if (readLength == 0) {
-//            FileLog.e("FileStreamLoadOperation " + document.id + " read 0 return");
             return 0;
         } else if (bytesRemaining == 0) {
-//            FileLog.e("FileStreamLoadOperation " + document.id + " read RESULT_END_OF_INPUT");
             return C.RESULT_END_OF_INPUT;
         } else {
             int availableLength = 0;
@@ -166,17 +164,14 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
                         countDownLatch = new CountDownLatch(1);
                         FileLoadOperation loadOperation = FileLoader.getInstance(currentAccount).loadStreamFile(this, document, null, parentObject, currentOffset, false, getCurrentPriority());
                         if (this.loadOperation != loadOperation) {
-//                            FileLog.e("FileStreamLoadOperation " + document.id + " read: changed operation!");
                             this.loadOperation.removeStreamListener(this);
                             this.loadOperation = loadOperation;
                         }
-//                        FileLog.e("FileStreamLoadOperation " + document.id + " read sleeping.... Zzz");
                         if (countDownLatch != null) {
                             countDownLatch.await();
                             countDownLatch = null;
                         }
                     }
-//                    FileLog.e("FileStreamLoadOperation " + document.id + " read availableLength=" + availableLength);
                     File currentFileFast = loadOperation.getCurrentFileFast();
                     if (file == null || !Objects.equals(currentFile, currentFileFast)) {
                         if (BuildVars.LOGS_ENABLED) {
@@ -189,7 +184,6 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
 
                             }
                         }
-//                        FileLog.e("FileStreamLoadOperation " + document.id + " read update file from " + currentFile + " to " + currentFileFast + " me=" + this);
                         currentFile = currentFileFast;
                         if (currentFile != null) {
                             try {
@@ -207,7 +201,6 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
                                     FileLoader.getInstance(currentAccount).cancelLoadFile(loadOperation.getFileName());
                                     FileLoadOperation newLoadOperation = FileLoader.getInstance(currentAccount).loadStreamFile(this, document, null, parentObject, currentOffset, false, getCurrentPriority());
                                     if (this.loadOperation != newLoadOperation) {
-//                            FileLog.e("FileStreamLoadOperation " + document.id + " read: changed operation!");
                                         this.loadOperation.removeStreamListener(this);
                                         this.loadOperation = newLoadOperation;
                                     }
@@ -215,11 +208,9 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
                             }
                         }
                     } else {
-//                        FileLog.e("FileStreamLoadOperation " + document.id + " read have exact same file");
                     }
                 }
                 if (!opened) {
-//                    FileLog.e("FileStreamLoadOperation " + document.id + " read return, not opened");
                     return 0;
                 }
                 bytesRead = file.read(buffer, offset, availableLength);
@@ -265,7 +256,6 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
             transferEnded();
         }
         if (countDownLatch != null) {
-         //   FileLog.d("FileStreamLoadOperation count down");
             countDownLatch.countDown();
             countDownLatch = null;
         }
@@ -273,7 +263,6 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
 
     @Override
     public void newDataAvailable() {
-//        FileLog.e("FileStreamLoadOperation " + document.id + " newDataAvailable me=" + this);
         CountDownLatch latch = countDownLatch;
         countDownLatch = null;
         if (latch != null) {
@@ -331,49 +320,32 @@ public class FileStreamLoadOperation implements DataSource, FileLoadOperationStr
         }
     }
 
-    /**
-     * Notifies listeners that data transfer for the specified {@link DataSpec} is being initialized.
-     *
-     * @param dataSpec {@link DataSpec} describing the data for initializing transfer.
-     */
     protected final void transferInitializing(DataSpec dataSpec) {
         for (int i = 0; i < listenerCount; i++) {
-            listeners.get(i).onTransferInitializing(/* source= */ this, dataSpec, isNetwork);
+            listeners.get(i).onTransferInitializing(              this, dataSpec, isNetwork);
         }
     }
 
-    /**
-     * Notifies listeners that data transfer for the specified {@link DataSpec} started.
-     *
-     * @param dataSpec {@link DataSpec} describing the data being transferred.
-     */
     protected final void transferStarted(DataSpec dataSpec) {
         this.dataSpec = dataSpec;
         for (int i = 0; i < listenerCount; i++) {
-            listeners.get(i).onTransferStart(/* source= */ this, dataSpec, isNetwork);
+            listeners.get(i).onTransferStart(              this, dataSpec, isNetwork);
         }
     }
 
-    /**
-     * Notifies listeners that bytes were transferred.
-     *
-     * @param bytesTransferred The number of bytes transferred since the previous call to this method
-     *     (or if the first call, since the transfer was started).
-     */
     protected final void bytesTransferred(int bytesTransferred) {
         DataSpec dataSpec = castNonNull(this.dataSpec);
         for (int i = 0; i < listenerCount; i++) {
             listeners
                     .get(i)
-                    .onBytesTransferred(/* source= */ this, dataSpec, isNetwork, bytesTransferred);
+                    .onBytesTransferred(              this, dataSpec, isNetwork, bytesTransferred);
         }
     }
 
-    /** Notifies listeners that a transfer ended. */
     protected final void transferEnded() {
         DataSpec dataSpec = castNonNull(this.dataSpec);
         for (int i = 0; i < listenerCount; i++) {
-            listeners.get(i).onTransferEnd(/* source= */ this, dataSpec, isNetwork);
+            listeners.get(i).onTransferEnd(              this, dataSpec, isNetwork);
         }
         this.dataSpec = null;
     }

@@ -25,16 +25,10 @@ import org.telegram.ui.Components.UniversalAdapter;
 import org.telegram.ui.Components.UniversalRecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static org.telegram.messenger.LocaleController.getString;
 
-/**
- * Synthetic, presentation-only row shown at the end of a multi-block quote: an author (credit) edit text bound
- * to the quote instance. Not backed by a real {@link BlockRow} in the editor's {@code rows} — its text lives in
- * the list view's {@code quoteAuthors} map, keyed by {@link BlockRow#authorQuoteId}. It rides {@link RichBlockCell}
- * so the quote's start inset positions it in line with the body content, and its {@code quoteIds} let the quote
- * bar/background extend over it.
- */
 public class RichQuoteAuthorCell extends RichBlockCell
     implements Theme.Colorable, TextSelectionHelper.ArticleSelectableView {
 
@@ -80,8 +74,6 @@ public class RichQuoteAuthorCell extends RichBlockCell
                 if (delegate != null) delegate.onRequestWindowFocusable(et, showKeyboard);
             }
             @Override public void onSelectionChanged(RichEditText et, int selStart, int selEnd) {
-                // Promote an in-field selection to a cross-block article selection so the shared TextSelectionHelper
-                // owns it (matches the caption / legacy quote-author behavior). The author is this cell's block 0.
                 if (hijackingSelection || selStart == selEnd || delegate == null) return;
                 final TextSelectionHelper.ArticleTextSelectionHelper helper = delegate.getSelectionHelper();
                 if (helper == null) return;
@@ -106,8 +98,6 @@ public class RichQuoteAuthorCell extends RichBlockCell
     public void bind(BlockRow row, Delegate delegate) {
         this.currentRow = row;
         this.delegate = delegate;
-        // Constant base padding only — the base RichBlockCell applies the quote's depth-aware bottom edge padding
-        // (the author row is the last element of the quote) on top of this, so we must NOT add it here too.
         setBlockPadding(dp(16), dp(1), dp(16), dp(8));
         bindBlockInset(row);
         final TL_iv.RichText author = delegate != null ? delegate.getQuoteAuthor(row.authorQuoteId) : null;
@@ -164,6 +154,10 @@ public class RichQuoteAuthorCell extends RichBlockCell
         authorEditText.updateColors();
         authorEditText.setTextColor(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider));
         authorEditText.setHintTextColor(Theme.multAlpha(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider), 0.5f));
+    }
+    @Override
+    public void addColorKeys(HashSet<Integer> colors) {
+        colors.add(Theme.key_featuredStickers_addButton);
     }
 
     public static final class Factory extends UItem.UItemFactory<RichQuoteAuthorCell> {

@@ -86,8 +86,6 @@
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace" />
 
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
     <uses-permission android:name="android.permission.READ_CALENDAR"> </uses-permission>
     <uses-permission android:name="android.permission.WRITE_CALENDAR"> </uses-permission>
 
@@ -134,7 +132,7 @@
         android:enableOnBackInvokedCallback="true"
         android:networkSecurityConfig="@xml/network_security_config"
     >
-        <!-- usesCleartextTraffic for browser supporting opening http:// links -->
+        
 
         <activity-alias
             android:enabled="true"
@@ -756,12 +754,14 @@
         </activity-alias>
         <activity
             android:name="org.telegram.ui.BubbleActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode|smallestScreenSize|screenLayout"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
             android:allowEmbedded="true"
             android:documentLaunchMode="always"
             android:resizeableActivity="true"/>
+        <!-- Development: widget-sandbox's conformance set on the widget renderer, launched by adb.
+             Finishes at once outside internal (DEBUG_PRIVATE_VERSION) builds. -->
         <activity
             android:name="org.telegram.ui.ShareActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
@@ -817,14 +817,14 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
-<!--        <activity-->
-<!--            android:name="org.telegram.ui.FeedWidgetConfigActivity"-->
-<!--            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"-->
-<!--            android:hardwareAccelerated="true"-->
-<!--            android:windowSoftInputMode="adjustPan">-->
-<!--                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
+
+
+
+
+
+
+
+
         <activity
             android:name="org.telegram.messenger.OpenChatReceiver"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
@@ -984,7 +984,7 @@
             android:name=".LocationSharingService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="location|dataSync"
+            android:foregroundServiceType="location"
         />
         <service
             android:name=".voip.VoIPService"
@@ -1152,17 +1152,17 @@
             </intent-filter>
         </receiver>
 
-<!--        <receiver android:name=".FeedWidgetProvider">-->
-<!--            <meta-data android:name="android.appwidget.provider"-->
-<!--                android:resource="@xml/feed_widget_info" />-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
 
-<!--        <service android:name=".FeedWidgetService"-->
-<!--            android:permission="android.permission.BIND_REMOTEVIEWS"-->
-<!--            android:exported="false" />-->
+
+
+
+
+
+
+
+
+
+
         <service
             android:name=".FilesMigrationService"
             android:exported="false"
@@ -1178,24 +1178,7 @@
 
         <meta-data android:name="com.google.android.gms.wallet.api.enabled" android:value="false" />
 
-        <!--
-        <meta-data android:name="com.google.android.gms.car.notification.SmallIcon" android:resource="@drawable/ic_player" />
-        <meta-data android:name="com.google.android.gms.car.application" android:resource="@xml/automotive_app_desc" />
-
-        <service
-            android:name="org.telegram.messenger.car.TelegramCarAppService"
-            android:exported="true"
-            android:foregroundServiceType="connectedDevice">
-            <intent-filter>
-                <action android:name="androidx.car.app.CarAppService" />
-                <category android:name="androidx.car.app.category.MESSAGING" />
-            </intent-filter>
-        </service>
-
-        <meta-data
-            android:name="androidx.car.app.minCarApiLevel"
-            android:value="5" />
-        -->
+        
 
         <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="face,barcode" />
 

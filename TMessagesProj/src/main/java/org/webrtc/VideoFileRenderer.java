@@ -18,9 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Can be used to save the video frames to file.
- */
 public class VideoFileRenderer implements VideoSink {
   private static final String TAG = "VideoFileRenderer";
 
@@ -84,15 +81,12 @@ public class VideoFileRenderer implements VideoSink {
   private void renderFrameOnRenderThread(VideoFrame frame) {
     final VideoFrame.Buffer buffer = frame.getBuffer();
 
-    // If the frame is rotated, it will be applied after cropAndScale. Therefore, if the frame is
-    // rotated by 90 degrees, swap width and height.
     final int targetWidth = frame.getRotation() % 180 == 0 ? outputFileWidth : outputFileHeight;
     final int targetHeight = frame.getRotation() % 180 == 0 ? outputFileHeight : outputFileWidth;
 
     final float frameAspectRatio = (float) buffer.getWidth() / (float) buffer.getHeight();
     final float fileAspectRatio = (float) targetWidth / (float) targetHeight;
 
-    // Calculate cropping to equalize the aspect ratio.
     int cropWidth = buffer.getWidth();
     int cropHeight = buffer.getHeight();
     if (fileAspectRatio > frameAspectRatio) {
@@ -128,9 +122,6 @@ public class VideoFileRenderer implements VideoSink {
     });
   }
 
-  /**
-   * Release all resources. All already posted frames will be rendered first.
-   */
   public void release() {
     final CountDownLatch cleanupBarrier = new CountDownLatch(1);
     renderThreadHandler.post(() -> {

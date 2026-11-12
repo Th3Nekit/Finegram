@@ -33,7 +33,7 @@ public class RingtoneDataStore {
     private final int currentAccount;
     private int localIds;
 
-    private static final long reloadTimeoutMs = 24 * 60 * 60 * 1000;//1 day
+    private static final long reloadTimeoutMs = 24 * 60 * 60 * 1000;
 
     public final ArrayList<CachedTone> userRingtones = new ArrayList<>();
     private boolean loaded;

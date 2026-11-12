@@ -589,7 +589,7 @@ public class PostsSearchContainer extends FrameLayout {
             } else {
                 emptyUnderButtonTextView.setVisibility(View.GONE);
             }
-        } else /*if (newsMessages.isEmpty() && newsMessagesEndReached)*/ {
+        } else                                                           {
             emptyImageView.setVisibility(View.GONE);
             emptyTitleView.setText(getString(R.string.SearchPostsTitle));
             emptyTextView.setText(getString(R.string.SearchPostsText));

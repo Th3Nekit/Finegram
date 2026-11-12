@@ -1,7 +1,7 @@
 <resources
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--THEMES-->
+    
 
     <style name="Theme.TMessages.Start" parent="Theme.MaterialComponents.Light">
         <item name="android:windowActionBar">false</item>
@@ -88,7 +88,7 @@
         <item name="android:scrollbarDefaultDelayBeforeFade">400</item>
     </style>
 
-    <!-- TextView -->
+    
 
     <style name="MyTextViewStyle" parent="android:Widget.Holo.Light.TextView">
         <item name="android:hyphenationFrequency">none</item>
@@ -98,7 +98,7 @@
         <item name="android:background">@null</item>
     </style>
 
-    <!-- POPUP -->
+    
 
     <style name="PopupAnimation" parent="android:Animation" mce_bogus="1">
         <item name="android:windowEnterAnimation">@anim/popup_in</item>
@@ -114,7 +114,7 @@
         <item name="android:windowExitAnimation">@anim/popup_out</item>
     </style>
 
-    <!--ACTION BAR-->
+    
 
     <style name="ActionBar.Transparent.TMessages.Start" parent="android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">#ff527da3</item>
@@ -122,14 +122,14 @@
         <item name="android:title">""</item>
     </style>
 
-    <!--ACTION BAR ITEMS-->
+    
 
     <style name="ActionBar.Transparent.TMessages.Item" parent="android:TextAppearance.Widget.IconMenu.Item">
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">18sp</item>
     </style>
 
-    <!--LIST VIEW-->
+    
 
     <style name="Theme.TMessages.ListView" parent="@android:style/Widget.ListView">
         <item name="android:listSelector">@drawable/list_selector_ex</item>
@@ -138,7 +138,7 @@
         <item name="android:divider">@color/divider</item>
     </style>
 
-    <!--ALERT DIALOG-->
+    
 
     <style name="DialogNoAnimation">
         <item name="android:windowEnterAnimation">@anim/no_animation</item>
@@ -173,7 +173,7 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
-    <!--APP WIDGET-->
+    
 
     <style name="Base.Theme.TMessages.AppWidget" parent="Theme.TMessages"/>
 
@@ -227,7 +227,7 @@
         <item name="widgetPreviewImage">@drawable/widget_avatar_3</item>
     </style>
 
-    <!-- APP WIDGET STYLES-->
+    
 
     <style name="Base.TMessages.AppWidget.Background" parent="android:Widget">
         <item name="android:id">@android:id/background</item>

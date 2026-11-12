@@ -12,17 +12,9 @@ package org.webrtc;
 
 import androidx.annotation.Nullable;
 
-/**
- * PeerConnectionDependencies holds all PeerConnection dependencies that are
- * applied per PeerConnection. A dependency is distinct from a configuration
- * as it defines significant executable code that can be provided by a user of
- * the API.
- */
 public final class PeerConnectionDependencies {
-  // Mandatory dependencies.
   private final PeerConnection.Observer observer;
 
-  // Optional fields.
   private final SSLCertificateVerifier sslCertificateVerifier;
 
   public static class Builder {
@@ -38,7 +30,6 @@ public final class PeerConnectionDependencies {
       return this;
     }
 
-    // Observer is a required dependency and so is forced in the construction of the object.
     public PeerConnectionDependencies createPeerConnectionDependencies() {
       return new PeerConnectionDependencies(observer, sslCertificateVerifier);
     }

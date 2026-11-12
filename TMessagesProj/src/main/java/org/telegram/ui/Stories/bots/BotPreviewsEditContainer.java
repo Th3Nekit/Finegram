@@ -5,6 +5,7 @@ import static org.telegram.messenger.AndroidUtilities.lerp;
 import static org.telegram.messenger.LocaleController.formatPluralString;
 import static org.telegram.messenger.LocaleController.getString;
 
+import org.telegram.messenger.FileLog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -52,6 +53,7 @@ import org.telegram.tgnet.tl.TL_bots;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.SharedPhotoVideoCell;
 import org.telegram.ui.Cells.SharedPhotoVideoCell2;
 import org.telegram.ui.Components.BottomSheetWithRecyclerListView;
@@ -82,7 +84,7 @@ import org.telegram.ui.Stories.recorder.StoryRecorder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class BotPreviewsEditContainer extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
+public class BotPreviewsEditContainer extends FrameLayout implements Theme.Colorable, NotificationCenter.NotificationCenterDelegate {
 
     private final BaseFragment fragment;
     private final int currentAccount;
@@ -288,7 +290,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                 }
             }, 120);
         });
-//        sheet.makeAttached(fragment);
         sheet.show();
     }
 
@@ -576,8 +577,8 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
         LongSparseArray<BotPreviewsEditContainer> arr = attachedContainers.get(currentAccount);
         if (arr == null) attachedContainers.put(currentAccount, arr = new LongSparseArray<>());
         arr.put(bot_id, this);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.storiesListUpdated);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.storiesUpdated);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.storiesListUpdated);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.storiesUpdated);
     }
 
     @Override
@@ -1025,7 +1026,7 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                     super.dispatchDraw(canvas);
                 }
             };
-            this.emptyViewOr.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+            ThemeBind.textColor(this.emptyViewOr, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
             this.emptyViewOr.setText(LocaleController.getString(R.string.ProfileBotOr));
             this.emptyViewOr.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             this.emptyViewOr.setTextAlignment(TEXT_ALIGNMENT_CENTER);
@@ -1423,13 +1424,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
         int pinchCenterX;
         int pinchCenterY;
         Rect rect = new Rect();
-//
-//        private int startedTrackingPointerId;
-//        private boolean startedTracking;
-//        private boolean maybeStartTracking;
-//        private int startedTrackingX;
-//        private int startedTrackingY;
-//        private VelocityTracker velocityTracker;
 
         public boolean checkPinchToZoom(MotionEvent ev) {
             if (list == null || getParent() == null) {
@@ -1440,7 +1434,7 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
             }
 
             if (ev.getActionMasked() == MotionEvent.ACTION_DOWN || ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                if (maybePinchToZoomTouchMode && !isInPinchToZoomTouchMode && ev.getPointerCount() == 2 /*&& finishZoomTransition == null*/) {
+                if (maybePinchToZoomTouchMode && !isInPinchToZoomTouchMode && ev.getPointerCount() == 2                                    ) {
                     pinchStartDistance = (float) Math.hypot(ev.getX(1) - ev.getX(0), ev.getY(1) - ev.getY(0));
 
                     pinchScale = 1f;
@@ -1520,9 +1514,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                     }
 
                     listView.invalidate();
-//                    if (mediaPages[0].fastScrollHintView != null) {
-//                        mediaPages[0].invalidate();
-//                    }
                 }
             } else if ((ev.getActionMasked() == MotionEvent.ACTION_UP || (ev.getActionMasked() == MotionEvent.ACTION_POINTER_UP && checkPointerIds(ev)) || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) && isInPinchToZoomTouchMode) {
                 maybePinchToZoomTouchMode2 = false;
@@ -1536,10 +1527,7 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
 
         private void selectPinchPosition(int pinchCenterX, int pinchCenterY) {
             pinchCenterPosition = -1;
-            int y = pinchCenterY + listView.blurTopPadding;
-//            if (getY() != 0 && viewType == VIEW_TYPE_PROFILE_ACTIVITY) {
-//                y = 0;
-//            }
+            int y = pinchCenterY - listView.getTop();
             for (int i = 0; i < listView.getChildCount(); i++) {
                 View child = listView.getChildAt(i);
                 child.getHitRect(rect);
@@ -1548,14 +1536,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                     pinchCenterOffset = child.getTop();
                 }
             }
-//            if (delegate.canSearchMembers()) {
-//                if (pinchCenterPosition == -1) {
-//                    float x = Math.min(1, Math.max(pinchCenterX / (float) mediaPages[0].listView.getMeasuredWidth(), 0));
-//                    final int ci = mediaPages[0].selectedType == TAB_STORIES || mediaPages[0].selectedType == TAB_ARCHIVED_STORIES ? 1 : 0;
-//                    pinchCenterPosition = (int) (mediaPages[0].layoutManager.findFirstVisibleItemPosition() + (columnsCount - 1) * x);
-//                    pinchCenterOffset = 0;
-//                }
-//            }
         }
 
         private boolean checkPointerIds(MotionEvent ev) {
@@ -1596,11 +1576,10 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
             supportingListView.setAdapter(supportingAdapter);
             supportingListView.setPadding(
                     supportingListView.getPaddingLeft(),
-                    0, // changeColumnsTab == TAB_ARCHIVED_STORIES ? dp(64) : 0,
+                    0,
                     supportingListView.getPaddingRight(),
-                    dp(42) + footer.getMeasuredHeight() // isStoriesView() ? dp(72) : 0
+                    dp(42) + footer.getMeasuredHeight()
             );
-//            mediaPage.buttonView.setVisibility(changeColumnsTab == TAB_STORIES && isStoriesView() ? View.VISIBLE : View.GONE);
 
             supportingLayoutManager.setSpanCount(newColumnsCount);
             supportingListView.invalidateItemDecorations();
@@ -1616,9 +1595,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
             AndroidUtilities.updateVisibleRows(listView);
 
             columnsAnimation = true;
-//            if (changeColumnsTab == TAB_PHOTOVIDEO) {
-//                sharedMediaData[0].setListFrozen(true);
-//            }
             columnsAnimationProgress = 0;
             if (pinchCenterPosition >= 0) {
                 supportingLayoutManager.scrollToPositionWithOffset(pinchCenterPosition, pinchCenterOffset - supportingListView.getPaddingTop());
@@ -1635,9 +1611,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                     SharedConfig.setStoriesColumnsCount(animateToColumnsCount);
 
                     int oldItemCount = adapter.getItemCount();
-//                    if (i == TAB_PHOTOVIDEO) {
-//                        sharedMediaData[0].setListFrozen(false);
-//                    }
                     supportingListView.setVisibility(View.GONE);
                     layoutManager.setSpanCount(columnsCount);
                     listView.invalidateItemDecorations();
@@ -1660,9 +1633,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                 }
                 if (columnsAnimationProgress == 0) {
                     columnsAnimation = false;
-//                    if (changeColumnsTab == TAB_PHOTOVIDEO) {
-//                        sharedMediaData[0].setListFrozen(false);
-//                    }
                     supportingListView.setVisibility(View.GONE);
                     listView.invalidate();
                     return;
@@ -1686,9 +1656,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                             SharedConfig.setStoriesColumnsCount(animateToColumnsCount);
                         }
                         int oldItemCount = adapter.getItemCount();
-//                        if (i == TAB_PHOTOVIDEO) {
-//                            sharedMediaData[0].setListFrozen(false);
-//                        }
                         if (forward) {
                             layoutManager.setSpanCount(columnsCount);
                             listView.invalidateItemDecorations();
@@ -1720,66 +1687,6 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
         }
 
         private void saveScrollPosition() {
-//            for (int k = 0; k < mediaPages.length; k++) {
-//                RecyclerListView listView = mediaPages[k].listView;
-//                if (listView != null) {
-//                    int messageId = 0;
-//                    int offset = 0;
-//                    for (int i = 0; i < listView.getChildCount(); i++) {
-//                        View child = listView.getChildAt(i);
-//                        if (child instanceof SharedPhotoVideoCell2) {
-//                            SharedPhotoVideoCell2 cell = (SharedPhotoVideoCell2) child;
-//                            messageId = cell.getMessageId();
-//                            offset = cell.getTop();
-//                        }
-//                        if (child instanceof SharedDocumentCell) {
-//                            SharedDocumentCell cell = (SharedDocumentCell) child;
-//                            messageId = cell.getMessage().getId();
-//                            offset = cell.getTop();
-//                        }
-//                        if (child instanceof SharedAudioCell) {
-//                            SharedAudioCell cell = (SharedAudioCell) child;
-//                            messageId = cell.getMessage().getId();
-//                            offset = cell.getTop();
-//                        }
-//                        if (messageId != 0) {
-//                            break;
-//                        }
-//                    }
-//                    if (messageId != 0) {
-//                        int index = -1, position = -1;
-//                        final int type = mediaPages[k].selectedType;
-//                        if (type == TAB_STORIES || type == TAB_ARCHIVED_STORIES) {
-//                            SharedMediaLayout.StoriesAdapter adapter = type == TAB_STORIES ? storiesAdapter : archivedStoriesAdapter;
-//                            if (adapter.storiesList != null) {
-//                                for (int i = 0; i < adapter.storiesList.messageObjects.size(); ++i) {
-//                                    if (messageId == adapter.storiesList.messageObjects.get(i).getId()) {
-//                                        index = i;
-//                                        break;
-//                                    }
-//                                }
-//                            }
-//                            position = index;
-//                        } else if (type >= 0 && type < sharedMediaData.length) {
-//                            for (int i = 0; i < sharedMediaData[type].messages.size(); i++) {
-//                                if (messageId == sharedMediaData[type].messages.get(i).getId()) {
-//                                    index = i;
-//                                    break;
-//                                }
-//                            }
-//                            position = sharedMediaData[type].startOffset + index;
-//                        } else {
-//                            continue;
-//                        }
-//                        if (index >= 0) {
-//                            ((LinearLayoutManager) listView.getLayoutManager()).scrollToPositionWithOffset(position, -mediaPages[k].listView.getPaddingTop() + offset);
-//                            if (photoVideoChangeColumnsAnimation) {
-//                                mediaPages[k].animationSupportingLayoutManager.scrollToPositionWithOffset(position, -mediaPages[k].listView.getPaddingTop() + offset);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
 
         public class FooterView extends LinearLayout {
@@ -1796,7 +1703,7 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                 setOrientation(VERTICAL);
 
                 textView = new TextView(context);
-                textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+                ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 textView.setGravity(Gravity.CENTER);
                 textView.setTextAlignment(TEXT_ALIGNMENT_CENTER);
@@ -1827,7 +1734,7 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                         super.dispatchDraw(canvas);
                     }
                 };
-                orTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+                ThemeBind.textColor(orTextView, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
                 orTextView.setText(LocaleController.getString(R.string.ProfileBotOr));
                 orTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 orTextView.setTextAlignment(TEXT_ALIGNMENT_CENTER);
@@ -1938,13 +1845,13 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
 
                 title = new TextView(context);
                 title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                title.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+                ThemeBind.textColor(title, Theme.key_dialogTextBlack);
                 title.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
                 addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 7, 0, 0));
 
                 subtitle = new TextView(context);
                 subtitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
-                subtitle.setTextColor(Theme.getColor(Theme.key_dialogTextGray2));
+                ThemeBind.textColor(subtitle, Theme.key_dialogTextGray2);
                 subtitle.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
                 addView(subtitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 4, 0, 0));
             }
@@ -1990,6 +1897,17 @@ public class BotPreviewsEditContainer extends FrameLayout implements Notificatio
                     return item;
                 }
             }
+        }
+    }
+
+    @Override
+    public void updateColors() {
+        try {
+            setBackgroundColor(Theme.blendOver( Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider), Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider), 0.04f) ));
+            invalidate();
+    
+        } catch (Exception e) {
+            FileLog.e(e);
         }
     }
 }

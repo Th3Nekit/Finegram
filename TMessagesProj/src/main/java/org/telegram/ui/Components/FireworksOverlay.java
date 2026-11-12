@@ -264,7 +264,6 @@ public class FireworksOverlay extends View {
 
     public void start(boolean withStars) {
         this.withStars = withStars;
-//        particles.clear();
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
         started = true;
         startedFall = false;

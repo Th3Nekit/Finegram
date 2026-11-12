@@ -76,7 +76,6 @@ public class StoryLinesDrawable {
         Paint barPaint = sharedResources.barPaint;
         Paint selectedBarPaint = sharedResources.selectedBarPaint;
 
-        //final int minStoryWidth = AndroidUtilities.dp(4);
         int gapWidth;
         if (count > 100) {
             gapWidth = 1;
@@ -86,13 +85,11 @@ public class StoryLinesDrawable {
             gapWidth = dp(2);
         }
         final float sectionWidth = (fullWidth - dp(5 * 2) - gapWidth * (count - 1)) / (float) count;
-       // final int scrollWidth = sectionWidth * count + dp(2) * (count - 1);
         final float indexX = dp(5) + gapWidth * index + sectionWidth * (index + .5f);
-        final float scrollX = 0;//scrollT.set(Utilities.clamp(indexX - fullWidth / 2f, scrollWidth - (fullWidth - dp(10)), 0));
+        final float scrollX = 0;
 
         float roundRadius = Math.min(sectionWidth / 2f, dp(1));
 
-        // zoom
         float zoomT = this.zoomT.set(zoom);
         if (zoomT > 0) {
             progress = AndroidUtilities.lerp(progress, zoomProgress, zoomT);
@@ -109,7 +106,6 @@ public class StoryLinesDrawable {
             float aalpha = alpha;
             float x = -scrollX + dp(5) + gapWidth * a + sectionWidth * a;
             if (zoomT > 0 && index != a) {
-//                aalpha *= (1f - zoomT);
             }
             if (x > fullWidth || x + sectionWidth < 0 || aalpha <= 0) {
                 continue;
@@ -142,7 +138,6 @@ public class StoryLinesDrawable {
                         rectTmp.right = Utilities.clamp(AndroidUtilities.lerp(rectTmp.right, (a - index + 1) * fullWidth - dp(5), zoomT), fullWidth - dp(5), dp(5));
                     }
                     canvas.drawRoundRect(rectTmp, rr, rr, barPaint);
-                    // baseAlpha = 0x50;
                 } else {
                     currentProgress = 1.0f;
                 }

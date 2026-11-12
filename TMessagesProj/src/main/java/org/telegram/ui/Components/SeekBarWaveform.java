@@ -350,7 +350,6 @@ public class SeekBarWaveform {
             int minlen = Math.min(fromHeights.length, toHeights.length);
             float[] minarr = fromHeights.length < toHeights.length ? fromHeights : toHeights;
             float[] maxarr = fromHeights.length < toHeights.length ? toHeights : fromHeights;
-//            t = CubicBezierInterpolator.EASE_OUT.getInterpolation(t);
             float T = fromHeights.length < toHeights.length ? t : 1f - t;
             int k = -1;
             for (int barNum = 0; barNum < maxlen; ++barNum) {
@@ -555,8 +554,6 @@ public class SeekBarWaveform {
             }
             if (emitArea != null) {
                 int count = Math.min(4, this.count - particles.size());
-//                double vx = Math.sin(Math.PI / 180.0 * (0 - 90));
-//                double vy = -Math.cos(Math.PI / 180.0 * (0 - 90));
                 for (int i = 0; i < count; ++i) {
                     Particle p = deadParticles.isEmpty() ? new Particle() :deadParticles.remove(0);
                     p.x = emitArea.left + emitArea.width() * Utilities.random.nextFloat();

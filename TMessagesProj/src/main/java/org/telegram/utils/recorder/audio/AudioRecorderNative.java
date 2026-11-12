@@ -7,7 +7,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Owns one native Ogg/Opus encoder context. */
 final class AudioRecorderNative {
 
     private long nativeHandle;

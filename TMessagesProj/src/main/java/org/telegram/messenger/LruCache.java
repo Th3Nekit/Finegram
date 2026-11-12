@@ -15,26 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Static library version of {@link android.util.LruCache}. Used to write apps
- * that run on API levels prior to 12. When running on API level 12 or above,
- * this implementation is still used; it does not try to switch to the
- * framework's implementation. See the framework SDK documentation for a class
- * overview.
- */
 public class LruCache<T> {
     private final LinkedHashMap<String, T> map;
     private final LinkedHashMap<String, ArrayList<String>> mapFilters;
 
-    /** Size of this cache in units. Not necessarily the number of elements. */
     private int size;
     private int maxSize;
 
-    /**
-     * @param maxSize for caches that do not override {@link #sizeOf}, this is
-     *     the maximum number of entries in the cache. For all other caches,
-     *     this is the maximum sum of the sizes of the entries in this cache.
-     */
     public LruCache(int maxSize) {
         if (maxSize <= 0) {
             throw new IllegalArgumentException("maxSize <= 0");
@@ -44,12 +31,6 @@ public class LruCache<T> {
         this.mapFilters = new LinkedHashMap<>();
     }
 
-    /**
-     * Returns the value for {@code key} if it exists in the cache or can be
-     * created by {@code #create}. If a value was returned, it is moved to the
-     * head of the queue. This returns null if a value is not cached and cannot
-     * be created.
-     */
     public final T get(String key) {
         if (key == null) {
             throw new NullPointerException("key == null");
@@ -80,12 +61,6 @@ public class LruCache<T> {
         }
     }
 
-    /**
-     * Caches {@code value} for {@code key}. The value is moved to the head of
-     * the queue.
-     *
-     * @return the previous value mapped by {@code key}.
-     */
     public T put(String key, T value) {
         if (key == null || value == null) {
             throw new NullPointerException("key == null || value == null");
@@ -120,10 +95,6 @@ public class LruCache<T> {
         return previous;
     }
 
-    /**
-     * @param maxSize the maximum size of the cache before returning. May be -1
-     *     to evict even 0-sized elements.
-     */
     private void trimToSize(int maxSize, String justAdded) {
         synchronized (this) {
             Iterator<HashMap.Entry<String, T>> iterator = map.entrySet().iterator();
@@ -157,11 +128,6 @@ public class LruCache<T> {
         }
     }
 
-    /**
-     * Removes the entry for {@code key} if it exists.
-     *
-     * @return the previous value mapped by {@code key}.
-     */
     public final T remove(String key) {
         if (key == null) {
             throw new NullPointerException("key == null");
@@ -197,21 +163,6 @@ public class LruCache<T> {
     	return map.containsKey(key);
     }
 
-    /**
-     * Called for entries that have been evicted or removed. This method is
-     * invoked when a value is evicted to make space, removed by a call to
-     * {@link #remove}, or replaced by a call to {@link #put}. The default
-     * implementation does nothing.
-     *
-     * <p>The method is called without synchronization: other threads may
-     * access the cache while this method is executing.
-     *
-     * @param evicted true if the entry is being removed to make space, false
-     *     if the removal was caused by a {@link #put} or {@link #remove}.
-     * @param newValue the new value for {@code key}, if it exists. If non-null,
-     *     this removal was caused by a {@link #put}. Otherwise it was caused by
-     *     an eviction or a {@link #remove}.
-     */
     protected void entryRemoved(boolean evicted, String key, T oldValue, T newValue) {}
 
     private int safeSizeOf(String key, T value) {
@@ -222,38 +173,18 @@ public class LruCache<T> {
         return result;
     }
 
-    /**
-     * Returns the size of the entry for {@code key} and {@code value} in
-     * user-defined units.  The default implementation returns 1 so that size
-     * is the number of entries and max size is the maximum number of entries.
-     *
-     * <p>An entry's size must not change while it is in the cache.
-     */
     protected int sizeOf(String key, T value) {
         return 1;
     }
 
-    /**
-     * Clear the cache, calling {@link #entryRemoved} on each removed entry.
-     */
     public final void evictAll() {
-        trimToSize(-1, null); // -1 will evict 0-sized elements
+        trimToSize(-1, null);
     }
 
-    /**
-     * For caches that do not override {@link #sizeOf}, this returns the number
-     * of entries in the cache. For all other caches, this returns the sum of
-     * the sizes of the entries in this cache.
-     */
     public synchronized final int size() {
         return size;
     }
 
-    /**
-     * For caches that do not override {@link #sizeOf}, this returns the maximum
-     * number of entries in the cache. For all other caches, this returns the
-     * maximum sum of the sizes of the entries in this cache.
-     */
     public synchronized final int maxSize() {
         return maxSize;
     }

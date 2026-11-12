@@ -104,15 +104,12 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
         boolean changesPending = !mPendingChanges.isEmpty();
         boolean additionsPending = !mPendingAdditions.isEmpty();
         if (!removalsPending && !movesPending && !additionsPending && !changesPending) {
-            // nothing to animate
             return;
         }
-        // First, remove stuff
         for (ViewHolder holder : mPendingRemovals) {
             animateRemoveImpl(holder);
         }
         mPendingRemovals.clear();
-        // Next, move stuff
         if (movesPending) {
             final ArrayList<MoveInfo> moves = new ArrayList<>(mPendingMoves);
             mMovesList.add(moves);
@@ -126,7 +123,6 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
             };
             mover.run();
         }
-        // Next, change stuff, to run in parallel with move animations
         if (changesPending) {
             final ArrayList<ChangeInfo> changes = new ArrayList<>(mPendingChanges);
             mChangesList.add(changes);
@@ -140,7 +136,6 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
             };
             changer.run();
         }
-        // Next, add stuff
         if (additionsPending) {
             final ArrayList<ViewHolder> additions = new ArrayList<>(mPendingAdditions);
             mAdditionsList.add(additions);
@@ -384,9 +379,6 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
                 removingDialog.setBottomClip(bottomClip);
             }
         }
-        // TODO: make EndActions end listeners instead, since end actions aren't called when
-        // vpas are canceled (and can't end them. why?)
-        // need listener functionality in VPACompat for this. Ick.
         final ViewPropertyAnimator animation = view.animate();
         mMoveAnimations.add(holder);
         animation.setDuration(deleteDuration).setListener(new AnimatorListenerAdapter() {
@@ -523,9 +515,7 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
     @Override
     public void endAnimation(ViewHolder item) {
         final View view = item.itemView;
-        // this will trigger end callback which should set properties to their target values.
         view.animate().cancel();
-        // TODO if some other animations are chained to end, how do we cancel them as well?
         for (int i = mPendingMoves.size() - 1; i >= 0; i--) {
             MoveInfo moveInfo = mPendingMoves.get(i);
             if (moveInfo.holder == item) {
@@ -753,6 +743,5 @@ public class DialogsItemAnimator extends SimpleItemAnimator {
 
     @Override
     public void listenToAnimationUpdates(Runnable listener) {
-        // NO-OP
     }
 }

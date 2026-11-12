@@ -76,9 +76,6 @@ public class DominantColors {
         if (palette == null)
             return 0x00000000;
         int color;
-//        color = palette.getColorForTarget(new Target.Builder().setTargetSaturation(.7f).setMaximumSaturation(.9f).build(), 0);
-//        if (Color.alpha(color) > 200)
-//            return color;
         color = palette.getMutedColor(0);
         if (Color.alpha(color) > 200)
             return color;

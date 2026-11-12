@@ -42,6 +42,7 @@ import org.telegram.messenger.utils.TextWatcherImpl;
 import org.telegram.ui.ActionBar.AdjustPanLayoutHelper;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.GraySectionCell;
 import org.telegram.ui.Cells.GroupCallTextCell;
 import org.telegram.ui.Cells.GroupCallUserCell;
@@ -113,7 +114,6 @@ public class UsersAlertBase extends BottomSheet {
         flickerLoadingView.setViewType(FlickerLoadingView.USERS_TYPE);
         flickerLoadingView.showDate(false);
         flickerLoadingView.setUseHeaderOffset(true);
-        // flickerLoadingView.setColors(keyInviteMembersBackground, keySearchBackground, keyActionBarUnscrolled);
 
         emptyView = new StickerEmptyView(context, flickerLoadingView, StickerEmptyView.STICKER_TYPE_SEARCH);
         emptyView.addView(flickerLoadingView, 0, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 0, 0, 2, 0, 0));
@@ -147,7 +147,7 @@ public class UsersAlertBase extends BottomSheet {
         listView.setPadding(0, 0, 0, AndroidUtilities.dp(48));
         listView.setClipToPadding(false);
         listView.setHideIfEmpty(false);
-        listView.setSelectorDrawableColor(Theme.getColor(keyListSelector, resourcesProvider));
+        ThemeBind.listSelectorColor(listView, keyListSelector, resourcesProvider);
         layoutManager = new FillLastLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false, AndroidUtilities.dp(8), listView);
         layoutManager.setBind(false);
         listView.setLayoutManager(layoutManager);
@@ -177,7 +177,6 @@ public class UsersAlertBase extends BottomSheet {
         FrameLayout.LayoutParams frameLayoutParams = new FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, AndroidUtilities.getShadowHeight(), Gravity.TOP | Gravity.LEFT);
         frameLayoutParams.topMargin = AndroidUtilities.dp(58);
         shadow = new View(context);
-        // shadow.setBackgroundColor(Theme.getColor(Theme.key_dialogShadowLine));
         shadow.setAlpha(0.0f);
         shadow.setTag(1);
         containerView.addView(shadow, frameLayoutParams);
@@ -280,13 +279,12 @@ public class UsersAlertBase extends BottomSheet {
             Theme.getColor(keyInviteMembersBackground, resourcesProvider),
             Theme.getColor(keyListViewBackground, resourcesProvider), progress, 1.0f);
         shadowDrawable.setColorFilter(new PorterDuffColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY));
-        // frameLayout.setBackgroundColor(backgroundColor);
         fixNavigationBar(backgroundColor);
         navBarColor = backgroundColor;
         listView.setGlowColor(backgroundColor);
 
         int color = AndroidUtilities.getOffsetColor(Theme.getColor(keyLastSeenTextUnscrolled), Theme.getColor(keyLastSeenText), progress, 1.0f);
-        int color2 = AndroidUtilities.getOffsetColor(Theme.getColor(keySearchIconUnscrolled), Theme.getColor(keySearchIcon), progress, 1.0f);//
+        int color2 = AndroidUtilities.getOffsetColor(Theme.getColor(keySearchIconUnscrolled), Theme.getColor(keySearchIcon), progress, 1.0f);
         for (int a = 0, N = listView.getChildCount(); a < N; a++) {
             View child = listView.getChildAt(a);
             if (child instanceof GroupCallTextCell) {
@@ -552,7 +550,6 @@ public class UsersAlertBase extends BottomSheet {
             }
             if (statusBarHeight > 0) {
                 Theme.dialogs_onlineCirclePaint.setColor(backgroundColor);
-                // canvas.drawRect(backgroundPaddingLeft, AndroidUtilities.statusBarHeight - statusBarHeight - getTranslationY(), getMeasuredWidth() - backgroundPaddingLeft, AndroidUtilities.statusBarHeight - getTranslationY(), Theme.dialogs_onlineCirclePaint);
             }
             updateLightStatusBar(statusBarHeight > AndroidUtilities.statusBarHeight / 2);
             canvas.restore();
@@ -586,7 +583,7 @@ public class UsersAlertBase extends BottomSheet {
     public void setTitle(CharSequence title) {
         if (titleView == null) {
             titleView = new TextView(getContext());
-            titleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
+            ThemeBind.textColor(titleView, Theme.key_dialogTextBlack, resourcesProvider);
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
             titleView.setTypeface(AndroidUtilities.bold());
             titleView.setLines(1);

@@ -23,44 +23,14 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
-/**
- * Helper class to implement an instance of RendererCommon.GlDrawer that can accept multiple input
- * sources (OES, RGB, or YUV) using a generic fragment shader as input. The generic fragment shader
- * should sample pixel values from the function "sample" that will be provided by this class and
- * provides an abstraction for the input source type (OES, RGB, or YUV). The texture coordinate
- * variable name will be "tc" and the texture matrix in the vertex shader will be "tex_mat". The
- * simplest possible generic shader that just draws pixel from the frame unmodified looks like:
- * void main() {
- *   gl_FragColor = sample(tc);
- * }
- * This class covers the cases for most simple shaders and generates the necessary boiler plate.
- * Advanced shaders can always implement RendererCommon.GlDrawer directly.
- */
 public class GlGenericDrawer implements RendererCommon.GlDrawer {
-  /**
-   * The different shader types representing different input sources. YUV here represents three
-   * separate Y, U, V textures.
-   */
   private static final int OES = 0;
   private static final int RGB = 1;
   private static final int YUV = 2;
 
-  /**
-   * The shader callbacks is used to customize behavior for a GlDrawer. It provides a hook to set
-   * uniform variables in the shader before a frame is drawn.
-   */
   public interface ShaderCallbacks {
-    /**
-     * This callback is called when a new shader has been compiled and created. It will be called
-     * for the first frame as well as when the shader type is changed. This callback can be used to
-     * do custom initialization of the shader that only needs to happen once.
-     */
     void onNewShader(GlShader shader);
 
-    /**
-     * This callback is called before rendering a frame. It can be used to do custom preparation of
-     * the shader that needs to happen every frame.
-     */
     void onPrepareShader(GlShader shader, float[] texMatrix, int frameWidth, int frameHeight,
         int viewportWidth, int viewportHeight);
   }
@@ -77,22 +47,19 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
       + "  tc = (tex_mat * in_tc).xy;\n"
       + "}\n";
 
-  // Vertex coordinates in Normalized Device Coordinates, i.e. (-1, -1) is bottom-left and (1, 1)
-  // is top-right.
   private static final FloatBuffer FULL_RECTANGLE_BUFFER = GlUtil.createFloatBuffer(new float[] {
-      -1.0f, -1.0f, // Bottom left.
-      1.0f, -1.0f, // Bottom right.
-      -1.0f, 1.0f, // Top left.
-      1.0f, 1.0f, // Top right.
+      -1.0f, -1.0f,
+      1.0f, -1.0f,
+      -1.0f, 1.0f,
+      1.0f, 1.0f,
   });
 
-  // Texture coordinates - (0, 0) is bottom-left and (1, 1) is top-right.
   private static final FloatBuffer FULL_RECTANGLE_TEXTURE_BUFFER =
       GlUtil.createFloatBuffer(new float[] {
-          0.0f, 0.0f, // Bottom left.
-          1.0f, 0.0f, // Bottom right.
-          0.0f, 1.0f, // Top left.
-          1.0f, 1.0f, // Top right.
+          0.0f, 0.0f,
+          1.0f, 0.0f,
+          0.0f, 1.0f,
+          1.0f, 1.0f,
       });
 
   static String createFragmentShaderString(String genericFragmentSource, int shaderType, boolean blur) {
@@ -110,8 +77,6 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
       stringBuilder.append("uniform sampler2D u_tex;\n");
       stringBuilder.append("uniform sampler2D v_tex;\n");
 
-      // Add separate function for sampling texture.
-      // yuv_to_rgb_mat is inverse of the matrix defined in YuvConverter.
       stringBuilder.append("vec4 sample(vec2 p) {\n");
       stringBuilder.append("  float y = texture2D(y_tex, p).r * 1.16438;\n");
       stringBuilder.append("  float u = texture2D(u_tex, p).r;\n");
@@ -150,7 +115,6 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
                 .append("gl_FragColor = vec4(clamp(mix(greyScaleColor, result.rgb, 1.1), 0.0, 1.0), 1.0);\n")
                 .append("}\n");
       } else {
-        // Update the sampling function in-place.
         stringBuilder.append(genericFragmentSource.replace("sample(", "texture2D(tex, "));
       }
     }
@@ -178,15 +142,10 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
     this.shaderCallbacks = shaderCallbacks;
   }
 
-  // Visible for testing.
   GlShader createShader(int shaderType, boolean blur) {
     return new GlShader(vertexShader, createFragmentShaderString(genericFragmentSource, shaderType, blur));
   }
 
-  /**
-   * Draw an OES texture frame with specified texture transformation matrix. Required resources are
-   * allocated at the first call to this function.
-   */
   private int[] renderTexture = new int[2];
   private int[] renderFrameBuffer;
   private float[] renderMatrix;
@@ -298,10 +257,6 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
     }
   }
 
-  /**
-   * Draw a RGB(A) texture frame with specified texture transformation matrix. Required resources
-   * are allocated at the first call to this function.
-   */
   @Override
   public void drawRgb(int textureId, int originalWidth, int originalHeight, int rotatedWidth, int rotatedHeight, float[] texMatrix, int frameWidth, int frameHeight,
       int viewportX, int viewportY, int viewportWidth, int viewportHeight, boolean blur) {
@@ -313,10 +268,6 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
       GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
   }
 
-  /**
-   * Draw a YUV frame with specified texture transformation matrix. Required resources are allocated
-   * at the first call to this function.
-   */
   @Override
   public void drawYuv(int[] yuvTextures, int originalWidth, int originalHeight, int rotatedWidth, int rotatedHeight, float[] texMatrix, int frameWidth, int frameHeight,
       int viewportX, int viewportY, int viewportWidth, int viewportHeight, boolean blur) {
@@ -395,7 +346,6 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
       currentShader[shaderType][blurPass] = shader;
 
       shader.useProgram();
-      // Set input texture units.
       if (shaderType == YUV) {
         GLES20.glUniform1i(shader.getUniformLocation("y_tex"), 0);
         GLES20.glUniform1i(shader.getUniformLocation("u_tex"), 1);
@@ -422,28 +372,21 @@ public class GlGenericDrawer implements RendererCommon.GlDrawer {
       GLES20.glUniform1f(texelLocation[shaderType][1], blurPass == 2 ? 1.0f / texHeight : 0);
     }
 
-    // Upload the vertex coordinates.
     GLES20.glEnableVertexAttribArray(inPosLocation[shaderType][blurPass]);
-    GLES20.glVertexAttribPointer(inPosLocation[shaderType][blurPass], /* size= */ 2,
-            /* type= */ GLES20.GL_FLOAT, /* normalized= */ false, /* stride= */ 0,
+    GLES20.glVertexAttribPointer(inPosLocation[shaderType][blurPass],             2,
+                        GLES20.GL_FLOAT,                   false,               0,
             FULL_RECTANGLE_BUFFER);
 
-    // Upload the texture coordinates.
     GLES20.glEnableVertexAttribArray(inTcLocation[shaderType][blurPass]);
-    GLES20.glVertexAttribPointer(inTcLocation[shaderType][blurPass], /* size= */ 2,
-            /* type= */ GLES20.GL_FLOAT, /* normalized= */ false, /* stride= */ 0,
+    GLES20.glVertexAttribPointer(inTcLocation[shaderType][blurPass],             2,
+                        GLES20.GL_FLOAT,                   false,               0,
             FULL_RECTANGLE_TEXTURE_BUFFER);
 
-    // Upload the texture transformation matrix.
-    GLES20.glUniformMatrix4fv(texMatrixLocation[shaderType][blurPass], 1 /* count= */, false /* transpose= */, texMatrix, 0 /* offset= */);
-    // Do custom per-frame shader preparation.
+    GLES20.glUniformMatrix4fv(texMatrixLocation[shaderType][blurPass], 1             , false                 , texMatrix, 0              );
     shaderCallbacks.onPrepareShader(shader, texMatrix, frameWidth, frameHeight, viewportWidth, viewportHeight);
     GlUtil.checkNoGLES2Error("Prepare shader");
   }
 
-  /**
-   * Release all GLES resources. This needs to be done manually, otherwise the resources are leaked.
-   */
   @Override
   public void release() {
     for (int a = 0; a < currentShader.length; a++) {

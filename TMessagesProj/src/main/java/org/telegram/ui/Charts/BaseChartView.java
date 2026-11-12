@@ -779,7 +779,6 @@ public abstract class BaseChartView<T extends ChartData, L extends LineViewData>
             int cY = pickerRect.top + r;
 
             if (middleCap != null) {
-               // canvas.drawCircle(pickerRect.left + ((pickerRect.right - pickerRect.left) >> 1), cY, r * middleCap.aValue + HORIZONTAL_PADDING, ripplePaint);
             } else {
                 ChartPickerDelegate.CapturesData lCap = pickerDelegate.getLeftCaptured();
                 ChartPickerDelegate.CapturesData rCap = pickerDelegate.getRightCaptured();
@@ -864,7 +863,6 @@ public abstract class BaseChartView<T extends ChartData, L extends LineViewData>
         measureHeightThreshold();
 
         long t = System.currentTimeMillis();
-        //  debounce
         if (t - lastTime < 320 && !force) {
             return;
         }
@@ -1637,7 +1635,10 @@ public abstract class BaseChartView<T extends ChartData, L extends LineViewData>
         int k = 0;
         private boolean invalidate = true;
 
+        private int pickerMaskColor;
+
         Bitmap getPickerMaskBitmap(int h, int w) {
+            final int maskColor = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
             if (h + w << 10 != k || invalidate) {
                 invalidate = false;
                 k = h + w << 10;
@@ -1645,7 +1646,11 @@ public abstract class BaseChartView<T extends ChartData, L extends LineViewData>
                 canvas = new Canvas(pickerRoundBitmap);
 
                 rectF.set(0, 0, w, h);
-                canvas.drawColor(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider));
+                canvas.drawColor(pickerMaskColor = maskColor);
+                canvas.drawRoundRect(rectF, AndroidUtilities.dp(6), AndroidUtilities.dp(6), xRefP);
+            } else if (maskColor != pickerMaskColor && canvas != null && pickerRoundBitmap != null) {
+                pickerMaskColor = maskColor;
+                canvas.drawColor(maskColor, PorterDuff.Mode.SRC);
                 canvas.drawRoundRect(rectF, AndroidUtilities.dp(6), AndroidUtilities.dp(6), xRefP);
             }
 

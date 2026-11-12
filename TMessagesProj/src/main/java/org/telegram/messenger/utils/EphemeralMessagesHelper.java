@@ -149,7 +149,7 @@ public class EphemeralMessagesHelper extends BaseController {
                 } else {
                     newRequest.receiver_id = getMessagesController().getInputUser(request.ephemeralReceiverBotId);
                 }
-                newRequest.query_id = 0; // ?
+                newRequest.query_id = 0;
                 newRequest.message = request.message;
                 newRequest.entities = request.entities;
                 newRequest.media = null;
@@ -173,7 +173,6 @@ public class EphemeralMessagesHelper extends BaseController {
                             return beforeSendingFinalRequest(req, messages, send);
                         }
                     } else {
-                        // todo: request chat full ???
                     }
                 }
             }
@@ -190,7 +189,7 @@ public class EphemeralMessagesHelper extends BaseController {
                 } else {
                     newRequest.receiver_id = getMessagesController().getInputUser(request.ephemeralReceiverBotId);
                 }
-                newRequest.query_id = 0; // ?
+                newRequest.query_id = 0;
                 newRequest.message = request.message;
                 newRequest.entities = request.entities;
                 newRequest.media = request.media;
@@ -213,7 +212,6 @@ public class EphemeralMessagesHelper extends BaseController {
                             return beforeSendingFinalRequest(req, messages, send);
                         }
                     } else {
-                        // todo: request chat full ???
                     }
                 }
             }
@@ -236,7 +234,6 @@ public class EphemeralMessagesHelper extends BaseController {
 
 
 
-    /* Utils */
 
     public boolean isEphemeralCommand(String text, LongSparseArray<TL_bots.BotInfo> botInfo) {
         return getEphemeralCommandBotId(text, botInfo) > 0;
@@ -466,7 +463,6 @@ public class EphemeralMessagesHelper extends BaseController {
 
 
 
-    /* Instance */
 
     private EphemeralMessagesHelper(int currentAccount) {
         super(currentAccount);

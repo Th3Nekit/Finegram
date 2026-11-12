@@ -329,7 +329,7 @@ public class SavedMessagesController {
                 dialogsEndReached = loadedDialogs.size() >= dialogsCount;
                 unsupported = false;
                 if (dialogsEndReached && !oldDialogsEndReached) {
-                    updateAllDialogs(true); // just for notify about dialogsEndReached = true
+                    updateAllDialogs(true);
                 }
             } else if (err != null) {
                 dialogsLoaded = true;
@@ -346,7 +346,6 @@ public class SavedMessagesController {
     }
 
     public boolean updateSavedDialogs(ArrayList<TLRPC.Message> inputMessages) {
-        ///
         if (inputMessages == null) {
             return false;
         }
@@ -358,7 +357,6 @@ public class SavedMessagesController {
             TLRPC.Message message = inputMessages.get(i);
             long dialogId = MessageObject.getSavedDialogId(self, message);
             if (dialogId != self && (message.id < 0 || message.send_state != 0 && message.fwd_from != null)) {
-                // we might not know does user privacy hide fwd_from.from_id
                 continue;
             }
             TLRPC.Message existingMessage = messages.get(dialogId);
@@ -432,7 +430,7 @@ public class SavedMessagesController {
                     break;
                 }
             }
-            if (!found /*&& forumDialogId == 0*/) {
+            if (!found                          ) {
                 SavedDialog d = SavedDialog.fromMessage(currentAccount, message, true);
                 if (newMessagesCount != null) {
                     d.messagesCount = newMessagesCount;
@@ -540,7 +538,6 @@ public class SavedMessagesController {
             return;
         }
 
-        // put everything in cached
         for (int i = 0; i < loadedDialogs.size(); ++i) {
             SavedDialog ld = loadedDialogs.get(i);
             SavedDialog cd = null;
@@ -555,7 +552,6 @@ public class SavedMessagesController {
                 cachedDialogs.add(ld);
             }
         }
-        // reload
         loadedDialogs.clear();
         dialogsLoaded = false;
         dialogsCount = 0;
@@ -612,7 +608,6 @@ public class SavedMessagesController {
     }
 
     public void update() {
-        //
         updateAllDialogs(true);
         saveCacheSchedule();
     }
@@ -742,7 +737,6 @@ public class SavedMessagesController {
             return false;
         }
 
-        // remove all pinned
         ArrayList<SavedDialog> oldPinned = new ArrayList<>();
         for (int i = 0; i < dialogs.size(); ++i) {
             SavedDialog d = dialogs.get(i);
@@ -755,7 +749,6 @@ public class SavedMessagesController {
         }
         dialogs.addAll(oldPinned);
 
-        // gather new pinned
         ArrayList<SavedDialog> newPinned = new ArrayList<>();
         for (int i = 0; i < dialogs.size(); ++i) {
             SavedDialog d = dialogs.get(i);
@@ -769,13 +762,10 @@ public class SavedMessagesController {
             }
         }
 
-        // sort other not pinned
         Collections.sort(dialogs, (d1, d2) -> d2.getDate() - d1.getDate());
 
-        // sort pinned by new order
         Collections.sort(newPinned, (d1, d2) -> d1.pinnedOrder - d2.pinnedOrder);
 
-        // add pinned
         dialogs.addAll(0, newPinned);
 
         return true;
@@ -1055,10 +1045,8 @@ public class SavedMessagesController {
 
         public boolean messagesCountLoaded;
 
-        // used only in cache
         private int localDate;
 
-        // used only when sorting in update
         private int pinnedOrder;
 
         private int lastDate;

@@ -70,6 +70,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import org.telegram.ui.Stories.recorder.HintView2;
 
@@ -182,7 +183,6 @@ public class FilterTabsView extends FrameLayout {
             }
             title = tabMode != FinegramAppearanceConfig.TAB_TYPE_ICON ? new SpannableStringBuilder(newTitle) : "";
             title = Emoji.replaceEmoji(title, textPaint.getFontMetricsInt(), false);
-//            MessageObject.addEntitiesToText(title, newEntities, false, false, false, true);
             title = MessageObject.replaceAnimatedEmoji(title, newEntities, textPaint.getFontMetricsInt());
             this.noanimate = noanimate;
             return true;
@@ -1069,7 +1069,6 @@ public class FilterTabsView extends FrameLayout {
 
             @Override
             protected void dispatchDraw(@NonNull Canvas canvas) {
-                // drawSelector(canvas);
                 super.dispatchDraw(canvas);
             }
 
@@ -1193,7 +1192,7 @@ public class FilterTabsView extends FrameLayout {
         listView.setItemAnimator(itemAnimator);
         listView.setSelectorType(9);
         listView.setSelectorRadius(6);
-        listView.setSelectorDrawableColor(Theme.getColor(selectorColorKey, resourcesProvider));
+        ThemeBind.listSelectorColor(listView, selectorColorKey, resourcesProvider);
         listView.setLayoutManager(layoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) {
 
             @Override
@@ -1519,7 +1518,7 @@ public class FilterTabsView extends FrameLayout {
         unactiveTextColorKey = unactive;
         selectorColorKey = selector;
         selectorDrawable.setColor(Theme.getColor(tabLineColorKey, resourcesProvider));
-        listView.setSelectorDrawableColor(Theme.getColor(selector, resourcesProvider));
+        ThemeBind.listSelectorColor(listView, selector, resourcesProvider);
 
         listView.invalidateViews();
         listView.invalidate();
@@ -1535,7 +1534,7 @@ public class FilterTabsView extends FrameLayout {
         aUnactiveTextColorKey = unactive;
         aBackgroundColorKey = background;
         selectorColorKey = selector;
-        listView.setSelectorDrawableColor(Theme.getColor(selectorColorKey, resourcesProvider));
+        ThemeBind.listSelectorColor(listView, selectorColorKey, resourcesProvider);
 
         colorChangeAnimator = new AnimatorSet();
         colorChangeAnimator.playTogether(ObjectAnimator.ofFloat(this, COLORS, 0.0f, 1.0f));
@@ -2158,7 +2157,6 @@ public class FilterTabsView extends FrameLayout {
             int temp = positionToStableId.get(theIndex),
                 temp2 = tabs.get(theIndex).id;
             for (int i = theIndex - 1; i >= 0; --i) {
-//                notifyItemMoved(i, i + 1);
                 positionToStableId.put(i + 1, positionToStableId.get(i));
             }
             MessagesController.DialogFilter filter = filters.remove(theIndex);
@@ -2233,7 +2231,7 @@ public class FilterTabsView extends FrameLayout {
             if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
                 listView.cancelClickRunnables(false);
                 viewHolder.itemView.setPressed(true);
-                viewHolder.itemView.setBackgroundColor(Theme.getColor(backgroundColorKey, resourcesProvider));
+                ThemeBind.backgroundColor(viewHolder.itemView, backgroundColorKey, resourcesProvider);
             } else {
                 AndroidUtilities.cancelRunOnUIThread(resetDefaultPosition);
                 AndroidUtilities.runOnUIThread(resetDefaultPosition, 320);

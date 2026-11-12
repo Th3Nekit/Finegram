@@ -32,7 +32,6 @@ public class BadgeLevelDrawable extends Drawable implements Drawable.Callback {
     private int lastLevelIndex;
     private int level;
 
-    // private final Runnable update = this::debugUpdateStart;
 
     public BadgeLevelDrawable(Context context) {
         this.context = context;
@@ -156,12 +155,9 @@ public class BadgeLevelDrawable extends Drawable implements Drawable.Callback {
     }
 
     public void debugUpdateStop() {
-        //AndroidUtilities.cancelRunOnUIThread(update);
     }
 
     public void debugUpdateStart() {
-        // setBadgeLevel((level + 1) % 100, true);
-        // AndroidUtilities.runOnUIThread(update, 1000L);
     }
 
     private void checkBounds() {

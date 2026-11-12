@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import java.util.List;
 import org.webrtc.MediaStreamTrack;
 
-/** Java wrapper for a C++ RtpSenderInterface. */
 public class RtpSender {
   private long nativeRtpSender;
 
@@ -36,20 +35,6 @@ public class RtpSender {
     }
   }
 
-  /**
-   * Starts sending a new track, without requiring additional SDP negotiation.
-   * <p>
-   * Note: This is equivalent to replaceTrack in the official WebRTC API. It
-   * was just implemented before the standards group settled on a name.
-   *
-   * @param takeOwnership If true, the RtpSender takes ownership of the track
-   *                      from the caller, and will auto-dispose of it when no
-   *                      longer needed. `takeOwnership` should only be used if
-   *                      the caller owns the track; it is not appropriate when
-   *                      the track is owned by, for example, another RtpSender
-   *                      or a MediaStream.
-   * @return              true on success and false on failure.
-   */
   public boolean setTrack(@Nullable MediaStreamTrack track, boolean takeOwnership) {
     checkRtpSenderExists();
     if (!nativeSetTrack(nativeRtpSender, (track == null) ? 0 : track.getNativeMediaStreamTrack())) {
@@ -115,7 +100,6 @@ public class RtpSender {
     nativeRtpSender = 0;
   }
 
-  /** Returns a pointer to webrtc::RtpSenderInterface. */
   long getNativeRtpSender() {
     checkRtpSenderExists();
     return nativeRtpSender;
@@ -129,16 +113,12 @@ public class RtpSender {
 
   private static native boolean nativeSetTrack(long rtpSender, long nativeTrack);
 
-  // This should increment the reference count of the track.
-  // Will be released in dispose() or setTrack().
   private static native long nativeGetTrack(long rtpSender);
 
   private static native void nativeSetStreams(long rtpSender, List<String> streamIds);
 
   private static native List<String> nativeGetStreams(long rtpSender);
 
-  // This should increment the reference count of the DTMF sender.
-  // Will be released in dispose().
   private static native long nativeGetDtmfSender(long rtpSender);
 
   private static native boolean nativeSetParameters(long rtpSender, RtpParameters parameters);

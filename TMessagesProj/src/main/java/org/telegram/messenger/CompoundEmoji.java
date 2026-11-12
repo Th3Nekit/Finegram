@@ -58,20 +58,18 @@ public class CompoundEmoji {
 
         int skinTone1 = -1, skinTone2 = -1;
 
-        // simple handshake 🤝
         if (
-            code.startsWith("\uD83E\uDD1D") && // 🤝
+            code.startsWith("\uD83E\uDD1D") &&
             (code.length() == 2 || code.length() == 4 && (skinTone1 = getSkinTone(code)) >= 0)
         ) {
             return new Pair(skinTone1, skinTone1);
         }
 
-        // compound handshake 🫱 + ZWJ + 🫲
-        String[] parts = code.split("\u200D"); // ZWJ
+        String[] parts = code.split("\u200D");
         if (
             parts.length == 2 &&
-            parts[0].startsWith("\uD83E\uDEF1") && // 🫱
-            parts[1].startsWith("\uD83E\uDEF2") && // 🫲
+            parts[0].startsWith("\uD83E\uDEF1") &&
+            parts[1].startsWith("\uD83E\uDEF2") &&
             (parts[0].length() == 2 || parts[0].length() == 4 && (skinTone1 = getSkinTone(parts[0])) >= 0) &&
             (parts[1].length() == 2 || parts[1].length() == 4 && (skinTone2 = getSkinTone(parts[1])) >= 0)
         ) {
@@ -105,9 +103,9 @@ public class CompoundEmoji {
         private static final SparseArray<Bitmap> bitmaps = new SparseArray<>();
         private static final ArrayList<Integer> loading = new ArrayList<>();
 
-        int emoji; // HANDSHAKE = 0
-        int skin; // YELLOW = -1, TONES = 0...4
-        int place; // LEFT = 0, RIGHT = 1
+        int emoji;
+        int skin;
+        int place;
         int hash;
 
         boolean placeholder;

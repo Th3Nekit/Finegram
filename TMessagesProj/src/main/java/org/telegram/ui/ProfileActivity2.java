@@ -64,6 +64,8 @@ import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Components.ForegroundColorSpanThemable;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Business.ProfileHoursCell;
 import org.telegram.ui.Business.ProfileLocationCell;
 import org.telegram.ui.Cells.TextDetailCell;
@@ -229,7 +231,6 @@ public class ProfileActivity2 extends BaseFragment implements
         actionBar.setAddToContainer(false);
         actionBar.setClipContent(true);
         actionBar.setBackgroundColor(Color.TRANSPARENT);
-        // a sheet's window is over the status bar (on tablets too)
         actionBar.setOccupyStatusBar(isMain || parentLayout != null && parentLayout.isSheet() || !AndroidUtilities.isTablet() && !inBubbleMode);
 
         BackDrawable backDrawable = new BackDrawable(false);
@@ -309,7 +310,7 @@ public class ProfileActivity2 extends BaseFragment implements
             public int[] calculateDistanceToFinalSnap(@NonNull RecyclerView.LayoutManager lm, @NonNull View target) {
                 int[] out = new int[2];
                 if (lm.canScrollVertically()) {
-                    out[1] = target.getTop() - lm.getPaddingTop(); // <-- TOP edge snap
+                    out[1] = target.getTop() - lm.getPaddingTop();
                 }
                 return out;
             }
@@ -321,11 +322,9 @@ public class ProfileActivity2 extends BaseFragment implements
 
                 int pos = lm.getPosition(snapView);
 
-                // If flinging down with enough velocity, go to next item
                 if (velocityY > 400) {
                     pos = Math.min(pos + 1, lm.getItemCount() - 1);
                 }
-                // If flinging up with enough velocity, go to previous
                 else if (velocityY < -400) {
                     pos = Math.max(pos - 1, 0);
                 }
@@ -398,9 +397,6 @@ public class ProfileActivity2 extends BaseFragment implements
         updateScrollLayout();
     }
 
-    // -1 — action bar
-    // 0 — default
-    // 1 — expanded
     private float getRelativeScrollTop() {
         if (!(listView.getLayoutManager() instanceof LinearLayoutManager)) return -1.0f;
         final LinearLayoutManager layoutManager = (LinearLayoutManager) listView.getLayoutManager();
@@ -418,6 +414,21 @@ public class ProfileActivity2 extends BaseFragment implements
     }
 
     private AnimatedFloat expanded = new AnimatedFloat(() -> AndroidUtilities.runOnUIThread(this::updateScrollLayout), 0, 420, CubicBezierInterpolator.EASE_OUT_QUINT);
+
+    @Override
+    public void onThemeColorsChanged() {
+        super.onThemeColorsChanged();
+        try {
+            if (fragmentView != null && avatarImage != null && title != null && subtitle != null) {
+                updateScrollLayout();
+            }
+            if (sharedMediaLayout != null) {
+                updateColors();
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
 
     private void updateScrollLayout() {
         final int statusBarHeight = AndroidUtilities.getStatusBarHeight(getContext());
@@ -530,7 +541,6 @@ public class ProfileActivity2 extends BaseFragment implements
             if (chatInfo != null && (!TextUtils.isEmpty(chatInfo.about) || chatInfo.location instanceof TLRPC.TL_channelLocation) || ChatObject.isPublic(chat)) {
                 if (chatInfo != null) {
                     if (!TextUtils.isEmpty(chatInfo.about)) {
-//                        channelInfoRow = rowCount++;
                     }
                     if (chatInfo.location instanceof TLRPC.TL_channelLocation) {
                         final TLRPC.TL_channelLocation location = (TLRPC.TL_channelLocation) chatInfo.location;
@@ -641,7 +651,7 @@ public class ProfileActivity2 extends BaseFragment implements
                 final String usernameRaw = usernameObj.username;
                 SpannableString username = new SpannableString("@" + usernameRaw);
                 username.setSpan(makeUsernameLinkSpan(usernameObj), 0, username.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                username.setSpan(new ForegroundColorSpan(getThemedColor(Theme.key_chat_messageLinkIn)), 0, username.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                username.setSpan(new ForegroundColorSpanThemable(Theme.key_chat_messageLinkIn, getResourceProvider()), 0, username.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 usernames.append(username);
                 if (i < alsoUsernames.size() - 1) {
                     usernames.append(", ");
@@ -770,8 +780,6 @@ public class ProfileActivity2 extends BaseFragment implements
             }
         }
 
-//        title.setText(title.getText() + "fjskla jdsfklsd jasdj;lf sdjlf jlfj dls ffka ljdsfkasdfj;ldsf;lsdjfladsfkl;dsjklf;ads");
-//        subtitle.setText(subtitle.getText() + "fjskla jdsfklsd jasdj;lf sdjlf jlfj dls fasjfkasdlfjdsajfkldsfkjssdfsdalkfjlaksdjfkl");
 
         updateAvatar();
     }
@@ -799,7 +807,7 @@ public class ProfileActivity2 extends BaseFragment implements
                 }
             }
             final ImageLocation videoLocation = avatarsViewPager.getCurrentVideoLocation(thumbLocation, imageLocation);
-            if (true/*avatar == null*/) {
+            if (true                  ) {
                 avatarsViewPager.initIfEmpty(vectorAvatarThumbDrawable, imageLocation, thumbLocation, reload);
             }
             if (vectorAvatar != null) {
@@ -849,7 +857,7 @@ public class ProfileActivity2 extends BaseFragment implements
             } else {
                 filter = null;
             }
-            if (/*avatarBig == null && */!isTopic) {
+            if (                         !isTopic) {
                 avatarImage.imageReceiver.setImage(videoLocation, filter, thumbLocation, "50_50", null, null, avatarImage.avatarDrawable, 0, null, chat, 1);
             }
             if (imageLocation != null && (prevLoadedImageLocation == null || imageLocation.photoId != prevLoadedImageLocation.photoId)) {
@@ -945,7 +953,6 @@ public class ProfileActivity2 extends BaseFragment implements
 
     @Override
     public void updateSelectedMediaTabText() {
-        // TODO
     }
 
     public final static class AvatarImage extends View {
@@ -1120,15 +1127,6 @@ public class ProfileActivity2 extends BaseFragment implements
         @Override
         public void onStopNestedScroll(View child) {
 
-        }
-
-        @Override
-        protected void drawList(Canvas blurCanvas, boolean top, ArrayList<IViewWithInvalidateCallback> views) {
-            super.drawList(blurCanvas, top, views);
-            blurCanvas.save();
-            blurCanvas.translate(0, listView.getY());
-            sharedMediaLayout.drawListForBlur(blurCanvas, views);
-            blurCanvas.restore();
         }
 
         @Override

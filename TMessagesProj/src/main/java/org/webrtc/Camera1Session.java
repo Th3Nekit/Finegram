@@ -45,15 +45,13 @@ class Camera1Session implements CameraSession {
   private final Camera camera;
   private final Camera.CameraInfo info;
   private final CaptureFormat captureFormat;
-  // Used only for stats. Only used on the camera thread.
-  private final long constructionTimeNs; // Construction time of this class.
+  private final long constructionTimeNs;
 
   private OrientationHelper orientationHelper;
 
   private SessionState state;
   private boolean firstFrameReported;
 
-  // TODO(titovartem) make correct fix during webrtc:9175
   @SuppressWarnings("ByteBufferBackingArray")
   public static void create(final CreateSessionCallback callback, final Events events,
       final boolean captureToTexture, final Context applicationContext,
@@ -116,9 +114,8 @@ class Camera1Session implements CameraSession {
       }
     }
 
-    // Calculate orientation manually and send it as CVO instead.
     try {
-      camera.setDisplayOrientation(0 /* degrees */);
+      camera.setDisplayOrientation(0              );
     } catch (RuntimeException e) {
       camera.release();
       callback.onFailure(FailureType.ERROR, e.getMessage());
@@ -151,7 +148,6 @@ class Camera1Session implements CameraSession {
 
   private static CaptureFormat findClosestCaptureFormat(
       Camera.Parameters parameters, int width, int height, int framerate) {
-    // Find closest supported format for `width` x `height` @ `framerate`.
     final List<CaptureFormat.FramerateRange> supportedFramerates =
         Camera1Enumerator.convertFramerates(parameters.getSupportedPreviewFpsRange());
     Logging.d(TAG, "Available fps ranges: " + supportedFramerates);
@@ -253,9 +249,6 @@ class Camera1Session implements CameraSession {
 
     state = SessionState.STOPPED;
     surfaceTextureHelper.stopListening();
-    // Note: stopPreview or other driver code might deadlock. Deadlock in
-    // Camera._stopPreview(Native Method) has been observed on
-    // Nexus 5 (hammerhead), OS version LMY48I.
     camera.stopPreview();
     camera.release();
     events.onCameraClosed(this);
@@ -281,14 +274,12 @@ class Camera1Session implements CameraSession {
         firstFrameReported = true;
       }
 
-      // Undo the mirror that the OS "helps" us with.
-      // http://developer.android.com/reference/android/hardware/Camera.html#setDisplayOrientation(int)
       final VideoFrame modifiedFrame =
           new VideoFrame(CameraSession.createTextureBufferWithModifiedTransformMatrix(
                              (TextureBufferImpl) frame.getBuffer(),
-                             /* mirror= */ info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT,
-                             /* rotation= */ 0),
-              /* rotation= */ getFrameOrientation(), frame.getTimestampNs());
+                                           info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT,
+                                             0),
+                              getFrameOrientation(), frame.getTimestampNs());
       events.onFrameCaptured(Camera1Session.this, modifiedFrame);
       modifiedFrame.release();
     });

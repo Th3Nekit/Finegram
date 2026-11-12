@@ -59,6 +59,7 @@ import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.MessageDrawable;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ChatActionCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.spoilers.SpoilerEffect2;
@@ -77,7 +78,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
     private final long durationMultiplier = 1;
 
     public float getPreviewScale() {
-        // preview is 80% of real message size
         return AndroidUtilities.displaySize.y > AndroidUtilities.displaySize.x ? .8f : .45f;
     }
 
@@ -125,7 +125,7 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
         header.setLines(1);
         header.setMaxLines(1);
         header.setEllipsize(TextUtils.TruncateAt.END);
-        header.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
+        ThemeBind.textColor(header, Theme.key_dialogTextBlack, resourcesProvider);
         header.setText(LocaleController.getString(R.string.AttachMediaPreview));
         header.setTypeface(AndroidUtilities.bold());
         header.setCompoundDrawablePadding(AndroidUtilities.dp(4));
@@ -168,7 +168,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-                /**/
             }
 
             @Override
@@ -359,10 +358,9 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
             this.photos = photos;
             calculate();
         }
-        private final int maxSizeWidth = 1000; // was 800, made 1000 for preview
+        private final int maxSizeWidth = 1000;
 
         public void calculate() {
-            // TODO: copied from GroupedMessages, would be better to merge
             int firstSpanAdditionalSize = 200;
 
             int count = photos.size();
@@ -780,7 +778,7 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
 
     @Override
     public int getListTopPadding() {
-        return listView.getPaddingTop()/* + AndroidUtilities.dp(9)*/;
+        return listView.getPaddingTop()                             ;
     }
 
     @Override
@@ -818,7 +816,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
         if (paddingTop < 0) {
             paddingTop = 0;
         }
-//        paddingTop -= AndroidUtilities.dp(9);
         if (listView.getPaddingTop() != paddingTop || listView.getPaddingBottom() != listPaddingBottom) {
             listView.setPaddingWithoutRequestLayout(listView.getPaddingLeft(), paddingTop, listView.getPaddingRight(), listPaddingBottom);
             invalidate();
@@ -830,7 +827,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
 
     @Override
     public void scrollToTop() {
-//        scrollView.smoothScrollTo(0, 0);
         listView.smoothScrollToPosition(0);
     }
 
@@ -1354,45 +1350,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
                 postDelayed(this, 15);
             }
         };
-        /*
-        *
-        *
-                    if (getSelectedItemsCount() > 1) {
-                        // short tap -> remove photo
-                        final MediaController.PhotoEntry photo = tapMediaCell.photoEntry;
-                        final int index = tapGroupCell.group.photos.indexOf(photo);
-                        if (index >= 0) {
-                            saveDeletedImageId(photo);
-                            final PreviewGroupCell groupCell = tapGroupCell;
-                            groupCell.group.photos.remove(index);
-                            groupCell.setGroup(groupCell.group, true);
-                            updateGroups();
-                            toPhotoLayout(photoLayout, false);
-
-                            final int currentUndoViewId = ++undoViewId;
-                            undoView.showWithAction(0, ACTION_PREVIEW_MEDIA_DESELECTED, photo, null, () -> {
-                                if (draggingAnimator != null) {
-                                    draggingAnimator.cancel();
-                                }
-                                draggingCell = null;
-                                draggingT = 0;
-                                pushToGroup(groupCell, photo, index);
-                                updateGroups();
-                                toPhotoLayout(photoLayout, false);
-                            });
-
-                            postDelayed(() -> {
-                                if (currentUndoViewId == undoViewId && undoView.isShown()) {
-                                    undoView.hide(true, 1);
-                                }
-                            }, 1000 * 4);
-                        }
-
-                        if (draggingAnimator != null) {
-                            draggingAnimator.cancel();
-                        }
-                    }
-                    * */
 
         GroupingPhotoViewerProvider photoViewerProvider = new GroupingPhotoViewerProvider();
 
@@ -1776,7 +1733,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
 
                     if (tappedAtIndex) {
                         if (getSelectedItemsCount() > 1) {
-                            // short tap -> remove photo
                             final MediaController.PhotoEntry photo = tapMediaCell.photoEntry;
                             final int index = tapGroupCell.group.photos.indexOf(photo);
                             if (index >= 0) {
@@ -2479,7 +2435,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
                     }
 
                     if (properCell == null) {
-                        // new cell
                         properCell = new MediaCell();
                         properCell.setImage(photoEntry);
                         properCell.layout(group, pos, animated);
@@ -2492,7 +2447,6 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
                 for (int i = 0; i < mediaCount; ++i) {
                     MediaCell cell = media.get(i);
                     if (!group.positions.containsKey(cell.photoEntry)) {
-                        // old cell, remove it
                         if (cell.scale <= 0 && cell.lastUpdate + cell.updateDuration <= now) {
                             cell.detach();
                             media.remove(i);
@@ -2519,7 +2473,7 @@ public class ChatAttachAlertPhotoLayoutPreview extends ChatAttachAlert.AttachAle
 
             public float measure() {
                 final float maxHeight = Math.max(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) * 0.5f;
-                return AndroidUtilities.lerp(previousGroupHeight, this.groupHeight, getT()) * maxHeight * getPreviewScale(); // height
+                return AndroidUtilities.lerp(previousGroupHeight, this.groupHeight, getT()) * maxHeight * getPreviewScale();
             }
             public float maxHeight() {
                 final float maxHeight = Math.max(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) * 0.5f;

@@ -14,10 +14,6 @@ import android.view.View;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Utilities;
 
-/**
- * Fixed ANR on Samsung after one and a half minutes.
- * Anr occurs due to drawing long text.
- */
 @SuppressLint("ViewConstructor")
 public class VoIpBitmapTextView extends View {
 

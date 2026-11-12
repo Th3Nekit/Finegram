@@ -143,7 +143,7 @@ public class TL_stories {
         public TLRPC.Peer peer;
         public int max_read_id;
         public ArrayList<StoryItem> stories = new ArrayList<>();
-        public boolean checkedExpired; //custom
+        public boolean checkedExpired;
 
         public static PeerStories TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             PeerStories result = null;
@@ -1317,7 +1317,7 @@ public class TL_stories {
     }
 
     public static class Boost extends TLObject {
-        public static final long NO_USER_ID = -1L; //custom
+        public static final long NO_USER_ID = -1L;
 
         public int flags;
         public boolean gift;
@@ -1535,19 +1535,19 @@ public class TL_stories {
         public TLRPC.Reaction sent_reaction;
         public @Nullable ArrayList<Integer> albums;
         public TLRPC.Document music;
-        public long lastUpdateTime; //custom
-        public String attachPath; //custom
-        public String firstFramePath; //custom
-        public long dialogId;// custom
-        public boolean justUploaded;// custom
-        public int messageId;//custom
-        public int messageType;//custom
+        public long lastUpdateTime;
+        public String attachPath;
+        public String firstFramePath;
+        public long dialogId;
+        public boolean justUploaded;
+        public int messageId;
+        public int messageType;
         public int fileReference;
-        public String detectedLng; //custom
-        public String translatedLng; //custom
-        public boolean translated; //custom
-        public TLRPC.TL_textWithEntities translatedText; //custom
-        public StoryPrivacyBottomSheet.StoryPrivacy parsedPrivacy; //custom
+        public String detectedLng;
+        public String translatedLng;
+        public boolean translated;
+        public TLRPC.TL_textWithEntities translatedText;
+        public StoryPrivacyBottomSheet.StoryPrivacy parsedPrivacy;
 
         public static StoryItem TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             StoryItem result = null;

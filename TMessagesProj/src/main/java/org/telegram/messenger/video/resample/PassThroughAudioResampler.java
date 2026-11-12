@@ -4,10 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.nio.ShortBuffer;
 
-/**
- * An {@link AudioResampler} that does nothing, meant to be used when sample
- * rates are identical.
- */
 public class PassThroughAudioResampler implements AudioResampler {
 
     @Override

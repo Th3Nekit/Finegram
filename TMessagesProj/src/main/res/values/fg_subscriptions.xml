@@ -62,4 +62,5 @@
     <string name="FG_Subscription_ErrorAppNotSupported">The provider rejected this client. Ask the provider for a compatible subscription.</string>
     <string name="FG_Subscription_ErrorUnsupportedFormat">This subscription format is not supported. Use a VLESS/Hysteria2 link list or a supported Xray JSON configuration.</string>
     <string name="FG_Subscription_ErrorUnsupportedProtocol">The subscription contains only unsupported protocols. VLESS and Hysteria2 are supported. Existing servers are preserved.</string>
+    <string name="FG_Subscription_ErrorXhttp">The servers in this subscription use XHTTP, which the app does not support yet. Existing servers are preserved.</string>
 </resources>

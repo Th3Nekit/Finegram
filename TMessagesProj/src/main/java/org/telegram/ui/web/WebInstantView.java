@@ -503,8 +503,6 @@ public class WebInstantView {
     public TL_iv.TL_page parsePage(String url, JSONObject parsed) throws JSONException {
         String title = parsed.optString("title");
         if ("null".equals(title)) title = null;
-//        String byline = parsed.optString("byline");
-//        if ("null".equals(byline) || "by".equalsIgnoreCase(byline)) byline = null;
         String publishedTime = parsed.optString("publishedTime");
         if ("null".equals(publishedTime)) publishedTime = null;
 

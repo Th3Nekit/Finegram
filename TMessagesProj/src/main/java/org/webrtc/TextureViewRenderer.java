@@ -24,16 +24,13 @@ public class TextureViewRenderer extends TextureView
 
     private static final String TAG = "TextureViewRenderer";
 
-    // Cached resource name.
     private final String resourceName;
     private final RendererCommon.VideoLayoutMeasure videoLayoutMeasure =
             new RendererCommon.VideoLayoutMeasure();
     private final TextureEglRenderer eglRenderer;
 
-    // Callback for reporting renderer events. Read-only after initialization so no lock required.
     private RendererCommon.RendererEvents rendererEvents;
 
-    // Accessed only on the main thread.
     public int rotatedFrameWidth;
     public int rotatedFrameHeight;
 
@@ -99,7 +96,6 @@ public class TextureViewRenderer extends TextureView
     public static class TextureEglRenderer extends EglRenderer implements TextureView.SurfaceTextureListener {
         private static final String TAG = "TextureEglRenderer";
 
-        // Callback for reporting renderer events. Read-only after initialization so no lock required.
         private RendererCommon.RendererEvents rendererEvents;
 
         private final Object layoutLock = new Object();
@@ -109,19 +105,10 @@ public class TextureViewRenderer extends TextureView
         private int rotatedFrameHeight;
         private int frameRotation;
 
-        /**
-         * In order to render something, you must first call init().
-         */
         public TextureEglRenderer(String name) {
             super(name);
         }
 
-        /**
-         * Initialize this class, sharing resources with |sharedContext|. The custom |drawer| will be used
-         * for drawing frames on the EGLSurface. This class is responsible for calling release() on
-         * |drawer|. It is allowed to call init() to reinitialize the renderer after a previous
-         * init()/release() cycle.
-         */
         public void init(final EglBase.Context sharedContext,
                          RendererCommon.RendererEvents rendererEvents, final int[] configAttributes,
                          RendererCommon.GlDrawer drawer) {
@@ -139,15 +126,9 @@ public class TextureViewRenderer extends TextureView
         @Override
         public void init(final EglBase.Context sharedContext, final int[] configAttributes,
                          RendererCommon.GlDrawer drawer) {
-            init(sharedContext, null /* rendererEvents */, configAttributes, drawer);
+            init(sharedContext, null                     , configAttributes, drawer);
         }
 
-        /**
-         * Limit render framerate.
-         *
-         * @param fps Limit render framerate to this value, or use Float.POSITIVE_INFINITY to disable fps
-         *            reduction.
-         */
         @Override
         public void setFpsReduction(float fps) {
             synchronized (layoutLock) {
@@ -172,7 +153,6 @@ public class TextureViewRenderer extends TextureView
             super.pauseVideo();
         }
 
-        // VideoSink interface.
         @Override
         public void onFrame(VideoFrame frame) {
             updateFrameDimensionsAndReportEvents(frame);
@@ -205,7 +185,6 @@ public class TextureViewRenderer extends TextureView
 
         }
 
-        // Update frame dimensions and report any changes to |rendererEvents|.
         private void updateFrameDimensionsAndReportEvents(VideoFrame frame) {
             synchronized (layoutLock) {
                 if (isRenderingPaused) {
@@ -241,9 +220,6 @@ public class TextureViewRenderer extends TextureView
         }
     }
 
-    /**
-     * Standard View constructor. In order to render something, you must first call init().
-     */
     public TextureViewRenderer(Context context) {
         super(context);
         this.resourceName = getResourceName();
@@ -251,20 +227,10 @@ public class TextureViewRenderer extends TextureView
         setSurfaceTextureListener(this);
     }
 
-    /**
-     * Initialize this class, sharing resources with |sharedContext|. It is allowed to call init() to
-     * reinitialize the renderer after a previous init()/release() cycle.
-     */
     public void init(EglBase.Context sharedContext, RendererCommon.RendererEvents rendererEvents) {
         init(sharedContext, rendererEvents, EglBase.CONFIG_PLAIN, new GlRectDrawer());
     }
 
-    /**
-     * Initialize this class, sharing resources with |sharedContext|. The custom |drawer| will be used
-     * for drawing frames on the EGLSurface. This class is responsible for calling release() on
-     * |drawer|. It is allowed to call init() to reinitialize the renderer after a previous
-     * init()/release() cycle.
-     */
     public void init(final EglBase.Context sharedContext,
                      RendererCommon.RendererEvents rendererEvents, final int[] configAttributes,
                      RendererCommon.GlDrawer drawer) {
@@ -272,15 +238,9 @@ public class TextureViewRenderer extends TextureView
         this.rendererEvents = rendererEvents;
         rotatedFrameWidth = 0;
         rotatedFrameHeight = 0;
-        eglRenderer.init(sharedContext, this /* rendererEvents */, configAttributes, drawer);
+        eglRenderer.init(sharedContext, this                     , configAttributes, drawer);
     }
 
-    /**
-     * Block until any pending frame is returned and all GL resources released, even if an interrupt
-     * occurs. If an interrupt occurs during release(), the interrupt flag will be set. This function
-     * should be called before the Activity is destroyed and the EGLContext is still valid. If you
-     * don't call this function, the GL resources might leak.
-     */
     public void release() {
         eglRenderer.release();
         if (orientationHelper != null) {
@@ -288,14 +248,6 @@ public class TextureViewRenderer extends TextureView
         }
     }
 
-    /**
-     * Register a callback to be invoked when a new video frame has been received.
-     *
-     * @param listener The callback to be invoked. The callback will be invoked on the render thread.
-     *                 It should be lightweight and must not call removeFrameListener.
-     * @param scale    The scale of the Bitmap passed to the callback, or 0 if no Bitmap is
-     *                 required.
-     */
     public void addFrameListener(
             EglRenderer.FrameListener listener, float scale, RendererCommon.GlDrawer drawerParam) {
         eglRenderer.addFrameListener(listener, scale, drawerParam);
@@ -305,15 +257,6 @@ public class TextureViewRenderer extends TextureView
         eglRenderer.getTexture(callback);
     }
 
-    /**
-     * Register a callback to be invoked when a new video frame has been received. This version uses
-     * the drawer of the EglRenderer that was passed in init.
-     *
-     * @param listener The callback to be invoked. The callback will be invoked on the render thread.
-     *                 It should be lightweight and must not call removeFrameListener.
-     * @param scale    The scale of the Bitmap passed to the callback, or 0 if no Bitmap is
-     *                 required.
-     */
     public void addFrameListener(EglRenderer.FrameListener listener, float scale) {
         eglRenderer.addFrameListener(listener, scale);
     }
@@ -337,10 +280,6 @@ public class TextureViewRenderer extends TextureView
        }
     }
 
-    /**
-     * Enables fixed size for the surface. This provides better performance but might be buggy on some
-     * devices. By default this is turned off.
-     */
     public void setEnableHardwareScaler(boolean enabled) {
         ThreadUtils.checkIsOnMainThread();
         enableFixedSize = enabled;
@@ -386,9 +325,6 @@ public class TextureViewRenderer extends TextureView
         animate().scaleX(scale).scaleY(scale).rotation(-orientation).setDuration(180).start();
     }
 
-    /**
-     * Set if the video stream should be mirrored or not.
-     */
     public void setMirror(final boolean mirror) {
         if (this.mirror != mirror) {
             this.mirror = mirror;
@@ -402,9 +338,6 @@ public class TextureViewRenderer extends TextureView
         }
     }
 
-    /**
-     * Set how the video will fill the allowed layout area.
-     */
     public void setScalingType(RendererCommon.ScalingType scalingType) {
         ThreadUtils.checkIsOnMainThread();
         videoLayoutMeasure.setScalingType(scalingType);
@@ -418,12 +351,6 @@ public class TextureViewRenderer extends TextureView
         requestLayout();
     }
 
-    /**
-     * Limit render framerate.
-     *
-     * @param fps Limit render framerate to this value, or use Float.POSITIVE_INFINITY to disable fps
-     *            reduction.
-     */
     public void setFpsReduction(float fps) {
         eglRenderer.setFpsReduction(fps);
     }
@@ -436,13 +363,11 @@ public class TextureViewRenderer extends TextureView
         eglRenderer.pauseVideo();
     }
 
-    // VideoSink interface.
     @Override
     public void onFrame(VideoFrame frame) {
         eglRenderer.onFrame(frame);
     }
 
-    // View layout interface.
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
         ThreadUtils.checkIsOnMainThread();
@@ -456,7 +381,6 @@ public class TextureViewRenderer extends TextureView
             size = videoLayoutMeasure.measure(isCamera, widthSpec, heightSpec, rotatedFrameWidth, rotatedFrameHeight);
         }
         setMeasuredDimension(size.x, size.y);
-       // logD("onMeasure(). New size: " + size.x + "x" + size.y);
         if (rotatedFrameWidth != 0 && rotatedFrameHeight != 0) {
             eglRenderer.setLayoutAspectRatio(getMeasuredWidth() / (float) getMeasuredHeight());
         }
@@ -478,7 +402,6 @@ public class TextureViewRenderer extends TextureView
                 drawnFrameWidth = rotatedFrameWidth;
                 drawnFrameHeight = (int) (rotatedFrameHeight / layoutAspectRatio);
             }
-            // Aspect ratio of the drawn frame and the view is the same.
             final int width = Math.min(getWidth(), drawnFrameWidth);
             final int height = Math.min(getHeight(), drawnFrameHeight);
             logD("updateSurfaceSize. Layout size: " + getWidth() + "x" + getHeight() + ", frame size: "
@@ -487,11 +410,9 @@ public class TextureViewRenderer extends TextureView
             if (width != surfaceWidth || height != surfaceHeight) {
                 surfaceWidth = width;
                 surfaceHeight = height;
-                //getHolder().setFixedSize(width, height);
             }
         } else {
             surfaceWidth = surfaceHeight = 0;
-            //getHolder().setSizeFromLayout();
         }
     }
 
@@ -534,9 +455,6 @@ public class TextureViewRenderer extends TextureView
         }
     }
 
-    /**
-     * Post a task to clear the SurfaceView to a transparent uniform color.
-     */
     public void clearImage() {
         eglRenderer.clearImage();
         eglRenderer.isFirstFrameRendered = false;
@@ -586,7 +504,6 @@ public class TextureViewRenderer extends TextureView
             rotatedWidth = rotation == 0 || rotation == 180 || rotation == -180 ? videoWidth : videoHeight;
             rotatedHeight = rotation == 0 || rotation == 180 || rotation == -180? videoHeight : videoWidth;
         }
-        // run immediately if possible for ui thread tests
         synchronized (eglRenderer.layoutLock) {
             if (updateScreenRunnable != null) {
                 AndroidUtilities.cancelRunOnUIThread(updateScreenRunnable);

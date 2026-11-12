@@ -29,7 +29,6 @@ public class StarGiftUniqueActionView extends View {
         super(context);
         this.resourcesProvider = resourcesProvider;
         layout = new StarGiftUniqueActionLayout(currentAccount, this, resourcesProvider);
-        // layout.getMessageDrawable().setUseAvatarAnimator(true);
         layout.getMessageDrawable().setCallback(this);
 
         NotificationCenter.listenEmojiLoading(this);

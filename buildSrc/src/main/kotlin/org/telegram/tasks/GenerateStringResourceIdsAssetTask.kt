@@ -38,8 +38,6 @@ abstract class GenerateStringResourceIdsAssetTask : DefaultTask() {
         input.forEachLine { line ->
             val parts = line.trim().split(Regex("\\s+"))
 
-            // R.txt:
-            // int string AppName 0x7f120123
             if (parts.size != 4) {
                 return@forEachLine
             }
@@ -68,7 +66,6 @@ abstract class GenerateStringResourceIdsAssetTask : DefaultTask() {
             FileOutputStream(output).buffered()
         ).use { out ->
 
-            // First 4 bytes: number of entries
             out.writeInt32(entries.size)
 
             for (entry in entries) {

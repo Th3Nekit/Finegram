@@ -56,7 +56,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
-import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceBitmap;
+import org.telegram.utils.glass.source.GlassSourceBitmap;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 import org.telegram.ui.Components.chat.ViewPositionWatcher;
 
@@ -72,7 +72,7 @@ public class ScrimOptions extends Dialog {
     private Paint blurBitmapPaint;
     private Matrix blurMatrix;
 
-    private final BlurredBackgroundSourceBitmap iBlur3SourceBitmap;
+    private final GlassSourceBitmap iBlur3SourceBitmap;
     private final BlurredBackgroundDrawableViewFactory iBlur3Factory;
 
     private float openProgress;
@@ -156,7 +156,7 @@ public class ScrimOptions extends Dialog {
         containerView.setClipToPadding(false);
         windowView.addView(containerView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL));
 
-        iBlur3SourceBitmap = new BlurredBackgroundSourceBitmap();
+        iBlur3SourceBitmap = new GlassSourceBitmap();
         iBlur3Factory = new BlurredBackgroundDrawableViewFactory(iBlur3SourceBitmap);
         iBlur3Factory.setSourceRootView(new ViewPositionWatcher(windowView), windowView);
 
@@ -239,10 +239,7 @@ public class ScrimOptions extends Dialog {
             openAnimator.cancel();
         }
 
-        final boolean animateOptions = false; // open && optionsView != null && optionsView instanceof ActionBarPopupWindow.ActionBarPopupWindowLayout;
-//        if (animateOptions) {
-//            ActionBarPopupWindow.startAnimation((ActionBarPopupWindow.ActionBarPopupWindowLayout) optionsView);
-//        }
+        final boolean animateOptions = false;
         openAnimator = ValueAnimator.ofFloat(openProgress, open ? 1 : 0);
         openAnimator.addUpdateListener(anm -> {
             openProgress = (float) anm.getAnimatedValue();
@@ -251,15 +248,6 @@ public class ScrimOptions extends Dialog {
                 optionsView.setScaleY(AndroidUtilities.lerp(.8f, 1f, openProgress));
                 optionsView.setAlpha(openProgress);
             }
-//            if (scrimCell != null && !isGroup) {
-//                scrimCell.setTranslationX(scrimDrawableTx * openProgress);
-//                scrimCell.setTranslationY(scrimDrawableTy * openProgress);
-//                scrimCell.invalidate();
-//                scrimCell.invalidateOutbounds();
-//                if (scrimCell.getParent() instanceof View) {
-//                    ((View) scrimCell.getParent()).invalidate();
-//                }
-//            }
             windowView.invalidate();
             containerView.invalidate();
         });
@@ -272,15 +260,6 @@ public class ScrimOptions extends Dialog {
                     optionsView.setScaleY(AndroidUtilities.lerp(.8f, 1f, openProgress));
                     optionsView.setAlpha(openProgress);
                 }
-//                if (scrimCell != null && !isGroup) {
-//                    scrimCell.setTranslationX(scrimDrawableTx * openProgress);
-//                    scrimCell.setTranslationY(scrimDrawableTy * openProgress);
-//                    scrimCell.invalidate();
-//                    scrimCell.invalidateOutbounds();
-//                    if (scrimCell.getParent() instanceof View) {
-//                        ((View) scrimCell.getParent()).invalidate();
-//                    }
-//                }
                 windowView.invalidate();
                 containerView.invalidate();
                 if (after != null) {

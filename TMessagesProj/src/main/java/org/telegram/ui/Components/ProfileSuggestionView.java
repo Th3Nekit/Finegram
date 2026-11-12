@@ -119,21 +119,9 @@ public class ProfileSuggestionView extends FrameLayout {
     private float currentHeight = 0;
 
     public void drawingBlur(boolean drawing) {
-//        if (ignoreRect != drawing || renderNode != null) {
-//            ignoreRect = drawing;
-//            renderNode = null;
-//            avatarView = null;
-//            invalidate();
-//        }
     }
 
     public void drawingBlur(RenderNode renderNode, ProfileActivity.AvatarImageView avatarView, float scale, float dy) {
-//        this.ignoreRect = false;
-//        this.renderNode = renderNode;
-//        this.avatarView = avatarView;
-//        this.renderNodeScale = scale;
-//        this.renderNodeTranslateY = dy;
-//        invalidate();
     }
 
     @Override
@@ -157,51 +145,10 @@ public class ProfileSuggestionView extends FrameLayout {
             canvas.clipRect(0f, 0f, getMeasuredWidth(), bottom);
         }
 
-//        if (renderNode != null) {
-//            clipPath.rewind();
-//            final float r = dp(10);
-//            AndroidUtilities.rectTmp.set(layout.getX(), layout.getY(), layout.getX() + layout.getWidth(), layout.getY() + layout.getHeight());
-//            clipPath.addRoundRect(AndroidUtilities.rectTmp, r, r, Path.Direction.CCW);
-//        }
-//
-//        drawRenderNode(canvas);
 
         super.dispatchDraw(canvas);
 
         canvas.restore();
     }
 
-//    private void drawRenderNode(Canvas canvas) {
-//        if (renderNode == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || !renderNode.hasDisplayList() || !canvas.isHardwareAccelerated()) {
-//            return;
-//        }
-//
-//        canvas.save();
-//        if (avatarView != null) {
-//            View v = (View) avatarView.getParent();
-//            float vl = v.getX();
-//            float vt = v.getY() - getTranslationY();
-//            float vw = v.getWidth() * v.getScaleX();
-//            float vh = v.getHeight() * v.getScaleY();
-//
-//            clipAvatarPath.rewind();
-//            clipAvatarPath.addRoundRect(
-//                vl,
-//                vt,
-//                vl + vw,
-//                vt + vh,
-//                avatarView.getRoundRadiusForExpand() * v.getScaleX(),
-//                avatarView.getRoundRadiusForExpand() * v.getScaleY(),
-//                Path.Direction.CCW
-//            );
-//            canvas.clipPath(clipAvatarPath);
-//        }
-//
-//        canvas.clipPath(clipPath);
-//        canvas.translate(0f, renderNodeTranslateY);
-//        canvas.scale(renderNodeScale, renderNodeScale);
-//        canvas.drawRenderNode(renderNode);
-//
-//        canvas.restore();
-//    }
 }

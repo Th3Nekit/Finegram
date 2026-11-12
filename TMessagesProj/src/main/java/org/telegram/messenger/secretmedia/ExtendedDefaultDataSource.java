@@ -54,7 +54,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
     private final List<TransferListener> transferListeners;
     private final DataSource baseDataSource;
 
-    // Lazily initialized.
     private @Nullable
     DataSource fileDataSource;
     private @Nullable DataSource assetDataSource;
@@ -66,14 +65,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
 
     private @Nullable DataSource dataSource;
 
-    /**
-     * Constructs a new instance, optionally configured to follow cross-protocol redirects.
-     *
-     * @param context A context.
-     * @param userAgent The User-Agent to use when requesting remote data.
-     * @param allowCrossProtocolRedirects Whether cross-protocol redirects (i.e. redirects from HTTP
-     *     to HTTPS and vice versa) are enabled when fetching remote data.
-     */
     public ExtendedDefaultDataSource(Context context, String userAgent, boolean allowCrossProtocolRedirects) {
         this(
                 context,
@@ -83,18 +74,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
                 allowCrossProtocolRedirects);
     }
 
-    /**
-     * Constructs a new instance, optionally configured to follow cross-protocol redirects.
-     *
-     * @param context A context.
-     * @param userAgent The User-Agent to use when requesting remote data.
-     * @param connectTimeoutMillis The connection timeout that should be used when requesting remote
-     *     data, in milliseconds. A timeout of zero is interpreted as an infinite timeout.
-     * @param readTimeoutMillis The read timeout that should be used when requesting remote data, in
-     *     milliseconds. A timeout of zero is interpreted as an infinite timeout.
-     * @param allowCrossProtocolRedirects Whether cross-protocol redirects (i.e. redirects from HTTP
-     *     to HTTPS and vice versa) are enabled when fetching remote data.
-     */
     public ExtendedDefaultDataSource(
             Context context,
             String userAgent,
@@ -113,14 +92,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
         );
     }
 
-    /**
-     * Constructs a new instance that delegates to a provided {@link DataSource} for URI schemes other
-     * than file, asset and content.
-     *
-     * @param context A context.
-     * @param baseDataSource A {@link DataSource} to use for URI schemes other than file, asset and
-     *     content. This {@link DataSource} should normally support at least http(s).
-     */
     public ExtendedDefaultDataSource(Context context, DataSource baseDataSource, LongSparseArray<Uri> mtprotoUris) {
         this.context = context.getApplicationContext();
         this.baseDataSource = Assertions.checkNotNull(baseDataSource);
@@ -130,17 +101,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
 
     private final LongSparseArray<Uri> mtprotoUris;
 
-    /**
-     * Constructs a new instance that delegates to a provided {@link DataSource} for URI schemes other
-     * than file, asset and content.
-     *
-     * @param context A context.
-     * @param listener An optional listener.
-     * @param baseDataSource A {@link DataSource} to use for URI schemes other than file, asset and
-     *     content. This {@link DataSource} should normally support at least http(s).
-     * @deprecated Use {@link #DefaultDataSource(Context, DataSource)} and {@link
-     *     #addTransferListener(TransferListener)}.
-     */
     @Deprecated
     public ExtendedDefaultDataSource(
             Context context, @Nullable TransferListener listener, DataSource baseDataSource, LongSparseArray<Uri> mtprotoUris) {
@@ -172,7 +132,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
             uri = mtprotoUris.get(docId);
             dataSpec = dataSpec.buildUpon().setUri(uri).build();
         }
-        // Choose the correct source for the scheme.
         String scheme = uri.getScheme();
         if (Util.isLocalFileUri(uri)) {
             String uriPath = uri.getPath();
@@ -200,7 +159,6 @@ public final class ExtendedDefaultDataSource implements DataSource {
         } else {
             dataSource = baseDataSource;
         }
-        // Open the source and return.
         return dataSource.open(dataSpec);
     }
 
@@ -280,10 +238,8 @@ public final class ExtendedDefaultDataSource implements DataSource {
                 // LINT.ThenChange(../../../../../../../../proguard-rules.txt)
                 addListenersToDataSource(rtmpDataSource);
             } catch (ClassNotFoundException e) {
-                // Expected if the app was built without the RTMP extension.
                 Log.w(TAG, "Attempting to play RTMP stream without depending on the RTMP extension");
             } catch (Exception e) {
-                // The RTMP extension is present, but instantiation failed.
                 throw new RuntimeException("Error instantiating RTMP extension", e);
             }
             if (rtmpDataSource == null) {

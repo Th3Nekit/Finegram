@@ -78,10 +78,6 @@ public class AnimatedStatusView extends View {
                         effectsSize
                 );
                 imageReceiver.draw(canvas);
-//                    if (imageReceiver.getLottieAnimation() != null && imageReceiver.getLottieAnimation().isRunning() && imageReceiver.getLottieAnimation().isLastFrame()) {
-//                        imageReceiver.onDetachedFromWindow();
-//                        animations.remove(imageReceiver);
-//                    }
             } else if (animation instanceof AnimatedEmojiEffect) {
                 AnimatedEmojiEffect effect = (AnimatedEmojiEffect) animation;
                 effect.setBounds(

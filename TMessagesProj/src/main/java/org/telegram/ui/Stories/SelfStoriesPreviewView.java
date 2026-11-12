@@ -162,11 +162,7 @@ public abstract class SelfStoriesPreviewView extends View {
         super.onDraw(canvas);
 
         if (scroller.computeScrollOffset()) {
-//            if (Math.abs(scrollX - scroller.getCurrX()) < AndroidUtilities.dp(1)) {
-//                scroller.abortAnimation();
-//            } else {
             scrollX = scroller.getCurrX();
-            // }
             invalidate();
             checkScroll = true;
         } else if (checkScroll) {
@@ -222,7 +218,7 @@ public abstract class SelfStoriesPreviewView extends View {
             if (!(progressToOpen != 1f && i == lastClosestPosition)) {
                 holder.receiver.draw(canvas);
                 if (holder.layout != null) {
-                    float alpha = 0.7f + 0.3f * k;//k;
+                    float alpha = 0.7f + 0.3f * k;
                     gradientDrawable.setAlpha((int) (255 * alpha));
                     gradientDrawable.setBounds(
                             (int) holder.receiver.getImageX(), (int) (holder.receiver.getImageY2() - AndroidUtilities.dp(24)), (int) holder.receiver.getImageX2(), (int) holder.receiver.getImageY2() + 2);

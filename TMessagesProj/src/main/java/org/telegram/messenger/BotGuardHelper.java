@@ -76,14 +76,6 @@ public class BotGuardHelper extends BaseController {
             }
         }
 
-        /*final ArrayList<BottomSheetTabs.WebTabData> tabs = bottomSheetTabs.getTabs(currentAccount);
-        for (BottomSheetTabs.WebTabData tab : tabs) {
-            if (tab.props != null && tab.props.type == BotWebViewAttachedSheet.TYPE_WEB_VIEW_GUARD && tab.props.peerId == dialogId) {
-                if (tab.props.response instanceof TLRPC.TL_webViewResultUrl) {
-                    final long bQueryId = ((TLRPC.TL_webViewResultUrl) tab.props.response).query_id;
-                }
-            }
-        }*/
     }
 
     public static class GuardBotDecisionResultNotification {

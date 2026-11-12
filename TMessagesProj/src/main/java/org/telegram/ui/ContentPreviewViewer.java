@@ -81,6 +81,7 @@ import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ContextLinkCell;
 import org.telegram.ui.Cells.StickerCell;
 import org.telegram.ui.Cells.StickerEmojiCell;
@@ -104,7 +105,7 @@ import org.telegram.ui.Components.StickersDialogs;
 import org.telegram.ui.Components.SuggestEmojiView;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
-import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceBitmap;
+import org.telegram.utils.glass.source.GlassSourceBitmap;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 import org.telegram.ui.Components.chat.ViewPositionWatcher;
 import org.telegram.ui.Components.poll.RecentVotersCell;
@@ -343,7 +344,7 @@ public class ContentPreviewViewer {
 
     private int currentAccount;
 
-    private final BlurredBackgroundSourceBitmap scrimBlur3SourceBitmap = new BlurredBackgroundSourceBitmap();
+    private final GlassSourceBitmap scrimBlur3SourceBitmap = new GlassSourceBitmap();
     private final BlurredBackgroundDrawableViewFactory scrimBlur3Factory = new BlurredBackgroundDrawableViewFactory(scrimBlur3SourceBitmap);
 
     private ColorDrawable backgroundDrawable = new ColorDrawable(0x71000000);
@@ -437,13 +438,13 @@ public class ContentPreviewViewer {
             item.setText(LocaleController.formatPluralString("PollVotesCount", voters.voters));
             item.setRecentVoters(voters.recent_voters, false);
             item.setLayoutParams(LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
-            item.setBackground(Theme.createRadSelectorDrawable(getThemedColor(Theme.key_dialogButtonSelector), 12, 0));
+            ThemeBind.selectorBackground(item, Theme.createRadSelectorDrawable(getThemedColor(Theme.key_dialogButtonSelector), 12, 0), null, ThemeBind.of(Theme.key_dialogButtonSelector), resourcesProvider);
             item.setOnClickListener(v -> previewMenu.getSwipeBack().openForeground(foregroundIndex));
             previewMenu.addView(item);
 
             ActionBarPopupWindow.GapView gap = new ActionBarPopupWindow.GapView(previewMenu.getContext(), resourcesProvider);
             gap.setTag(R.id.fit_width_tag, 1);
-            gap.setColor(Theme.multAlpha(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), 0.06f));
+            ThemeBind.backgroundColor(gap, ThemeBind.multAlpha(Theme.key_actionBarDefaultSubmenuItem, 0.06f), resourcesProvider);
             gap.setLayoutParams(LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
             previewMenu.addView(gap);
         }
@@ -468,7 +469,7 @@ public class ContentPreviewViewer {
         if (!showFullVotersList && (addVote || addUnvote)) {
             ActionBarPopupWindow.GapView gap = new ActionBarPopupWindow.GapView(previewMenu.getContext(), resourcesProvider);
             gap.setTag(R.id.fit_width_tag, 1);
-            gap.setColor(Theme.multAlpha(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), 0.06f));
+            ThemeBind.backgroundColor(gap, ThemeBind.multAlpha(Theme.key_actionBarDefaultSubmenuItem, 0.06f), resourcesProvider);
             gap.setLayoutParams(LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
             previewMenu.addView(gap);
         }
@@ -597,7 +598,7 @@ public class ContentPreviewViewer {
 
                 FrameLayout backContainer = new FrameLayout(containerView.getContext());
                 LinearLayout linearLayout = new LinearLayout(containerView.getContext());
-                linearLayout.setBackgroundColor(getThemedColor(Theme.key_actionBarDefaultSubmenuBackground));
+                ThemeBind.backgroundColor(linearLayout, Theme.key_actionBarDefaultSubmenuBackground, ContentPreviewViewer.this.resourcesProvider);
                 linearLayout.setOrientation(LinearLayout.VERTICAL);
                 RecyclerListView listView = createMyStickerPacksListView();
                 listView.setOnItemClickListener((view, position) -> {
@@ -675,27 +676,6 @@ public class ContentPreviewViewer {
                 previewMenu.addViewToSwipeBack(linearLayout);
                 backContainer.setOnClickListener(view -> previewMenu.getSwipeBack().closeForeground());
 
-//                popupWindow = new ActionBarPopupWindow(previewMenu, LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT) {
-//                    @Override
-//                    public void dismiss() {
-//                        super.dismiss();
-//                        popupWindow = null;
-//                        menuVisible = false;
-//                        if (closeOnDismiss) {
-//                            close();
-//                        }
-//                    }
-//                };
-//                popupWindow.setPauseNotifications(true);
-//                popupWindow.setDismissAnimationDuration(100);
-//                popupWindow.setScaleOut(true);
-//                popupWindow.setOutsideTouchable(false);
-//                popupWindow.setClippingEnabled(false);
-//                popupWindow.setAnimationStyle(R.style.PopupContextAnimation);
-//                popupWindow.setFocusable(false);
-//                previewMenu.measure(View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(1000), View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(1000), View.MeasureSpec.AT_MOST));
-//                popupWindow.setInputMethodMode(ActionBarPopupWindow.INPUT_METHOD_NOT_NEEDED);
-//                popupWindow.getContentView().setFocusableInTouchMode(true);
 
                 int insets = lastInsets.bottom + lastInsets.top;
                 int top = lastInsets.top;
@@ -703,7 +683,6 @@ public class ContentPreviewViewer {
                 int y = (int) (moveY + Math.max(size / 2 + top, (containerView.getHeight() - insets - keyboardHeight) / 2) + size / 2);
                 y += AndroidUtilities.dp(24 + 60);
                 containerView.addView(previewMenu, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, (float) (y / AndroidUtilities.density), 0, 0));
-//                popupWindow.showAtLocation(containerView, 0, x, y);
                 popupLayout = previewMenu;
                 popupLayout.setTranslationY(-dp(12));
                 popupLayout.setAlpha(0f);
@@ -777,7 +756,7 @@ public class ContentPreviewViewer {
                 if (currentStickerSet != null && currentDocument != null) {
                     final MediaDataController mediaDataController = MediaDataController.getInstance(currentAccount);
                     TLRPC.TL_messages_stickerSet stickerSet = mediaDataController.getStickerSet(currentStickerSet, true);
-                    if (stickerSet != null && /*stickerSet.set.creator && */!StickersAlert.DISABLE_STICKER_EDITOR) {
+                    if (stickerSet != null &&                               !StickersAlert.DISABLE_STICKER_EDITOR) {
                         if (delegate != null && delegate.canEditSticker() && !stickerSet.set.emojis && !stickerSet.set.masks) {
                             items.add(LocaleController.getString(R.string.EditSticker));
                             icons.add(R.drawable.msg_edit);
@@ -873,9 +852,8 @@ public class ContentPreviewViewer {
                     item.setTag(i);
                     item.setOnClickListener(onItemClickListener);
                     if (actions.get(i) == 8) {
-                        int redColor = getThemedColor(Theme.key_text_RedBold);
-                        item.setColors(redColor, redColor);
-                        item.setSelectorColor(Theme.multAlpha(redColor, .1f));
+                        item.setColorKeys(Theme.key_text_RedBold, Theme.key_text_RedBold);
+                        item.setSelectorColorKey(Theme.key_text_RedBold, .1f);
                     }
                 }
                 popupWindow = new ActionBarPopupWindow(previewMenu, LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT) {
@@ -1025,8 +1003,7 @@ public class ContentPreviewViewer {
                 for (int i = 0; i < items.size(); i++) {
                     ActionBarMenuSubItem item = ActionBarMenuItem.addItem(!hasVoteOptions && i == 0, i == items.size() - 1, previewMenu, icons.get(i), items.get(i), false, resourcesProvider);
                     if (actions.get(i) == 4) {
-                        item.setIconColor(getThemedColor(Theme.key_text_RedRegular));
-                        item.setTextColor(getThemedColor(Theme.key_text_RedBold));
+                        item.setColorKeys(Theme.key_text_RedBold, Theme.key_text_RedRegular);
                     }
                     item.setTag(i);
                     item.setOnClickListener(onItemClickListener);
@@ -1174,7 +1151,7 @@ public class ContentPreviewViewer {
                     item.setOnClickListener(onItemClickListener);
 
                     if (canDelete && i == items.size() - 1) {
-                        item.setColors(getThemedColor(Theme.key_text_RedBold), getThemedColor(Theme.key_text_RedRegular));
+                        item.setColorKeys(Theme.key_text_RedBold, Theme.key_text_RedRegular);
                     }
                 }
                 popupWindow = new ActionBarPopupWindow(previewMenu, LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT) {
@@ -1654,7 +1631,6 @@ public class ContentPreviewViewer {
                     listView.requestDisallowInterceptTouchEvent(true);
                     openPreviewRunnable = null;
                     setParentActivity(AndroidUtilities.findActivity(listView.getContext()));
-                    //setKeyboardHeight(height);
                     clearsInputField = false;
                     if (currentPreviewCell instanceof StickerEmojiCell) {
                         StickerEmojiCell stickerEmojiCell = (StickerEmojiCell) currentPreviewCell;

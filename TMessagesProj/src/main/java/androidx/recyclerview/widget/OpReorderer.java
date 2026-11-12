@@ -27,8 +27,6 @@ class OpReorderer {
     }
 
     void reorderOps(List<AdapterHelper.UpdateOp> ops) {
-        // since move operations breaks continuity, their effects on ADD/RM are hard to handle.
-        // we push them to the end of the list so that they can be handled easily.
         int badMove;
         while ((badMove = getLastMoveOutOfOrder(ops)) != -1) {
             swapMoveOp(ops, badMove, badMove + 1);
@@ -54,7 +52,6 @@ class OpReorderer {
     void swapMoveRemove(List<AdapterHelper.UpdateOp> list, int movePos, AdapterHelper.UpdateOp moveOp,
             int removePos, AdapterHelper.UpdateOp removeOp) {
         AdapterHelper.UpdateOp extraRm = null;
-        // check if move is nulled out by remove
         boolean revertedMove = false;
         final boolean moveIsBackwards;
 
@@ -72,11 +69,9 @@ class OpReorderer {
             }
         }
 
-        // going in reverse, first revert the effect of add
         if (moveOp.itemCount < removeOp.positionStart) {
             removeOp.positionStart--;
         } else if (moveOp.itemCount < removeOp.positionStart + removeOp.itemCount) {
-            // move is removed.
             removeOp.itemCount--;
             moveOp.cmd = AdapterHelper.UpdateOp.REMOVE;
             moveOp.itemCount = 1;
@@ -84,11 +79,9 @@ class OpReorderer {
                 list.remove(removePos);
                 mCallback.recycleUpdateOp(removeOp);
             }
-            // no need to swap, it is already a remove
             return;
         }
 
-        // now affect of add is consumed. now apply effect of first remove
         if (moveOp.positionStart <= removeOp.positionStart) {
             removeOp.positionStart++;
         } else if (moveOp.positionStart < removeOp.positionStart + removeOp.itemCount) {
@@ -98,7 +91,6 @@ class OpReorderer {
             removeOp.itemCount = moveOp.positionStart - removeOp.positionStart;
         }
 
-        // if effects of move is reverted by remove, we are done.
         if (revertedMove) {
             list.set(movePos, removeOp);
             list.remove(removePos);
@@ -106,7 +98,6 @@ class OpReorderer {
             return;
         }
 
-        // now find out the new locations for move actions
         if (moveIsBackwards) {
             if (extraRm != null) {
                 if (moveOp.positionStart > extraRm.positionStart) {
@@ -153,7 +144,6 @@ class OpReorderer {
     private void swapMoveAdd(List<AdapterHelper.UpdateOp> list, int move, AdapterHelper.UpdateOp moveOp, int add,
             AdapterHelper.UpdateOp addOp) {
         int offset = 0;
-        // going in reverse, first revert the effect of add
         if (moveOp.itemCount < addOp.positionStart) {
             offset--;
         }
@@ -175,15 +165,12 @@ class OpReorderer {
             AdapterHelper.UpdateOp updateOp) {
         AdapterHelper.UpdateOp extraUp1 = null;
         AdapterHelper.UpdateOp extraUp2 = null;
-        // going in reverse, first revert the effect of add
         if (moveOp.itemCount < updateOp.positionStart) {
             updateOp.positionStart--;
         } else if (moveOp.itemCount < updateOp.positionStart + updateOp.itemCount) {
-            // moved item is updated. add an update for it
             updateOp.itemCount--;
             extraUp1 = mCallback.obtainUpdateOp(AdapterHelper.UpdateOp.UPDATE, moveOp.positionStart, 1, updateOp.payload);
         }
-        // now affect of add is consumed. now apply effect of first remove
         if (moveOp.positionStart <= updateOp.positionStart) {
             updateOp.positionStart++;
         } else if (moveOp.positionStart < updateOp.positionStart + updateOp.itemCount) {

@@ -88,9 +88,6 @@ public class ProfileGiftsView extends View implements NotificationCenter.Notific
     private float actionBarProgress;
 
     public void setActionBarActionMode(float progress) {
-//        if (Theme.isCurrentThemeDark()) {
-//            return;
-//        }
         actionBarProgress = progress;
         invalidate();
     }
@@ -133,7 +130,7 @@ public class ProfileGiftsView extends View implements NotificationCenter.Notific
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.starUserGiftsLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.starUserGiftsLoaded);
 
         for (Gift gift : gifts) {
             gift.emojiDrawable.addView(this);
@@ -413,32 +410,32 @@ public class ProfileGiftsView extends View implements NotificationCenter.Notific
             float delayValue;
 
             switch (gift.position) {
-                case 0: // left
+                case 0:
                     gx = acx / 2f - (dp(20) * expandScale);
                     gy = acy - dp(13);
                     delayValue = 1.6f;
                     break;
-                case 1: // top left
+                case 1:
                     gx = acx * 2f / 3f - (dp(6) * expandScale);
                     gy = ay - dp(4);
                     delayValue = 0;
                     break;
-                case 2: // bottom left
+                case 2:
                     gx = acx * 2f / 3f - (dp(12) * expandScale);
                     gy = ay + ah - dp(16);
                     delayValue = 0.9f;
                     break;
-                case 3: // right
+                case 3:
                     gx = acx * 1.5f + (dp(20) * expandScale);
                     gy = acy - dp(13);
                     delayValue = 1.6f;
                     break;
-                case 4: // top right
+                case 4:
                     gx = acx * 4f / 3f + (dp(12) * expandScale);
                     gy = ay - dp(4);
                     delayValue = 0.9f;
                     break;
-                default: // bottom right
+                default:
                     gx = acx * 4f / 3f + (dp(12) * expandScale);
                     gy = ay + ah - dp(16);
                     delayValue = 0;

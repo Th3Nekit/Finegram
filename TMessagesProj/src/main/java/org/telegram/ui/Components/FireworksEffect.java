@@ -154,7 +154,7 @@ public class FireworksEffect {
                 newParticle.currentTime = 0;
 
                 newParticle.scale = Math.max(1.0f, Utilities.random.nextFloat() * 1.5f);
-                newParticle.type = 0;//Utilities.random.nextInt(2);
+                newParticle.type = 0;
 
                 newParticle.lifeTime = 1000 + Utilities.random.nextInt(1000);
                 newParticle.velocity = 20.0f + Utilities.random.nextFloat() * 4.0f;

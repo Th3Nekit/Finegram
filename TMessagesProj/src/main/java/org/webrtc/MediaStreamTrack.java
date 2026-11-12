@@ -12,12 +12,10 @@ package org.webrtc;
 
 import androidx.annotation.Nullable;
 
-/** Java wrapper for a C++ MediaStreamTrackInterface. */
 public class MediaStreamTrack {
   public static final String AUDIO_TRACK_KIND = "audio";
   public static final String VIDEO_TRACK_KIND = "video";
 
-  /** Tracks MediaStreamTrackInterface.TrackState */
   public enum State {
     LIVE,
     ENDED;
@@ -28,7 +26,6 @@ public class MediaStreamTrack {
     }
   }
 
-  // Must be kept in sync with cricket::MediaType.
   public enum MediaType {
     MEDIA_TYPE_AUDIO(0),
     MEDIA_TYPE_VIDEO(1);
@@ -55,7 +52,6 @@ public class MediaStreamTrack {
     }
   }
 
-  /** Factory method to create an AudioTrack or VideoTrack subclass. */
   static @Nullable MediaStreamTrack createMediaStreamTrack(long nativeTrack) {
     if (nativeTrack == 0) {
       return null;

@@ -78,7 +78,6 @@ final class WalletSendParticles {
     void sent(float x, float y) {
         clear();
         float d = AndroidUtilities.density;
-        // Stagger matched left/right streams so the burst flows out of the gem.
         for (int i = 0; i < 48; i++) {
             for (int direction = -1; direction <= 1; direction += 2) {
                 float angle = (direction < 0 ? (float) Math.PI : 0f) + pick(-.6f, .6f);

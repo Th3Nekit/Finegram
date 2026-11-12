@@ -10,13 +10,6 @@ import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Workaround when using [android.graphics.CornerPathEffect] with a path based on rectangles.
- * [closeRects] must be called when all rects are added.
- *
- * In Android 14, [android.graphics.CornerPathEffect] does not smooth out the lines between intersecting rectangles.
- * https://issuetracker.google.com/issues/318612129
- */
 public class CornerPath extends Path {
 
     private static ArrayList<RectF> recycled;
@@ -152,7 +145,6 @@ public class CornerPath extends Path {
                 continue;
             }
             if (prev.bottom + paddingY < current.top - paddingY || prev.left > current.right || prev.right < current.left) {
-                // end of the current contour
                 hasGap = true;
                 lastContourIndex = i;
                 break;

@@ -90,7 +90,7 @@ public class ReplaceAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         if (singleton == null) {
           singleton = entry;
         } else {
-          throw new IllegalStateException(); // Should be always either 0, or 1.
+          throw new IllegalStateException();
         }
       }
     }

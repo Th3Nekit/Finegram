@@ -1,9 +1,5 @@
 package org.telegram.ui.QrShare;
 
-/**
- * The collectible gift backdrops of the palette: name, centre, edge, pattern, light accent (text). The server palette
- * ({@link #apply}) replaces the built-in table, which is kept for a palette that has never been loaded.
- */
 final class Backdrops {
     static String[] NAMES = {
         "Rosewood", "Carmine", "Fire Engine", "Seal Brown", "Chestnut", "Coral Red", "Strawberry", "Chocolate", "Mystic Pearl", "Burnt Sienna", "Tomato", "Cappuccino", "Copper", "Carrot Juice", "Persimmon", "Desert Sand", "Orange", "Caramel", "Old Gold", "Mustard", "Satin Gold", "Amber", "Pure Gold", "Light Olive", "Khaki Green", "Lemongrass", "Malachite", "Camo Green", "Pistachio", "Shamrock Green", "Dark Green", "Ranger Green", "Hunter Green", "Mint Green", "Emerald", "Pine Green", "Gunship Green", "Pacific Green", "Tactical Pine", "Jade Green", "Aquamarine", "Pacific Cyan", "Deep Cyan", "Turquoise", "Moonstone", "Sky Blue", "Azure Blue", "Gunmetal", "Celtic Blue", "Sapphire", "Silver Blue", "Indigo Dye", "French Blue", "Navy Blue", "Cobalt Blue", "Marine Blue", "Midnight Blue", "Neon Blue", "Cyberpunk", "Electric Indigo", "Lavender", "Grape", "French Violet", "English Violet", "Purple", "Electric Purple", "Dark Lilac", "Fandango", "Mexican Pink", "Burgundy", "Raspberry", "Black", "Onyx Black", "Rifle Green", "Battleship Grey", "Feldgrau", "Steel Grey", "Roman Silver", "Platinum", "Ivory White"
@@ -20,11 +16,6 @@ final class Backdrops {
     static int[] TEXT = {
         0xFFEDCACD, 0xFFFFB7AD, 0xFFFFB7A6, 0xFFD4BCB5, 0xFFFEC6B9, 0xFFFFD9D2, 0xFFFFD3D3, 0xFFE4B6AC, 0xFFFEDDE0, 0xFFFFCCB0, 0xFFFFCCBD, 0xFF4A3226, 0xFFF4D8BE, 0xFFFFD7CA, 0xFFFFE4D7, 0xFFF2E5CD, 0xFFFFE1C3, 0xFFFFD9B3, 0xFFFFDD8C, 0xFFFFDE9C, 0xFFFEE4A9, 0xFFFFEDC7, 0xFFFFE5AB, 0xFFF5EBBC, 0xFFD3E6BB, 0xFFD8F2C2, 0xFFC2EFBE, 0xFFCFE8B9, 0xFFD9F2C9, 0xFFD5FBC8, 0xFFBFD1A9, 0xFFB7C4B5, 0xFFD8F5DE, 0xFFBDFFCC, 0xFFB9F9D9, 0xFFD8F5E5, 0xFFB5E0D4, 0xFFC6FFF0, 0xFFB7E6D3, 0xFFBEFEE7, 0xFFC7FDFE, 0xFFB6EFFF, 0xFFD1FFFD, 0xFFBDF8F2, 0xFFDAF5FD, 0xFFCDE8FD, 0xFFB5ECFF, 0xFFB6C5CC, 0xFFC2E7FF, 0xFFC1DEFF, 0xFFC9E4F4, 0xFFC2DCEE, 0xFFC1E3F9, 0xFFD3E1FF, 0xFFC2D3F5, 0xFFBBCBF2, 0xFFBFCCE0, 0xFFCFDDFF, 0xFFE0D9FF, 0xFFD8D8FF, 0xFFE8D1FF, 0xFFE0BDFE, 0xFFEBC7FF, 0xFFE6C7ED, 0xFFF3CBF3, 0xFFEBCEFF, 0xFFF0C4E2, 0xFFFFC7EB, 0xFFFFD6E6, 0xFFE7BCC0, 0xFFFFD6E6, 0xFF8C8F91, 0xFF9EA1A2, 0xFFC3C7BD, 0xFFCFCEC4, 0xFFDEE9E1, 0xFFDFE4E8, 0xFFDADFE2, 0xFFE9E7E2, 0xFFF5F4F2
     };
-    /**
-     * Swatch order: a monochrome first row (Black, Onyx Black, Gunmetal, Midnight Blue, Steel Grey, Roman Silver),
-     * then saturated colours by hue (red → pink), then muted ones by hue, then the dark greens, browns and greys
-     * (computed from the centre colours: OKLCH hue; chroma ≥ 0.11 = saturated; L < 0.55, browns or chroma < 0.03 = last).
-     */
     static final String[] SKETCH_ORDER = {
         "Black", "Onyx Black", "Gunmetal", "Midnight Blue", "Steel Grey", "Roman Silver", "Raspberry", "Carmine", "Fire Engine", "Burnt Sienna",
         "Tomato", "Copper", "Persimmon", "Orange", "Caramel", "Mustard", "Old Gold", "Satin Gold", "Amber", "Pure Gold",
@@ -37,15 +28,11 @@ final class Backdrops {
     };
     static int[] ORDER;
 
-    /** Server ids of the backdrops, null while the built-in table is in use. */
     static int[] IDS;
 
-    /** The default backdrop: shown without a theme, saved as the default theme. */
     static final String DEFAULT_NAME = "Black";
-    /** The backdrop drawn with the screen's own tuned colours instead of the table's. */
     static final String TUNED_NAME = "Neon Blue";
 
-    /** Index of the backdrop with the name, -1 if there is none. */
     static int indexOfName(String name) {
         for (int i = 0; i < NAMES.length; ++i) {
             if (name.equals(NAMES[i])) {
@@ -55,10 +42,6 @@ final class Backdrops {
         return -1;
     }
 
-    /**
-     * Uses the server palette (its colours and ids), shown in the server's order. A palette without the default backdrop
-     * is not taken, the screen needs it as its default.
-     */
     static boolean apply(java.util.List<org.telegram.tgnet.TLRPC.TL_shareThemeBackdropOption> list) {
         if (list == null || list.isEmpty()) {
             return false;
@@ -88,12 +71,11 @@ final class Backdrops {
             TEXT[i] = o.text_color | 0xFF000000;
             IDS[i] = o.backdrop_id;
         }
-        ORDER = null; // the swatch order is rebuilt for these names (see orderToIndex)
+        ORDER = null;
         QrShareView.onBackdropsChanged(defaultIndex, indexOfName(TUNED_NAME));
         return true;
     }
 
-    /** Index of the backdrop with the server id, -1 if there is none. */
     static int indexOfId(int id) {
         if (IDS == null) {
             return -1;
@@ -106,10 +88,6 @@ final class Backdrops {
         return -1;
     }
 
-    /**
-     * The backdrop of swatch k: the server palette in the server's own order (it is fixed there, no sorting); the
-     * built-in table in SKETCH_ORDER (its names first, in that order, then the others).
-     */
     static int orderToIndex(int k) {
         if (IDS != null) {
             return k;

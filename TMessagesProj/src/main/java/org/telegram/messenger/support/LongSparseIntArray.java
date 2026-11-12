@@ -8,45 +8,16 @@
 
 package org.telegram.messenger.support;
 
-/**
- * SparseLongArrays map integers to longs.  Unlike a normal array of longs,
- * there can be gaps in the indices.  It is intended to be more memory efficient
- * than using a HashMap to map Integers to Longs, both because it avoids
- * auto-boxing keys and values and its data structure doesn't rely on an extra entry object
- * for each mapping.
- *
- * <p>Note that this container keeps its mappings in an array data structure,
- * using a binary search to find keys.  The implementation is not intended to be appropriate for
- * data structures
- * that may contain large numbers of items.  It is generally slower than a traditional
- * HashMap, since lookups require a binary search and adds and removes require inserting
- * and deleting entries in the array.  For containers holding up to hundreds of items,
- * the performance difference is not significant, less than 50%.</p>
- *
- * <p>It is possible to iterate over the items in this container using
- * {@link #keyAt(int)} and {@link #valueAt(int)}. Iterating over the keys using
- * <code>keyAt(int)</code> with ascending values of the index will return the
- * keys in ascending order, or the values corresponding to the keys in ascending
- * order in the case of <code>valueAt(int)</code>.</p>
- */
 public class LongSparseIntArray implements Cloneable {
 
     private long[] mKeys;
     private int[] mValues;
     private int mSize;
 
-    /**
-     * Creates a new SparseLongArray containing no mappings.
-     */
     public LongSparseIntArray() {
         this(10);
     }
 
-    /**
-     * Creates a new SparseLongArray containing no mappings that will not
-     * require any additional memory allocation to store the specified
-     * number of mappings.
-     */
     public LongSparseIntArray(int initialCapacity) {
         initialCapacity = ArrayUtils.idealLongArraySize(initialCapacity);
 
@@ -63,23 +34,14 @@ public class LongSparseIntArray implements Cloneable {
             clone.mKeys = mKeys.clone();
             clone.mValues = mValues.clone();
         } catch (CloneNotSupportedException cnse) {
-            /* ignore */
         }
         return clone;
     }
 
-    /**
-     * Gets the long mapped from the specified key, or <code>0</code>
-     * if no such mapping has been made.
-     */
     public int get(long key) {
         return get(key, 0);
     }
 
-    /**
-     * Gets the long mapped from the specified key, or the specified value
-     * if no such mapping has been made.
-     */
     public int get(long key, int valueIfKeyNotFound) {
         int i = binarySearch(mKeys, 0, mSize, key);
 
@@ -90,9 +52,6 @@ public class LongSparseIntArray implements Cloneable {
         }
     }
 
-    /**
-     * Removes the mapping from the specified key, if there was any.
-     */
     public void delete(long key) {
         int i = binarySearch(mKeys, 0, mSize, key);
 
@@ -101,20 +60,12 @@ public class LongSparseIntArray implements Cloneable {
         }
     }
 
-    /**
-     * Removes the mapping at the given index.
-     */
     public void removeAt(int index) {
         System.arraycopy(mKeys, index + 1, mKeys, index, mSize - (index + 1));
         System.arraycopy(mValues, index + 1, mValues, index, mSize - (index + 1));
         mSize--;
     }
 
-    /**
-     * Adds a mapping from the specified key to the specified value,
-     * replacing the previous mapping from the specified key if there
-     * was one.
-     */
     public void put(long key, int value) {
         int i = binarySearch(mKeys, 0, mSize, key);
 
@@ -138,49 +89,22 @@ public class LongSparseIntArray implements Cloneable {
         }
     }
 
-    /**
-     * Returns the number of key-value mappings that this SparseIntArray
-     * currently stores.
-     */
     public int size() {
         return mSize;
     }
 
-    /**
-     * Given an index in the range <code>0...size()-1</code>, returns
-     * the key from the <code>index</code>th key-value mapping that this
-     * SparseLongArray stores.
-     */
     public long keyAt(int index) {
         return mKeys[index];
     }
 
-    /**
-     * Given an index in the range <code>0...size()-1</code>, returns
-     * the value from the <code>index</code>th key-value mapping that this
-     * SparseLongArray stores.
-     */
     public int valueAt(int index) {
         return mValues[index];
     }
 
-    /**
-     * Returns the index for which {@link #keyAt} would return the
-     * specified key, or a negative number if the specified
-     * key is not mapped.
-     */
     public int indexOfKey(long key) {
         return binarySearch(mKeys, 0, mSize, key);
     }
 
-    /**
-     * Returns an index for which {@link #valueAt} would return the
-     * specified key, or a negative number if no keys map to the
-     * specified value.
-     * Beware that this is a linear search, unlike lookups by key,
-     * and that multiple keys can map to the same value and this will
-     * find only one of them.
-     */
     public int indexOfValue(long value) {
         for (int i = 0; i < mSize; i++)
             if (mValues[i] == value)
@@ -189,17 +113,10 @@ public class LongSparseIntArray implements Cloneable {
         return -1;
     }
 
-    /**
-     * Removes all key-value mappings from this SparseIntArray.
-     */
     public void clear() {
         mSize = 0;
     }
 
-    /**
-     * Puts a key/value pair into the array, optimizing for the case where
-     * the key is greater than all existing keys in the array.
-     */
     public void append(long key, int value) {
         if (mSize != 0 && key <= mKeys[mSize - 1]) {
             put(key, value);

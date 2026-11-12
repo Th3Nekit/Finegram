@@ -83,6 +83,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Components.AnimationProperties;
 import org.telegram.ui.Components.CubicBezierInterpolator;
@@ -94,6 +95,7 @@ import org.telegram.ui.Components.URLSpanNoUnderline;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class CameraScanActivity extends BaseFragment {
 
@@ -144,7 +146,7 @@ public class CameraScanActivity extends BaseFragment {
     private int recognizeIndex = 0;
     private String recognizedText;
 
-    private int sps; // samples per second (when already recognized)
+    private int sps;
 
     private boolean qrLoading = false;
     private boolean qrLoaded = false;
@@ -331,6 +333,10 @@ public class CameraScanActivity extends BaseFragment {
             actionBar.setItemsColor(0xffffffff, false);
             actionBar.setItemsBackgroundColor(0xffffffff, false);
             actionBar.setTitleColor(0xffffffff);
+        } else if (currentType == TYPE_MRZ) {
+            ThemeBind.actionBarItemsColor(actionBar, Theme.key_windowBackgroundWhiteGrayText2, false);
+            ThemeBind.actionBarItemsBackgroundColor(actionBar, Theme.key_actionBarWhiteSelector, false);
+            ThemeBind.actionBarTitleColor(actionBar, Theme.key_actionBarDefaultTitle);
         } else {
             actionBar.setItemsColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2), false);
             actionBar.setItemsBackgroundColor(Theme.getColor(Theme.key_actionBarWhiteSelector), false);
@@ -452,16 +458,6 @@ public class CameraScanActivity extends BaseFragment {
                         cx = (int) (child.getWidth() * bounds.centerX()),
                         cy = (int) (child.getHeight() * bounds.centerY());
 
-//                    PointF[] points = getPoints();
-//                    path.rewind();
-//                    for (int i = 0; i < points.length; ++i) {
-//                        float x = child.getWidth() * points[i].x;
-//                        float y = child.getHeight() * points[i].y;
-//                        if (i == 0) path.moveTo(x, y);
-//                        else path.lineTo(x, y);
-//                    }
-//                    Theme.DEBUG_RED.setAlpha(40);
-//                    canvas.drawPath(path, Theme.DEBUG_RED);
 
                     sizex *= (.5f + qrAppearingValue * .5f);
                     sizey *= (.5f + qrAppearingValue * .5f);
@@ -534,8 +530,8 @@ public class CameraScanActivity extends BaseFragment {
         }
 
         if (currentType == TYPE_MRZ) {
-            actionBar.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-            fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            ThemeBind.backgroundColor(actionBar, Theme.key_windowBackgroundWhite);
+            ThemeBind.backgroundColor(fragmentView, Theme.key_windowBackgroundWhite);
         } else {
             actionBar.setBackgroundDrawable(null);
             actionBar.setAddToContainer(false);
@@ -639,7 +635,11 @@ public class CameraScanActivity extends BaseFragment {
         viewGroup.addView(titleTextView);
 
         descriptionText = new TextView(context);
-        descriptionText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText6));
+        if (currentType == TYPE_QR_WEB_BOT) {
+            descriptionText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText6));
+        } else {
+            ThemeBind.textColor(descriptionText, Theme.key_windowBackgroundWhiteGrayText6);
+        }
         descriptionText.setGravity(Gravity.CENTER_HORIZONTAL);
         descriptionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         viewGroup.addView(descriptionText);
@@ -652,11 +652,10 @@ public class CameraScanActivity extends BaseFragment {
         if (currentType == TYPE_MRZ) {
             titleTextView.setText(LocaleController.getString(R.string.PassportScanPassport));
             descriptionText.setText(LocaleController.getString(R.string.PassportScanPassportInfo));
-            titleTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            ThemeBind.textColor(titleTextView, Theme.key_windowBackgroundWhiteBlackText);
             recognizedMrzView.setTypeface(Typeface.MONOSPACE);
         } else {
             if (needGalleryButton) {
-                //titleTextView.setText(LocaleController.getString(R.string.WalletScanCode));
                 if (currentType == TYPE_QR_UNIVERSAL) {
                     titleTextView.setText("");
                 }
@@ -704,7 +703,6 @@ public class CameraScanActivity extends BaseFragment {
             recognizedMrzView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             recognizedMrzView.setPadding(dp(10), 0, dp(10), dp(10));
             if (needGalleryButton) {
-                //recognizedMrzView.setText(LocaleController.getString(R.string.WalletScanCodeNotFound));
             } else {
                 recognizedMrzView.setText(LocaleController.getString(R.string.AuthAnotherClientNotFound));
             }
@@ -936,7 +934,6 @@ public class CameraScanActivity extends BaseFragment {
         }
         final long now = SystemClock.elapsedRealtime();
         if (lastBoundsUpdate == 0) {
-            // first update = set
             lastBoundsUpdate = now - boundsUpdateDuration;
             bounds.set(newBounds);
             fromBounds.set(newBounds);
@@ -950,7 +947,6 @@ public class CameraScanActivity extends BaseFragment {
                 }
             }
         } else {
-            // next updates = interpolate
             if (fromBounds != null && now - lastBoundsUpdate < boundsUpdateDuration) {
                 float t = (now - lastBoundsUpdate) / (float) boundsUpdateDuration;
                 t = Math.min(1, Math.max(0, t));
@@ -1185,9 +1181,9 @@ public class CameraScanActivity extends BaseFragment {
                     }
                 }
 
-                if (( // finish because...
-                      (recognizeIndex == 0 && res != null && res.bounds == null && !qrLoading) || // first recognition doesn't have bounds
-                      (SystemClock.elapsedRealtime() - recognizedStart > 1000 && !qrLoading) // got more than 1 second and nothing is loading
+                if ((
+                      (recognizeIndex == 0 && res != null && res.bounds == null && !qrLoading) ||
+                      (SystemClock.elapsedRealtime() - recognizedStart > 1000 && !qrLoading)
                     ) && recognizedText != null) {
                     if (cameraView != null && cameraView.getCameraSession() != null && currentType != TYPE_QR_WEB_BOT) {
                         CameraController.getInstance().stopPreview(cameraView.getCameraSession());
@@ -1447,11 +1443,7 @@ public class CameraScanActivity extends BaseFragment {
             return themeDescriptions;
         }
 
-        themeDescriptions.add(new ThemeDescription(fragmentView, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundWhite));
 
-        themeDescriptions.add(new ThemeDescription(actionBar, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundWhite));
-        themeDescriptions.add(new ThemeDescription(actionBar, ThemeDescription.FLAG_AB_ITEMSCOLOR, null, null, null, null, Theme.key_windowBackgroundWhiteGrayText2));
-        themeDescriptions.add(new ThemeDescription(actionBar, ThemeDescription.FLAG_AB_SELECTORCOLOR, null, null, null, null, Theme.key_actionBarWhiteSelector));
 
         themeDescriptions.add(new ThemeDescription(titleTextView, ThemeDescription.FLAG_AB_SELECTORCOLOR, null, null, null, null, Theme.key_windowBackgroundWhiteBlackText));
         themeDescriptions.add(new ThemeDescription(descriptionText, ThemeDescription.FLAG_AB_SELECTORCOLOR, null, null, null, null, Theme.key_windowBackgroundWhiteGrayText6));

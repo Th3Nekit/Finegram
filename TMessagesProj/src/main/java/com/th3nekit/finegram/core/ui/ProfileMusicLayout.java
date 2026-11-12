@@ -8,27 +8,27 @@ public final class ProfileMusicLayout {
     public final float progressLeft, progressRight, progressY;
 
     public static float height(float fontScale) {
-        return 52f + Math.max(52f, 40f * Math.max(1f, fontScale) + 3f);
+        return 56f + Math.max(64f, 40f * Math.max(1f, fontScale) + 4f);
     }
 
     public ProfileMusicLayout(float width, float fontScale, boolean rtl) {
         height = height(fontScale);
         float scale = Math.max(1f, fontScale);
-        coverSize = 52f;
+        coverSize = 64f;
         coverLeft = mirror(30f, coverSize, width, rtl);
         titleHeight = 22f * scale;
         authorHeight = 18f * scale;
-        float mainHeight = Math.max(coverSize, titleHeight + 3f + authorHeight);
+        float mainHeight = Math.max(coverSize, titleHeight + 4f + authorHeight);
         coverTop = 22f + (mainHeight - coverSize) / 2f;
-        titleTop = 22f + (mainHeight - titleHeight - 3f - authorHeight) / 2f;
-        authorTop = titleTop + titleHeight + 3f;
-        textWidth = Math.max(0f, width - 182f);
-        textLeft = mirror(94f, textWidth, width, rtl);
+        titleTop = 22f + (mainHeight - titleHeight - 4f - authorHeight) / 2f;
+        authorTop = titleTop + titleHeight + 4f;
+        textWidth = Math.max(0f, width - 200f);
+        textLeft = mirror(110f, textWidth, width, rtl);
         buttonLeft = mirror(width - 78f, 48f, width, rtl);
         buttonTop = 22f + (mainHeight - 48f) / 2f;
-        progressLeft = 16f;
-        progressRight = width - 16f;
-        progressY = height - 9f;
+        progressLeft = 30f;
+        progressRight = width - 30f;
+        progressY = height - 21f;
     }
 
     private static float mirror(float left, float size, float width, boolean rtl) {

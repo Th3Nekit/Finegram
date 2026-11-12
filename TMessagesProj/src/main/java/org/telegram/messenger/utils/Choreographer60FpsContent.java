@@ -11,9 +11,6 @@ import androidx.annotation.Nullable;
 
 import org.telegram.messenger.BuildConfig;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import me.vkryl.core.reference.ReferenceList;
 import com.th3nekit.finegram.core.FinegramLogger;
 
@@ -37,13 +34,18 @@ public final class Choreographer60FpsContent implements Choreographer.FrameCallb
 
     private final Choreographer mChoreographer = Choreographer.getInstance();
 
-    private final Set<FrameCallback> mOneShot = new LinkedHashSet<>();
-
     private final SparseArray<CallbackGroup> mGroups = new SparseArray<>();
 
     private final ReferenceList<Drawable> mDrawablesToInvalidate      = new ReferenceList<>();
     private final ReferenceList<Drawable> mDrawablesToInvalidate30fps = new ReferenceList<>();
     private final ReferenceList<View>     mViewsToInvalidate          = new ReferenceList<>();
+
+    private final java.util.LinkedHashSet<FrameCallback> mOneShot = new java.util.LinkedHashSet<>();
+
+    public void post(FrameCallback callback) {
+        checkMainThread();
+        if (callback != null) mOneShot.add(callback);
+    }
 
     private long mAccumulatedNs;
 
@@ -54,11 +56,6 @@ public final class Choreographer60FpsContent implements Choreographer.FrameCallb
     public interface FrameCallback {
 
         void doFrame(long frameTimeNanos);
-    }
-
-    public void post(FrameCallback callback) {
-        checkMainThread();
-        mOneShot.add(callback);
     }
 
     public void postInvalidateDrawable(Drawable drawable) {
@@ -197,7 +194,9 @@ public final class Choreographer60FpsContent implements Choreographer.FrameCallb
                 }
             }
 
-            for (FrameCallback cb : mOneShot) {
+            FrameCallback[] pending = mOneShot.toArray(new FrameCallback[0]);
+            mOneShot.clear();
+            for (FrameCallback cb : pending) {
                 safeDoFrame(cb, frameTimeNanos);
             }
 
@@ -217,7 +216,6 @@ public final class Choreographer60FpsContent implements Choreographer.FrameCallb
         } finally {
             mViewsToInvalidate.clear();
             mDrawablesToInvalidate.clear();
-            mOneShot.clear();
             mCounter++;
             if (mCounter == TARGET_FPS) {
                 mCounter = 0;

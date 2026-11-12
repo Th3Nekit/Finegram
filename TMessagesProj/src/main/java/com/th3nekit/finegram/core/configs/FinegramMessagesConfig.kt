@@ -209,6 +209,7 @@ object FinegramMessagesConfig {
     var quoteHeader by sharedPreferences.boolean("FG_QuoteHeader", false)
 
     var forwardWithoutCaption by sharedPreferences.boolean("FG_ForwardWoCaption", false)
+    var editSideButton by sharedPreferences.boolean("FG_EditSideButton", false)
 
     var getCustomReactions by sharedPreferences.boolean("FG_GetCustomReactions", false)
 

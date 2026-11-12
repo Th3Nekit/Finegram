@@ -36,10 +36,6 @@ import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Glass panel with profile colors for the QR screen.
- * It morphs out of a source rect (the bottom buttons group) via {@link #setMorph}.
- */
 public class QrColorsPanel extends FrameLayout {
 
     public interface Delegate {
@@ -99,9 +95,7 @@ public class QrColorsPanel extends FrameLayout {
         addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP, 0, HEADER_HEIGHT_DP, 0, 0));
     }
 
-    /* Public API */
 
-    /** The glass has to be created for this view, so that it tracks the view position. */
     public void setGlass(BlurredBackgroundDrawable glass) {
         this.glass = glass;
         invalidate();
@@ -132,7 +126,6 @@ public class QrColorsPanel extends FrameLayout {
         }
     }
 
-    /** Height the panel needs to show all rows, limited by {@code maxHeight}. */
     public int getPreferredHeight(int bottomInset, int maxHeight) {
         final int rows = (colors.size() + COLUMNS - 1) / COLUMNS;
         final int height = dp(HEADER_HEIGHT_DP + 12) + rows * dp(ROW_HEIGHT_DP) + bottomInset;
@@ -143,10 +136,6 @@ public class QrColorsPanel extends FrameLayout {
         listView.setPadding(dp(SIDE_PADDING_DP), 0, dp(SIDE_PADDING_DP), bottomInset + dp(12));
     }
 
-    /**
-     * @param from rect in this view coordinates the panel grows from
-     * @param progress 0 = collapsed into {@code from}, 1 = fully opened
-     */
     public void setMorph(RectF from, float fromRadius, float progress) {
         this.fromRect.set(from);
         this.fromRadius = fromRadius;
@@ -158,7 +147,6 @@ public class QrColorsPanel extends FrameLayout {
         invalidate();
     }
 
-    /* Drawing */
 
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
@@ -188,11 +176,9 @@ public class QrColorsPanel extends FrameLayout {
             return false;
         }
         super.dispatchTouchEvent(ev);
-        // touches inside the panel never fall through to the dismiss area
         return true;
     }
 
-    /* List */
 
     private class Adapter extends RecyclerListView.SelectionAdapter {
 

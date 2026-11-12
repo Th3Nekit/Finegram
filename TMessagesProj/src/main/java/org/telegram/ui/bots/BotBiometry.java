@@ -222,11 +222,6 @@ public class BotBiometry {
             @Override
             public void onAuthenticationFailed() {
                 FileLog.d("BotBiometry onAuthenticationFailed");
-//                if (callback != null) {
-//                    Utilities.Callback<BiometricPrompt.AuthenticationResult> thisCallback = callback;
-//                    callback = null;
-//                    thisCallback.run(null);
-//                }
             }
         });
     }

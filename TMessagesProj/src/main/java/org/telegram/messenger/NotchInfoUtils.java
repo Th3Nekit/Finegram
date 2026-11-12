@@ -106,7 +106,6 @@ public class NotchInfoUtils {
 
             info.gravity = gravity;
             info.rawPath = spec;
-            // Only curved is accurate, otherwise it's REALLY likely to be just a square/rectangle
             info.isAccurate = spec.contains("C") || spec.contains("S") || spec.contains("Q");
             info.isLikelyCircle = bounds.width() <= dp(32) || bounds.width() <= bounds.height();
 

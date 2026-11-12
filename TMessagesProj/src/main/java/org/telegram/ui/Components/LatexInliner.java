@@ -4,28 +4,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/**
- * Converts a LaTeX (math) source string into a compact, readable single-line
- * preview using Unicode where possible. This is intentionally lossy: it is meant
- * for inline previews, not faithful rendering. When there is no good Unicode
- * representation, things degrade to a plain function-like form, e.g. sqrt(x).
- */
 public class LatexInliner {
 
-    // \command -> unicode symbol
     private static final HashMap<String, String> SYMBOLS = new HashMap<>();
-    // \command that should keep its name (with parentheses preserved), e.g. \sin -> sin
     private static final HashSet<String> FUNCTIONS = new HashSet<>();
-    // wrappers whose content is kept but the command itself dropped
     private static final HashSet<String> KEEP_CONTENT = new HashSet<>();
-    // per-character maps for ^ and _
     private static final HashMap<Character, Character> SUPER = new HashMap<>();
     private static final HashMap<Character, Character> SUB = new HashMap<>();
-    // \mathbb letters that exist as single BMP codepoints
     private static final HashMap<Character, Character> BLACKBOARD = new HashMap<>();
 
-    // lazily populated on first inlineLatex() call so the (large) tables cost
-    // nothing at app startup unless LaTeX is actually inlined.
     private static volatile boolean initialized;
 
     private static void ensureInit() {
@@ -42,7 +29,6 @@ public class LatexInliner {
     }
 
     private static void buildTables() {
-        // --- lowercase greek ---
         SYMBOLS.put("alpha", "α"); SYMBOLS.put("beta", "β"); SYMBOLS.put("gamma", "γ");
         SYMBOLS.put("delta", "δ"); SYMBOLS.put("epsilon", "ε"); SYMBOLS.put("varepsilon", "ε");
         SYMBOLS.put("zeta", "ζ"); SYMBOLS.put("eta", "η"); SYMBOLS.put("theta", "θ");
@@ -53,13 +39,11 @@ public class LatexInliner {
         SYMBOLS.put("sigma", "σ"); SYMBOLS.put("varsigma", "ς"); SYMBOLS.put("tau", "τ");
         SYMBOLS.put("upsilon", "υ"); SYMBOLS.put("phi", "φ"); SYMBOLS.put("varphi", "ϕ");
         SYMBOLS.put("chi", "χ"); SYMBOLS.put("psi", "ψ"); SYMBOLS.put("omega", "ω");
-        // --- uppercase greek ---
         SYMBOLS.put("Gamma", "Γ"); SYMBOLS.put("Delta", "Δ"); SYMBOLS.put("Theta", "Θ");
         SYMBOLS.put("Lambda", "Λ"); SYMBOLS.put("Xi", "Ξ"); SYMBOLS.put("Pi", "Π");
         SYMBOLS.put("Sigma", "Σ"); SYMBOLS.put("Upsilon", "Υ"); SYMBOLS.put("Phi", "Φ");
         SYMBOLS.put("Psi", "Ψ"); SYMBOLS.put("Omega", "Ω");
 
-        // --- operators / relations ---
         SYMBOLS.put("times", "×"); SYMBOLS.put("div", "÷"); SYMBOLS.put("pm", "±");
         SYMBOLS.put("mp", "∓"); SYMBOLS.put("cdot", "·"); SYMBOLS.put("ast", "∗");
         SYMBOLS.put("star", "⋆"); SYMBOLS.put("circ", "∘"); SYMBOLS.put("bullet", "•");
@@ -70,13 +54,11 @@ public class LatexInliner {
         SYMBOLS.put("simeq", "≃"); SYMBOLS.put("cong", "≅"); SYMBOLS.put("propto", "∝");
         SYMBOLS.put("ll", "≪"); SYMBOLS.put("gg", "≫"); SYMBOLS.put("doteq", "≐");
 
-        // --- big operators ---
         SYMBOLS.put("sum", "∑"); SYMBOLS.put("prod", "∏"); SYMBOLS.put("coprod", "∐");
         SYMBOLS.put("int", "∫"); SYMBOLS.put("iint", "∬"); SYMBOLS.put("iiint", "∭");
         SYMBOLS.put("oint", "∮"); SYMBOLS.put("bigcup", "⋃"); SYMBOLS.put("bigcap", "⋂");
         SYMBOLS.put("bigvee", "⋁"); SYMBOLS.put("bigwedge", "⋀");
 
-        // --- sets / logic ---
         SYMBOLS.put("in", "∈"); SYMBOLS.put("notin", "∉"); SYMBOLS.put("ni", "∋");
         SYMBOLS.put("subset", "⊂"); SYMBOLS.put("subseteq", "⊆"); SYMBOLS.put("supset", "⊃");
         SYMBOLS.put("supseteq", "⊇"); SYMBOLS.put("cup", "∪"); SYMBOLS.put("cap", "∩");
@@ -87,11 +69,9 @@ public class LatexInliner {
         SYMBOLS.put("implies", "⟹"); SYMBOLS.put("impliedby", "⟸"); SYMBOLS.put("iff", "⟺");
         SYMBOLS.put("therefore", "∴"); SYMBOLS.put("because", "∵");
 
-        // --- blackboard / common named sets ---
         SYMBOLS.put("Re", "ℜ"); SYMBOLS.put("Im", "ℑ"); SYMBOLS.put("aleph", "ℵ");
         SYMBOLS.put("hbar", "ℏ"); SYMBOLS.put("ell", "ℓ"); SYMBOLS.put("wp", "℘");
 
-        // --- arrows ---
         SYMBOLS.put("rightarrow", "→"); SYMBOLS.put("to", "→"); SYMBOLS.put("gets", "←");
         SYMBOLS.put("leftarrow", "←"); SYMBOLS.put("leftrightarrow", "↔");
         SYMBOLS.put("Rightarrow", "⇒"); SYMBOLS.put("Leftarrow", "⇐");
@@ -99,7 +79,6 @@ public class LatexInliner {
         SYMBOLS.put("uparrow", "↑"); SYMBOLS.put("downarrow", "↓");
         SYMBOLS.put("longrightarrow", "⟶"); SYMBOLS.put("longleftarrow", "⟵");
 
-        // --- calculus / misc symbols ---
         SYMBOLS.put("infty", "∞"); SYMBOLS.put("partial", "∂"); SYMBOLS.put("nabla", "∇");
         SYMBOLS.put("angle", "∠"); SYMBOLS.put("perp", "⊥"); SYMBOLS.put("parallel", "∥");
         SYMBOLS.put("prime", "′"); SYMBOLS.put("degree", "°");
@@ -110,7 +89,6 @@ public class LatexInliner {
         SYMBOLS.put("heartsuit", "♥"); SYMBOLS.put("spadesuit", "♠"); SYMBOLS.put("flat", "♭");
         SYMBOLS.put("sharp", "♯"); SYMBOLS.put("natural", "♮");
 
-        // --- spacing / escapes that become nothing or a space ---
         SYMBOLS.put(",", " "); SYMBOLS.put(";", " "); SYMBOLS.put(":", " ");
         SYMBOLS.put("!", ""); SYMBOLS.put("quad", "  "); SYMBOLS.put("qquad", "    ");
         SYMBOLS.put("\\", "\n");
@@ -156,20 +134,15 @@ public class LatexInliner {
         return process(source, new int[]{0}, false);
     }
 
-    /**
-     * Processes the source starting at pos[0]. When stopAtBrace is true, stops
-     * (and consumes) at the matching closing brace; otherwise runs to end.
-     */
     private static String process(String s, int[] pos, boolean stopAtBrace) {
         final StringBuilder out = new StringBuilder();
         while (pos[0] < s.length()) {
             char c = s.charAt(pos[0]);
             if (c == '}') {
-                pos[0]++; // consume
+                pos[0]++;
                 if (stopAtBrace) {
                     break;
                 }
-                // stray closing brace -> ignore
                 continue;
             }
             if (c == '{') {
@@ -191,7 +164,7 @@ public class LatexInliner {
                 out.append(applyScript(readArgument(s, pos), false));
                 continue;
             }
-            if (c == '&' || c == '~') { // alignment tab / nbsp
+            if (c == '&' || c == '~') {
                 out.append(' ');
                 pos[0]++;
                 continue;
@@ -202,9 +175,7 @@ public class LatexInliner {
         return out.toString();
     }
 
-    /** Reads one argument: a {group}, a \command, or a single character. */
     private static String readArgument(String s, int[] pos) {
-        // skip whitespace
         while (pos[0] < s.length() && s.charAt(pos[0]) == ' ') pos[0]++;
         if (pos[0] >= s.length()) {
             return "";
@@ -221,21 +192,18 @@ public class LatexInliner {
         return String.valueOf(c);
     }
 
-    /** At a backslash. Reads the command name and returns its inlined form. */
     private static String readCommand(String s, int[] pos) {
-        pos[0]++; // skip '\'
+        pos[0]++;
         if (pos[0] >= s.length()) {
             return "";
         }
         char first = s.charAt(pos[0]);
-        // non-letter command (escaped char / spacing), is exactly one char
         if (!Character.isLetter(first)) {
             String key = String.valueOf(first);
             pos[0]++;
             String sym = SYMBOLS.get(key);
             return sym != null ? sym : key;
         }
-        // letter command name
         int start = pos[0];
         while (pos[0] < s.length() && Character.isLetter(s.charAt(pos[0]))) {
             pos[0]++;
@@ -251,7 +219,6 @@ public class LatexInliner {
                 return wrapIfNeeded(a) + "/" + wrapIfNeeded(b);
             }
             case "sqrt": {
-                // optional [n] index
                 String index = null;
                 skipSpaces(s, pos);
                 if (pos[0] < s.length() && s.charAt(pos[0]) == '[') {
@@ -267,22 +234,20 @@ public class LatexInliner {
             }
             case "overline":
             case "bar":
-                return readArgument(s, pos); // best-effort: drop the bar
+                return readArgument(s, pos);
             case "hat":
-                return readArgument(s, pos) + "̂"; // combining circumflex
+                return readArgument(s, pos) + "̂";
             case "vec":
-                return readArgument(s, pos) + "⃗"; // combining right arrow
+                return readArgument(s, pos) + "⃗";
             case "dot":
                 return readArgument(s, pos) + "̇";
             case "tilde":
                 return readArgument(s, pos) + "̃";
             case "begin":
             case "end":
-                // consume the environment name argument and drop it
                 readArgument(s, pos);
                 return "";
             case "mathbb": {
-                // blackboard-bold: map the letters that have a single Unicode codepoint
                 String arg = readArgument(s, pos);
                 StringBuilder bb = new StringBuilder();
                 for (int i = 0; i < arg.length(); i++) {
@@ -295,8 +260,6 @@ public class LatexInliner {
         }
 
         if (KEEP_CONTENT.contains(name)) {
-            // \left( \right) etc. take the next single token literally;
-            // \text{...} takes a group. readArgument handles both.
             return readArgument(s, pos);
         }
         if (FUNCTIONS.contains(name)) {
@@ -306,7 +269,6 @@ public class LatexInliner {
         if (sym != null) {
             return sym;
         }
-        // unknown command: drop the backslash, keep the name (less distracting)
         return name;
     }
 
@@ -314,7 +276,6 @@ public class LatexInliner {
         while (pos[0] < s.length() && s.charAt(pos[0]) == ' ') pos[0]++;
     }
 
-    /** Tries to render text as super/subscript Unicode; falls back to ^(..)/_(..). */
     private static String applyScript(String text, boolean sup) {
         if (text.isEmpty()) {
             return "";
@@ -341,19 +302,17 @@ public class LatexInliner {
         for (int i = 0; i < text.length(); i++) {
             Character m = SUPER.get(text.charAt(i));
             if (m == null) {
-                return ""; // give up on the index prefix rather than show noise
+                return "";
             }
             mapped.append((char) m);
         }
         return mapped.toString();
     }
 
-    /** Wraps in parentheses when the content isn't a single visual unit. */
     private static String wrapIfNeeded(String s) {
         if (s.length() <= 1) {
             return s;
         }
-        // already parenthesized / bracketed
         char f = s.charAt(0), l = s.charAt(s.length() - 1);
         if ((f == '(' && l == ')') || (f == '[' && l == ']')) {
             return s;

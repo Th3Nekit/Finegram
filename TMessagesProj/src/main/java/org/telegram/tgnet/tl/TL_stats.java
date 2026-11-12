@@ -79,7 +79,7 @@ public class TL_stats {
 
     public static abstract class StatsGraph extends TLObject {
 
-        public float rate; // custom
+        public float rate;
 
         public static StatsGraph TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             StatsGraph result = null;

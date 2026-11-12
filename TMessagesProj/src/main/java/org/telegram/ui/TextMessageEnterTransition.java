@@ -631,8 +631,8 @@ public class TextMessageEnterTransition implements MessageEnterTransitionContain
 
             if (roundRectRadii == null) {
                 roundRectRadii = new float[8];
-                roundRectRadii[0] = roundRectRadii[1] = roundRectRadii[6] = roundRectRadii[7] = dp(4); // left
-                roundRectRadii[2] = roundRectRadii[3] = roundRectRadii[4] = roundRectRadii[5] = 0; // right
+                roundRectRadii[0] = roundRectRadii[1] = roundRectRadii[6] = roundRectRadii[7] = dp(4);
+                roundRectRadii[2] = roundRectRadii[3] = roundRectRadii[4] = roundRectRadii[5] = 0;
             }
 
             AndroidUtilities.rectTmp.set(
@@ -867,7 +867,7 @@ public class TextMessageEnterTransition implements MessageEnterTransitionContain
             ViewPositionWatcher.computeCoordinatesInParent(enterView.getSendButton(), chatActivity.contentView, tmpPointF);
             canvas.save();
             canvas.translate(
-                tmpPointF.x - container.getX() /*+ dp(52) * sendProgress*/,
+                tmpPointF.x - container.getX()                            ,
                 tmpPointF.y - container.getY());
 
             View sendButton = enterView.getSendButton();

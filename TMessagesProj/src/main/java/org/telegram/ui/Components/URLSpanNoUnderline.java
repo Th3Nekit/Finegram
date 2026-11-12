@@ -28,7 +28,6 @@ public class URLSpanNoUnderline extends URLSpan {
     private TextStyleSpan.TextStyleRun style;
     private TLObject object;
 
-    // Used to label video timestamps
     public String label;
 
     public URLSpanNoUnderline(String url) {

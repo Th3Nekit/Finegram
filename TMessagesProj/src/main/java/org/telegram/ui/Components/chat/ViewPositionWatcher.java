@@ -191,6 +191,28 @@ public final class ViewPositionWatcher implements
         return result;
     }
 
+    private static final float[] tmpOffset = new float[2];
+
+    private static boolean computeOffsetInRoot(@NonNull View view, @NonNull View root, float[] out) {
+        float left = 0f, top = 0f;
+        View current = view;
+        while (current != root) {
+            left += current.getX();
+            top += current.getY();
+            final ViewParent vp = current.getParent();
+            if (!(vp instanceof View)) {
+                return false;
+            }
+            final View parent = (View) vp;
+            left -= parent.getScrollX();
+            top -= parent.getScrollY();
+            current = parent;
+        }
+        out[0] = left;
+        out[1] = top;
+        return true;
+    }
+
     public static boolean computeRectInParent(@NonNull View view,
                                                @NonNull View parentView,
                                                @NonNull RectF out) {
@@ -204,7 +226,7 @@ public final class ViewPositionWatcher implements
 
             ViewParent vp = current.getParent();
             if (!(vp instanceof View)) {
-                return false;
+                break;
             }
             View parent = (View) vp;
             left -= parent.getScrollX();
@@ -214,8 +236,11 @@ public final class ViewPositionWatcher implements
         }
 
         if (current != parentView) {
-
-            return false;
+            if (current == null || !computeOffsetInRoot(parentView, current, tmpOffset)) {
+                return false;
+            }
+            left -= tmpOffset[0];
+            top -= tmpOffset[1];
         }
 
         final float l = left;

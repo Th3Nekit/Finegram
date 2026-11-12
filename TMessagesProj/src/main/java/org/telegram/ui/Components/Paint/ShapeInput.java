@@ -53,7 +53,7 @@ public class ShapeInput {
 
     private Point center;
     private ArrayList<Point> allPoints = new ArrayList<>();
-    private ArrayList<Point> movingPoints = new ArrayList<>(); // these points would move with others when shape is moved
+    private ArrayList<Point> movingPoints = new ArrayList<>();
 
     float dx, dy;
 
@@ -264,7 +264,6 @@ public class ShapeInput {
         shape.fill = PersistColorPalette.getInstance(UserConfig.selectedAccount).getFillShapes();
 
         if (shape.getType() == Brush.Shape.SHAPE_TYPE_ARROW) {
-            // radius actually stands here for second (end) point
             shape.centerX = shape.radiusX = shape.middleX = size.width / 2f;
             shape.middleX++;
             shape.centerY = size.height / 3f * 1f;
@@ -381,7 +380,6 @@ public class ShapeInput {
             Point bubbleCornerPoint;
             allPoints.add(bubbleCornerPoint = new Point() {
                 private void limit() {
-                    // do not allow to put this corner inside a bubble
                     if (y > shape.centerY - shape.radiusY && y < shape.centerY + shape.radiusY) {
                         if (x <= shape.centerX && x > shape.centerX - shape.radiusX) {
                             x = shape.centerX - shape.radiusX;
@@ -506,18 +504,6 @@ public class ShapeInput {
             );
         }
 
-//        if (shape != null && shape.type == Brush.Shape.SHAPE_TYPE_STAR) {
-//            float r = Math.min(
-//                shape.radiusX / size.width * canvas.getWidth(),
-//                shape.radiusY / size.height * canvas.getHeight()
-//            );
-//            canvas.drawCircle(
-//                shape.centerX / size.width * canvas.getWidth(),
-//                shape.centerY / size.height * canvas.getHeight(),
-//                r,
-//                linePaint
-//            );
-//        }
 
         for (int i = 0; i < allPoints.size(); ++i) {
             Point p = allPoints.get(i);
@@ -622,7 +608,6 @@ public class ShapeInput {
         }
 
         void set() {
-            // get from shape
         }
 
         void set(float x, float y) {
@@ -633,7 +618,6 @@ public class ShapeInput {
         protected void update(float x, float y) {
             this.x = x;
             this.y = y;
-            // implement some logic here
         }
     }
 }

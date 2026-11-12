@@ -23,10 +23,6 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * A utility class used to check the boundaries of a given view within its parent view based on
- * a set of boundary flags.
- */
 class ViewBoundsCheck {
 
     static final int GT = 1 << 0;
@@ -35,90 +31,40 @@ class ViewBoundsCheck {
 
 
     static final int CVS_PVS_POS = 0;
-    /**
-     * The child view's start should be strictly greater than parent view's start.
-     */
     static final int FLAG_CVS_GT_PVS = GT << CVS_PVS_POS;
 
-    /**
-     * The child view's start can be equal to its parent view's start. This flag follows with GT
-     * or LT indicating greater (less) than or equal relation.
-     */
     static final int FLAG_CVS_EQ_PVS = EQ << CVS_PVS_POS;
 
-    /**
-     * The child view's start should be strictly less than parent view's start.
-     */
     static final int FLAG_CVS_LT_PVS = LT << CVS_PVS_POS;
 
 
     static final int CVS_PVE_POS = 4;
-    /**
-     * The child view's start should be strictly greater than parent view's end.
-     */
     static final int FLAG_CVS_GT_PVE = GT << CVS_PVE_POS;
 
-    /**
-     * The child view's start can be equal to its parent view's end. This flag follows with GT
-     * or LT indicating greater (less) than or equal relation.
-     */
     static final int FLAG_CVS_EQ_PVE = EQ << CVS_PVE_POS;
 
-    /**
-     * The child view's start should be strictly less than parent view's end.
-     */
     static final int FLAG_CVS_LT_PVE = LT << CVS_PVE_POS;
 
 
     static final int CVE_PVS_POS = 8;
-    /**
-     * The child view's end should be strictly greater than parent view's start.
-     */
     static final int FLAG_CVE_GT_PVS = GT << CVE_PVS_POS;
 
-    /**
-     * The child view's end can be equal to its parent view's start. This flag follows with GT
-     * or LT indicating greater (less) than or equal relation.
-     */
     static final int FLAG_CVE_EQ_PVS = EQ << CVE_PVS_POS;
 
-    /**
-     * The child view's end should be strictly less than parent view's start.
-     */
     static final int FLAG_CVE_LT_PVS = LT << CVE_PVS_POS;
 
 
     static final int CVE_PVE_POS = 12;
-    /**
-     * The child view's end should be strictly greater than parent view's end.
-     */
     static final int FLAG_CVE_GT_PVE = GT << CVE_PVE_POS;
 
-    /**
-     * The child view's end can be equal to its parent view's end. This flag follows with GT
-     * or LT indicating greater (less) than or equal relation.
-     */
     static final int FLAG_CVE_EQ_PVE = EQ << CVE_PVE_POS;
 
-    /**
-     * The child view's end should be strictly less than parent view's end.
-     */
     static final int FLAG_CVE_LT_PVE = LT << CVE_PVE_POS;
 
     static final int MASK = GT | EQ | LT;
 
     final Callback mCallback;
     BoundFlags mBoundFlags;
-    /**
-     * The set of flags that can be passed for checking the view boundary conditions.
-     * CVS in the flag name indicates the child view, and PV indicates the parent view.\
-     * The following S, E indicate a view's start and end points, respectively.
-     * GT and LT indicate a strictly greater and less than relationship.
-     * Greater than or equal (or less than or equal) can be specified by setting both GT and EQ (or
-     * LT and EQ) flags.
-     * For instance, setting both {@link #FLAG_CVS_GT_PVS} and {@link #FLAG_CVS_EQ_PVS} indicate the
-     * child view's start should be greater than or equal to its parent start.
-     */
     @IntDef(flag = true, value = {
             FLAG_CVS_GT_PVS, FLAG_CVS_EQ_PVS, FLAG_CVS_LT_PVS,
             FLAG_CVS_GT_PVE, FLAG_CVS_EQ_PVE, FLAG_CVS_LT_PVE,
@@ -190,23 +136,6 @@ class ViewBoundsCheck {
         }
     };
 
-    /**
-     * Returns the first view starting from fromIndex to toIndex in views whose bounds lie within
-     * its parent bounds based on the provided preferredBoundFlags. If no match is found based on
-     * the preferred flags, and a nonzero acceptableBoundFlags is specified, the last view whose
-     * bounds lie within its parent view based on the acceptableBoundFlags is returned. If no such
-     * view is found based on either of these two flags, null is returned.
-     * @param fromIndex The view position index to start the search from.
-     * @param toIndex The view position index to end the search at.
-     * @param preferredBoundFlags The flags indicating the preferred match. Once a match is found
-     *                            based on this flag, that view is returned instantly.
-     * @param acceptableBoundFlags The flags indicating the acceptable match if no preferred match
-     *                             is found. If so, and if acceptableBoundFlags is non-zero, the
-     *                             last matching acceptable view is returned. Otherwise, null is
-     *                             returned.
-     * @return The first view that satisfies acceptableBoundFlags or the last view satisfying
-     * acceptableBoundFlags boundary conditions.
-     */
     View findOneViewWithinBoundFlags(int fromIndex, int toIndex,
             @ViewBounds int preferredBoundFlags,
             @ViewBounds int acceptableBoundFlags) {
@@ -223,7 +152,6 @@ class ViewBoundsCheck {
                 mBoundFlags.resetFlags();
                 mBoundFlags.addFlags(preferredBoundFlags);
                 if (mBoundFlags.boundsMatch()) {
-                    // found a perfect match
                     return child;
                 }
             }
@@ -238,12 +166,6 @@ class ViewBoundsCheck {
         return acceptableMatch;
     }
 
-    /**
-     * Returns whether the specified view lies within the boundary condition of its parent view.
-     * @param child The child view to be checked.
-     * @param boundsFlags The flag against which the child view and parent view are matched.
-     * @return True if the view meets the boundsFlag, false otherwise.
-     */
     boolean isViewWithinBoundFlags(View child, @ViewBounds int boundsFlags) {
         mBoundFlags.setBounds(mCallback.getParentStart(), mCallback.getParentEnd(),
                 mCallback.getChildStart(child), mCallback.getChildEnd(child));
@@ -255,10 +177,6 @@ class ViewBoundsCheck {
         return false;
     }
 
-    /**
-     * Callback provided by the user of this class in order to retrieve information about child and
-     * parent boundaries.
-     */
     interface Callback {
         View getChildAt(int index);
         int getParentStart();

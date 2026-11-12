@@ -17,23 +17,13 @@ import java.nio.ByteOrder;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Captures microphone PCM and encodes it into one Ogg/Opus output.
- *
- * <p>Capture and encoding run on separate threads, so the microphone starts immediately while
- * the encoder is still re-encoding a retained prefix. Captured chunks queue up on the encoder
- * thread until it is ready.</p>
- */
 final class AudioCapture {
 
     interface Callback {
-        /** Called when the microphone is recording; the encoder may still be preparing. */
         void onStarted();
 
-        /** Called with the raw microphone RMS amplitude at most every 32 ms. */
         void onProgress(long capturedSamples, double amplitude);
 
-        /** Called when the output file has been flushed up to the given size. */
         void onOutputCommitted(long committedFileSize);
 
         void onStopped(long capturedSamples, long finalFileSize);
@@ -65,12 +55,10 @@ final class AudioCapture {
     private volatile boolean stopRequested;
     private volatile boolean captureStopped;
 
-    // Capture thread.
     private AudioRecord audioRecord;
     private long capturedSamples;
     private long lastProgressMs;
 
-    // Encoder thread.
     private final ByteBuffer frameBuffer = ByteBuffer.allocateDirect(FRAME_BYTES)
             .order(ByteOrder.nativeOrder());
     private AudioRecorderNative encoder;
@@ -83,11 +71,6 @@ final class AudioCapture {
     private long noiseProcessingTotalNs;
     private long noiseProcessingMaxNs;
 
-    /**
-     * @param prefixFile    previous output whose range is re-encoded before the new samples
-     * @param prefixStartMs start of the retained prefix range
-     * @param prefixEndMs   end of the retained prefix range, or a negative value for the whole file
-     */
     AudioCapture(
             @NonNull File outputFile,
             @Nullable File prefixFile,

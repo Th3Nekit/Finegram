@@ -36,9 +36,9 @@ import java.util.ArrayList;
 public class ChatActivityMessageMetricsView extends View implements ViewTreeObserver.OnPreDrawListener,
         ViewTreeObserver.OnScrollChangedListener, ViewTreeObserver.OnGlobalLayoutListener {
     private static final long GRACE_TIME = 300;
-    private static final long MAX_WATCH_TIME = 5 * 60 * 1000; // 5 min
-    private static final long USER_ACTIVE_TIME = 15 * 1000; // 15 sec
-    private static final long FLUSH_TIME = 5 * 1000; // 5 sec
+    private static final long MAX_WATCH_TIME = 5 * 60 * 1000;
+    private static final long USER_ACTIVE_TIME = 15 * 1000;
+    private static final long FLUSH_TIME = 5 * 1000;
     private static final long REPEAT_PERIOD = 400;
 
     private static final String TAG = "ViewMetrics";
@@ -331,7 +331,6 @@ public class ChatActivityMessageMetricsView extends View implements ViewTreeObse
     }
 
 
-    /* Attach */
 
     private ViewTreeObserver observer;
 
@@ -392,7 +391,6 @@ public class ChatActivityMessageMetricsView extends View implements ViewTreeObse
         return true;
     }
 
-    /* Debug Draw */
 
     private TextPaint tmpTextPaint;
 

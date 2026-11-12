@@ -24,11 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
-/**
- * The AccessibilityDelegate used by RecyclerView.
- * <p>
- * This class handles basic accessibility actions and delegates them to LayoutManager.
- */
 public class RecyclerViewAccessibilityDelegate extends AccessibilityDelegateCompat {
     final RecyclerView mRecyclerView;
     final AccessibilityDelegateCompat mItemDelegate;
@@ -40,7 +35,9 @@ public class RecyclerViewAccessibilityDelegate extends AccessibilityDelegateComp
     }
 
     boolean shouldIgnore() {
-        return mRecyclerView.hasPendingAdapterUpdates();
+        // content-changed events are dispatched at the end of dispatchLayoutStep1 while the state
+        // is still pre-layout, so item positions aren't settled yet
+        return mRecyclerView.hasPendingAdapterUpdates() || mRecyclerView.mState.isPreLayout();
     }
 
     @Override
@@ -74,32 +71,14 @@ public class RecyclerViewAccessibilityDelegate extends AccessibilityDelegateComp
         }
     }
 
-    /**
-     * Gets the AccessibilityDelegate for an individual item in the RecyclerView.
-     * A basic item delegate is provided by default, but you can override this
-     * method to provide a custom per-item delegate.
-     */
     @NonNull
     public AccessibilityDelegateCompat getItemDelegate() {
         return mItemDelegate;
     }
 
-    /**
-     * The default implementation of accessibility delegate for the individual items of the
-     * RecyclerView.
-     * <p>
-     * If you are overriding {@code RecyclerViewAccessibilityDelegate#getItemDelegate()} but still
-     * want to keep some default behavior, you can create an instance of this class and delegate to
-     * the parent as necessary.
-     */
     public static class ItemDelegate extends AccessibilityDelegateCompat {
         final RecyclerViewAccessibilityDelegate mRecyclerViewDelegate;
 
-        /**
-         * Creates an item delegate for the given {@code RecyclerViewAccessibilityDelegate}.
-         *
-         * @param recyclerViewDelegate The parent RecyclerView's accessibility delegate.
-         */
         public ItemDelegate(@NonNull RecyclerViewAccessibilityDelegate recyclerViewDelegate) {
             mRecyclerViewDelegate = recyclerViewDelegate;
         }

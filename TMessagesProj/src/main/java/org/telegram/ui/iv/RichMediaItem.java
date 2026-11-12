@@ -97,9 +97,6 @@ public class RichMediaItem {
     private String imageKey() {
         if (media == null) return "null";
         final String type = media.isVideo ? "v" : (media.isAudio ? "a" : "p");
-        // While the local file is available we always render from it, so keep the key stable
-        // across the upload->done transition; otherwise the state/id flip would rebind and
-        // pointlessly re-fetch the same image from the server (blurred thumb flash).
         if (media.localPath != null) {
             return type + ":local:" + media.localPath;
         }
@@ -157,12 +154,6 @@ public class RichMediaItem {
         drawProgress(canvas, bounds);
     }
 
-    /**
-     * Overlays the blurred image + animated spoiler particles on top of the already-drawn media,
-     * hiding it. Call {@link #draw} first so the image is loaded and its cross-fade alpha advances.
-     * {@code effect} is the shared {@link SpoilerEffect2}; {@code holder} is the invalidation view
-     * it is attached to. Both must be obtained on the UI draw pass, never during layout.
-     */
     public void drawSpoiler(Canvas canvas, RectF bounds, SpoilerEffect2 effect, View holder) {
         canvas.save();
         canvas.clipRect(bounds);

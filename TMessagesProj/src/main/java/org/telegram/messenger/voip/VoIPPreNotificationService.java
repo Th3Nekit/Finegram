@@ -46,7 +46,7 @@ import org.telegram.ui.VoIPPermissionActivity;
 
 import java.util.ArrayList;
 
-public class VoIPPreNotificationService { // } extends Service implements AudioManager.OnAudioFocusChangeListener {
+public class VoIPPreNotificationService {
 
     public static final class State implements VoIPServiceState {
 
@@ -132,7 +132,6 @@ public class VoIPPreNotificationService { // } extends Service implements AudioM
         return currentState;
     }
 
-//    public static VoIPPreNotificationService instance;
 
     private static Notification makeNotification(Context context, int account, long user_id, long call_id, boolean video) {
         if (Build.VERSION.SDK_INT < 33) return null;
@@ -221,7 +220,7 @@ public class VoIPPreNotificationService { // } extends Service implements AudioM
             PendingIntent.getActivity(
                 context,
                 0,
-                new Intent(context, LaunchActivity.class).setAction("voip_answer"),
+                new Intent(context, LaunchActivity.class).setAction("voip_answer").putExtra(LaunchActivity.EXTRA_VOIP_ANSWER_TOKEN, LaunchActivity.VOIP_ANSWER_TOKEN),
                 pendingIntentFlags
             );
 
@@ -257,7 +256,6 @@ public class VoIPPreNotificationService { // } extends Service implements AudioM
 
         String personName = ContactsController.formatName(user);
         if (TextUtils.isEmpty(personName)) {
-            //java.lang.IllegalArgumentException: person must have a non-empty a name
             personName = "___";
         }
 
@@ -359,7 +357,7 @@ public class VoIPPreNotificationService { // } extends Service implements AudioM
                         vibrator.vibrate(
                                 VibrationEffect.createWaveform(pattern, 0),
                                 new VibrationAttributes.Builder()
-                                    .setUsage(VibrationAttributes.USAGE_RINGTONE) // required for background apps
+                                    .setUsage(VibrationAttributes.USAGE_RINGTONE)
                                     .build());
                     } else {
                         vibrator.vibrate(pattern, 0);
@@ -383,18 +381,10 @@ public class VoIPPreNotificationService { // } extends Service implements AudioM
         }
     }
 
-//    public void onAudioFocusChange(int focusChange) {
-//        if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-//            hasAudioFocus = true;
-//        } else {
-//            hasAudioFocus = false;
-//        }
-//    }
 
     public static TL_phone.PhoneCall pendingCall;
     public static Intent pendingVoIP;
     public static State currentState;
-//    public static Intent pendingNotificationService;
 
     public static void show(Context context, Intent intent, TL_phone.PhoneCall call) {
         FileLog.d("VoIPPreNotification.show()");

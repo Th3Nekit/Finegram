@@ -27,7 +27,6 @@ public class GestureDetectorFixDoubleTap {
         private static final int TAP_TIMEOUT = ViewConfiguration.getTapTimeout();
         private static final int DOUBLE_TAP_TIMEOUT = 220;
 
-        // constants for Message.what used by GestureHandler below
         private static final int SHOW_PRESS = 1;
         private static final int LONG_PRESS = 2;
         private static final int TAP = 3;
@@ -45,10 +44,6 @@ public class GestureDetectorFixDoubleTap {
         MotionEvent mCurrentDownEvent;
         private MotionEvent mPreviousUpEvent;
 
-        /**
-         * True when the user is still touching for the second tap (down, move, and
-         * up events). Can only be true if there is a double tap listener attached.
-         */
         private boolean mIsDoubleTapping;
 
         private float mLastFocusX;
@@ -59,9 +54,6 @@ public class GestureDetectorFixDoubleTap {
         private boolean mIsLongpressEnabled;
         private long mLongpressDuration = ViewConfiguration.getLongPressTimeout();
 
-        /**
-         * Determines speed during touch scrolling
-         */
         private VelocityTracker mVelocityTracker;
 
         private class GestureHandler extends Handler {
@@ -86,7 +78,6 @@ public class GestureDetectorFixDoubleTap {
                         break;
 
                     case TAP:
-                        // If the user's finger is still down, do not count it as a tap
                         if (mDoubleTapListener != null) {
                             if (!mStillDown) {
                                 mDoubleTapListener.onSingleTapConfirmed(mCurrentDownEvent);
@@ -97,23 +88,11 @@ public class GestureDetectorFixDoubleTap {
                         break;
 
                     default:
-                        throw new RuntimeException("Unknown message " + msg); //never
+                        throw new RuntimeException("Unknown message " + msg);
                 }
             }
         }
 
-        /**
-         * Creates a GestureDetector with the supplied listener.
-         * You may only use this constructor from a UI thread (this is the usual situation).
-         * @see android.os.Handler#Handler()
-         *
-         * @param context the application's context
-         * @param listener the listener invoked for all the callbacks, this must
-         * not be null.
-         * @param handler the handler to use
-         *
-         * @throws NullPointerException if {@code listener} is null.
-         */
         GestureDetectorCompatImplBase(Context context, OnGestureListener listener,
                                       Handler handler) {
             if (handler != null) {
@@ -147,27 +126,11 @@ public class GestureDetectorFixDoubleTap {
             mDoubleTapSlopSquare = doubleTapSlop * doubleTapSlop;
         }
 
-        /**
-         * Sets the listener which will be called for double-tap and related
-         * gestures.
-         *
-         * @param onDoubleTapListener the listener invoked for all the callbacks, or
-         *        null to stop listening for double-tap gestures.
-         */
         @Override
         public void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
             mDoubleTapListener = onDoubleTapListener;
         }
 
-        /**
-         * Set whether longpress is enabled, if this is enabled when a user
-         * presses and holds down you get a longpress event and nothing further.
-         * If it's disabled the user can press and hold down and then later
-         * moved their finger and you will get scroll events. By default
-         * longpress is enabled.
-         *
-         * @param isLongpressEnabled whether longpress should be enabled.
-         */
         @Override
         public void setIsLongpressEnabled(boolean isLongpressEnabled) {
             mIsLongpressEnabled = isLongpressEnabled;
@@ -178,22 +141,11 @@ public class GestureDetectorFixDoubleTap {
             mLongpressDuration = duration;
         }
 
-        /**
-         * @return true if longpress is enabled, else false.
-         */
         @Override
         public boolean isLongpressEnabled() {
             return mIsLongpressEnabled;
         }
 
-        /**
-         * Analyzes the given motion event and if applicable triggers the
-         * appropriate callbacks on the {@link OnGestureListener} supplied.
-         *
-         * @param ev The current motion event.
-         * @return true if the {@link OnGestureListener} consumed the event,
-         *              else false.
-         */
         @Override
         public boolean onTouchEvent(MotionEvent ev) {
             final int action = ev.getAction();
@@ -207,7 +159,6 @@ public class GestureDetectorFixDoubleTap {
                     (action & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP;
             final int skipIndex = pointerUp ? ev.getActionIndex() : -1;
 
-            // Determine focal point
             float sumX = 0, sumY = 0;
             final int count = ev.getPointerCount();
             for (int i = 0; i < count; i++) {
@@ -225,7 +176,6 @@ public class GestureDetectorFixDoubleTap {
                 case MotionEvent.ACTION_POINTER_DOWN:
                     mDownFocusX = mLastFocusX = focusX;
                     mDownFocusY = mLastFocusY = focusY;
-                    // Cancel long press and taps
                     cancelTaps();
                     break;
 
@@ -233,8 +183,6 @@ public class GestureDetectorFixDoubleTap {
                     mDownFocusX = mLastFocusX = focusX;
                     mDownFocusY = mLastFocusY = focusY;
 
-                    // Check the dot product of current velocities.
-                    // If the pointer that left was opposing another velocity vector, clear.
                     mVelocityTracker.computeCurrentVelocity(1000, mMaximumFlingVelocity);
                     final int upIndex = ev.getActionIndex();
                     final int id1 = ev.getPointerId(upIndex);
@@ -262,14 +210,10 @@ public class GestureDetectorFixDoubleTap {
                         if ((mCurrentDownEvent != null) && (mPreviousUpEvent != null)
                                 && hadTapMessage && isConsideredDoubleTap(
                                 mCurrentDownEvent, mPreviousUpEvent, ev)) {
-                            // This is a second tap
                             mIsDoubleTapping = true;
-                            // Give a callback with the first tap of the double-tap
                             handled |= mDoubleTapListener.onDoubleTap(mCurrentDownEvent);
-                            // Give a callback with down event of the double-tap
                             handled |= mDoubleTapListener.onDoubleTapEvent(ev);
                         } else {
-                            // This is a first tap
                             mHandler.sendEmptyMessageDelayed(TAP, DOUBLE_TAP_TIMEOUT);
                         }
                     }
@@ -303,7 +247,6 @@ public class GestureDetectorFixDoubleTap {
                     final float scrollX = mLastFocusX - focusX;
                     final float scrollY = mLastFocusY - focusY;
                     if (mIsDoubleTapping) {
-                        // Give the move events of the double-tap
                         handled |= mDoubleTapListener.onDoubleTapEvent(ev);
                     } else if (mAlwaysInTapRegion) {
                         final int deltaX = (int) (focusX - mDownFocusX);
@@ -332,7 +275,6 @@ public class GestureDetectorFixDoubleTap {
                     mStillDown = false;
                     MotionEvent currentUpEvent = MotionEvent.obtain(ev);
                     if (mIsDoubleTapping) {
-                        // Finally, give the up event of the double-tap
                         handled |= mDoubleTapListener.onDoubleTapEvent(ev);
                     } else if (mInLongPress) {
                         mHandler.removeMessages(TAP);
@@ -343,7 +285,6 @@ public class GestureDetectorFixDoubleTap {
                             mDoubleTapListener.onSingleTapConfirmed(ev);
                         }
                     } else {
-                        // A fling must travel the minimum tap distance
                         final VelocityTracker velocityTracker = mVelocityTracker;
                         final int pointerId = ev.getPointerId(0);
                         velocityTracker.computeCurrentVelocity(1000, mMaximumFlingVelocity);
@@ -359,11 +300,8 @@ public class GestureDetectorFixDoubleTap {
                     if (mPreviousUpEvent != null) {
                         mPreviousUpEvent.recycle();
                     }
-                    // Hold the event we obtained above - listeners may have changed the original.
                     mPreviousUpEvent = currentUpEvent;
                     if (mVelocityTracker != null) {
-                        // This may have been cleared when we called out to the
-                        // application above.
                         mVelocityTracker.recycle();
                         mVelocityTracker = null;
                     }
@@ -435,61 +373,22 @@ public class GestureDetectorFixDoubleTap {
 
     private final GestureDetectorCompatImpl mImpl;
 
-    /**
-     * Creates a GestureDetectorCompat with the supplied listener.
-     * As usual, you may only use this constructor from a UI thread.
-     * @see android.os.Handler#Handler()
-     *
-     * @param context the application's context
-     * @param listener the listener invoked for all the callbacks, this must
-     * not be null.
-     */
     public GestureDetectorFixDoubleTap(Context context, OnGestureListener listener) {
         this(context, listener, null);
     }
 
-    /**
-     * Creates a GestureDetectorCompat with the supplied listener.
-     * As usual, you may only use this constructor from a UI thread.
-     * @see android.os.Handler#Handler()
-     *
-     * @param context the application's context
-     * @param listener the listener invoked for all the callbacks, this must
-     * not be null.
-     * @param handler the handler that will be used for posting deferred messages
-     */
     public GestureDetectorFixDoubleTap(Context context, OnGestureListener listener, Handler handler) {
         mImpl = new GestureDetectorCompatImplBase(context, listener, handler);
     }
 
-    /**
-     * @return true if longpress is enabled, else false.
-     */
     public boolean isLongpressEnabled() {
         return mImpl.isLongpressEnabled();
     }
 
-    /**
-     * Analyzes the given motion event and if applicable triggers the
-     * appropriate callbacks on the {@link OnGestureListener} supplied.
-     *
-     * @param event The current motion event.
-     * @return true if the {@link OnGestureListener} consumed the event,
-     *              else false.
-     */
     public boolean onTouchEvent(MotionEvent event) {
         return mImpl.onTouchEvent(event);
     }
 
-    /**
-     * Set whether longpress is enabled, if this is enabled when a user
-     * presses and holds down you get a longpress event and nothing further.
-     * If it's disabled the user can press and hold down and then later
-     * moved their finger and you will get scroll events. By default
-     * longpress is enabled.
-     *
-     * @param enabled whether longpress should be enabled.
-     */
     public void setIsLongpressEnabled(boolean enabled) {
         mImpl.setIsLongpressEnabled(enabled);
     }
@@ -498,13 +397,6 @@ public class GestureDetectorFixDoubleTap {
         mImpl.setLongpressDuration(duration);
     }
 
-    /**
-     * Sets the listener which will be called for double-tap and related
-     * gestures.
-     *
-     * @param listener the listener invoked for all the callbacks, or
-     *        null to stop listening for double-tap gestures.
-     */
     public void setOnDoubleTapListener(OnDoubleTapListener listener) {
         mImpl.setOnDoubleTapListener(listener);
     }

@@ -38,6 +38,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
@@ -134,46 +135,9 @@ public class BotVerifySheet {
         linearLayout.setClipChildren(false);
         linearLayout.setClipToPadding(false);
 
-//        FrameLayout topView = new FrameLayout(context);
-//
-//        BackupImageView imageView1 = new BackupImageView(context);
-//        imageView1.setRoundRadius(dp(30));
-//        AvatarDrawable avatarDrawable = new AvatarDrawable();
-//        avatarDrawable.setInfo(botUser);
-//        imageView1.setForUserOrChat(botUser, avatarDrawable);
-//        topView.addView(imageView1, LayoutHelper.createFrame(60, 60, Gravity.CENTER_VERTICAL | Gravity.LEFT, 0, 0, 0, 0));
-//
-//        ImageView arrowView = new ImageView(context);
-//        arrowView.setImageResource(R.drawable.msg_arrow_avatar);
-//        arrowView.setScaleType(ImageView.ScaleType.CENTER);
-//        arrowView.setTranslationX(-dp(8.33f / 4));
-//        arrowView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2), PorterDuff.Mode.SRC_IN));
-//        topView.addView(arrowView, LayoutHelper.createFrame(36, 60, Gravity.CENTER, 60, 0, 60, 0));
-//
-//        BackupImageView imageView2 = new BackupImageView(context);
-//        imageView2.setRoundRadius(dp(30));
-//        avatarDrawable = new AvatarDrawable();
-//        avatarDrawable.setInfo(dialog);
-//        imageView2.setForUserOrChat(dialog, avatarDrawable);
-//        topView.addView(imageView2, LayoutHelper.createFrame(60, 60, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 5.66f, 0));
-//
-//        BackupImageView iconBgView = new BackupImageView(context);
-////        iconBgView.setAnimatedEmojiDrawable(AnimatedEmojiDrawable.make(currentAccount, AnimatedEmojiDrawable.CACHE_TYPE_ALERT_PREVIEW, settings.icon));
-////        iconBgView.setEmojiColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogBackground), PorterDuff.Mode.SRC_IN));
-//        iconBgView.setScaleX(1.25f);
-//        iconBgView.setScaleY(1.25f);
-//        iconBgView.setBackground(Theme.createCircleDrawable(dp(24), Theme.getColor(Theme.key_dialogBackground)));
-//        topView.addView(iconBgView, LayoutHelper.createFrame(24, 24, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 18, 1.66f, 0));
-//
-//        BackupImageView iconFgView = new BackupImageView(context);
-//        iconFgView.setAnimatedEmojiDrawable(AnimatedEmojiDrawable.make(currentAccount, AnimatedEmojiDrawable.CACHE_TYPE_ALERT_PREVIEW, settings.icon));
-//        iconFgView.setEmojiColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_verifiedBackground), PorterDuff.Mode.SRC_IN));
-//        topView.addView(iconFgView, LayoutHelper.createFrame(24, 24, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 18, 1.66f, 0));
-//
-//        linearLayout.addView(topView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 0, 0, 0));
 
         FrameLayout chipLayout = new FrameLayout(context);
-        chipLayout.setBackground(Theme.createRoundRectDrawable(dp(28), dp(28), Theme.getColor(Theme.key_groupcreate_spanBackground)));
+        ThemeBind.fillBackground(chipLayout, Theme.createRoundRectDrawable(dp(28), dp(28), Theme.getColor(Theme.key_groupcreate_spanBackground)), ThemeBind.of(Theme.key_groupcreate_spanBackground));
 
         BackupImageView chipAvatar = new BackupImageView(context);
         chipAvatar.setRoundRadius(dp(28));
@@ -188,7 +152,7 @@ public class BotVerifySheet {
         chipLayout.addView(badgeView, LayoutHelper.createFrame(20, 20, Gravity.LEFT | Gravity.CENTER_VERTICAL, 34, 0, 0, 0));
 
         SimpleTextView chipText = new SimpleTextView(context);
-        chipText.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        ThemeBind.textColor(chipText, Theme.key_dialogTextBlack);
         chipText.setTextSize(13);
         chipText.setEllipsizeByGradient(true);
         chipText.setText(dialogTitle);
@@ -198,7 +162,7 @@ public class BotVerifySheet {
         linearLayout.addView(chipLayout, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 0, 16, 0));
 
         TextView titleView = new TextView(context);
-        titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(titleView, Theme.key_windowBackgroundWhiteBlackText);
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         titleView.setGravity(Gravity.CENTER);
         if (UserObject.isBot(user)) {
@@ -214,7 +178,7 @@ public class BotVerifySheet {
         linearLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 24, 21, 24, 8.33f));
 
         TextView textView = new TextView(context);
-        textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlackText);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         textView.setGravity(Gravity.CENTER);
         NotificationCenter.listenEmojiLoading(textView);
@@ -227,7 +191,7 @@ public class BotVerifySheet {
         editTextContainer.setForceForceUseCenter(true);
         editTextContainer.setText(getString(R.string.BotVerifyDescription));
         editTextContainer.setLeftPadding(dp(2));
-        editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(editText, Theme.key_windowBackgroundWhiteBlackText);
         editText.setCursorSize(AndroidUtilities.dp(20));
         editText.setCursorWidth(1.5f);
         editText.setBackground(null);
@@ -236,8 +200,8 @@ public class BotVerifySheet {
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         editText.setTypeface(Typeface.DEFAULT);
         editText.setSelectAllOnFocus(true);
-        editText.setHighlightColor(Theme.getColor(Theme.key_chat_inTextSelectionHighlight));
-        editText.setHandlesColor(Theme.getColor(Theme.key_chat_TextSelectionCursor));
+        ThemeBind.highlightColor(editText, Theme.key_chat_inTextSelectionHighlight);
+        ThemeBind.editHandlesColor(editText, Theme.key_chat_TextSelectionCursor);
         editText.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
         editText.setOnFocusChangeListener((v, hasFocus) -> editTextContainer.animateSelection(hasFocus, !TextUtils.isEmpty(editText.getText())));
         editTextContainer.attachEditText(editText);
@@ -283,7 +247,7 @@ public class BotVerifySheet {
 
         if (settings.can_modify_custom_description) {
             TextView editTextInfoView = new TextView(context);
-            editTextInfoView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
+            ThemeBind.textColor(editTextInfoView, Theme.key_windowBackgroundWhiteGrayText4);
             editTextInfoView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             editTextInfoView.setText(getString(dialogId >= 0 ? R.string.BotVerifyDescriptionInfo : R.string.BotVerifyDescriptionInfoChat));
             editTextInfoView.setPadding(dp(14), dp(7), dp(14), dp(27));
@@ -363,7 +327,7 @@ public class BotVerifySheet {
         FrameLayout layoutView = new FrameLayout(context);
 
         FrameLayout chipLayout = new FrameLayout(context);
-        chipLayout.setBackground(Theme.createRoundRectDrawable(dp(28), dp(28), Theme.getColor(Theme.key_groupcreate_spanBackground)));
+        ThemeBind.fillBackground(chipLayout, Theme.createRoundRectDrawable(dp(28), dp(28), Theme.getColor(Theme.key_groupcreate_spanBackground)), ThemeBind.of(Theme.key_groupcreate_spanBackground));
 
         BackupImageView chipAvatar = new BackupImageView(context);
         chipAvatar.setRoundRadius(dp(28));
@@ -378,7 +342,7 @@ public class BotVerifySheet {
         chipLayout.addView(badgeView, LayoutHelper.createFrame(20, 20, Gravity.LEFT | Gravity.CENTER_VERTICAL, 34, 0, 0, 0));
 
         SimpleTextView chipText = new SimpleTextView(context);
-        chipText.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        ThemeBind.textColor(chipText, Theme.key_dialogTextBlack);
         chipText.setTextSize(13);
         chipText.setEllipsizeByGradient(true);
         chipText.setText(dialogTitle);

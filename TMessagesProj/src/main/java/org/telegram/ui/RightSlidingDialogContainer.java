@@ -358,26 +358,15 @@ public abstract class RightSlidingDialogContainer extends FrameLayout {
                 int dy = Math.abs((int) ev.getY() - startedTrackingY);
                 velocityTracker.addMovement(ev);
                 if (maybeStartTracking && !startedTracking && dx >= AndroidUtilities.getPixelsInCM(0.4f, true) && Math.abs(dx) / 3 > dy) {
-//                    BaseFragment currentFragment = fragmentsStack.get(fragmentsStack.size() - 1);
                     if (findScrollingChild(this, ev.getX(), ev.getY()) == null) {
                         prepareForMoving(ev);
                     } else {
                         maybeStartTracking = false;
                     }
                 } else if (startedTracking) {
-//                    if (!beginTrackingSent) {
-//                        if (parentActivity.getCurrentFocus() != null) {
-//                            AndroidUtilities.hideKeyboard(parentActivity.getCurrentFocus());
-//                        }
-//                        BaseFragment currentFragment = fragmentsStack.get(fragmentsStack.size() - 1);
-//                        currentFragment.onBeginSlide();
-//                        beginTrackingSent = true;
-//                    }
-//                    containerView.setTranslationX(dx);
                     swipeBackX = dx;
                     openedProgress = Utilities.clamp(1f - swipeBackX / getMeasuredWidth(), 1f, 0);
                     updateOpenAnimationProgress();
-//                    setInnerTranslationX(dx);
                 }
             } else if (ev != null && ev.getPointerId(0) == startedTrackingPointerId && (ev.getAction() == MotionEvent.ACTION_CANCEL || ev.getAction() == MotionEvent.ACTION_UP || ev.getAction() == MotionEvent.ACTION_POINTER_UP)) {
                 if (velocityTracker == null) {

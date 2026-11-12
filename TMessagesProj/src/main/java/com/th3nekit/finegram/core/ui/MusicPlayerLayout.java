@@ -2,6 +2,7 @@ package com.th3nekit.finegram.core.ui;
 
 public final class MusicPlayerLayout {
     public final int artwork;
+    public final int artworkTop;
     public final int panelTop;
     public final int titleTop;
     public final int authorTop;
@@ -18,11 +19,17 @@ public final class MusicPlayerLayout {
     private final int skipSize;
 
     private MusicPlayerLayout(int width, int availableHeight, int artwork, int titleHeight, int authorHeight, int timeHeight, int extra) {
+        this(width, availableHeight, artwork, titleHeight, authorHeight, timeHeight, extra, 0);
+    }
+
+    private MusicPlayerLayout(int width, int availableHeight, int artwork, int titleHeight, int authorHeight, int timeHeight, int extra, int drop) {
         this.artwork = artwork;
-        playSize = width < 360 || availableHeight < 560 ? 56 : 64;
-        skipSize = 48;
+        boolean small = width < 360 || availableHeight < 560;
+        playSize = width < 320 ? 56 : small ? 64 : 72;
+        skipSize = width < 320 ? 48 : small ? 52 : 56;
         controlsHeight = playSize;
-        panelTop = artwork + 30;
+        artworkTop = 20 + drop / 2;
+        panelTop = artwork + 30 + drop;
         titleTop = panelTop + 20;
         authorTop = titleTop + titleHeight;
         seekTop = authorTop + authorHeight + 4;
@@ -50,10 +57,13 @@ public final class MusicPlayerLayout {
         int timeHeight = Math.max(24, (int) Math.ceil(20 * fontScale));
         int extra = profileActions ? 64 : 0;
         MusicPlayerLayout empty = new MusicPlayerLayout(width, availableHeight, 0, titleHeight, authorHeight, timeHeight, extra);
-        int artworkSpace = availableHeight - empty.height;
+        int artworkSpace = availableHeight - empty.height - 16;
         if (scrollable) artworkSpace = Math.max(104, artworkSpace);
-        int artwork = Math.min(Math.min(width - 88, 320), artworkSpace);
-        return artwork < 104 ? null : new MusicPlayerLayout(width, availableHeight, artwork, titleHeight, authorHeight, timeHeight, extra);
+        int artwork = Math.min(Math.min(width - 56, 380), artworkSpace);
+        if (artwork < 104) return null;
+        MusicPlayerLayout fitted = new MusicPlayerLayout(width, availableHeight, artwork, titleHeight, authorHeight, timeHeight, extra);
+        int drop = scrollable ? availableHeight - fitted.height : 0;
+        return drop > 0 ? new MusicPlayerLayout(width, availableHeight, artwork, titleHeight, authorHeight, timeHeight, extra, drop) : fitted;
     }
 
     public static Compact compact(float fontScale, boolean profileActions) {
@@ -125,7 +135,7 @@ public final class MusicPlayerLayout {
 
     public int buttonLeft(int width, int index) {
         int center = width / 2;
-        int gap = Math.max(0, (Math.min(width - 64, 440) - playSize - skipSize * 2 - 96) / 4);
+        int gap = Math.max(0, (Math.min(width - 56, 440) - playSize - skipSize * 2 - 96) / 4);
         switch (index) {
             case 0: return center + playSize / 2 + skipSize + gap * 2;
             case 1: return center - playSize / 2 - skipSize - gap;

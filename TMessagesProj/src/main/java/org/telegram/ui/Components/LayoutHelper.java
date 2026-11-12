@@ -31,7 +31,6 @@ public class LayoutHelper {
         return (int) (size < 0 ? size : AndroidUtilities.dp(size));
     }
 
-    //region Gravity
 
     private static int getAbsoluteGravity(int gravity) {
         return Gravity.getAbsoluteGravity(gravity, LocaleController.isRTL ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR);
@@ -47,9 +46,7 @@ public class LayoutHelper {
         return LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT;
     }
 
-    //endregion
 
-    //region ScrollView
 
     public static ScrollView.LayoutParams createScroll(int width, int height, int gravity) {
         return new ScrollView.LayoutParams(getSize(width), getSize(height), gravity);
@@ -64,9 +61,7 @@ public class LayoutHelper {
         return layoutParams;
     }
 
-    //endregion
 
-    //region FrameLayout
 
     public static FrameLayout.LayoutParams createFrame(int width, float height, int gravity, float leftMargin, float topMargin, float rightMargin, float bottomMargin) {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(getSize(width), getSize(height), gravity);
@@ -115,9 +110,7 @@ public class LayoutHelper {
         return new FrameLayout.LayoutParams(getSize(width), getSize(height), getAbsoluteGravity(gravity));
     }
 
-    //endregion
 
-    //region RelativeLayout
 
     public static RelativeLayout.LayoutParams createRelative(float width, float height, int leftMargin, int topMargin, int rightMargin, int bottomMargin, int alignParent, int alignRelative, int anchorRelative) {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(getSize(width), getSize(height));
@@ -162,9 +155,7 @@ public class LayoutHelper {
         return createRelative(width, height, 0, 0, 0, 0, -1, alignRelative, anchorRelative);
     }
 
-    //endregion
 
-    //region LinearLayout
 
     public static LinearLayout.LayoutParams createLinear(int width, int height, float weight, int gravity, int leftMargin, int topMargin, int rightMargin, int bottomMargin) {
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height), weight);
@@ -267,5 +258,4 @@ public class LayoutHelper {
 
 
 
-    //endregion
 }

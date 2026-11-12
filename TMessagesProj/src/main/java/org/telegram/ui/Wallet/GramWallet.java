@@ -444,7 +444,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         requestState();
     }
 
-    /** A collectible was moved into this wallet from outside (e.g. a gift withdrawn from the profile). */
     public void onCollectibleReceived(String nftAddress) {
         AndroidUtilities.cancelRunOnUIThread(collectibleReceivedPoll);
         receivedCollectibleAddress = nftAddress;
@@ -453,7 +452,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         scheduleReceivedCollectiblePoll();
     }
 
-    // The index picks up an on-chain transfer with a delay, so keep refreshing until it shows the collectible.
     private static final long[] COLLECTIBLE_RECEIVED_DELAYS_MS = {1500, 2500, 4000, 6000, 10000, 15000, 20000};
     private String receivedCollectibleAddress;
     private int receivedCollectibleAttempt;
@@ -499,7 +497,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 final TL_wallet.TL_walletState oldState = (TL_wallet.TL_walletState) this.state;
                 final TL_wallet.TL_walletState newState = (TL_wallet.TL_walletState) state;
                 if (now - streamingBalanceReceivedTime < 30 * 1000) {
-                    // preserve balance from streaming, server might return cached balance value
                     newState.balance = oldState.balance;
                 } else {
                     serverBalanceReceivedTime = now;
@@ -755,12 +752,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
 
     private boolean isValidMessageHash(String hash) {
         if (TextUtils.isEmpty(hash)) return false;
-        try {
-            transactionHashBytes(hash);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        return transactionHashKey(hash) != null;
     }
 
     private boolean sameMessageHash(String first, String second) {
@@ -778,7 +770,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
     }
 
     private static String rawAddressToFriendly(String raw, boolean bounceable) {
-        // Bounceable, url-safe, unpadded presentation matching the server and the streaming address_book.
         try {
             int colon = raw.indexOf(':');
             if (colon < 0) return raw;
@@ -818,27 +809,123 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         );
     }
 
-    public static boolean sameTransactionHash(String first, String second) {
-        if (TextUtils.isEmpty(first) || TextUtils.isEmpty(second)) return false;
-        if (TextUtils.equals(first, second)) return true;
-        try {
-            return Arrays.equals(transactionHashBytes(first), transactionHashBytes(second));
-        } catch (IllegalArgumentException e) {
-            return false;
+    public static void mergeTransactions(ArrayList<TL_wallet.walletTransaction> target, List<TL_wallet.walletTransaction> source) {
+        final java.util.IdentityHashMap<TL_wallet.walletTransaction, java.util.TreeSet<Integer>> byObject = new java.util.IdentityHashMap<>();
+        final HashMap<String, java.util.TreeSet<Integer>> byKey = new HashMap<>();
+        for (int i = 0; i < target.size(); ++i) {
+            indexTransaction(byObject, byKey, i, target.get(i), true);
+        }
+        for (TL_wallet.walletTransaction t : source) {
+            int found = firstIndex(byObject.get(t), -1);
+            for (String key : transactionMatchKeys(t)) {
+                found = firstIndex(byKey.get(key), found);
+            }
+            if (found >= 0) {
+                final TL_wallet.walletTransaction old = target.get(found);
+                if (old != t) {
+                    indexTransaction(byObject, byKey, found, old, false);
+                    target.set(found, t);
+                    indexTransaction(byObject, byKey, found, t, true);
+                }
+            } else {
+                target.add(t);
+                indexTransaction(byObject, byKey, target.size() - 1, t, true);
+            }
         }
     }
 
-    private static byte[] transactionHashBytes(String hash) {
-        if (hash.matches("[0-9a-fA-F]{64}")) {
-            byte[] bytes = new byte[32];
-            for (int i = 0; i < bytes.length; ++i) {
-                bytes[i] = (byte) Integer.parseInt(hash.substring(i * 2, i * 2 + 2), 16);
-            }
-            return bytes;
+    private static int firstIndex(java.util.TreeSet<Integer> indices, int current) {
+        if (indices == null || indices.isEmpty()) return current;
+        final int first = indices.first();
+        return current < 0 ? first : Math.min(current, first);
+    }
+
+    private static void indexTransaction(
+        java.util.IdentityHashMap<TL_wallet.walletTransaction, java.util.TreeSet<Integer>> byObject,
+        HashMap<String, java.util.TreeSet<Integer>> byKey,
+        int index, TL_wallet.walletTransaction t, boolean add
+    ) {
+        java.util.TreeSet<Integer> indices = byObject.get(t);
+        if (add) {
+            if (indices == null) byObject.put(t, indices = new java.util.TreeSet<>());
+            indices.add(index);
+        } else if (indices != null) {
+            indices.remove(index);
         }
-        byte[] bytes = android.util.Base64.decode(hash.replace('-', '+').replace('_', '/'), android.util.Base64.DEFAULT);
-        if (bytes.length != 32) throw new IllegalArgumentException("Invalid transaction hash");
-        return bytes;
+        for (String key : transactionMatchKeys(t)) {
+            indices = byKey.get(key);
+            if (add) {
+                if (indices == null) byKey.put(key, indices = new java.util.TreeSet<>());
+                indices.add(index);
+            } else if (indices != null) {
+                indices.remove(index);
+            }
+        }
+    }
+
+    private static ArrayList<String> transactionMatchKeys(TL_wallet.walletTransaction t) {
+        final ArrayList<String> keys = new ArrayList<>(5);
+        if (t == null) return keys;
+        if (!TextUtils.isEmpty(t.id)) keys.add("i" + t.id);
+        addHashMatchKey(keys, 't', t.tx_hash);
+        addHashMatchKey(keys, 'm', t.messageHash);
+        if (!t.incoming) {
+            addHashMatchKey(keys, 'g', t.gaslessMessageBodyHash);
+            addHashMatchKey(keys, 'n', t.normalMessageBodyHash);
+        }
+        return keys;
+    }
+
+    private static void addHashMatchKey(ArrayList<String> keys, char field, String hash) {
+        if (TextUtils.isEmpty(hash)) return;
+        final String key = transactionHashKey(hash);
+        keys.add(key != null ? field + "x" + key : field + "r" + hash);
+    }
+
+    public static boolean sameTransactionHash(String first, String second) {
+        if (TextUtils.isEmpty(first) || TextUtils.isEmpty(second)) return false;
+        if (TextUtils.equals(first, second)) return true;
+        final String a = transactionHashKey(first);
+        return a != null && a.equals(transactionHashKey(second));
+    }
+
+    private static final android.util.LruCache<String, String> transactionHashKeys = new android.util.LruCache<>(4096);
+
+    @Nullable
+    public static String transactionHashKey(String hash) {
+        if (TextUtils.isEmpty(hash)) return null;
+        String key = transactionHashKeys.get(hash);
+        if (key == null) {
+            key = computeTransactionHashKey(hash);
+            transactionHashKeys.put(hash, key);
+        }
+        return key.isEmpty() ? null : key;
+    }
+
+    private static String computeTransactionHashKey(String hash) {
+        if (isHex64(hash)) return hash.toLowerCase(Locale.ROOT);
+        final byte[] bytes;
+        try {
+            bytes = android.util.Base64.decode(hash.replace('-', '+').replace('_', '/'), android.util.Base64.DEFAULT);
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
+        if (bytes.length != 32) return "";
+        final StringBuilder sb = new StringBuilder(64);
+        for (byte b : bytes) {
+            sb.append(Character.forDigit((b >> 4) & 15, 16));
+            sb.append(Character.forDigit(b & 15, 16));
+        }
+        return sb.toString();
+    }
+
+    private static boolean isHex64(String s) {
+        if (s.length() != 64) return false;
+        for (int i = 0; i < 64; ++i) {
+            final char c = s.charAt(i);
+            if (!(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')) return false;
+        }
+        return true;
     }
 
     private static String transferRawAddress(String address) {
@@ -847,7 +934,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         try {
             byte[] bytes = android.util.Base64.decode(address.replace('-', '+').replace('_', '/'), android.util.Base64.DEFAULT);
             if (bytes.length != 36) return null;
-            // Compare workchain + account ID, ignoring friendly-address presentation flags.
             StringBuilder raw = new StringBuilder().append((int) bytes[1]).append(':');
             for (int i = 2; i < 34; ++i) {
                 raw.append(Character.forDigit((bytes[i] >> 4) & 15, 16));
@@ -968,11 +1054,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 whenDone.run(500_000L, null);
                 return;
             }
-//            if (gasless != null && gasless.available && gasless.left > 0) {
-//                log("emulate disable backup: we have gasless");
-//                whenDone.run(0L, null);
-//                return;
-//            }
             if (engine == null) {
                 err("emulate disable backup: no engine!");
                 whenDone.run(null, "NULL_ENGINE");
@@ -999,7 +1080,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         }
     }
 
-    public void prepareDisableBackup(Utilities.Callback2<PreparedDisableBackup, String /* error, null if successful */> whenDone) {
+    public void prepareDisableBackup(Utilities.Callback2<PreparedDisableBackup, String                                > whenDone) {
         log("prepare disable backup");
         getSecretPhrase(true, false, (secretPhrase, error) -> {
             if (secretPhrase == null) {
@@ -1121,8 +1202,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 pending.msg_hash = sentTransfer.msg_hash;
                 pending.publicKey = prepared.newPublicKey;
                 pending.secretPhrase = replacement;
-//                pending.publicKey = publicKey;
-//                pending.secretPhrase = currentPhrase;
                 if (sentTransfer.transaction != null) {
                     pending.disableBackup();
                 } else {
@@ -1166,7 +1245,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         int offset = 0;
         boolean separator = false;
         try {
-            // Join words with a single ASCII space without creating an immutable secret String.
             for (byte value : phrase) {
                 if (SecretPhrase.isSeparator(value)) {
                     separator = offset > 0;
@@ -1337,23 +1415,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                             finish.run(null);
                         });
                     });
-//                    PasswordRequest.open(currentAccount, password -> {
-//                        request.password = password;
-//                        if (BuildVars.LOGS_ENABLED) {
-//                            log("enable backup: diagnostics sending parts=" + request.parts.size()
-//                                + " requestBytes=" + request.getObjectSize() + " passwordPresent=" + (password != null));
-//                        }
-//                        return request;
-//                    }, (state, error4, password) -> {
-//                        if (error4 != null) {
-//                            err("enable backup: server rejected request code=" + error4.code + " error=" + error4.text);
-//                            finish.run(error4.text == null ? "NULL_ERROR" : error4.text);
-//                            return;
-//                        }
-//                        log("enable backup: server accepted request");
-//                        updateState(state);
-//                        finish.run(null);
-//                    });
                 });
             });
         });
@@ -1511,12 +1572,10 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 .put("payload", android.util.Base64.encodeToString(deposit.payload, android.util.Base64.NO_WRAP)))));
     }
 
-    /** Sends a server-prepared NFT transfer (payments.depositStarGift) moving the collectible to a Telegram account. */
     public void depositNFT(TLRPC.User user, TL_wallet.nftItem collectible, TL_stars.starGiftDepositPayload deposit, Utilities.Callback<String> whenSent) {
         depositNFT(user, collectible, deposit, whenSent, null);
     }
 
-    /** whenCompleted receives whether the queued transaction eventually succeeded. */
     public void depositNFT(TLRPC.User user, TL_wallet.nftItem collectible, TL_stars.starGiftDepositPayload deposit, Utilities.Callback<String> whenSent, Utilities.Callback<Boolean> whenCompleted) {
         final GramWalletTonConnect.Transaction raw;
         final String address;
@@ -1531,7 +1590,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         send(user, address, 0, null, null, collectible, null, whenSent, whenCompleted == null ? null : transaction -> completionCallbacks.put(transaction, whenCompleted), raw);
     }
 
-    /** Emulates depositNFT with a fake signature to estimate its fee; never unlocks the phrase. */
     public Runnable emulateDepositNFT(TL_stars.starGiftDepositPayload deposit, Utilities.Callback2<TL_wallet.walletTransaction, String> whenDone) {
         final GramWalletTonConnect.Transaction raw;
         try {
@@ -1596,7 +1654,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     transaction.amount = amount;
                     transaction.nft = collectible;
                     if (raw != null && collectible != null) {
-                        // Server-prepared deposit: the destination is the gift contract, show it like server's gift transfer.
                         final TL_wallet.walletTransactionPeerTelegramGift peer = new TL_wallet.walletTransactionPeerTelegramGift();
                         peer.own_profile = user != null && user.id == UserConfig.getInstance(currentAccount).getClientUserId();
                         transaction.peer = peer;
@@ -1628,7 +1685,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     final MessageObject localMessage = user != null && user.id != UserConfig.getInstance(currentAccount).getClientUserId() && collectible == null
                             ? sendMessages.createSendingGramTransfer(user, address, amount, transaction.comment, transaction.comment_encrypted, transaction.comment_encrypted_preparing, random_id)
                             : null;
-                    // Normal chat history does not restore random_id from storage.
                     transaction.localMessageId = localMessage == null ? 0 : localMessage.getId();
 
                     if (whenQueued != null) whenQueued.run(transaction);
@@ -1721,7 +1777,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         });
     }
 
-    public void decryptTransactionComment(String encryptedComment, String senderAddress, Utilities.Callback2<String /* comment */, String /* error */> whenDone) {
+    public void decryptTransactionComment(String encryptedComment, String senderAddress, Utilities.Callback2<String              , String            > whenDone) {
         log("decrypting transaction comment");
         getSecretPhrase(true, false, (phrase, error) -> {
             if (phrase == null) {
@@ -1809,12 +1865,11 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         }
     }
 
-    /** The phrase is valid only during received.run(); copy it before retaining it. */
-    public void getSecretPhrase(Utilities.Callback2<SecretPhrase /* secretPhrase */, String /* error */> received) {
+    public void getSecretPhrase(Utilities.Callback2<SecretPhrase                   , String            > received) {
         getSecretPhrase(false, true, received);
     }
 
-    public void getSecretPhrase(boolean sheet, boolean progress, Utilities.Callback2<SecretPhrase /* secretPhrase */, String /* error */> received) {
+    public void getSecretPhrase(boolean sheet, boolean progress, Utilities.Callback2<SecretPhrase                   , String            > received) {
         log("getSecretPhrase: whenReady...");
         whenReady(() -> {
             log("getSecretPhrase: ready!");
@@ -1845,7 +1900,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         });
     }
 
-    private void fetchSecretPhrase(TL_wallet.secretPhraseParts secretPhraseParts, Utilities.Callback2<SecretPhrase /* secretPhrase */, String /* error */> received) {
+    private void fetchSecretPhrase(TL_wallet.secretPhraseParts secretPhraseParts, Utilities.Callback2<SecretPhrase                   , String            > received) {
         final ArrayList<Integer> dcs = secretPhraseParts.dcs;
         if (dcs.size() <= 0) {
             err("getSecretPhrase: no secret parts, zero dcs");
@@ -1889,8 +1944,8 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         }
     }
 
-    private void completeFetchingSecretPhrase(long private_key, TL_wallet.encryptedSecretPhrasePart[] parts, TLRPC.TL_error[] errors, Utilities.Callback2<SecretPhrase /* secretPhrase */, String /* error */> received, AlertDialog progressDialog) {
-        final Utilities.Callback2<SecretPhrase /* secretPhrase */, String /* error */> done = (phrase, error) -> {
+    private void completeFetchingSecretPhrase(long private_key, TL_wallet.encryptedSecretPhrasePart[] parts, TLRPC.TL_error[] errors, Utilities.Callback2<SecretPhrase                   , String            > received, AlertDialog progressDialog) {
+        final Utilities.Callback2<SecretPhrase                   , String            > done = (phrase, error) -> {
             AndroidUtilities.runOnUIThread(() -> {
                 SecretPhrase.deliver(phrase, value -> {
                     progressDialog.dismiss();
@@ -1984,11 +2039,11 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         });
     }
 
-    public void makeSureSecretPhraseBackedUpLocally(Utilities.Callback<String /* error */> whenDone) {
+    public void makeSureSecretPhraseBackedUpLocally(Utilities.Callback<String            > whenDone) {
         makeSureSecretPhraseBackedUpLocally(false, true, whenDone);
     }
 
-    public void makeSureSecretPhraseBackedUpLocally(boolean sheet, boolean progress, Utilities.Callback<String /* error */> whenDone) {
+    public void makeSureSecretPhraseBackedUpLocally(boolean sheet, boolean progress, Utilities.Callback<String            > whenDone) {
         whenReady(() -> {
             final TL_wallet.TL_walletState state = (TL_wallet.TL_walletState) this.state;
             if (storage != null && TextUtils.equals(storage.getAddress(), state.address) && storage.containsSecretPhrase(state.public_key)) {
@@ -2036,7 +2091,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         });
     }
 
-    public void importWallet(SecretPhrase phrase, Utilities.Callback<String /* error */> whenDone) {
+    public void importWallet(SecretPhrase phrase, Utilities.Callback<String            > whenDone) {
         importWallet(false, true, phrase, whenDone);
     }
 
@@ -2083,7 +2138,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 return;
             }
             updateState(state);
-            // Import completes only after local persistence; propagate storage/authentication failures.
             new GramWalletStorage(getContext(), currentAccount, getAddress())
                 .init(UserConfig.getInstance(currentAccount).getClientUserId(), public_key, owned, whenDone);
             onWalletChanged();
@@ -2096,11 +2150,11 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         requestGaslessInfo();
     }
 
-    private void proveChallenge(SecretPhrase phrase, Utilities.Callback2<WalletEngine2.ImportedWalletProof, String /* error */> whenDone) {
+    private void proveChallenge(SecretPhrase phrase, Utilities.Callback2<WalletEngine2.ImportedWalletProof, String            > whenDone) {
         proveChallenge(phrase, false, whenDone);
     }
 
-    private void proveChallenge(SecretPhrase input, boolean forImport, Utilities.Callback2<WalletEngine2.ImportedWalletProof, String /* error */> whenDone) {
+    private void proveChallenge(SecretPhrase input, boolean forImport, Utilities.Callback2<WalletEngine2.ImportedWalletProof, String            > whenDone) {
         final SecretPhrase phrase = input.copy();
         log("requesting proof challenge");
         getConnectionsManager().sendRequestTyped(new TL_wallet.getProofChallenge(), AndroidUtilities::runOnUIThread, (challenge, err) -> {
@@ -2168,7 +2222,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
 
     private final HashMap<Long, TL_wallet.walletUserAddress> cachedWalletResolvesByUser = new HashMap<>();
     private final HashMap<String, TL_wallet.walletUserAddress> cachedWalletResolvesByAddress = new HashMap<>();
-    public void resolveWallet(TLRPC.User user, boolean force, Utilities.Callback2<TL_wallet.walletUserAddress, String /* error */> whenDone) {
+    public void resolveWallet(TLRPC.User user, boolean force, Utilities.Callback2<TL_wallet.walletUserAddress, String            > whenDone) {
         if (user == null) {
             whenDone.run(null, null);
             return;
@@ -2196,7 +2250,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
             whenDone.run(resolved, null);
         });
     }
-    public void resolveWallet(String address, Utilities.Callback2<TL_wallet.walletUserAddress, String /* error */> whenDone) {
+    public void resolveWallet(String address, Utilities.Callback2<TL_wallet.walletUserAddress, String            > whenDone) {
         if (address == null) {
             whenDone.run(null, null);
             return;
@@ -2439,8 +2493,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     lastOffset = result.next_offset;
                     endReached = TextUtils.isEmpty(lastOffset);
                     loaded = true;
-                    // Retire successful sends only after the complete inventory agrees.
-                    // Until then, the index may still return the previous owner's NFT.
                     if (endReached) {
                         for (int i = collectibleTransfers.size() - 1; i >= 0; --i) {
                             TL_wallet.walletTransaction transfer = collectibleTransfers.get(i);
@@ -2468,7 +2520,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
             serverCollectibles.add(item);
         }
 
-        /** Whether the collectible is being sent away and should no longer be shown as owned. */
         public boolean isSending(String address) {
             for (TL_wallet.walletTransaction transfer : collectibleTransfers) {
                 if (!transfer.failed && transfer.nft != null && addressEquals(transfer.nft.address, address)) return true;
@@ -2566,8 +2617,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         public ArrayList<TL_wallet.walletTransaction> transactions = new ArrayList<>();
         public ArrayList<TL_wallet.walletTransaction> allTransactions = new ArrayList<>();
         private final HashSet<String> streamTransactionIds = new HashSet<>();
-        private final HashMap<String, String> streamTraces = new HashMap<>(); // transaction id -> trace, until finalized
-        // stream id -> row that represents it; a signed send keeps its own object, whose id becomes the server id later
+        private final HashMap<String, String> streamTraces = new HashMap<>();
         private final HashMap<String, TL_wallet.walletTransaction> streamRows = new HashMap<>();
 
         private void onStreamEvent(JSONObject event) {
@@ -2617,13 +2667,10 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     continue;
                 }
                 if (signed == null && matchesPendingTransaction(converted)) {
-                    // A pending send placeholder owns this row; the RPC update will complete it.
                     streamTransactionIds.remove(id);
                     streamTraces.remove(id);
                     continue;
                 }
-                // Insert the signed send itself: the RPC callback still holds it and sets the
-                // server id on it, so the server's history row replaces it instead of duplicating.
                 final TL_wallet.walletTransaction row = signed != null ? signed : converted;
                 insertStreamTransaction(row);
                 streamRows.put(id, row);
@@ -2635,8 +2682,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 resolveStreamPeer(row);
             }
             if (signedRow != null) {
-                // The server may list the trace under another of its transactions (e.g. the excess
-                // returned by an NFT contract after a transfer), which the stream skips as too small.
                 for (String id : skippedIds) {
                     if (!streamRows.containsKey(id)) streamRows.put(id, signedRow);
                 }
@@ -2662,7 +2707,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 final boolean aborted = description.optBoolean("aborted");
                 final JSONObject compute = description.optJSONObject("compute_ph");
                 final boolean executed = compute != null && !compute.optBoolean("skipped");
-                // When the account executed code, a failed run (non-zero exit) is never a clean transfer.
                 if (executed && !(compute.optBoolean("success") && compute.optInt("exit_code") == 0)) return null;
 
                 final String address = getAddress();
@@ -2675,7 +2719,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                         final JSONObject output = outputs.optJSONObject(i);
                         if (output == null) continue;
                         if (output.optBoolean("bounced")) { bounced = true; continue; }
-                        // External-out messages carry no TON value.
                         if (output.isNull("value")) continue;
                         final long value = Long.parseLong(output.getString("value"));
                         if (value > 0 && !addressEquals(output.getString("destination"), address)) transfers.add(output);
@@ -2683,7 +2726,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 }
                 final boolean incoming = !bounced
                         && input != null
-                        // External-in messages have neither an internal source nor a value.
                         && !input.isNull("source")
                         && !input.isNull("value")
                         && addressEquals(input.getString("destination"), address)
@@ -2694,8 +2736,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 final boolean outgoing = !incoming && !bounced && !aborted && transfers.size() == 1;
                 if (!incoming && !outgoing) return null;
                 if (outgoing) {
-                    // Only trust a send whose action phase actually succeeded; failed sends
-                    // surface through the pending-transaction flow instead.
                     final JSONObject action = description.optJSONObject("action");
                     if (action == null || !action.optBoolean("success") || action.optBoolean("no_funds") || action.optInt("result_code") != 0) return null;
                 }
@@ -2784,18 +2824,14 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                 if (pending.incoming || !(gasless || normal)) continue;
                 remote.gasless = gasless;
                 if (remote.nft == null && pending.nft != null) {
-                    // The stream describes the TON message to the NFT contract, not the
-                    // collectible transfer. Retain the signed send's display metadata.
                     remote.nft = pending.nft;
                     remote.peer = pending.peer;
                     remote.amount = pending.amount;
                     remote.comment = pending.comment;
                 }
                 if (pending.pending || pending.failed || TextUtils.isEmpty(pending.id)) {
-                    // Update the object retained by the RPC callback too, including after an RPC failure.
                     applyConfirmedTransaction(pending, remote);
                 } else {
-                    // Already confirmed by the server: keep its id so its history row matches.
                     pending.gasless = remote.gasless;
                 }
                 pending.pending = false;
@@ -2838,7 +2874,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
             return false;
         }
 
-        /** Server row lookup: by id, then by stream rows whose id differs from the server's (signed sends, NFT transfers). */
         private TL_wallet.walletTransaction findLocalTransaction(TL_wallet.walletTransaction remote) {
             final TL_wallet.walletTransaction byId = findTransactionById(transactions, remote.id);
             if (byId != null) return byId;
@@ -2851,7 +2886,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
             return null;
         }
 
-        /** The server now lists {@code remote}; stream rows representing it no longer need to be retained. */
         private void forgetStreamRows(TL_wallet.walletTransaction remote) {
             streamTraces.remove(remote.id);
             final TL_wallet.walletTransaction aliased = streamRows.get(remote.id);
@@ -2947,9 +2981,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         public void invalidate() {
             if (loadingInvalidation) return;
 
-            // something happened, we are expecting new transaction
-            // fetch first page of transactions, update ones that are already locally
-            // if we see a gap, reset the list
 
             final TL_wallet.getTransactions req = new TL_wallet.getTransactions();
             req.inbound = true;
@@ -2988,7 +3019,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                         }
                         this.transactions.clear();
                         this.transactions.addAll(result.transactions);
-                        // The wallet index can lag behind the stream; retain unmatched live transactions.
                         for (TL_wallet.walletTransaction entry : streamed) {
                             if (isStreamRow(entry)) {
                                 insertStreamTransaction(entry);
@@ -3028,7 +3058,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     if ((!TextUtils.isEmpty(pending.id) && TextUtils.equals(pending.id, remote.id))
                             || pending.incoming == remote.incoming && (sameTransactionHash(pending.tx_hash, remote.tx_hash)
                             || sameTransactionHash(pending.messageHash, remote.messageHash))) {
-                        // Keep the signed body hashes so a later stream event for this send matches the row.
                         if (TextUtils.isEmpty(remote.gaslessMessageBodyHash)) remote.gaslessMessageBodyHash = pending.gaslessMessageBodyHash;
                         if (TextUtils.isEmpty(remote.normalMessageBodyHash)) remote.normalMessageBodyHash = pending.normalMessageBodyHash;
                         pendingTransactions.remove(i);
@@ -3038,7 +3067,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
                     }
                 }
             }
-            // A stream row gets the server id once its send completes; drop the server's copy if it came first.
             final HashSet<String> ids = new HashSet<>();
             for (int i = 0; i < transactions.size(); ++i) {
                 final String id = transactions.get(i).id;
@@ -3189,7 +3217,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         return gramsFormat.format(amount / 1_000_000_000.0);
     }
 
-    // Balances are truncated (two decimals from one gram, three below), so the shown amount is never more than what's available.
     public static String formatGramsBalance(long amount, boolean manyZeros) {
         final boolean overOne = amount <= -1_000_000_000L || amount >= 1_000_000_000L;
         if (manyZeros && overOne) {
@@ -3228,7 +3255,6 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
     }
 
     private static CharSequence formatAmountWithUnit(String key, int otherRes, CharSequence formattedAmount) {
-        // Wallet transfer amounts use an en dash for the outgoing sign.
         final String number = formattedAmount.toString().replace('\u2013', '-');
         String template = getString(otherRes);
         if (number.indexOf('.') < 0) {

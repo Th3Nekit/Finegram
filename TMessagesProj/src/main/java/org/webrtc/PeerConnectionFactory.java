@@ -21,10 +21,6 @@ import org.webrtc.RtpCapabilities;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
 
-/**
- * Java wrapper for a C++ PeerConnectionFactoryInterface.  Main entry point to
- * the PeerConnection API for clients.
- */
 public class PeerConnectionFactory {
   public static final String TRIAL_ENABLED = "Enabled";
   @Deprecated public static final String VIDEO_FRAME_EMIT_TRIAL = "VideoFrameEmit";
@@ -32,7 +28,6 @@ public class PeerConnectionFactory {
   private static final String TAG = "PeerConnectionFactory";
   private static final String VIDEO_CAPTURER_THREAD_NAME = "VideoCapturerThread";
 
-  /** Helper class holding both Java and C++ thread info. */
   private static class ThreadInfo {
     final Thread thread;
     final int tid;
@@ -49,7 +44,6 @@ public class PeerConnectionFactory {
 
   private static volatile boolean internalTracerInitialized;
 
-  // Remove these once deprecated static printStackTrace() is gone.
   @Nullable private static ThreadInfo staticNetworkThread;
   @Nullable private static ThreadInfo staticWorkerThread;
   @Nullable private static ThreadInfo staticSignalingThread;
@@ -133,9 +127,6 @@ public class PeerConnectionFactory {
   }
 
   public static class Options {
-    // Keep in sync with webrtc/rtc_base/network.h!
-    //
-    // These bit fields are defined for `networkIgnoreMask` below.
     public static final int ADAPTER_TYPE_UNKNOWN = 0;
     public static final int ADAPTER_TYPE_ETHERNET = 1 << 0;
     public static final int ADAPTER_TYPE_WIFI = 1 << 1;
@@ -248,12 +239,6 @@ public class PeerConnectionFactory {
       return this;
     }
 
-    /**
-     * Sets a NetEqFactoryFactory for the PeerConnectionFactory. When using a
-     * custom NetEqFactoryFactory, the AudioDecoderFactoryFactory will be set
-     * to null. The AudioDecoderFactoryFactory should be wrapped in the
-     * NetEqFactoryFactory.
-     */
     public Builder setNetEqFactoryFactory(NetEqFactoryFactory neteqFactoryFactory) {
       this.neteqFactoryFactory = neteqFactoryFactory;
       return this;
@@ -286,11 +271,6 @@ public class PeerConnectionFactory {
     return new Builder();
   }
 
-  /**
-   * Loads and initializes WebRTC. This must be called at least once before creating a
-   * PeerConnectionFactory. Replaces all the old initialization methods. Must not be called while
-   * a PeerConnectionFactory is alive.
-   */
   public static void initialize(InitializationOptions options) {
     ContextUtils.initialize(options.applicationContext);
     NativeLibrary.initialize(options.nativeLibraryLoader, options.nativeLibraryName);
@@ -329,25 +309,14 @@ public class PeerConnectionFactory {
     nativeShutdownInternalTracer();
   }
 
-  // Field trial initialization. Must be called before PeerConnectionFactory
-  // is created.
-  // Deprecated, use PeerConnectionFactory.initialize instead.
   @Deprecated
   public static void initializeFieldTrials(String fieldTrialsInitString) {
     nativeInitializeFieldTrials(fieldTrialsInitString);
   }
 
-  // Wrapper of webrtc::field_trial::FindFullName. Develop the feature with default behaviour off.
-  // Example usage:
-  // if (PeerConnectionFactory.fieldTrialsFindFullName("WebRTCExperiment").equals("Enabled")) {
-  //   method1();
-  // } else {
-  //   method2();
-  // }
   public static String fieldTrialsFindFullName(String name) {
     return NativeLibrary.isLoaded() ? nativeFindFieldTrialsFullName(name) : "";
   }
-  // Start/stop internal capturing of internal tracing.
   public static boolean startInternalTracingCapture(String tracingFilename) {
     return nativeStartInternalTracingCapture(tracingFilename);
   }
@@ -365,9 +334,6 @@ public class PeerConnectionFactory {
     this.nativeFactory = nativeFactory;
   }
 
-  /**
-   * Internal helper function to pass the parameters down into the native JNI bridge.
-   */
   @Nullable
   PeerConnection createPeerConnectionInternal(PeerConnection.RTCConfiguration rtcConfig,
       MediaConstraints constraints, PeerConnection.Observer observer,
@@ -385,22 +351,14 @@ public class PeerConnectionFactory {
     return new PeerConnection(nativePeerConnection);
   }
 
-  /**
-   * Deprecated. PeerConnection constraints are deprecated. Supply values in rtcConfig struct
-   * instead and use the method without constraints in the signature.
-   */
   @Nullable
   @Deprecated
   public PeerConnection createPeerConnection(PeerConnection.RTCConfiguration rtcConfig,
       MediaConstraints constraints, PeerConnection.Observer observer) {
     return createPeerConnectionInternal(
-        rtcConfig, constraints, observer, /* sslCertificateVerifier= */ null);
+        rtcConfig, constraints, observer,                               null);
   }
 
-  /**
-   * Deprecated. PeerConnection constraints are deprecated. Supply values in rtcConfig struct
-   * instead and use the method without constraints in the signature.
-   */
   @Nullable
   @Deprecated
   public PeerConnection createPeerConnection(List<PeerConnection.IceServer> iceServers,
@@ -421,13 +379,13 @@ public class PeerConnectionFactory {
   @Nullable
   public PeerConnection createPeerConnection(
       PeerConnection.RTCConfiguration rtcConfig, PeerConnection.Observer observer) {
-    return createPeerConnection(rtcConfig, null /* constraints */, observer);
+    return createPeerConnection(rtcConfig, null                  , observer);
   }
 
   @Nullable
   public PeerConnection createPeerConnection(
       PeerConnection.RTCConfiguration rtcConfig, PeerConnectionDependencies dependencies) {
-    return createPeerConnectionInternal(rtcConfig, null /* constraints */,
+    return createPeerConnectionInternal(rtcConfig, null                  ,
         dependencies.getObserver(), dependencies.getSSLCertificateVerifier());
   }
 
@@ -436,25 +394,13 @@ public class PeerConnectionFactory {
     return new MediaStream(nativeCreateLocalMediaStream(nativeFactory, label));
   }
 
-  /**
-   * Create video source with given parameters. If alignTimestamps is false, the caller is
-   * responsible for aligning the frame timestamps to rtc::TimeNanos(). This can be used to achieve
-   * higher accuracy if there is a big delay between frame creation and frames being delivered to
-   * the returned video source. If alignTimestamps is true, timestamps will be aligned to
-   * rtc::TimeNanos() when they arrive to the returned video source.
-   */
   public VideoSource createVideoSource(boolean isScreencast, boolean alignTimestamps) {
     checkPeerConnectionFactoryExists();
     return new VideoSource(nativeCreateVideoSource(nativeFactory, isScreencast, alignTimestamps));
   }
 
-  /**
-   * Same as above with alignTimestamps set to true.
-   *
-   * @see #createVideoSource(boolean, boolean)
-   */
   public VideoSource createVideoSource(boolean isScreencast) {
-    return createVideoSource(isScreencast, /* alignTimestamps= */ true);
+    return createVideoSource(isScreencast,                        true);
   }
 
   public VideoTrack createVideoTrack(String id, VideoSource source) {
@@ -483,16 +429,11 @@ public class PeerConnectionFactory {
     return nativeGetRtpSenderCapabilities(nativeFactory, mediaType);
   }
 
-  // Starts recording an AEC dump. Ownership of the file is transfered to the
-  // native code. If an AEC dump is already in progress, it will be stopped and
-  // a new one will start using the provided file.
   public boolean startAecDump(int file_descriptor, int filesize_limit_bytes) {
     checkPeerConnectionFactoryExists();
     return nativeStartAecDump(nativeFactory, file_descriptor, filesize_limit_bytes);
   }
 
-  // Stops recording an AEC dump. If no AEC dump is currently being recorded,
-  // this call will have no effect.
   public void stopAecDump() {
     checkPeerConnectionFactoryExists();
     nativeStopAecDump(nativeFactory);
@@ -507,13 +448,11 @@ public class PeerConnectionFactory {
     nativeFactory = 0;
   }
 
-  /** Returns a pointer to the native webrtc::PeerConnectionFactoryInterface. */
   public long getNativePeerConnectionFactory() {
     checkPeerConnectionFactoryExists();
     return nativeGetNativePeerConnectionFactory(nativeFactory);
   }
 
-  /** Returns a pointer to the native OwnedFactoryAndThreads object */
   public long getNativeOwnedFactoryAndThreads() {
     checkPeerConnectionFactoryExists();
     return nativeFactory;
@@ -528,7 +467,6 @@ public class PeerConnectionFactory {
   private static void printStackTrace(
       @Nullable ThreadInfo threadInfo, boolean printNativeStackTrace) {
     if (threadInfo == null) {
-      // Thread callbacks have not been completed yet, ignore call.
       return;
     }
     final String threadName = threadInfo.thread.getName();
@@ -540,8 +478,6 @@ public class PeerConnectionFactory {
       }
     }
     if (printNativeStackTrace) {
-      // Imitate output from debuggerd/tombstone so that stack trace can easily be symbolized with
-      // ndk-stack.
       Logging.w(TAG, "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***");
       Logging.w(TAG,
           "pid: " + Process.myPid() + ", tid: " + threadInfo.tid + ", name: " + threadName
@@ -550,19 +486,13 @@ public class PeerConnectionFactory {
     }
   }
 
-  /** Deprecated, use non-static version instead. */
   @Deprecated
   public static void printStackTraces() {
-    printStackTrace(staticNetworkThread, /* printNativeStackTrace= */ false);
-    printStackTrace(staticWorkerThread, /* printNativeStackTrace= */ false);
-    printStackTrace(staticSignalingThread, /* printNativeStackTrace= */ false);
+    printStackTrace(staticNetworkThread,                              false);
+    printStackTrace(staticWorkerThread,                              false);
+    printStackTrace(staticSignalingThread,                              false);
   }
 
-  /**
-   * Print the Java stack traces for the critical threads used by PeerConnectionFactory, namely;
-   * signaling thread, worker thread, and network thread. If printNativeStackTraces is true, also
-   * attempt to print the C++ stack traces for these threads.
-   */
   public void printInternalStackTraces(boolean printNativeStackTraces) {
     printStackTrace(signalingThread, printNativeStackTraces);
     printStackTrace(workerThread, printNativeStackTraces);
@@ -590,14 +520,10 @@ public class PeerConnectionFactory {
     Logging.d(TAG, "onSignalingThreadReady");
   }
 
-  // Must be called at least once before creating a PeerConnectionFactory
-  // (for example, at application startup time).
   private static native void nativeInitializeAndroidGlobals();
   private static native void nativeInitializeFieldTrials(String fieldTrialsInitString);
   private static native String nativeFindFieldTrialsFullName(String name);
   private static native void nativeInitializeInternalTracer();
-  // Internal tracing shutdown, called to prevent resource leaks. Must be called after
-  // PeerConnectionFactory is gone to prevent races with code performing tracing.
   private static native void nativeShutdownInternalTracer();
   private static native boolean nativeStartInternalTracingCapture(String tracingFilename);
   private static native void nativeStopInternalTracingCapture();

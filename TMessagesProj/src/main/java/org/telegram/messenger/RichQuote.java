@@ -14,11 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 
-/**
- * Quoting a fragment of a rich message: quote_rich is a list of RichText fragments, one per quoted text node
- * of the original in document order. The first fragment may be a suffix of its node, the last one a prefix,
- * the ones in between are the original nodes as they are.
- */
 public class RichQuote {
 
     public static final int MAX_FRAGMENTS = 32;
@@ -31,7 +26,6 @@ public class RichQuote {
         this.offset = offset;
     }
 
-    /* ---------- quotable nodes ---------- */
 
     public static ArrayList<TL_iv.RichText> collectNodes(TL_iv.RichMessage message) {
         final ArrayList<TL_iv.RichText> out = new ArrayList<>();
@@ -127,7 +121,6 @@ public class RichQuote {
         }
     }
 
-    /* ---------- flat text ---------- */
 
     public static String flatText(TL_iv.RichText text) {
         final StringBuilder sb = new StringBuilder();
@@ -139,7 +132,6 @@ public class RichQuote {
         return flatText(text).length();
     }
 
-    /** Fragments joined with \n, as plain text with entities, for displaying the quote. */
     public static String flatText(ArrayList<TL_iv.RichText> fragments, ArrayList<TLRPC.MessageEntity> entities) {
         final StringBuilder sb = new StringBuilder();
         if (fragments != null) {
@@ -220,7 +212,6 @@ public class RichQuote {
         entities.add(entity);
     }
 
-    /** Fills quote_text and quote_entities from quote_rich, so the reply header can be displayed like a plain quote. */
     public static void fillFlat(TLRPC.MessageReplyHeader header) {
         if (header == null || header.quote_rich == null || header.quote_text != null || ApplicationLoader.isAndroidTestEnvironment()) {
             return;
@@ -234,7 +225,6 @@ public class RichQuote {
         }
     }
 
-    /* ---------- building from a selection ---------- */
 
     private static class Position {
         final RichMessageLayout.QuoteRootSpan root;
@@ -257,7 +247,6 @@ public class RichQuote {
         );
     }
 
-    /** start and end are offsets in RichMessageLayout.joinedText */
     public static RichQuote fromSelection(MessageObject messageObject, int start, int end) {
         if (!canQuote(messageObject)) {
             return null;
@@ -292,7 +281,6 @@ public class RichQuote {
         if (range.toIndex - range.fromIndex + 1 > MAX_FRAGMENTS) {
             range.setEnd(range.fromIndex + MAX_FRAGMENTS - 1, Integer.MAX_VALUE);
         }
-        // limit the length: cut the selection at the fragment where it's exceeded
         for (int attempt = 0; attempt < 8 && range.toIndex >= range.fromIndex; ++attempt) {
             int length = 0;
             boolean exceeded = false;
@@ -301,7 +289,6 @@ public class RichQuote {
                 final int len = flat.codePointCount(0, flat.length());
                 if (length + len > maxLength) {
                     final int remaining = maxLength - length;
-                    // the limit is in flat text, the cut is in formatted text: math and buttons are a single placeholder there
                     final int cut = remaining <= 0 ? -1 : range.formattedOffset(i, flat.offsetByCodePoints(0, remaining));
                     if (remaining <= 0 || cut <= range.startOffset(i) || i == range.toIndex && cut >= range.toOffset) {
                         range.setEnd(i - 1, Integer.MAX_VALUE);
@@ -342,13 +329,7 @@ public class RichQuote {
         return new RichQuote(fragments, offset);
     }
 
-    /* ---------- finding a quote ---------- */
 
-    /**
-     * Finds a quote in a rich message: quote is the flat text of the quote fragments joined with \n (as filled into quote_text),
-     * which is a substring of the flat texts of all the quotable nodes joined with \n.
-     * Returns [start, end) in RichMessageLayout.joinedText or null.
-     */
     public static int[] findQuote(MessageObject messageObject, String quote, int quoteOffset) {
         if (messageObject == null || messageObject.richLayout == null || TextUtils.isEmpty(quote)) {
             return null;
@@ -397,7 +378,6 @@ public class RichQuote {
         return new int[] { joinedStart, joinedEnd };
     }
 
-    /** whether the flat text of a quote is still in the message, see findQuote() */
     public static boolean containsQuote(TL_iv.RichMessage message, String quote) {
         if (message == null || TextUtils.isEmpty(quote)) {
             return false;
@@ -411,7 +391,6 @@ public class RichQuote {
         return all.indexOf(quote) >= 0;
     }
 
-    /** Collapsed details blocks hiding a part of the quote, see findQuote() */
     public static ArrayList<RichMessageLayout.RichDetailsBlock> findCollapsedDetails(MessageObject messageObject, String quote, int quoteOffset) {
         final ArrayList<RichMessageLayout.RichDetailsBlock> result = new ArrayList<>();
         if (messageObject == null || messageObject.richLayout == null || TextUtils.isEmpty(quote)) {
@@ -432,7 +411,6 @@ public class RichQuote {
         }
         final int end = start + quote.length();
 
-        // root node -> block containing it, visible or not
         final IdentityHashMap<TL_iv.RichText, RichMessageLayout.RichBlock> blocks = new IdentityHashMap<>();
         for (RichMessageLayout.RichBlock block : layout.blocks) {
             final TextSelectionHelper.TextLayoutBlock[] texts = block.getText();
@@ -461,7 +439,6 @@ public class RichQuote {
         return result;
     }
 
-    /** root node -> [start, end, flags] of its text in RichMessageLayout.joinedText */
     private static IdentityHashMap<TL_iv.RichText, int[]> findDisplayed(RichMessageLayout layout) {
         final IdentityHashMap<TL_iv.RichText, int[]> result = new IdentityHashMap<>();
         for (int i = 0; i < layout.textBlocks.size(); ++i) {
@@ -477,7 +454,6 @@ public class RichQuote {
         return result;
     }
 
-    /** converts an offset in the flat text of a node to an offset in its formatted text */
     private static int flatToFormatted(RichMessageLayout layout, TL_iv.RichText node, int flags, int flatOffset, boolean isEnd) {
         final IdentityHashMap<TL_iv.RichText, int[]> ranges = new IdentityHashMap<>();
         final CharSequence formatted = layout.formatTextRecording(node, flags, ranges);
@@ -515,7 +491,6 @@ public class RichQuote {
         if (text instanceof TL_iv.textPlain && range[1] - range[0] == length) {
             return range[0] + Math.max(0, local);
         }
-        // math, emoji and buttons aren't cut: either the start or the end of the node
         return !isEnd || local <= 0 ? range[0] : range[1];
     }
 
@@ -559,7 +534,6 @@ public class RichQuote {
             return slicer(i).slice(from, to);
         }
 
-        /** converts an offset in the flat text of fragment(i) to an offset in the formatted text of nodes[i], atomic nodes are left out */
         int formattedOffset(int i, int flatOffset) {
             final Sliced slicer = slicer(i);
             if (i == fromIndex && fromOffset > 0) {
@@ -587,7 +561,6 @@ public class RichQuote {
         final int count = layout.textBlocks.size();
         final int step = forward ? 1 : -1;
         int i = forward ? 0 : count - 1;
-        // find the text block containing the position
         for (; forward ? i < count : i >= 0; i += step) {
             final int blockStart = layout.textBlockCharOffsets.get(i);
             final CharSequence text = getText(layout.textBlocks.get(i));
@@ -624,7 +597,6 @@ public class RichQuote {
         return layout == null ? null : layout.getText();
     }
 
-    /* ---------- slicing ---------- */
 
     private static class Sliced {
         final TL_iv.RichText root;
@@ -642,7 +614,6 @@ public class RichQuote {
         static Sliced of(RichMessageLayout layout, Position position) {
             final IdentityHashMap<TL_iv.RichText, int[]> ranges = new IdentityHashMap<>();
             final CharSequence formatted = layout.formatTextRecording(position.root.text, position.root.flags, ranges);
-            // the laid out text must be exactly what we've just formatted, otherwise the offsets don't match
             final int spanLength = ((Spanned) position.text).getSpanEnd(position.root) - position.textStart;
             if (formatted.length() != spanLength || !TextUtils.regionMatches(formatted, 0, position.text, position.textStart, spanLength)) {
                 FileLog.e("RichQuote: laid out text doesn't match the formatted one");
@@ -683,7 +654,6 @@ public class RichQuote {
                 }
                 int a = Math.max(from, start) - start;
                 int b = Math.min(to, end) - start;
-                // don't cut surrogate pairs
                 if (a > 0 && a < s.length() && Character.isLowSurrogate(s.charAt(a))) a--;
                 if (b > 0 && b < s.length() && Character.isLowSurrogate(s.charAt(b))) b++;
                 final TL_iv.textPlain plain = new TL_iv.textPlain();
@@ -709,7 +679,6 @@ public class RichQuote {
                 text instanceof TL_iv.textDate || text instanceof TL_iv.textDiff ||
                 text instanceof TL_iv.textButton || text.text == null
             ) {
-                // can't be cut: either whole node or nothing
                 return text;
             }
             final TL_iv.RichText child = slice(text.text, from, to);
@@ -730,7 +699,6 @@ public class RichQuote {
         }
     }
 
-    /** textButton can't be sent in a quote, its label is quoted as plain text instead */
     private static TL_iv.RichText withoutButtons(TL_iv.RichText text) {
         if (text == null || !hasButtons(text)) {
             return text;

@@ -1,5 +1,6 @@
 package org.telegram.ui.Wallet;
 
+import android.graphics.PorterDuff;
 import org.telegram.messenger.LocaleController;
 
 import static org.telegram.messenger.AndroidUtilities.dp;
@@ -34,6 +35,7 @@ import android.widget.TextView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.lang.reflect.Field;
@@ -62,7 +64,7 @@ public class WalletWordCell extends FrameLayout {
         this.index = index;
         this.resourcesProvider = resourcesProvider;
 
-        setBackground(Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundGray, resourcesProvider), .50f)));
+        ThemeBind.fillBackground(this, Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundGray, resourcesProvider), .50f)), ThemeBind.multAlpha(Theme.key_windowBackgroundGray, .50f), resourcesProvider);
         setPadding(dp(20), 0, dp(11), 0);
 
         numberView = new TextView(context);
@@ -70,7 +72,7 @@ public class WalletWordCell extends FrameLayout {
         numberView.setGravity(Gravity.CENTER);
         numberView.setIncludeFontPadding(false);
         numberView.setText((index + 1) + ".");
-        numberView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3, resourcesProvider));
+        ThemeBind.textColor(numberView, Theme.key_windowBackgroundWhiteGrayText3, resourcesProvider);
         addView(numberView, LayoutHelper.createFrame(22, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 0, 0, 8, 0));
 
         setClipChildren(false);
@@ -84,8 +86,8 @@ public class WalletWordCell extends FrameLayout {
         editText.setSingleLine(true);
         editText.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         editText.setTypeface(Typeface.DEFAULT);
-        editText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
-        editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+        ThemeBind.hintTextColor(editText, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
+        ThemeBind.textColor(editText, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
         editText.setHint("");
         editText.setOnFocusChangeListener((v, focused) -> {
             if (focused) {
@@ -126,7 +128,6 @@ public class WalletWordCell extends FrameLayout {
             boolean enter = event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
                     || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER);
             if (actionId == EditorInfo.IME_ACTION_NEXT || enter) {
-                // Keep focus here until key-up so the next field cannot handle the same press.
                 if (event == null || event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                     onNextPressed();
                 }
@@ -142,10 +143,10 @@ public class WalletWordCell extends FrameLayout {
             pasteButton.setTextSize(14);
             pasteButton.setTypeface(AndroidUtilities.bold());
             pasteButton.setGravity(Gravity.CENTER);
-            pasteButton.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4, resourcesProvider));
+            ThemeBind.textColor(pasteButton, Theme.key_windowBackgroundWhiteBlueText4, resourcesProvider);
             pasteButton.setText(LocaleController.getString(R.string.WalletPaste));
             pasteButton.setPadding(dp(12), dp(6), dp(12), dp(6));
-            pasteButton.setBackground(Theme.createRoundRectDrawable(dp(28), Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider)));
+            ThemeBind.fillBackground(pasteButton, Theme.createRoundRectDrawable(dp(28), Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider)), ThemeBind.of(Theme.key_windowBackgroundWhite), resourcesProvider);
             pasteButton.setOnClickListener(v -> pasteFromClipboard());
             actionView.addView(pasteButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
         } else {
@@ -154,9 +155,9 @@ public class WalletWordCell extends FrameLayout {
 
         overflowButton = new ImageView(context);
         overflowButton.setScaleType(ImageView.ScaleType.CENTER);
-        overflowButton.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider), android.graphics.PorterDuff.Mode.SRC_IN));
+        ThemeBind.colorFilter(overflowButton, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider, android.graphics.PorterDuff.Mode.SRC_IN);
         overflowButton.setImageResource(R.drawable.ic_ab_close);
-        overflowButton.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), 3));
+        ThemeBind.selectorBackground(overflowButton, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), 3), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         overflowButton.setVisibility(View.GONE);
         overflowButton.setFocusable(false);
         overflowButton.setOnClickListener(v -> {
@@ -176,11 +177,7 @@ public class WalletWordCell extends FrameLayout {
 
     private void updateNumberColor() {
         boolean hasText = error || editText.getText().length() > 0;
-        numberView.setTextColor(error
-                ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
-                : hasText
-                    ? Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider)
-                    : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3, resourcesProvider));
+        ThemeBind.textColor(numberView, error ? Theme.key_text_RedBold : hasText ? Theme.key_windowBackgroundWhiteBlackText : Theme.key_windowBackgroundWhiteGrayText3, resourcesProvider);
     }
 
     private void updateActionView() {
@@ -268,18 +265,18 @@ public class WalletWordCell extends FrameLayout {
         }
         error = hasError;
         if (hasError) {
-            setBackground(Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_fill_RedNormal, resourcesProvider), 0.24f)));
-            numberView.setTextColor(Theme.getColor(Theme.key_text_RedBold, resourcesProvider));
-            editText.setTextColor(Theme.getColor(Theme.key_text_RedBold, resourcesProvider));
+            ThemeBind.fillBackground(this, Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_fill_RedNormal, resourcesProvider), 0.24f)), ThemeBind.multAlpha(Theme.key_fill_RedNormal, 0.24f), resourcesProvider);
+            ThemeBind.textColor(numberView, Theme.key_text_RedBold, resourcesProvider);
+            ThemeBind.textColor(editText, Theme.key_text_RedBold, resourcesProvider);
             if (overflowButton != null) {
-                overflowButton.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_text_RedBold, resourcesProvider), android.graphics.PorterDuff.Mode.SRC_IN));
+                ThemeBind.colorFilter(overflowButton, Theme.key_text_RedBold, resourcesProvider, android.graphics.PorterDuff.Mode.SRC_IN);
             }
             AndroidUtilities.shakeViewSpring(this);
         } else {
-            setBackground(Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundGray, resourcesProvider), .50f)));
-            editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+            ThemeBind.fillBackground(this, Theme.createRoundRectDrawable(dp(16), Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundGray, resourcesProvider), .50f)), ThemeBind.multAlpha(Theme.key_windowBackgroundGray, .50f), resourcesProvider);
+            ThemeBind.textColor(editText, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
             if (overflowButton != null) {
-                overflowButton.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider), android.graphics.PorterDuff.Mode.SRC_IN));
+                ThemeBind.colorFilter(overflowButton, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider, android.graphics.PorterDuff.Mode.SRC_IN);
             }
             updateNumberColor();
             updateActionView();
@@ -333,10 +330,8 @@ public class WalletWordCell extends FrameLayout {
         Context ctx = getContext();
         if (tooltip == null) {
             tooltip = new PopupWindow(ctx);
-            // Let touches outside reach the scroll view without dismissing suggestions.
             tooltip.setOutsideTouchable(false);
             tooltip.setFocusable(false);
-            // Non-focusable popups otherwise default to appearing over the IME.
             tooltip.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
             tooltip.setBackgroundDrawable(null);
             tooltip.setElevation(dp(8));
@@ -388,7 +383,6 @@ public class WalletWordCell extends FrameLayout {
                 tooltipRow.addView(item, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, i == 0 ? 0 : 12, 0, 0, 0));
             }
 
-            // MATCH_PARENT makes the AT_MOST measurement use only the arrow's width.
             root.addView(tooltipRow, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
             tooltip.setContentView(root);
             tooltip.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -448,7 +442,6 @@ public class WalletWordCell extends FrameLayout {
         int gap = dp(9);
         boolean above = tooltipScreenLocation[1] + getHeight() + gap + height > tooltipVisibleFrame.bottom;
         if (above && tooltipScreenLocation[1] - gap - height < tooltipVisibleFrame.top) {
-            // Neither side can fit without covering the cell or leaving the visible window.
             hideTooltip();
             return;
         }
@@ -462,7 +455,6 @@ public class WalletWordCell extends FrameLayout {
         int screenX = Math.max(tooltipVisibleFrame.left,
                 Math.min(tooltipScreenLocation[0] + (getWidth() - width) / 2, tooltipVisibleFrame.right - width));
         int screenY = above ? tooltipScreenLocation[1] - gap - height : tooltipScreenLocation[1] + getHeight() + gap;
-        // showAtLocation uses window coordinates; the visible frame excludes the keyboard.
         int x = screenX + tooltipWindowLocation[0] - tooltipScreenLocation[0];
         int y = screenY + tooltipWindowLocation[1] - tooltipScreenLocation[1];
         boolean showing = tooltip.isShowing();
@@ -503,7 +495,6 @@ public class WalletWordCell extends FrameLayout {
                 }
             }
         } catch (Exception e) {
-            // ignore
         }
     }
 

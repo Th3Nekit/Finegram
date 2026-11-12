@@ -33,11 +33,11 @@ public class M4AInfo extends AudioInfo {
 	private static final String ASCII = "ISO8859_1";
 	private static final String UTF_8 = "UTF-8";
 
-	private BigDecimal volume;        // normal = 1.0
-	private BigDecimal speed;        // normal = 1.0
+	private BigDecimal volume;
+	private BigDecimal speed;
 
 	private short tempo;
-	private byte rating;            // none = 0, clean = 2, explicit = 4
+	private byte rating;
 
 	private final Level debugLevel;
 
@@ -60,7 +60,7 @@ public class M4AInfo extends AudioInfo {
 			LOGGER.log(debugLevel, atom.toString());
 		}
 		brand = atom.readString(4, ASCII).trim();
-		if (brand.matches("M4V|MP4|mp42|isom")) { // experimental file types
+		if (brand.matches("M4V|MP4|mp42|isom")) {
 			LOGGER.warning(atom.getPath() + ": brand=" + brand + " (experimental)");
 		} else if (!brand.matches("M4A|M4P")) {
 			LOGGER.warning(atom.getPath() + ": brand=" + brand + " (expected M4A or M4P)");
@@ -95,8 +95,8 @@ public class M4AInfo extends AudioInfo {
 			LOGGER.log(debugLevel, atom.toString());
 		}
 		byte version = atom.readByte();
-		atom.skip(3); // flags
-		atom.skip(version == 1 ? 16 : 8); // created/modified date
+		atom.skip(3);
+		atom.skip(version == 1 ? 16 : 8);
 		int scale = atom.readInt();
 		long units = version == 1 ? atom.readLong() : atom.readInt();
 		if (duration == 0) {
@@ -128,7 +128,7 @@ public class M4AInfo extends AudioInfo {
 		}
 		byte version = atom.readByte();
 		atom.skip(3);
-		atom.skip(version == 1 ? 16 : 8); // created/modified date
+		atom.skip(version == 1 ? 16 : 8);
 		int sampleRate = atom.readInt();
 		long samples = version == 1 ? atom.readLong() : atom.readInt();
 		if (duration == 0) {
@@ -155,7 +155,7 @@ public class M4AInfo extends AudioInfo {
 		if (LOGGER.isLoggable(debugLevel)) {
 			LOGGER.log(debugLevel, atom.toString());
 		}
-		atom.skip(4); // version/flags
+		atom.skip(4);
 		while (atom.hasMoreChildren()) {
 			MP4Atom child = atom.nextChild();
 			if ("ilst".equals(child.getType())) {
@@ -188,8 +188,8 @@ public class M4AInfo extends AudioInfo {
 		if (LOGGER.isLoggable(debugLevel)) {
 			LOGGER.log(debugLevel, atom.toString());
 		}
-		atom.skip(4); // version & flags
-		atom.skip(4); // reserved
+		atom.skip(4);
+		atom.skip(4);
 		switch (atom.getParent().getType()) {
 			case "©alb":
 				album = atom.readString(UTF_8);
@@ -255,18 +255,17 @@ public class M4AInfo extends AudioInfo {
 					try {
 						year = Short.valueOf(day.substring(0, 4));
 					} catch (NumberFormatException e) {
-						// ignore
 					}
 				}
 				break;
 			case "disk":
-				atom.skip(2); // padding?
+				atom.skip(2);
 				disc = atom.readShort();
 				discs = atom.readShort();
 				break;
 			case "gnre":
 				if (genre == null || genre.trim().length() == 0) {
-					if (atom.getRemaining() == 2) { // id3v1 genre?
+					if (atom.getRemaining() == 2) {
 						int index = atom.readShort() - 1;
 						ID3v1Genre id3v1Genre = ID3v1Genre.getGenre(index);
 						if (id3v1Genre != null) {
@@ -298,7 +297,7 @@ public class M4AInfo extends AudioInfo {
 				tempo = atom.readShort();
 				break;
 			case "trkn":
-				atom.skip(2); // padding?
+				atom.skip(2);
 				track = atom.readShort();
 				tracks = atom.readShort();
 				break;

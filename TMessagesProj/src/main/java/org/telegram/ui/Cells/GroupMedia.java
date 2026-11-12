@@ -143,45 +143,6 @@ public class GroupMedia {
             }
         }
 
-//        for (int i = 0; i < holders.size(); ++i) {
-//            final MediaHolder holder = holders.get(i);
-//            if (!paidMedia.extended_media.contains(holder.media)) {
-//                holder.detach();
-//                holders.remove(i);
-//                i--;
-//            }
-//        }
-//        for (int i = 0; i < paidMedia.extended_media.size(); ++i) {
-//            final TLRPC.MessageExtendedMedia media = paidMedia.extended_media.get(i);
-//            final GroupedMessagePosition pos = layout.getPosition(media);
-//            boolean found = false;
-//            for (int j = 0; j < holders.size(); ++j) {
-//                if (holders.get(j).media == media) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (!found) {
-//                final int w = (int) (pos.pw / 1000f * maxWidth);
-//                final int h = (int) (pos.ph * layout.maxSizeHeight);
-//                final MediaHolder holder = new MediaHolder(cell, messageObject, media, paidMedia.extended_media.size() != 1, w, h);
-//                if (media.attachPath != null) {
-//                    holder.attachPath = media.attachPath;
-//                } else if (paidMedia.extended_media.size() == 1) {
-//                    holder.attachPath = messageObject.messageOwner != null ? messageObject.messageOwner.attachPath : null;
-//                }
-//                if (!TextUtils.isEmpty(holder.attachPath)) {
-//                    DownloadController.getInstance(cell.currentAccount).addLoadingFileObserver(holder.attachPath, messageObject, holder);
-//                    if (messageObject.isSending()) {
-//                        holder.radialProgress.setProgress(media.uploadProgress, false);
-//                    }
-//                }
-//                if (cell.isCellAttachedToWindow()) {
-//                    holder.attach();
-//                }
-//                holders.add(holder);
-//            }
-//        }
 
         updateHolders(messageObject);
 
@@ -401,15 +362,6 @@ public class GroupMedia {
         if (layout == null) return;
         float hiddenAlpha = animatedHidden.set(hidden);
 
-//        Theme.MessageDrawable backgroundDrawable = cell.currentBackgroundDrawable;
-//        if (backgroundDrawable != null && hiddenAlpha > 0) {
-//            canvas.save();
-//            canvas.clipRect(x - dp(20), y - dp(2), x + width + dp(20), y + height + dp(3));
-//            canvas.clipPath(backgroundDrawable.makePath());
-//            drawBlurred(canvas, hiddenAlpha);
-//            canvas.drawColor(Theme.multAlpha(Theme.isCurrentThemeDark() ? 0x80000000 : 0x90FFFFFF, hiddenAlpha));
-//            canvas.restore();
-//        }
 
         drawImages(canvas, true);
         if (buttonText != null) {
@@ -475,7 +427,6 @@ public class GroupMedia {
             clipPath.addRoundRect(clipRect, h / 2f, h / 2f, Path.Direction.CW);
             canvas.save();
             canvas.clipPath(clipPath);
-//            drawBlurred(canvas, alpha);
             canvas.drawColor(Theme.multAlpha(0x40000000, alpha));
             priceText.draw(canvas, x + width - w - p + dp(5.66f), y + p + h / 2f, 0xFFFFFFFF, alpha);
             canvas.restore();
@@ -491,7 +442,6 @@ public class GroupMedia {
         clipPath.rewind();
         clipPath.addRoundRect(rect, r, r, Path.Direction.CW);
         canvas.clipPath(clipPath);
-//        drawBlurred(canvas, alpha);
         canvas.drawColor(0x40000000);
         canvas.restore();
     }
@@ -614,7 +564,7 @@ public class GroupMedia {
             final MediaHolder h = holders.get(i);
 
             if (h.durationText != null) {
-                float alpha = 1f;//cell.getTimeAlpha();
+                float alpha = 1f;
                 final float bw = dp(2 * 5.7f) + h.durationText.getCurrentWidth(), bh = dp(17);
                 final float p = dp(5);
                 clipRect.set(x + h.l + p, y + h.t + p, x + h.l + p + bw, y + h.t + p + bh);
@@ -705,7 +655,6 @@ public class GroupMedia {
 
             this.TAG = DownloadController.getInstance(cell.currentAccount).generateObserverTag();
 
-//            this.spoilerEffect = SpoilerEffect2.getInstance(cell);
 
             updateMedia(media, msg);
 
@@ -758,10 +707,6 @@ public class GroupMedia {
                 } else if (messageMedia instanceof TLRPC.TL_messageMediaDocument) {
                     TLRPC.TL_messageMediaDocument mediaDocument = (TLRPC.TL_messageMediaDocument) messageMedia;
                     autoplay = !hidden && !album && video && SharedConfig.isAutoplayVideo();
-//                    if (!TextUtils.isEmpty(extMedia.attachPath)) {
-//                        imageReceiver.setImage(ImageLocation.getForPath(extMedia.attachPath), filter + (autoplay ? "_g" : ""), null, null, msg, 0);
-//                        return;
-//                    }
                     if (!album && video) {
                         if (mediaDocument.document != null) {
                             TLRPC.PhotoSize photoSize = FileLoader.getClosestPhotoSizeWithSize(mediaDocument.document.thumbs, AndroidUtilities.getPhotoSize(), true, null, true);
@@ -801,18 +746,12 @@ public class GroupMedia {
             if (attached) return;
             attached = true;
             imageReceiver.onAttachedToWindow();
-//            if (spoilerEffect.destroyed) {
-//                spoilerEffect = SpoilerEffect2.getInstance(cell);
-//            } else {
-//                spoilerEffect.attach(cell);
-//            }
         }
 
         public void detach() {
             if (!attached) return;
             attached = false;
             imageReceiver.onDetachedFromWindow();
-//            this.spoilerEffect.detach(cell);
         }
 
         @Override
@@ -1293,7 +1232,7 @@ public class GroupMedia {
                     }
                 }
                 TLRPC.MessageExtendedMedia media = medias.get(a);
-                if (!isOut && true /* media.needDrawAvatarInternal()*/) {
+                if (!isOut && true                                    ) {
                     if (pos.edge) {
                         if (pos.spanSize != 1000) {
                             pos.spanSize += avatarOffset;

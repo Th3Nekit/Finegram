@@ -145,6 +145,7 @@ public class MessagesAndProfilesPreferencesEntry extends BaseFragment {
         int profileBackgroundSwitchRow = -1;
         int profileEmojiSwitchRow = -1;
         int profileColorFadeSwitchRow = -1;
+        int profileAccentPageSwitchRow = -1;
 
         private final int VIEW_TYPE_MESSAGE = 0;
         private final int VIEW_TYPE_HEADER = 1;
@@ -301,7 +302,9 @@ public class MessagesAndProfilesPreferencesEntry extends BaseFragment {
                             } else if (position == profileEmojiSwitchRow) {
                                 switchCell.setTextAndCheck(getString(R.string.CP_ProfileBackgroundEmoji), FinegramAppearanceConfig.INSTANCE.getProfileBackgroundEmoji(), true);
                             } else if (position == profileColorFadeSwitchRow) {
-                                switchCell.setTextAndValueAndCheck(getString(R.string.FG_ProfileColorFade), getString(R.string.FG_ProfileColorFadeDesc), FinegramAppearanceConfig.INSTANCE.getProfileColorFade(), true, false);
+                                switchCell.setTextAndValueAndCheck(getString(R.string.FG_ProfileColorFade), getString(R.string.FG_ProfileColorFadeDesc), FinegramAppearanceConfig.INSTANCE.getProfileColorFade(), true, true);
+                            } else if (position == profileAccentPageSwitchRow) {
+                                switchCell.setTextAndValueAndCheck(getString(R.string.FG_ProfileAccentPage), getString(R.string.FG_ProfileAccentPageDesc), FinegramAppearanceConfig.INSTANCE.getProfileAccentPage(), true, false);
                             }
                             break;
                         }
@@ -383,7 +386,7 @@ public class MessagesAndProfilesPreferencesEntry extends BaseFragment {
                         return VIEW_TYPE_HEADER;
                     }
                     if (position == timeWithSecondsSwitchRow || position == premiumStatusSwitchRow || position == replyBackgroundSwitchRow || position == replyColorSwitchRow || position == replyEmojiSwitchRow
-                            || position == hidePhoneSwitchRow || position == channelPreviewSwitchRow || position == showDcIdSwitchRow || position == birthdayPreviewSwitchRow || position == businessPreviewSwitchRow || position == profileBackgroundSwitchRow || position == profileEmojiSwitchRow || position == profileColorFadeSwitchRow) {
+                            || position == hidePhoneSwitchRow || position == channelPreviewSwitchRow || position == showDcIdSwitchRow || position == birthdayPreviewSwitchRow || position == businessPreviewSwitchRow || position == profileBackgroundSwitchRow || position == profileEmojiSwitchRow || position == profileColorFadeSwitchRow || position == profileAccentPageSwitchRow) {
                         return VIEW_TYPE_SWITCH;
                     }
                     if (position == idDcPreviewRow || position == birthdayPreviewRow
@@ -556,6 +559,12 @@ public class MessagesAndProfilesPreferencesEntry extends BaseFragment {
                     FinegramAppearanceConfig.INSTANCE.setProfileColorFade(!FinegramAppearanceConfig.INSTANCE.getProfileColorFade());
                     if (view instanceof TextCheckCell) {
                         ((TextCheckCell) view).setChecked(FinegramAppearanceConfig.INSTANCE.getProfileColorFade());
+                    }
+                    parentLayout.rebuildAllFragmentViews(false, false);
+                } else if (position == profileAccentPageSwitchRow) {
+                    FinegramAppearanceConfig.INSTANCE.setProfileAccentPage(!FinegramAppearanceConfig.INSTANCE.getProfileAccentPage());
+                    if (view instanceof TextCheckCell) {
+                        ((TextCheckCell) view).setChecked(FinegramAppearanceConfig.INSTANCE.getProfileAccentPage());
                     }
                     parentLayout.rebuildAllFragmentViews(false, false);
                 } else if (position == profileEmojiSwitchRow) {
@@ -742,6 +751,7 @@ public class MessagesAndProfilesPreferencesEntry extends BaseFragment {
                 profileBackgroundSwitchRow = rowCount++;
                 profileEmojiSwitchRow = rowCount++;
                 profileColorFadeSwitchRow = rowCount++;
+                profileAccentPageSwitchRow = rowCount++;
             }
         }
 

@@ -1,12 +1,5 @@
 package org.telegram.utils.code.highlight;
 
-/**
- * Native libprisma tokenizer. Reuse an instance on a background queue and close it when its owner
- * is destroyed. All native calls on one instance are serialized.
- *
- * <p>Telegram NativeLoader loads the main native library containing PrismaJni.cpp before
- * constructing this class. Native methods must be kept by R8.
- */
 public final class PrismaHighlighter implements AutoCloseable {
 
     public static final int TOKEN_NONE = 0;
@@ -22,7 +15,6 @@ public final class PrismaHighlighter implements AutoCloseable {
     private final String[] tokenNames;
     private final PrismaTokenStyles styles;
 
-    /** Creates an instance from the complete contents of assets/grammars.dat. */
     public PrismaHighlighter(byte[] grammars) {
         if (grammars == null) {
             throw new NullPointerException("grammars");
@@ -43,19 +35,10 @@ public final class PrismaHighlighter implements AutoCloseable {
         }
     }
 
-    /**
-     * Returns triples {@code start, end, tokenType} with UTF-16 indices suitable for Android spans.
-     * End is exclusive. Ranges are ordered and do not overlap. Unstyled text is omitted. Adjacent
-     * ranges with the same type are merged. Language identifiers are ASCII case-insensitive;
-     * aliases are supported. Empty or unknown languages return an empty array.
-     *
-     * <p>This method is synchronous and should be called on a background queue.
-     */
     public synchronized int[] highlight(String text, String language) {
         return tokenize(text, language).legacyRanges();
     }
 
-    /** Preserves every Prism type, alias and parent relation, independently of the theme. */
     public synchronized Tokenization tokenize(String text, String language) {
         checkOpen();
         if (text == null) {
@@ -110,7 +93,6 @@ public final class PrismaHighlighter implements AutoCloseable {
                 && Character.isLowSurrogate(text.charAt(offset));
     }
 
-    /** Immutable preorder token tree stored as five integers per syntax node. */
     public static final class Tokenization {
         private final int[] records;
         private final String[] names;
@@ -155,7 +137,6 @@ public final class PrismaHighlighter implements AutoCloseable {
             return records[index * 5 + 3];
         }
 
-        // Package-private: adapters read the cached array, and must never modify it.
         synchronized int[] styledRanges() {
             if (styledRanges == null) styledRanges = styles.resolve(this);
             return styledRanges;
@@ -190,7 +171,6 @@ public final class PrismaHighlighter implements AutoCloseable {
         }
     }
 
-    /** Returns the language identifiers exposed by libprisma, sorted by key. */
     public synchronized String[] getLanguages() {
         checkOpen();
         return nativeGetLanguages(nativeHandle);

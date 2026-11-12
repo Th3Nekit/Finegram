@@ -22,7 +22,7 @@ public final class FGWrapped {
     }
 
     public static void open(Activity activity, int account) {
-        if (activity == null) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             return;
         }
         int[] previous = FGWrappedStats.previousMonth();
@@ -53,12 +53,16 @@ public final class FGWrapped {
     }
 
     private static void show(Activity activity, int account, int period) {
+        if (activity.isFinishing() || activity.isDestroyed()) {
+            return;
+        }
         Dialog dialog = new Dialog(activity, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         FrameLayout root = new FrameLayout(activity);
         root.setBackgroundColor(Color.BLACK);
         FGWrappedView view = new FGWrappedView(activity, account, period, dialog::dismiss);
         root.addView(view, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         dialog.setContentView(root);
+        dialog.show();
         Window window = dialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
@@ -69,6 +73,5 @@ public final class FGWrapped {
                 window.setAttributes(params);
             }
         }
-        dialog.show();
     }
 }

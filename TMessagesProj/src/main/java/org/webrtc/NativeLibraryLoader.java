@@ -10,15 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Interface for loading native libraries. A custom loader can be passed to
- * PeerConnectionFactory.initialize.
- */
 public interface NativeLibraryLoader {
-  /**
-   * Loads a native library with the given name.
-   *
-   * @return True on success
-   */
   boolean load(String name);
 }

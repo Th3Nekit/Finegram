@@ -42,9 +42,6 @@ public class ClickHelper {
     default boolean needLongPress (float x, float y) {
       return false;
     }
-    // if onLongPressRequestedAt returned false,
-    // parent is free to call ClickHelper.onLongPress any time later,
-    // but before onLongPressCancelled is called
     default boolean onLongPressRequestedAt (View view, float x, float y) { return false; }
     default long getLongPressDuration () { return ViewConfiguration.getLongPressTimeout(); }
     default void onLongPressMove (View view, MotionEvent e, float x, float y, float startX, float startY) { }
@@ -155,7 +152,6 @@ public class ClickHelper {
     longPressCallback = null;
   }
 
-  // FIXME replace this constant with something more appropriate?
   private static final float TOUCH_SLOP_SCALE = 1.89f;
 
   public boolean onTouchEvent (View view, MotionEvent e) {

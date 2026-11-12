@@ -60,7 +60,6 @@ public class FingerprintController {
         if (generator != null) {
             try {
                 Locale realLocale = Locale.getDefault();
-                // A workaround for AndroidKeyStore bug in RTL languages
                 setLocale(Locale.ENGLISH);
 
                 generator.initialize(new KeyGenParameterSpec.Builder(KEY_ALIAS,
@@ -77,7 +76,6 @@ public class FingerprintController {
                 FileLog.e(e);
             } catch (Exception e) {
                 if (e.getClass().getName().equals("android.security.KeyStoreException")) {
-                    // Keystore is somehow broken?
                 } else {
                     FileLog.e(e);
                 }
@@ -125,7 +123,6 @@ public class FingerprintController {
             cipher.init(Cipher.DECRYPT_MODE, keyStore.getKey(KEY_ALIAS, null));
             return hasChangedFingerprints = false;
         } catch (KeyPermanentlyInvalidatedException ignored) {
-            // Device fingerprints changed, then we should delete old key
             return hasChangedFingerprints = true;
         } catch (Exception e) {
             FileLog.e(e);

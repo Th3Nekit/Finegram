@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">Arabic</string>
     <string name="LanguageCode">ar</string>
     <string name="ContinueOnThisLanguage">الاستمرار باللغة العربية</string>
-    <!--signin view-->
+    
     <string name="YourPhone">رقمك</string>
     <string name="StartText">يرجى تأكيد مفتاح بلدك\nوإدخال رقم هاتفك.</string>
     <string name="Country">الدولة</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">إذا لم يصلك الرمز برسالة نصية SMS أو اتصال فيرجى التحقق من **إعدادات البيانات الخلوية** ورقم الهاتف:\n\n**%1$s**\n\nخياراتك المتبقية هي إما تجربة رقم آخر أو التواصل مع دعم تيليجرام. يمكنك الضغط على **مساعدة** لإرسال التفاصيل الفنية إلينا لنتمكن من التعرف على المشكلة.</string>
     <string name="DidNotGetTheCodeHelpButton">مساعدة</string>
     <string name="DidNotGetTheCodeEditNumberButton">تعديل الرقم</string>
-    <!--code enter view-->
+    
     <string name="YourCode">التحقق من الرقم</string>
     <string name="SentSmsCode">قمنا بإرسال رسالة SMS نصية تحتوي على رمز التفعيل لرقمك **%1$s**.</string>
     <string name="SentAppCode">أرسلنا الرمز إلى تطبيق **تيليجرام** على جهازك الآخر.</string>
@@ -69,7 +69,7 @@
     <string name="RequestMissedCall">الحصول على الرمز بمكالمة هاتفية</string>
     <string name="LoginAccessibilityCountryCode">مفتاح الدولة</string>
     <string name="SignInWithGoogle">التسجيل بحساب Google</string>
-    <!--signup view-->
+    
     <string name="YourName">اسمك</string>
     <string name="RegisterText2">يُرجى إدخال اسمك وإضافة صورة لملفك الشخصي.</string>
     <string name="FirstName">الاسم الأول (مطلوب)</string>
@@ -78,7 +78,7 @@
     <string name="LastNameSmall">اسم العائلة</string>
     <string name="CancelRegistration">إلغاء التسجيل</string>
     <string name="RegistrationProfileInfo">معلومات ملفك الشخصي</string>
-    <!--widgets-->
+    
     <string name="EditWidget">تحرير الأداة</string>
     <string name="EditWidgetContactsInfo">عرض اختصارات للمحادثات من أجل الوصول السريع لها.\n\n إذا لم يتم تحديد أشخاص فسيتم عرض جهات الاتصال المتكررة في هذه الأداة.</string>
     <string name="EditWidgetChatsInfo">عرض أحدث رسالة من المحادثات المحددة.\n\n إذا لم يتم تحديد محادثات معينة فسيتم عرض أحدث محادثاتك في هذه الأداة.</string>
@@ -90,7 +90,7 @@
     <string name="WidgetChats">المحادثات</string>
     <string name="WidgetShortcuts">الاختصارات</string>
     <string name="WidgetLoggedOff">تم الخروج من الحساب.</string>
-    <!--notification-->
+    
     <string name="NotificationMessageGiftCode">أرسل لك %1$s رمز هدية للاشتراك لمدة %2$s في  تيليجرام المميز</string>
     <string name="NotificationMessageGiveaway">أرسل لك %1$s رسالة بخصوص السحب على %2$s x المميز لمدة %3$s أشهر.</string>
     <string name="NotificationMessageChannelGiveaway">نشرت قناة %1$s سحب %2$s من الاشتراك المُميّز بمدة %3$s أشهر.</string>
@@ -246,7 +246,7 @@
     <string name="NotificationActionPinnedGifUser">ثبّت %1$s صورة متحركة</string>
     <string name="NotificationActionPinnedMusicUser">ثبّت %1$s ملفًا صوتيًا</string>
     <string name="SecretChatName">تيليجرام</string>
-    <!--usernames-->
+    
     <string name="Username">اسم المستخدم</string>
     <string name="UsernameAlso">أيضًا %1$s</string>
     <string name="UsernameLinkPlaceholder">اسم المستخدم</string>
@@ -264,7 +264,7 @@
     <string name="UsernameEmpty">لا شيء</string>
     <string name="ErrorOccurred">حدث خطأ ما.</string>
     <string name="None">لا يوجد</string>
-    <!--settings view-->
+    
     <string name="ResetNotificationsText">تم تعيين كل الإشعارات إلى الوضع الافتراضي</string>
     <string name="ResetNotificationsAlertTitle">إعادة تعيين كل الإشعارات</string>
     <string name="ResetNotificationsAlert">هل ترغب حقًا في إعادة تعيين جميع إعدادات الإشعارات إلى الوضع الافتراضي؟</string>
@@ -706,7 +706,7 @@
     <string name="CheckPhoneNumberLearnMoreUrl">https://telegram.org/faq/ar#g2</string>
     <string name="CheckPhoneNumberYes">نعم</string>
     <string name="CheckPhoneNumberNo">لا</string>
-    <!--permissions-->
+    
     <string name="PermissionStorageWithHint">يحتاج تيليجرام الوصول إلى التخزين للتمكّن من إرسال وحفظ: الصور، الفيديو، الوسائط والمستندات. يرجى تمكين **الملفات والوسائط** في إعدادات الهاتف &gt; الأذونات.</string>
     <string name="PermissionNoAudioWithHint">يحتاج تيليجرام الوصول إلى المايكروفون لتتمكنوا من إرسال الرسائل الصوتية. يرجى تمكين **المايكروفون** في إعدادات الهاتف &gt; الأذونات.</string>
     <string name="PermissionNoAudioVideoWithHint">يحتاج تيليجرام الوصول إلى المايكروفون لتتمكنوا من إرسال الرسائل الصوتية. يرجى تمكين **المايكروفون** في إعدادات الهاتف &gt; الأذونات.</string>
@@ -726,7 +726,7 @@
     <string name="PermissionBackgroundLocation">"لمشاركة موقعك المباشر في هذه المحادثة؛ يحتاج تيليجرام الوصول إلى موقعك باستمرار، بما في ذلك أثناء عمل التطبيق في الخلفية.\n\n سنستخدم موقعك للمدة التي تختارها أنت فقط ويمكنك التوقف عن مشاركته في أي وقت. لن نستخدم موقعك لأي غرض بخلاف مشاركته في هذه المحادثة. "</string>
     <string name="PermissionDrawAboveOtherAppsTitle">صورة داخل&#160;صورة</string>
     <string name="PermissionDrawAboveOtherAppsGroupCallTitle">المحادثة المرئية العائمة</string>
-    <!--media view-->
+    
     <string name="January">يناير</string>
     <string name="February">فبراير</string>
     <string name="March">مارس</string>
@@ -760,7 +760,7 @@
     <string name="NoSharedLinksSecret">سيتم عرض الروابط المتبادلة في هذه المحادثة هنا.</string>
     <string name="NoSharedVoiceSecret">الرسائل الصوتية من هذه المحادثة ستظهر هنا.</string>
     <string name="NoSharedGifSecret">سيتم عرض الصور المتحركة من هذه المحادثة هنا.</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">التحقق بخطوتين</string>
     <string name="TwoStepVerificationTitle">التحقق بخطوتين</string>
     <string name="TwoStepVerificationPasswordSet">تم تعيين كلمة المرور!</string>
@@ -882,10 +882,10 @@
     <string name="CheckYourNewEmail">يرجى تفحص بريدك الإلكتروني الجديد</string>
     <string name="CheckYourNewEmailSubtitle">يرجى إدخال الرمز الذي أرسلناه إلى بريدك الإلكتروني الجديد %1$s.</string>
     <string name="LoginOrSingInWithGoogle">أو</string>
-    <!--edit video view-->
+    
     <string name="SendingVideo">يتم إرسال المقطع المرئي...</string>
     <string name="SendingGif">يتم إرسال الصورة المتحركة...</string>
-    <!--button titles-->
+    
     <string name="Done">تم</string>
     <string name="Open">فتح</string>
     <string name="Save">حفظ</string>
@@ -927,7 +927,7 @@
     <string name="Next">التالي</string>
     <string name="Enable">تفعيل</string>
     <string name="ReportFalsePositive">الإبلاغ عن تصفية خاطئة</string>
-    <!--messages-->
+    
     <string name="ActionInviteYou">انضممت إلى المجموعة عبر رابط دعوة</string>
     <string name="ActionDeletedInviteLinkClickable">حذف un1 رابط الدعوة un2</string>
     <string name="ActionEditedInviteLinkClickable">عدّل un1 رابط الدعوة un2 إلى un3</string>
@@ -1029,7 +1029,7 @@
     <string name="ActionTakeScreenshootYou">لقد قمت بتصوير الشاشة!</string>
     <string name="ActionTakeScreenshoot">صوّر un1 الشاشة!</string>
     <string name="Album">مُجلد</string>
-    <!--Alert messages-->
+    
     <string name="LimitReachedPinnedTopics">عذرًا، لا يمكنك تثبيت أكثر من %d من الموضوعات في الأعلى.</string>
     <string name="DeleteAllMessagesAlert">تحذير! سيؤدي هذا لحذف **جميع رسائل** هذه المحادثة من **كلا** الطرفين.</string>
     <string name="DeleteAllMessagesChannelAlert">تحذير! سيؤدي هذا إلى **حذف كل الرسائل** في هذه القناة.</string>
@@ -1190,7 +1190,7 @@
     <string name="TosAgeText">يرجى الضغط على (موافق) لتأكيد أن عمرك %1$s أو أكبر.</string>
     <string name="TosUpdateDecline">للأسف، لا توجد خيارات أخرى. على عكس التطبيقات الأخرى؛ لا تستخدم تيليجرام بيانات المستخدمين لاستهدافهم بالإعلانات أو لأغراض تجارية أخرى. يخزن تيليجرام فقط المعلومات التي يحتاجها للعمل كخدمة سحابية غنية بالميزات. يمكنك ضبط كيفية استخدام بياناتك في إعدادات الخصوصية والأمان.\n\nإذا لم تكن مرتاحًا لاحتياجات تيليجرام المتواضعة؛ لن نتمكن من تزويدك بهذه الخدمة.</string>
     <string name="TosDeclineDeleteAccount">تحذير، سيؤدي هذا إلى حذف حسابك في تيليجرام بشكل نهائي بالإضافة لجميع البيانات التي تخزنها في سحابة تيليجرام.\n\nهام: يمكنك الإلغاء الآن وتصدير بياناتك قبل حذف حسابك عوضًا عن خسارتها كلها. (للقيام بذلك، افتح النسخة الأخيرة من تيليجرام لسطح المكتب وتوجه إلى الإعدادات &gt; إعدادات متقدمة &gt; تصدير بيانات تيليجرام).</string>
-    <!--Intro view-->
+    
     <string name="Page1Title">تيليجرام</string>
     <string name="Page2Title">سريع</string>
     <string name="Page3Title">مجاني</string>
@@ -1204,7 +1204,7 @@
     <string name="Page5Message">لا يفرض **تيليجرام** قيودًا على\nحجم وسائطك ومحادثاتك.</string>
     <string name="Page6Message">**تيليجرام** يتيح لك الوصول\nلرسائلك من أجهزة متعددة.</string>
     <string name="StartMessaging">بدء المراسلة</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">MMM dd, yyyy</string>
     <string name="formatterGiveawayCard">dd MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">dd MMMM</string>

@@ -458,6 +458,7 @@ public class LocationController extends BaseController implements NotificationCe
     protected void update() {
         UserConfig userConfig = getUserConfig();
         if (!sharingLocations.isEmpty()) {
+            boolean expired = false;
             for (int a = 0; a < sharingLocations.size(); a++) {
                 final SharingLocationInfo info = sharingLocations.get(a);
                 int currentTime = getConnectionsManager().getCurrentTime();
@@ -474,7 +475,11 @@ public class LocationController extends BaseController implements NotificationCe
                         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.liveLocationsChanged);
                     });
                     a--;
+                    expired = true;
                 }
+            }
+            if (expired && sharingLocations.isEmpty()) {
+                stop(true);
             }
         }
         if (started) {
@@ -499,10 +504,10 @@ public class LocationController extends BaseController implements NotificationCe
         if (!shouldStopGps()) {
             return false;
         }
-        if (Math.abs(lastLocationSendTime - SystemClock.elapsedRealtime()) >= SEND_NEW_LOCATION_TIME) {
-            return true;
+        if (Math.abs(lastLocationSendTime - SystemClock.elapsedRealtime()) < SEND_NEW_LOCATION_TIME) {
+            return false;
         }
-        return false;
+        return lastKnownLocation != null && lastKnownLocation.getElapsedRealtimeNanos() / 1000000 >= lastLocationStartTime;
     }
 
     public void cleanup() {
@@ -750,14 +755,34 @@ public class LocationController extends BaseController implements NotificationCe
         try {
             if (PermissionRequest.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) || PermissionRequest.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
                 ApplicationLoader.applicationContext.startService(new Intent(ApplicationLoader.applicationContext, LocationSharingService.class));
+            } else {
+                LocationSharingService.showPausedNotification();
             }
         } catch (Throwable e) {
             FileLog.e(e);
+            LocationSharingService.showPausedNotification();
         }
     }
 
     private void stopService() {
+        if (getLocationsCount() > 0) {
+            return;
+        }
+        LocationSharingService.hidePausedNotification();
         ApplicationLoader.applicationContext.stopService(new Intent(ApplicationLoader.applicationContext, LocationSharingService.class));
+    }
+
+    public static void onAppResumed() {
+        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            if (!UserConfig.getInstance(a).isClientActivated()) {
+                continue;
+            }
+            final LocationController controller = getInstance(a);
+            if (!controller.sharingLocationsUI.isEmpty()) {
+                controller.startService();
+                return;
+            }
+        }
     }
 
     public void removeAllLocationSharings() {
@@ -953,7 +978,6 @@ public class LocationController extends BaseController implements NotificationCe
     public static final int TYPE_BIZ = 1;
     public static final int TYPE_STORY = 2;
 
-    // google geocoder thinks that "unnamed road" is a street name
     public static String[] unnamedRoads = {
         "Unnamed Road",
         "Вulicya bez nazvi",
@@ -1088,26 +1112,6 @@ public class LocationController extends BaseController implements NotificationCe
                         StringBuilder cityBuilder = new StringBuilder();
                         StringBuilder streetBuilder = new StringBuilder();
 
-//                    String addressLine = null;
-//                    try {
-//                        addressLine = address.getAddressLine(0);
-//                    } catch (Exception ignore) {}
-//                    if (addressLine != null) {
-//                        String postalCode = address.getPostalCode();
-//                        if (postalCode != null) {
-//                            addressLine = addressLine.replace(" " + postalCode, "");
-//                            addressLine = addressLine.replace(postalCode, "");
-//                        }
-//                        String[] parts = addressLine.split(", ");
-//                        if (parts.length > 2) {
-//                            String _country = parts[parts.length - 1].replace(",", "").trim();
-//                            String _city = parts[parts.length - 2].replace(",", "").trim();
-////                            if (_city.length() > 3) {
-////                                locality = _city;
-////                            }
-////                            feature = parts[0].replace(",", "").trim();
-//                        }
-//                    }
 
                         if (TextUtils.isEmpty(locality)) {
                             locality = address.getLocality();
@@ -1311,7 +1315,7 @@ public class LocationController extends BaseController implements NotificationCe
                     cityLocation.geo._long = location.getLongitude();
                     cityLocation.query_id = -1;
                     cityLocation.title = city;
-                    cityLocation.icon = onlyCountry ? "https://ss3.4sqi.net/img/categories_v2/building/government_capitolbuilding_64.png" : "https://ss3.4sqi.net/img/categories_v2/travel/hotel_64.png";
+                    cityLocation.icon = onlyCountry ? "country" : "city";
                     cityLocation.emoji = countryCodeToEmoji(countryCode);
                     cityLocation.address = onlyCountry ? LocaleController.getString(R.string.Country) : LocaleController.getString(R.string.PassportCity);
 

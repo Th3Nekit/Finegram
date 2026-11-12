@@ -25,19 +25,9 @@ import org.telegram.messenger.BuildVars;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Helper class to manage children.
- * <p>
- * It wraps a RecyclerView and adds ability to hide some children. There are two sets of methods
- * provided by this class. <b>Regular</b> methods are the ones that replicate ViewGroup methods
- * like getChildAt, getChildCount etc. These methods ignore hidden children.
- * <p>
- * When RecyclerView needs direct access to the view group children, it can call unfiltered
- * methods like get getUnfilteredChildCount or getUnfilteredChildAt.
- */
 public class ChildHelper {
 
-    private static final boolean DEBUG = false;//BuildVars.DEBUG_VERSION;
+    private static final boolean DEBUG = false;
 
     private static final String TAG = "ChildrenHelper";
 
@@ -53,21 +43,11 @@ public class ChildHelper {
         mHiddenViews = new ArrayList<View>();
     }
 
-    /**
-     * Marks a child view as hidden
-     *
-     * @param child  View to hide.
-     */
     public void hideViewInternal(View child) {
         mHiddenViews.add(child);
         mCallback.onEnteredHiddenState(child);
     }
 
-    /**
-     * Unmarks a child view as hidden.
-     *
-     * @param child  View to hide.
-     */
     public boolean unhideViewInternal(View child) {
         if (mHiddenViews.remove(child)) {
             mCallback.onLeftHiddenState(child);
@@ -88,24 +68,10 @@ public class ChildHelper {
         return mHiddenViews.get(index);
     }
 
-    /**
-     * Adds a view to the ViewGroup
-     *
-     * @param child  View to add.
-     * @param hidden If set to true, this item will be invisible from regular methods.
-     */
     void addView(View child, boolean hidden) {
         addView(child, -1, hidden);
     }
 
-    /**
-     * Add a view to the ViewGroup at an index
-     *
-     * @param child  View to add.
-     * @param index  Index of the child from the regular perspective (excluding hidden views).
-     *               ChildHelper offsets this index to actual ViewGroup index.
-     * @param hidden If set to true, this item will be invisible from regular methods.
-     */
     void addView(View child, int index, boolean hidden) {
         final int offset;
         if (index < 0) {
@@ -125,7 +91,7 @@ public class ChildHelper {
 
     private int getOffset(int index) {
         if (index < 0) {
-            return -1; //anything below 0 won't work as diff will be undefined.
+            return -1;
         }
         final int limit = mCallback.getChildCount();
         int offset = index;
@@ -133,7 +99,7 @@ public class ChildHelper {
             final int removedBefore = mBucket.countOnesBefore(offset);
             final int diff = index - (offset - removedBefore);
             if (diff == 0) {
-                while (mBucket.get(offset)) { // ensure this offset is not hidden
+                while (mBucket.get(offset)) {
                     offset++;
                 }
                 return offset;
@@ -144,11 +110,6 @@ public class ChildHelper {
         return -1;
     }
 
-    /**
-     * Removes the provided View from underlying RecyclerView.
-     *
-     * @param view The view to remove.
-     */
     void removeView(View view) {
         int index = mCallback.indexOfChild(view);
         if (index < 0) {
@@ -163,12 +124,6 @@ public class ChildHelper {
         }
     }
 
-    /**
-     * Removes the view at the provided index from RecyclerView.
-     *
-     * @param index Index of the child from the regular perspective (excluding hidden views).
-     *              ChildHelper offsets this index to actual ViewGroup index.
-     */
     void removeViewAt(int index) {
         final int offset = getOffset(index);
         final View view = mCallback.getChildAt(offset);
@@ -184,19 +139,11 @@ public class ChildHelper {
         }
     }
 
-    /**
-     * Returns the child at provided index.
-     *
-     * @param index Index of the child to return in regular perspective.
-     */
     View getChildAt(int index) {
         final int offset = getOffset(index);
         return mCallback.getChildAt(offset);
     }
 
-    /**
-     * Removes all views from the ViewGroup including the hidden ones.
-     */
     void removeAllViewsUnfiltered() {
         mBucket.reset();
         for (int i = mHiddenViews.size() - 1; i >= 0; i--) {
@@ -209,12 +156,6 @@ public class ChildHelper {
         }
     }
 
-    /**
-     * This can be used to find a disappearing view by position.
-     *
-     * @param position The adapter position of the item.
-     * @return         A hidden view with a valid ViewHolder that matches the position.
-     */
     View findHiddenNonRemovedView(int position) {
         final int count = mHiddenViews.size();
         for (int i = 0; i < count; i++) {
@@ -229,14 +170,6 @@ public class ChildHelper {
         return null;
     }
 
-    /**
-     * Attaches the provided view to the underlying ViewGroup.
-     *
-     * @param child        Child to attach.
-     * @param index        Index of the child to attach in regular perspective.
-     * @param layoutParams LayoutParams for the child.
-     * @param hidden       If set to true, this item will be invisible to the regular methods.
-     */
     void attachViewToParent(View child, int index, ViewGroup.LayoutParams layoutParams,
             boolean hidden) {
         final int offset;
@@ -256,53 +189,24 @@ public class ChildHelper {
         }
     }
 
-    /**
-     * Returns the number of children that are not hidden.
-     *
-     * @return Number of children that are not hidden.
-     * @see #getChildAt(int)
-     */
     public int getChildCount() {
         return mCallback.getChildCount() - mHiddenViews.size();
     }
 
-    /**
-     * Returns the total number of children.
-     *
-     * @return The total number of children including the hidden views.
-     * @see #getUnfilteredChildAt(int)
-     */
     int getUnfilteredChildCount() {
         return mCallback.getChildCount();
     }
 
-    /**
-     * Returns a child by ViewGroup offset. ChildHelper won't offset this index.
-     *
-     * @param index ViewGroup index of the child to return.
-     * @return The view in the provided index.
-     */
     View getUnfilteredChildAt(int index) {
         return mCallback.getChildAt(index);
     }
 
-    /**
-     * Detaches the view at the provided index.
-     *
-     * @param index Index of the child to return in regular perspective.
-     */
     void detachViewFromParent(int index) {
         final int offset = getOffset(index);
         mBucket.remove(offset);
         mCallback.detachViewFromParent(offset);
     }
 
-    /**
-     * Returns the index of the child in regular perspective.
-     *
-     * @param child The child whose index will be returned.
-     * @return The regular perspective index of the child or -1 if it does not exists.
-     */
     int indexOfChild(View child) {
         final int index = mCallback.indexOfChild(child);
         if (index == -1) {
@@ -315,25 +219,13 @@ public class ChildHelper {
                 return -1;
             }
         }
-        // reverse the index
         return index - mBucket.countOnesBefore(index);
     }
 
-    /**
-     * Returns whether a View is visible to LayoutManager or not.
-     *
-     * @param view The child view to check. Should be a child of the Callback.
-     * @return True if the View is not visible to LayoutManager
-     */
     public boolean isHidden(View view) {
         return mHiddenViews.contains(view);
     }
 
-    /**
-     * Marks a child view as hidden.
-     *
-     * @param view The view to hide.
-     */
     void hide(View view) {
         final int offset = mCallback.indexOfChild(view);
         if (offset < 0) {
@@ -349,13 +241,6 @@ public class ChildHelper {
         }
     }
 
-    /**
-     * Moves a child view from hidden list to regular list.
-     * Calling this method should probably be followed by a detach, otherwise, it will suddenly
-     * show up in LayoutManager's children list.
-     *
-     * @param view The hidden View to unhide
-     */
     void unhide(View view) {
         final int offset = mCallback.indexOfChild(view);
         if (offset < 0) {
@@ -373,12 +258,6 @@ public class ChildHelper {
         return mBucket.toString() + ", hidden list:" + mHiddenViews.size();
     }
 
-    /**
-     * Removes a view from the ViewGroup if it is hidden.
-     *
-     * @param view The view to remove.
-     * @return True if the View is found and it is hidden. False otherwise.
-     */
     boolean removeViewIfHidden(View view) {
         final int index = mCallback.indexOfChild(view);
         if (index == -1) {
@@ -399,9 +278,6 @@ public class ChildHelper {
         return false;
     }
 
-    /**
-     * Bitset implementation that provides methods to offset indices.
-     */
     static class Bucket {
 
         static final int BITS_PER_WORD = Long.SIZE;
@@ -486,7 +362,6 @@ public class ChildHelper {
                 mData &= ~mask;
                 mask = mask - 1;
                 final long before = mData & mask;
-                // cannot use >> because it adds one.
                 final long after = Long.rotateRight(mData & ~mask, 1);
                 mData = before | after;
                 if (mNext != null) {

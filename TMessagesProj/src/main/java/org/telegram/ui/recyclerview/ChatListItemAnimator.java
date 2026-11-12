@@ -27,6 +27,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.BotHelpCell;
 import org.telegram.ui.Cells.ChatActionCell;
 import org.telegram.ui.Cells.ChatMessageCell;
+import org.telegram.ui.Cells.ChatMessageTransitionParams;
 import org.telegram.ui.Cells.UserInfoCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.ChatGreetingsView;
@@ -129,10 +130,8 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         boolean changesPending = !mPendingChanges.isEmpty();
         boolean additionsPending = !mPendingAdditions.isEmpty();
         if (!removalsPending && !movesPending && !additionsPending && !changesPending) {
-            // nothing to animate
             return;
         }
-        // First, remove stuff
         boolean hadThanos = false;
         final boolean supportsThanos = getThanosEffectContainer != null && supportsThanosEffectContainer != null && supportsThanosEffectContainer.run();
         if (supportsThanos) {
@@ -158,7 +157,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
             }
             if (groupsToRemoveWithThanos != null) {
                 for (int i = 0; i < groupsToRemoveWithThanos.size(); ++i) {
-                    // check whether we remove the whole group
                     ArrayList<RecyclerView.ViewHolder> holders = groupsToRemoveWithThanos.valueAt(i);
                     if (holders.size() <= 0) continue;
                     boolean wholeGroup = true;
@@ -170,7 +168,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
                         }
                     }
                     if (!wholeGroup) {
-                        // not whole group, fallback to prev animation
                         mPendingRemovals.addAll(holders);
                     } else {
                         animateRemoveGroupImpl(holders);
@@ -188,7 +185,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         }
         final boolean finalThanos = hadThanos;
         mPendingRemovals.clear();
-        // Next, move stuff
         if (movesPending) {
             final ArrayList<MoveInfo> moves = new ArrayList<>();
             moves.addAll(mPendingMoves);
@@ -211,7 +207,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
                 mover.run();
             }
         }
-        // Next, change stuff, to run in parallel with move animations
         if (changesPending) {
             final ArrayList<ChangeInfo> changes = new ArrayList<>();
             changes.addAll(mPendingChanges);
@@ -234,7 +229,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
                 changer.run();
             }
         }
-        // Next, add stuff
         if (additionsPending) {
             final ArrayList<RecyclerView.ViewHolder> additions = new ArrayList<>();
             additions.addAll(mPendingAdditions);
@@ -478,7 +472,7 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         MoveInfoExtended moveInfo = new MoveInfoExtended(holder, fromX, fromY, toX, toY);
 
         if (chatMessageCell != null) {
-            ChatMessageCell.TransitionParams params = chatMessageCell.getTransitionParams();
+            ChatMessageTransitionParams params = chatMessageCell.getTransitionParams();
 
             if (!params.supportChangeAnimation()) {
                 if (deltaX == 0 && deltaY == 0) {
@@ -666,7 +660,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
                 MessageObject.GroupedMessages.TransitionParams groupTransitionParams = removedGroup.transitionParams;
                 willRemovedGroup.remove(chatMessageCell.getMessageObject().getId());
                 if (params.wasDraw) {
-                    // invoke when group transform to single message
                     int animateToLeft = chatMessageCell.getLeft() + chatMessageCell.getBackgroundDrawableLeft();
                     int animateToRight = chatMessageCell.getLeft() + chatMessageCell.getBackgroundDrawableRight();
                     int animateToTop = chatMessageCell.getTop() + chatMessageCell.getPaddingTop() + chatMessageCell.getBackgroundDrawableTop();
@@ -817,7 +810,7 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
             animatorSet.playTogether(valueAnimator);
         } else if (holder.itemView instanceof ChatMessageCell) {
             ChatMessageCell chatMessageCell = (ChatMessageCell) holder.itemView;
-            ChatMessageCell.TransitionParams params = chatMessageCell.getTransitionParams();
+            ChatMessageTransitionParams params = chatMessageCell.getTransitionParams();
             ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(chatMessageCell, chatMessageCell.ANIMATION_OFFSET_X, 0);
             animatorSet.playTogether(objectAnimator);
 
@@ -1024,8 +1017,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
     public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, ItemHolderInfo info,
                                  int fromX, int fromY, int toX, int toY) {
         if (oldHolder == newHolder) {
-            // Don't know how to run change animations when the same view holder is re-used.
-            // run a move animation to handle position changes.
             return animateMove(oldHolder, info, fromX, fromY, toX, toY);
         }
         final float prevTranslationX;
@@ -1039,7 +1030,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         resetAnimation(oldHolder);
         int deltaX = (int) (toX - fromX - prevTranslationX);
         int deltaY = (int) (toY - fromY - prevTranslationY);
-        // recover prev translation state after ending animation
         if (oldHolder.itemView instanceof ChatMessageCell) {
             ((ChatMessageCell) oldHolder.itemView).setAnimationOffsetX(prevTranslationX);
         } else {
@@ -1048,7 +1038,6 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         oldHolder.itemView.setTranslationY(prevTranslationY);
         oldHolder.itemView.setAlpha(prevAlpha);
         if (newHolder != null) {
-            // carry over translation values
             resetAnimation(newHolder);
             if (newHolder.itemView instanceof ChatMessageCell) {
                 ((ChatMessageCell) newHolder.itemView).setAnimationOffsetX(-deltaX);
@@ -1143,7 +1132,7 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
             extended.right = info.right;
             extended.bottom = info.bottom;
 
-            ChatMessageCell.TransitionParams params = chatMessageCell.getTransitionParams();
+            ChatMessageTransitionParams params = chatMessageCell.getTransitionParams();
             extended.imageX = params.lastDrawingImageX;
             extended.imageY = params.lastDrawingImageY;
             extended.imageWidth = params.lastDrawingImageW;

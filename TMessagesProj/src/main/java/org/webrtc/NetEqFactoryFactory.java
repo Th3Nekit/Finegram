@@ -10,12 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Implementations of this interface can create a native {@code webrtc::NetEqFactory}.
- */
 public interface NetEqFactoryFactory {
-  /**
-   * Returns a pointer to a {@code webrtc::NetEqFactory}. The caller takes ownership.
-   */
   long createNativeNetEqFactory();
 }

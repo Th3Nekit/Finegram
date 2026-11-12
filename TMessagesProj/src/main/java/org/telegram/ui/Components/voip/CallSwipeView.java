@@ -63,7 +63,6 @@ public class CallSwipeView extends View {
 			ObjectAnimator anim = ObjectAnimator.ofInt(aaw, "arrowAlpha", 64, 255, 64);
 			anim.setDuration(700);
 			anim.setStartDelay(200 * i);
-			//anim.setRepeatCount(ValueAnimator.INFINITE);
 			anims.add(anim);
 		}
 		arrowAnim = new AnimatorSet();

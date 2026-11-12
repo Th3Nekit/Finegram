@@ -17,7 +17,7 @@ public class CodepointsLengthInputFilter implements InputFilter {
         if (keep <= 0) {
             return "";
         } else if (keep >= Character.codePointCount(source, start, end)) {
-            return null; // keep original
+            return null;
         } else {
             keep += start;
             if (Character.isHighSurrogate(source.charAt(keep - 1))) {

@@ -198,19 +198,15 @@ void TL_config::readParams(NativeByteBuffer *stream, int32_t instanceNum, bool &
     notify_default_delay_ms = stream->readInt32(&error);
     push_chat_period_ms = stream->readInt32(&error);
     push_chat_limit = stream->readInt32(&error);
-    // saved_gifs_limit = stream->readInt32(&error);
     edit_time_limit = stream->readInt32(&error);
     revoke_time_limit = stream->readInt32(&error);
     revoke_pm_time_limit = stream->readInt32(&error);
     rating_e_decay = stream->readInt32(&error);
     stickers_recent_limit = stream->readInt32(&error);
-    // stickers_faved_limit = stream->readInt32(&error);
     channels_read_media_period = stream->readInt32(&error);
     if ((flags & 1) != 0) {
         tmp_sessions = stream->readInt32(&error);
     }
-    // pinned_dialogs_count_max = stream->readInt32(&error);
-    // pinned_infolder_count_max = stream->readInt32(&error);
     call_receive_timeout_ms = stream->readInt32(&error);
     call_ring_timeout_ms = stream->readInt32(&error);
     call_connect_timeout_ms = stream->readInt32(&error);
@@ -276,19 +272,15 @@ void TL_config::serializeToStream(NativeByteBuffer *stream) {
     stream->writeInt32(notify_default_delay_ms);
     stream->writeInt32(push_chat_period_ms);
     stream->writeInt32(push_chat_limit);
-    // stream->writeInt32(saved_gifs_limit);
     stream->writeInt32(edit_time_limit);
     stream->writeInt32(revoke_time_limit);
     stream->writeInt32(revoke_pm_time_limit);
     stream->writeInt32(rating_e_decay);
     stream->writeInt32(stickers_recent_limit);
-    // stream->writeInt32(stickers_faved_limit);
     stream->writeInt32(channels_read_media_period);
     if ((flags & 1) != 0) {
         stream->writeInt32(tmp_sessions);
     }
-    // stream->writeInt32(pinned_dialogs_count_max);
-    // stream->writeInt32(pinned_infolder_count_max);
     stream->writeInt32(call_receive_timeout_ms);
     stream->writeInt32(call_ring_timeout_ms);
     stream->writeInt32(call_connect_timeout_ms);

@@ -31,10 +31,12 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.FileLog;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_bots;
 import org.telegram.ui.ActionBar.MenuDrawable;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.ColoredImageSpan;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.LayoutHelper;
@@ -44,7 +46,7 @@ import org.telegram.ui.Components.StaticLayoutEx;
 
 import java.util.ArrayList;
 
-public class BotCommandsMenuView extends View {
+public class BotCommandsMenuView extends View implements Theme.Colorable {
 
     final RectF rectTmp = new RectF();
     final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -80,7 +82,7 @@ public class BotCommandsMenuView extends View {
         backDrawable.setCallback(this);
         textPaint.setTypeface(AndroidUtilities.bold());
         backDrawable.setRoundCap();
-        backgroundDrawable = Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(16), Color.TRANSPARENT, Theme.getColor(Theme.key_featuredStickers_addButtonPressed));
+        backgroundDrawable = Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(16), Color.TRANSPARENT, backgroundRippleColor = Theme.getColor(Theme.key_featuredStickers_addButtonPressed));
         backgroundDrawable.setCallback(this);
         webViewAnimation.setCallback(this);
         webViewAnimation.setMasterParent(this);
@@ -97,42 +99,76 @@ public class BotCommandsMenuView extends View {
         invalidate();
     }
 
-    private void updateColors() {
-        paint.setColor(Theme.getColor(Theme.key_chat_messagePanelVoiceBackground));
-        int textColor = Theme.getColor(Theme.key_chat_messagePanelVoiceDuration);
-        backDrawable.setBackColor(textColor);
-        backDrawable.setIconColor(textColor);
-        if (webViewAnimation != null) {
-            webViewAnimation.setColorFilter(new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN));
+    @Override
+    public void updateColors() {
+        try {
+            paint.setColor(Theme.getColor(Theme.key_chat_messagePanelVoiceBackground));
+            int textColor = Theme.getColor(Theme.key_chat_messagePanelVoiceDuration);
+            backDrawable.setBackColor(textColor);
+            backDrawable.setIconColor(textColor);
+            if (webViewAnimation != null && (webViewAnimation != lastWebViewAnimation || textColor != lastWebViewAnimationColor)) {
+                lastWebViewAnimation = webViewAnimation;
+                lastWebViewAnimationColor = textColor;
+                webViewAnimation.setColorFilter(new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN));
+            }
+            final int alpha = textPaint.getAlpha();
+            textPaint.setColor(textColor);
+            if (alpha != 255) {
+                textPaint.setAlpha(alpha);
+            }
+            invalidate();
+        } catch (Exception e) {
+            FileLog.e(e);
         }
-        textPaint.setColor(textColor);
     }
 
+    @Override
+    public void addColorKeys(java.util.HashSet<Integer> colors) {
+        colors.add(Theme.key_chat_messagePanelVoiceBackground);
+        colors.add(Theme.key_chat_messagePanelVoiceDuration);
+        colors.add(Theme.key_featuredStickers_addButtonPressed);
+    }
+
+    private int backgroundRippleColor;
+    private Object lastWebViewAnimation;
+    private int lastWebViewAnimationColor;
+
     int lastSize;
+    private int maxWidth = Integer.MAX_VALUE;
+
+    public void setMaxWidth(int maxWidth) {
+        maxWidth = Math.max(0, maxWidth);
+        if (this.maxWidth != maxWidth) {
+            this.maxWidth = maxWidth;
+            requestLayout();
+        }
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int size = MeasureSpec.getSize(widthMeasureSpec) + MeasureSpec.getSize(heightMeasureSpec) << 16;
-        if (lastSize != size || menuTextLayout == null) {
-            backDrawable.setBounds(0, 0, getMeasuredWidth(), getMeasuredHeight());
+        int availableWidth = maxWidth;
+        if (MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED) {
+            availableWidth = Math.min(availableWidth, MeasureSpec.getSize(widthMeasureSpec));
+        }
+        int textWidth = Math.max(1, Math.min((int) (AndroidUtilities.displaySize.x * .6f), availableWidth - AndroidUtilities.dp(44)));
+        if (lastSize != textWidth || menuTextLayout == null) {
             textPaint.setTextSize(AndroidUtilities.dp(15));
-            lastSize = size;
+            lastSize = textWidth;
             CharSequence c = Emoji.replaceEmoji(menuText, textPaint.getFontMetricsInt(), false);
-            int w = (int) (AndroidUtilities.displaySize.x * .6f);
-            menuTextLayout = StaticLayoutEx.createStaticLayout(c, textPaint, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0f, false, TextUtils.TruncateAt.END, w, 1);
+            menuTextLayout = StaticLayoutEx.createStaticLayout(c, textPaint, textWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0f, false, TextUtils.TruncateAt.END, textWidth, 1);
             menuTextWidth = menuTextLayout.getLineCount() > 0 ? menuTextLayout.getLineWidth(0) : 0;
         }
-        onTranslationChanged((menuTextWidth + AndroidUtilities.dp(4)) * expandProgress);
-        int width = AndroidUtilities.dp(40);
-        if (expanded) {
-            width += (int) menuTextWidth + AndroidUtilities.dp(4);
-        }
-
+        float progress = CubicBezierInterpolator.DEFAULT.getInterpolation(expandProgress);
+        onTranslationChanged((menuTextWidth + AndroidUtilities.dp(4)) * progress);
+        int width = Math.min(availableWidth, AndroidUtilities.dp(40) + (int) Math.ceil((menuTextWidth + AndroidUtilities.dp(4)) * (expanded ? 1f : progress)));
         super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(32), MeasureSpec.EXACTLY));
+        backDrawable.setBounds(0, 0, AndroidUtilities.dp(24), AndroidUtilities.dp(24));
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
+        canvas.save();
+        canvas.clipRect(0, 0, getMeasuredWidth(), getMeasuredHeight());
         if (menuTextLayout != null) {
             boolean update = false;
             if (expanded && expandProgress != 1f) {
@@ -154,13 +190,17 @@ public class BotCommandsMenuView extends View {
             }
 
             float expandProgress = CubicBezierInterpolator.DEFAULT.getInterpolation(this.expandProgress);
-            if (update && expandProgress > 0) {
+            if (expandProgress > 0) {
                 textPaint.setAlpha((int) (255 * expandProgress));
             }
 
             if (drawBackgroundDrawable) {
                 rectTmp.set(0, 0, AndroidUtilities.dp(40) + (menuTextWidth + AndroidUtilities.dp(4)) * expandProgress, getMeasuredHeight());
                 canvas.drawRoundRect(rectTmp, AndroidUtilities.dp(16), AndroidUtilities.dp(16), paint);
+                final int rippleColor = Theme.getColor(Theme.key_featuredStickers_addButtonPressed);
+                if (rippleColor != backgroundRippleColor) {
+                    Theme.setSelectorDrawableColor(backgroundDrawable, backgroundRippleColor = rippleColor, true);
+                }
                 backgroundDrawable.setBounds((int) rectTmp.left, (int) rectTmp.top, (int) rectTmp.right, (int) rectTmp.bottom);
                 backgroundDrawable.draw(canvas);
             }
@@ -192,9 +232,11 @@ public class BotCommandsMenuView extends View {
 
             if (update) {
                 onTranslationChanged((menuTextWidth + AndroidUtilities.dp(4)) * expandProgress);
+                requestLayout();
             }
         }
         super.dispatchDraw(canvas);
+        canvas.restore();
     }
 
     protected void onTranslationChanged(float translationX) {
@@ -245,10 +287,6 @@ public class BotCommandsMenuView extends View {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//            FlickerLoadingView flickerLoadingView =  new FlickerLoadingView(parent.getContext());
-//            flickerLoadingView.setIsSingleCell(true);
-//            flickerLoadingView.setViewType(FlickerLoadingView.BOTS_MENU_TYPE);
-//            return new RecyclerListView.Holder(flickerLoadingView);
             BotCommandView view = new BotCommandView(parent.getContext());
             view.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             return new RecyclerListView.Holder(view);
@@ -260,7 +298,7 @@ public class BotCommandsMenuView extends View {
             final String command = newResult.get(position);
             final boolean ephemeral = newResultEphemeral.get(position);
 
-            if (ephemeral /*&& false*/) {
+            if (ephemeral             ) {
                 final ColoredImageSpan coloredImageSpan = new ColoredImageSpan(R.drawable.mini_ephemeral_hidden_14);
                 coloredImageSpan.setColorKey(Theme.key_windowBackgroundWhiteGrayText3);
                 coloredImageSpan.setTopOffset(1);
@@ -338,7 +376,7 @@ public class BotCommandsMenuView extends View {
             };
             NotificationCenter.listenEmojiLoading(description);
             description.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-            description.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            ThemeBind.textColor(description, Theme.key_windowBackgroundWhiteBlackText);
             description.setTag(Theme.key_windowBackgroundWhiteBlackText);
             description.setMaxLines(2);
             description.setEllipsize(TextUtils.TruncateAt.END);
@@ -346,7 +384,7 @@ public class BotCommandsMenuView extends View {
 
             command = new TextView(context);
             command.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-            command.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+            ThemeBind.textColor(command, Theme.key_windowBackgroundWhiteGrayText);
             command.setTag(Theme.key_windowBackgroundWhiteGrayText);
             addView(command, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0f, Gravity.CENTER_VERTICAL));
         }

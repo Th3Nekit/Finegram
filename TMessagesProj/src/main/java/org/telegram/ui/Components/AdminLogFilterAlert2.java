@@ -3,6 +3,7 @@ package org.telegram.ui.Components;
 import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.LocaleController.getString;
 
+import org.telegram.messenger.FileLog;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -19,6 +20,7 @@ import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Components.Premium.boosts.cells.selector.SelectorBtnCell;
 import org.telegram.ui.Stories.recorder.ButtonWithCounterView;
@@ -42,7 +44,7 @@ public class AdminLogFilterAlert2 extends BottomSheetWithRecyclerListView {
         super(fragment.getContext(), fragment, false, false, false, true, ActionBarType.SLIDING, fragment.getResourceProvider());
         topPadding = 0.35f;
         fixNavigationBar();
-        setBackgroundColor(Theme.getColor(Theme.key_dialogBackgroundGray, resourcesProvider));
+        setBackgroundColor(themedBackgroundColor = Theme.getColor(Theme.key_dialogBackgroundGray, resourcesProvider));
         setSlidingActionBar();
         setShowHandle(true);
 
@@ -103,7 +105,7 @@ public class AdminLogFilterAlert2 extends BottomSheetWithRecyclerListView {
         buttonContainer.setClickable(true);
         buttonContainer.setOrientation(LinearLayout.VERTICAL);
         buttonContainer.setPadding(dp(10), dp(10), dp(10), dp(10));
-        buttonContainer.setBackgroundColor(Theme.getColor(Theme.key_dialogBackgroundGray, resourcesProvider));
+        ThemeBind.backgroundColor(buttonContainer, Theme.key_dialogBackgroundGray, resourcesProvider);
         actionButton = new ButtonWithCounterView(getContext(), resourcesProvider);
         actionButton.setRound();
         actionButton.setText(getString(R.string.EventLogFilterApply), false);
@@ -198,7 +200,6 @@ public class AdminLogFilterAlert2 extends BottomSheetWithRecyclerListView {
 
     private View.OnClickListener getGroupClick(int a) {
         return v -> {
-//            saveScrollPosition();
             switch (a) {
                 case 0:
                     sectionMembersExpanded = !sectionMembersExpanded;
@@ -270,7 +271,6 @@ public class AdminLogFilterAlert2 extends BottomSheetWithRecyclerListView {
     public void onClick(UItem item, View view, float x) {
         if (item == null) return;
         if (item.viewType == UniversalAdapter.VIEW_TYPE_ROUND_GROUP_CHECKBOX || item.viewType == UniversalAdapter.VIEW_TYPE_ROUND_CHECKBOX) {
-//            saveScrollPosition();
             final boolean clickedGroupExpand = item.viewType == UniversalAdapter.VIEW_TYPE_ROUND_GROUP_CHECKBOX && (LocaleController.isRTL ? x < view.getMeasuredWidth() - dp(60) : x > dp(60));
             CheckBoxCell cell = (CheckBoxCell) view;
             if (!clickedGroupExpand) {
@@ -408,5 +408,21 @@ public class AdminLogFilterAlert2 extends BottomSheetWithRecyclerListView {
     @Override
     protected boolean canDismissWithSwipe() {
         return !recyclerListView.canScrollVertically(-1);
+    }
+
+    private int themedBackgroundColor;
+
+    @Override
+    public void onThemeColorsChanged() {
+        try {
+            super.onThemeColorsChanged();
+            final int color = Theme.getColor(Theme.key_dialogBackgroundGray, resourcesProvider);
+            if (color != themedBackgroundColor) {
+                themedBackgroundColor = color;
+                setBackgroundColor(color);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

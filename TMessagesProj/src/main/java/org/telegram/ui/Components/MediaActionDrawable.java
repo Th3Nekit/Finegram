@@ -405,7 +405,6 @@ public class MediaActionDrawable extends Drawable {
                         int alpha = (int) (255 * currentProgress2);
                         if (nextIcon != ICON_CANCEL && nextIcon != ICON_CANCEL_FILL && nextIcon != ICON_DOWNLOAD) {
                             float backProgress = (1.0f - Math.min(1.0f, transitionProgress / 0.5f));
-                            //d *= backProgress;
                             alpha *= backProgress;
                         }
 

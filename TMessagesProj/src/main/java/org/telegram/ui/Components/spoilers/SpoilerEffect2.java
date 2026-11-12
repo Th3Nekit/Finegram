@@ -449,7 +449,6 @@ public class SpoilerEffect2 {
 
             genParticlesData();
 
-            // draw program (vertex and fragment shaders)
             int vertexShader = GLES31.glCreateShader(GLES31.GL_VERTEX_SHADER);
             int fragmentShader = GLES31.glCreateShader(GLES31.GL_FRAGMENT_SHADER);
             if (vertexShader == 0 || fragmentShader == 0) {
@@ -528,22 +527,22 @@ public class SpoilerEffect2 {
 
             GLES31.glClear(GLES31.GL_COLOR_BUFFER_BIT);
             GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, particlesData[currentBuffer]);
-            GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 24, 0); // Position (vec2)
+            GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 24, 0);
             GLES31.glEnableVertexAttribArray(0);
-            GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 24, 8); // Velocity (vec2)
+            GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 24, 8);
             GLES31.glEnableVertexAttribArray(1);
-            GLES31.glVertexAttribPointer(2, 1, GLES31.GL_FLOAT, false, 24, 16); // Time (float)
+            GLES31.glVertexAttribPointer(2, 1, GLES31.GL_FLOAT, false, 24, 16);
             GLES31.glEnableVertexAttribArray(2);
-            GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 24, 20); // Duration (float)
+            GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 24, 20);
             GLES31.glEnableVertexAttribArray(3);
             GLES31.glBindBufferBase(GLES31.GL_TRANSFORM_FEEDBACK_BUFFER, 0, particlesData[1 - currentBuffer]);
-            GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 24, 0); // Position (vec2)
+            GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 24, 0);
             GLES31.glEnableVertexAttribArray(0);
-            GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 24, 8); // Velocity (vec2)
+            GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 24, 8);
             GLES31.glEnableVertexAttribArray(1);
-            GLES31.glVertexAttribPointer(2, 1, GLES31.GL_FLOAT, false, 24, 16); // Time (float)
+            GLES31.glVertexAttribPointer(2, 1, GLES31.GL_FLOAT, false, 24, 16);
             GLES31.glEnableVertexAttribArray(2);
-            GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 24, 20); // Duration (float)
+            GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 24, 20);
             GLES31.glEnableVertexAttribArray(3);
             GLES31.glUniform1f(timeHandle, t);
             GLES31.glUniform1f(deltaTimeHandle, dt * timeScale);

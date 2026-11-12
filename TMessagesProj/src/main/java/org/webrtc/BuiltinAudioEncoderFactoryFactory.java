@@ -10,9 +10,6 @@
 
 package org.webrtc;
 
-/**
- * This class creates a native {@code webrtc::AudioEncoderFactory} with the builtin audio encoders.
- */
 public class BuiltinAudioEncoderFactoryFactory implements AudioEncoderFactoryFactory {
   @Override
   public long createNativeAudioEncoderFactory() {

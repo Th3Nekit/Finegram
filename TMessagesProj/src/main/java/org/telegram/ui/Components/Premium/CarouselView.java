@@ -244,7 +244,6 @@ public class CarouselView extends View implements PagerHeaderView {
         double aStep = 360.0 / drawingObjects.size();
 
         if (overScroller.computeScrollOffset()) {
-            //fling
             final int x = overScroller.getCurrX();
             float dx = lastFlingX - x;
             if (lastFlingX != 0 && Math.abs(dx * 0.08f) < 0.3f) {

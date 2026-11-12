@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import java.nio.ByteBuffer;
 import org.webrtc.VideoFrame.I420Buffer;
 
-/** Implementation of VideoFrame.I420Buffer backed by Java direct byte buffers. */
 public class JavaI420Buffer implements VideoFrame.I420Buffer {
   private final int width;
   private final int height;
@@ -40,7 +39,6 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
   }
 
   private static void checkCapacity(ByteBuffer data, int width, int height, int stride) {
-    // The last row does not necessarily need padding.
     final int minCapacity = stride * (height - 1) + width;
     if (data.capacity() < minCapacity) {
       throw new IllegalArgumentException(
@@ -48,7 +46,6 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
     }
   }
 
-  /** Wraps existing ByteBuffers into JavaI420Buffer object without copying the contents. */
   public static JavaI420Buffer wrap(int width, int height, ByteBuffer dataY, int strideY,
       ByteBuffer dataU, int strideU, ByteBuffer dataV, int strideV,
       @Nullable Runnable releaseCallback) {
@@ -59,8 +56,6 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
       throw new IllegalArgumentException("Data buffers must be direct byte buffers.");
     }
 
-    // Slice the buffers to prevent external modifications to the position / limit of the buffer.
-    // Note that this doesn't protect the contents of the buffers from modifications.
     dataY = dataY.slice();
     dataU = dataU.slice();
     dataV = dataV.slice();
@@ -75,7 +70,6 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
         width, height, dataY, strideY, dataU, strideU, dataV, strideV, releaseCallback);
   }
 
-  /** Allocates an empty I420Buffer suitable for an image of the given dimensions. */
   public static JavaI420Buffer allocate(int width, int height) {
     int chromaHeight = (height + 1) / 2;
     int strideUV = (width + 1) / 2;
@@ -114,19 +108,16 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
 
   @Override
   public ByteBuffer getDataY() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataY.slice();
   }
 
   @Override
   public ByteBuffer getDataU() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataU.slice();
   }
 
   @Override
   public ByteBuffer getDataV() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataV.slice();
   }
 
@@ -170,7 +161,6 @@ public class JavaI420Buffer implements VideoFrame.I420Buffer {
   public static VideoFrame.Buffer cropAndScaleI420(final I420Buffer buffer, int cropX, int cropY,
       int cropWidth, int cropHeight, int scaleWidth, int scaleHeight) {
     if (cropWidth == scaleWidth && cropHeight == scaleHeight) {
-      // No scaling.
       ByteBuffer dataY = buffer.getDataY();
       ByteBuffer dataU = buffer.getDataU();
       ByteBuffer dataV = buffer.getDataV();

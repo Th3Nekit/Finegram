@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">English</string>
     <string name="LanguageCode">en</string>
     <string name="ContinueOnThisLanguage">Continue in English</string>
-    <!--signin view-->
+    
     <string name="YourPhone">Your Phone</string>
     <string name="StartText">Please confirm your country code and enter your phone number.</string>
     <string name="StartTextPasskey">Please enter your phone number\nor **log in using passkey >**</string>
@@ -31,7 +31,7 @@
     <string name="DidNotGetTheCodeInfo">If you didn\'t get the code by SMS or call, please check your **cellular data settings** and phone number:\n\n**%1$s**\n\nYour remaining options are to try another number or to contact Telegram Support. Tap **Help** to send us the technical details so that we can identify the problem.</string>
     <string name="DidNotGetTheCodeHelpButton">Help</string>
     <string name="DidNotGetTheCodeEditNumberButton">Edit number</string>
-    <!--code enter view-->
+    
     <string name="YourCode">Phone verification</string>
     <string name="SentSmsCode">We’ve sent an SMS with an activation code to your phone **%1$s**.</string>
     <string name="SentAppCode">We\'ve sent the code to the **Telegram** app on your other device.</string>
@@ -70,7 +70,7 @@
     <string name="RequestMissedCall">Get the code via phone call</string>
     <string name="LoginAccessibilityCountryCode">Country code</string>
     <string name="SignInWithGoogle">Sign in with Google</string>
-    <!--signup view-->
+    
     <string name="YourName">Your name</string>
     <string name="RegisterText2">Enter your name and add a profile picture.</string>
     <string name="FirstName">First name (required)</string>
@@ -79,7 +79,7 @@
     <string name="LastNameSmall">Last name</string>
     <string name="CancelRegistration">Cancel registration</string>
     <string name="RegistrationProfileInfo">Profile info</string>
-    <!--payments view-->
+    
     <string name="PaymentSuccessfullyPaid">You have just successfully transferred %1$s to %2$s for %3$s</string>
     <string name="PaymentSuccessfullyPaidSubscription">You have just successfully transferred %1$s to %2$s for %3$s until %4$s</string>
     <string name="PaymentSuccessfullyPaidNoItem">You have just successfully transferred %1$s to %2$s</string>
@@ -157,7 +157,7 @@
     <string name="PaymentInfoHint">You paid **%1$s** for **%2$s**.</string>
     <string name="PaymentInfoHintStars_other">You paid **%2$s** for **%1$d Stars**.</string>
     <string name="PaymentAppNotFoundForDeeplink">No app found to handle this deep link.</string>
-    <!--chats view-->
+    
     <string name="NewConversationShortcut">New conversation</string>
     <string name="AutoNightSystemModeOff">System Default theme is disabled</string>
     <string name="AutoNightModeOff">Auto-Night Mode is off</string>
@@ -431,7 +431,7 @@
     <string name="ImportHeaderContacts">Or choose one of your contacts</string>
     <string name="DiscardSelectionAlertTitle">Discard selection</string>
     <string name="DiscardSelectionAlertMessage">Do you want to close the attach menu?</string>
-    <!--widgets-->
+    
     <string name="EditWidget">Edit Widget</string>
     <string name="EditWidgetContactsInfo">Display shortcuts to your most important chats for quick access.\n\nIf nobody is selected, your most frequent contacts will be shown in this widget.</string>
     <string name="EditWidgetChatsInfo">Display the latest message from the chats you choose.\n\nIf no specific chats are selected, your most recent chats will be shown in this widget.</string>
@@ -443,7 +443,7 @@
     <string name="WidgetChats">Chats</string>
     <string name="WidgetShortcuts">Shortcuts</string>
     <string name="WidgetLoggedOff">Account was logged off.</string>
-    <!--channels-->
+    
     <string name="SetAsAdmin">Promote to admin</string>
     <string name="EditAdminRights">Edit admin rights</string>
     <string name="DeleteMega">Delete Group</string>
@@ -509,6 +509,10 @@
     <string name="MegaPublicInfo">Public groups can be found in search, chat history is available to everyone and anyone can join.</string>
     <string name="ChannelPrivate">Private Channel</string>
     <string name="MegaPrivate">Private Group</string>
+    <string name="MakeChannelPrivateTitle">Make Channel Private?</string>
+    <string name="MakeChannelPrivateText">Your channel’s public link **%1$s** will be removed, and this username will become available to anyone. Continue?</string>
+    <string name="MakeGroupPrivateTitle">Make Group Private?</string>
+    <string name="MakeGroupPrivateText">Your group’s public link **%1$s** will be removed, and this username will become available to anyone. Continue?</string>
     <string name="MonoforumMessages">direct messages</string>
     <string name="ChannelPrivateInfo">Private channels can only be joined via an invite link.</string>
     <string name="MegaPrivateInfo">Private groups can only be joined if you were invited or have an invite link.</string>
@@ -882,7 +886,7 @@
     <string name="UserSetAsAdminHint">**%1$s** promoted to admin</string>
     <string name="UserAddedAsAdminHint">**%1$s** added as admin</string>
     <string name="UserRemovedFromChatHint">**%1$s** removed from **%2$s**</string>
-    <!--polls-->
+    
     <string name="NewPoll">New Poll</string>
     <string name="NewQuiz">New Quiz</string>
     <string name="Poll">Poll</string>
@@ -954,7 +958,7 @@
     <string name="Option_one">%1$d more option</string>
     <string name="Option_other">%1$d more options</string>
     <string name="OptionHint">Option</string>
-    <!--event log-->
+    
     <string name="EventLog">Recent Actions</string>
     <string name="EventLogAllEvents">All actions</string>
     <string name="EventLogSelectedEvents">Selected actions</string>
@@ -1143,12 +1147,12 @@
     <string name="EventLogRankAdd">un1 set un2’s tag to «%1$s»</string>
     <string name="EventLogRankEdit">un1 changed un2’s tag from «%1$s» to «%2$s»</string>
     <string name="EventLogRankRemove">un1 removed un2’s «%1$s» tag</string>
-    <!--broadcasts-->
+    
     <string name="NewBroadcastList">New Broadcast List</string>
     <string name="EnterListName">Enter list name</string>
     <string name="YouCreatedBroadcastList">You created a broadcast list</string>
     <string name="KickFromBroadcast">Remove from broadcast list</string>
-    <!--audio view-->
+    
     <string name="NoAudioFiles">No audio files</string>
     <string name="NoAudioFilesInfo">Your music library is empty.</string>
     <string name="NoAudioFound">No results found</string>
@@ -1162,7 +1166,7 @@
     <string name="RepeatList">Repeat list</string>
     <string name="ShuffleList">Shuffle list</string>
     <string name="ReverseOrder">Reverse order</string>
-    <!--documents view-->
+    
     <string name="SelectFile">Select File</string>
     <string name="FreeOfTotal">Free %1$s of %2$s</string>
     <string name="UnknownError">Unknown error</string>
@@ -1180,7 +1184,7 @@
     <string name="InternalFolderInfo">Browse your file system</string>
     <string name="ExternalFolderInfo">Browse your external storage</string>
     <string name="SearchMusic">Search music</string>
-    <!--group stickers-->
+    
     <string name="GroupStickers">Group Stickers</string>
     <string name="GroupStickersInfo">You can choose a sticker set that will be available to all group members when they are chatting in this group.</string>
     <string name="ChooseStickerSet">CHOOSE STICKER SET</string>
@@ -1198,7 +1202,7 @@
     <string name="AddEmojiPackHeader">Add emoji pack by link</string>
     <string name="AddGroupEmojiPackHint">All members will be able to use these emoji in the group, even if they don\'t have Telegram Premium.</string>
     <string name="AddEmojiPackLinkHint">emojiset</string>
-    <!--chat view-->
+    
     <string name="Invisible">invisible</string>
     <string name="SupportStatus">support</string>
     <string name="Typing">typing...</string>
@@ -1705,7 +1709,7 @@
     <string name="ForwardingFromNames">From %s</string>
     <string name="NoWordsRecognized">No words recognized.</string>
     <string name="RateTranscription">Rate transcription</string>
-    <!--notification-->
+    
     <string name="NotificationMessageGiftCode">%1$s sent you a Gift Code for %2$s of Telegram Premium</string>
     <string name="NotificationMessageGiveaway">%1$s sent you a giveaway of %2$sx %3$sm Premium subscriptions</string>
     <string name="NotificationMessageStarsGiveaway2">%1$s sent you a giveaway of %3$s stars %2$s</string>
@@ -1883,7 +1887,7 @@
     <string name="NotificationActionMissedCallConferenceOther_one">You missed a call from %2$s and %1$d other</string>
     <string name="NotificationActionMissedCallConferenceOther_other">You missed a call from %2$s and %1$d others</string>
     <string name="SecretChatName">Telegram</string>
-    <!--contacts view-->
+    
     <string name="SelectContact">Select Contact</string>
     <string name="ShareContactTitle">Share Contact</string>
     <string name="AddContactPhonebookTitle">Add Contact</string>
@@ -1928,7 +1932,7 @@
     <string name="NewContactAlertButton">Add contact</string>
     <string name="Gift2AvailabilitySold_other">%d sold</string>
     <string name="Gift2AvailabilityLeft_other">%d left</string>
-    <!--group create view-->
+    
     <string name="SendMessageTo">Add people...</string>
     <string name="SoftUserLimitAlert">You will be able to add more users after you finish creating the group and convert it to a supergroup.</string>
     <string name="GigagroupAlertText">Your group has reached the limit of **200,000** members.\n\nYou can increase this limit by converting the group to a **broadcast group** where only admins can post.\nInterested?</string>
@@ -1987,7 +1991,7 @@
     <string name="GigagroupConvertAlertText">Regular members of the group (non-admins) will **irrevocably** lose their right to post messages in the group.\n\nThis action **can\'t** be undone.</string>
     <string name="GigagroupConvertAlertConver">CONVERT</string>
     <string name="GigagroupConvertCancelHint">If you change your mind, go to the settings of your group.</string>
-    <!--group info view-->
+    
     <string name="GroupMembers">Members</string>
     <string name="SharedMedia">Shared Media</string>
     <string name="SETTINGS">Settings</string>
@@ -2007,7 +2011,7 @@
     <string name="ConvertGroupInfo">**Members limit reached.**\n\nTo go over the limit and get additional features, upgrade to a supergroup:\n\n• Supergroups can get up to %1$s\n• New members can see the full message history\n• Deleted messages will disappear for all members\n• Admins can add a description to the group\n• Creator can set a public link for the group</string>
     <string name="ConvertGroupInfo2">**In supergroups:**\n\n• New members can see the full message history\n• Deleted messages will disappear for all members\n• Admins can add a description to the group\n• Creator can set a public link for the group</string>
     <string name="ConvertGroupInfo3">**Note:** this action can\'t be undone.</string>
-    <!--contact info view-->
+    
     <string name="ShareContact">Share contact</string>
     <string name="AddContact">Add to contacts</string>
     <string name="AddContactTitle">Add Contact</string>
@@ -2071,7 +2075,7 @@
     <string name="BioCopied">Bio copied to clipboard.</string>
     <string name="BirthdayCopied">Birthday copied to clipboard.</string>
     <string name="DeletedFromYourContacts">%s deleted from your contacts</string>
-    <!--usernames-->
+    
     <string name="Username">Username</string>
     <string name="UsernameAlso">also %1$s</string>
     <string name="UsernameLinkPlaceholder">username</string>
@@ -2089,7 +2093,7 @@
     <string name="UsernameEmpty">None</string>
     <string name="ErrorOccurred">An error occurred.</string>
     <string name="None">None</string>
-    <!--stickers view-->
+    
     <string name="StickersName">Stickers</string>
     <string name="StickersSettings">Settings</string>
     <string name="LoopAnimatedStickers">Loop Animated Stickers</string>
@@ -2232,7 +2236,7 @@
     <string name="ImportStickersImportingTitle">Importing stickers</string>
     <string name="ImportStickersDoneTitle">Stickers imported successfully!</string>
     <string name="ImportStickersDoneInfo">Import more stickers to Telegram and share them with your friends.</string>
-    <!--theme view-->
+    
     <string name="Theme">Theme</string>
     <string name="AutoNightTheme">Auto-Night Mode</string>
     <string name="AutoNightThemeOff">Off</string>
@@ -2344,7 +2348,7 @@
     <string name="OpenInEditor">Open in editor</string>
     <string name="SaveChangesAlertTitle">Save changes?</string>
     <string name="SaveChangesAlertText">Do you want to apply the new colors you chose?</string>
-    <!--settings view-->
+    
     <string name="ResetNotificationsText">All notification settings reset to default</string>
     <string name="ResetNotificationsAlertTitle">Reset all notifications</string>
     <string name="ResetNotificationsAlert">Are you sure you want to reset all notification settings to default?</string>
@@ -2818,7 +2822,7 @@
     <string name="CheckPhoneNumberYes">Yes</string>
     <string name="CheckPhoneNumberYes2">👍 Yes</string>
     <string name="CheckPhoneNumberNo">No</string>
-    <!--cache view-->
+    
     <string name="LocalDatabase">Local Database</string>
     <string name="LocalDatabaseClearTextTitle">Clear local database</string>
     <string name="LocalDatabaseClearText">Are you sure you want to clear cached text messages?</string>
@@ -2841,7 +2845,7 @@
     <string name="AutoDeleteCachedMedia">Auto-remove cached media</string>
     <string name="KeepMediaInfoPart">Photos, videos and other files from cloud chats that you have **not accessed** during this period will be removed from this device to save disk space.</string>
     <string name="KeepMediaForever">Forever</string>
-    <!--passport view-->
+    
     <string name="TelegramPassport">Telegram Passport</string>
     <string name="PassportRequestedInformation">Requested Information</string>
     <string name="PassportProvidedInformation">Provided Information</string>
@@ -3027,7 +3031,7 @@
     <string name="PassportLanguage_UK">Ukrainian</string>
     <string name="PassportLanguage_UZ">Uzbek</string>
     <string name="PassportLanguage_VI">Vietnamese</string>
-    <!--sessions view-->
+    
     <string name="SessionsTitle">Active Sessions</string>
     <string name="CurrentSession">Current session</string>
     <string name="OtherSessions">Active sessions</string>
@@ -3052,7 +3056,7 @@
     <string name="ClearOtherWebSessionsHelp">You can log in on websites that support signing in with Telegram.</string>
     <string name="LoginAttempts">Incomplete login attempts</string>
     <string name="LoginAttemptsInfo">The devices above have no access to your messages. The code was entered correctly, but no correct password was given.</string>
-    <!--filters-->
+    
     <string name="Filters">Folders</string>
     <string name="CreateNewFilter">Create New Folder</string>
     <string name="CreateNewFilterInfo">Create folders for different groups of chats and quickly switch between them.</string>
@@ -3131,7 +3135,7 @@
     <string name="FilterChatsRemovedFrom">**%1$s** removed from **%2$s**</string>
     <string name="FilterAddToAlertFullTitle">Limit reached</string>
     <string name="FilterAddToAlertFullText">Sorry, you can\'t exlude more than 100 chats from a folder.</string>
-    <!--passcode view-->
+    
     <string name="Passcode">Passcode Lock</string>
     <string name="ChangePasscode">Change Passcode</string>
     <string name="ChangePasscodeInfo">When you set up an additional passcode, a lock icon will appear on the chats page. Tap it to lock and unlock your Telegram app.\n\nNote: if you forget the passcode, you\'ll need to delete and reinstall the app. All secret chats will be lost.</string>
@@ -3162,7 +3166,7 @@
     <string name="ScreenCaptureInfo">If disabled, you won\'t be able to take screenshots in the app but chat content will be hidden in the task switcher.</string>
     <string name="ScreenCaptureAlert">This will hide the contents of your chats or chat list from the task switcher, but you will not be able to take screenshots on Telegram.\n\nYou may need to restart the app for this to take effect.</string>
     <string name="TooManyTries">Too many tries.\nPlease try again in %1$s.</string>
-    <!--media view-->
+    
     <string name="January">January</string>
     <string name="February">February</string>
     <string name="March">March</string>
@@ -3198,7 +3202,7 @@
     <string name="NoSharedLinksSecret">Shared links from this chat will be shown here.</string>
     <string name="NoSharedVoiceSecret">Voice messages from this chat will be shown here.</string>
     <string name="NoSharedGifSecret">GIFs from this chat will be shown here.</string>
-    <!--map view-->
+    
     <string name="Map">Map</string>
     <string name="Satellite">Satellite</string>
     <string name="Hybrid">Hybrid</string>
@@ -3217,13 +3221,14 @@
     <string name="Directions">Directions</string>
     <string name="GetDirections">Get Directions</string>
     <string name="NoPlacesFound">No places found</string>
-    <string name="NoPlacesFoundInfo">There are no matches with **%1$s** near you.</string>
     <string name="SendLocation">Send my current location</string>
     <string name="SendLiveLocation">Share My Live Location for...</string>
     <string name="SendLiveLocationMenu">Share my Live Location</string>
     <string name="StopLiveLocation">Stop Sharing Location</string>
     <string name="SharingLiveLocation">Sharing Location...</string>
     <string name="SharingLiveLocationAdd">tap to add more time</string>
+    <string name="LiveLocationPausedTitle">Live Location paused</string>
+    <string name="LiveLocationPausedText">Open Telegram to continue sharing your location.</string>
     <string name="StopLiveLocationAlertToTitle">Stop location sharing</string>
     <string name="StopLiveLocationAlertToUserText">Do you want to stop sharing your live location with **%1$s**?</string>
     <string name="StopLiveLocationAlertToGroupText">Do you want to stop sharing your live location with **%1$s**?</string>
@@ -3236,9 +3241,7 @@
     <string name="ShareLocation">Location</string>
     <string name="SharedPlace">Place</string>
     <string name="AccurateTo">Accurate to %1$s</string>
-    <string name="NearbyVenue">Or choose a venue</string>
     <string name="LocationOnMap">Location on map</string>
-    <string name="TapToSendLocation">Tap to send this location</string>
     <string name="LiveLocations">Live locations</string>
     <string name="LiveLocationContext">Live Location</string>
     <string name="SendLiveLocationFor15m">for 15 minutes</string>
@@ -3260,7 +3263,6 @@
     <string name="LiveLocationAlertGroup">Choose for how long people in this chat will see your live location.</string>
     <string name="GpsDisabledAlertText">Please enable your GPS to access location-based features.</string>
     <string name="ChatSetThisLocation">Set this location</string>
-    <string name="PlacesInThisArea">Places in this area</string>
     <string name="OpenInMaps">Open in Maps</string>
     <string name="LocationNotifiation">Proximity alert</string>
     <string name="LocationNotifiationButtonUser">Notify when %1$s is within %2$s</string>
@@ -3275,7 +3277,7 @@
     <string name="ProximityAlertSetInfoUser">We will notify you once %1$s is within %2$s from you.</string>
     <string name="ProximityAlertSetInfoGroup2">We will notify you once someone is within %1$s from you.</string>
     <string name="ProximityAlertCancelled">Proximity alert cancelled</string>
-    <!--photo gallery view-->
+    
     <string name="Quality">Quality</string>
     <string name="QualityList">Video Quality</string>
     <string name="QualityAuto">Auto</string>
@@ -3432,7 +3434,7 @@
     <string name="AudiosSavedHint_other">%1$d files saved to music</string>
     <string name="MediaSavedHint_one">An item saved to gallery</string>
     <string name="MediaSavedHint_other">%1$d items saved to gallery</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">Two-Step Verification</string>
     <string name="TwoStepVerificationTitle">Two-Step Verification</string>
     <string name="TwoStepVerificationPasswordSet">Password Set!</string>
@@ -3556,7 +3558,7 @@
     <string name="CheckYourNewEmail">Check Your New Email</string>
     <string name="CheckYourNewEmailSubtitle">Please enter the code we have sent to your new email %1$s.</string>
     <string name="LoginOrSingInWithGoogle">or</string>
-    <!--data settings-->
+    
     <string name="DataSettings">Data and Storage</string>
     <string name="DataUsage">Disk and network usage</string>
     <string name="StorageUsage">Storage Usage</string>
@@ -3586,6 +3588,7 @@
     <string name="OutgoingCalls">Outgoing calls</string>
     <string name="IncomingCalls">Incoming calls</string>
     <string name="IncomingCallsSystemSetting">Internal calls notifications</string>
+    <string name="InternalNotificationsSystemSetting">Internal notifications</string>
     <string name="IncomingCallsSystemSettingDescription">You can change ringtone sound in Telegram -> Settings -> Notifications and Sounds.</string>
     <string name="OutgoingCallsCount_one">%1$d outgoing call</string>
     <string name="OutgoingCallsCount_other">%1$d outgoing calls</string>
@@ -3601,7 +3604,7 @@
     <string name="NoNetworkUsageSince">No network usage since %1$s</string>
     <string name="ResetStatisticsAlertTitle">Reset statistics</string>
     <string name="ResetStatisticsAlert">Do you want to reset your usage statistics?</string>
-    <!--privacy settings-->
+    
     <string name="PrivacySettings">Privacy and Security</string>
     <string name="PrivacyTitle">Privacy</string>
     <string name="PrivacyLastSeen">Last Seen &amp; Online</string>
@@ -3726,11 +3729,11 @@
     <string name="BlockedEmpty">None</string>
     <string name="SyncContactsDeleteTitle">Delete contacts</string>
     <string name="SyncContactsDeleteText">This will remove your contacts from the Telegram servers.\n\nIf \'**Sync Contacts**\' is enabled, contacts will be re-synced.</string>
-    <!--edit video view-->
+    
     <string name="SendingVideo">Sending video...</string>
     <string name="ConvertingVideo">Converting video...</string>
     <string name="SendingGif">Sending GIF...</string>
-    <!--bot-->
+    
     <string name="Bot">bot</string>
     <string name="BotTypeAgent">Agent</string>
     <string name="BotTypeGame">Game</string>
@@ -3771,7 +3774,7 @@
     <string name="BotWebViewRequestWriteMessage">Allow this bot to send you messages?</string>
     <string name="BotMultiContactsSelectorLimit_one">You can select maximum %1$d user.</string>
     <string name="BotMultiContactsSelectorLimit_other">You can select maximum %1$d users.</string>
-    <!--button titles-->
+    
     <string name="Done">Done</string>
     <string name="Open">Open</string>
     <string name="Save">Save</string>
@@ -3834,7 +3837,7 @@
     <string name="Next">Next</string>
     <string name="Enable">Enable</string>
     <string name="ReportFalsePositive">Report False Positive</string>
-    <!--messages-->
+    
     <string name="ActionJoinedFromCommunityYou">You joined the group via un1 community</string>
     <string name="ActionJoinedFromCommunityYouChannel">You joined the channel via un1 community</string>
     <string name="ActionJoinedFromCommunityUser">un2 joined the group via un1 community</string>
@@ -3943,13 +3946,14 @@
     <string name="AttachOnceAudio">One-time Voice Message</string>
     <string name="AttachOnceRound">One-time Video Message</string>
     <string name="AttachGame">Game</string>
+    <string name="AttachWidget">Widget</string>
     <string name="FromYou">You</string>
     <string name="NoNewCarMessages">No new messages</string>
     <string name="NoCarMusic">No music in your chats</string>
     <string name="ActionTakeScreenshootYou">You took a screenshot!</string>
     <string name="ActionTakeScreenshoot">un1 took a screenshot!</string>
     <string name="Album">Album</string>
-    <!--too many communities-->
+    
     <string name="LimitReached">Limit Reached</string>
     <string name="InactiveChats">Inactive chats</string>
     <string name="InactiveChannelSignature">channel, inactive for %1$s</string>
@@ -3960,7 +3964,7 @@
     <string name="TooManyCommunitiesHintCreate">Sorry, you are a member of too many groups or channels. Please leave some before creating a new one.</string>
     <string name="TooManyCommunitiesHintEdit">Sorry, you are a member of too many groups and channels. For technical reasons, you need to leave some first before changing this setting in your groups.</string>
     <string name="UserChannelTooMuchJoin">Sorry, the target user is a member of too many groups and channels. Please ask them to leave some first.</string>
-    <!--Alert messages-->
+    
     <string name="LimitReachedPinnedTopics">Sorry, you can\'t pin more than %d topics to the top.</string>
     <string name="DeleteAllMessagesAlert">Warning! This will **delete all messages** in this chat for **both** participants.</string>
     <string name="DeleteAllMessagesChannelAlert">Warning! This will **delete all messages** in this channel.</string>
@@ -4124,7 +4128,7 @@
     <string name="TosAgeText">Tap Agree to confirm that you are %1$s or over.</string>
     <string name="TosUpdateDecline">We\'re very sorry, but this means we must part ways here. Unlike others, we don\'t use your data for ad targeting or other commercial purposes. Telegram only stores the information it needs to function as a feature-rich cloud service. You can adjust how we use your data (e.g., delete synced contacts) in Privacy &amp; Security settings.\n\nBut if you\'re generally not OK with Telegram\'s modest needs, it won\'t be possible for us to provide this service. You can deactivate your account now — or look around some more and deactivate it later if you feel you\'re not happy with the way we use your data.</string>
     <string name="TosDeclineDeleteAccount">Warning, this will irreversibly delete your Telegram account along with all the data you store in the Telegram cloud.\n\nImportant: You can Cancel now and export your data before deleting your account instead of losing it all. (To do this, open the latest version of Telegram Desktop and go to Settings &gt; Export Telegram Data.)</string>
-    <!--permissions-->
+    
     <string name="PermissionStorageWithHint">**Telegram** needs storage access so you can send and save photos, videos, music and other media. Tap Settings -> Permissions, and turn **Files and media** on.</string>
     <string name="PermissionNoAudioWithHint">**Telegram** needs microphone access so that you can send voice messages. Tap Settings -> Permissions, and turn **Microphone** on.</string>
     <string name="PermissionNoBluetoothWithHint">**Telegram** needs bluetooth access to record video from your headset microphone. Tap Settings -> Permissions, and turn **Bluetooth** on.</string>
@@ -4147,7 +4151,7 @@
     <string name="PermissionBackgroundLocation">To share your live location in this chat, Telegram needs access to your location all the time, including while the app is in the background.\n\nWe will access your location only for the duration you choose, and you can stop sharing it any time. We won\'t use your location for any purpose other than sharing it in this chat.</string>
     <string name="PermissionDrawAboveOtherAppsTitle">Picture-in-Picture</string>
     <string name="PermissionDrawAboveOtherAppsGroupCallTitle">Voice Chat Overlay</string>
-    <!--charts-->
+    
     <string name="GrowthChartTitle">Growth</string>
     <string name="FollowersChartTitle">Followers</string>
     <string name="ViewsAndSharesChartTitle">Views and Shares</string>
@@ -4216,7 +4220,7 @@
     <string name="ViewChannelStats">View Channel Stats</string>
     <string name="ViewMessageStatistic">Message Statistic</string>
     <string name="ViewMessage">Open Message</string>
-    <!--Intro view-->
+    
     <string name="Page1Title">Telegram</string>
     <string name="Page2Title">Fast</string>
     <string name="Page3Title">Free</string>
@@ -4230,7 +4234,7 @@
     <string name="Page5Message">**Telegram** has no limits on\nthe size of your media and chats.</string>
     <string name="Page6Message">**Telegram** lets you access your messages\nfrom multiple devices.</string>
     <string name="StartMessaging">Start Messaging</string>
-    <!-- VoIP -->
+    
     <string name="AccountSettings">Account Settings</string>
     <string name="VoipUseLessData">Use less data for calls</string>
     <string name="VoipConnecting">Connecting</string>
@@ -4336,10 +4340,6 @@
     <string name="TranscriptionReportSent">Thank you for your feedback.</string>
     <string name="VoipQuickReplies">Respond with Text</string>
     <string name="VoipQuickRepliesExplain">These quick responses will be available when you respond to an incoming call with a Telegram message. Change them to say anything you like.</string>
-    <string name="QuickReplyDefault1">Can\'t talk now. What\'s up?</string>
-    <string name="QuickReplyDefault2">I\'ll call you right back.</string>
-    <string name="QuickReplyDefault3">I\'ll call you later.</string>
-    <string name="QuickReplyDefault4">Can\'t talk now. Call me later?</string>
     <string name="AllowCustomQuickReply">Allow Custom</string>
     <string name="VoipInCallBrandingWithName">Telegram Call to %s</string>
     <string name="VoipInVideoCallBrandingWithName">Telegram Video Call to %s</string>
@@ -4617,7 +4617,7 @@
     <string name="VoipMyMicrophoneState">Your microphone is turned off</string>
     <string name="NoRtmpStreamFromAppOwner">**Oops!** Telegram doesn\'t see any stream coming from your streaming app.\n\nPlease make sure you entered the right Server URL and Stream Key in your app.</string>
     <string name="NoRtmpStreamFromAppViewer">%1$s is currently not broadcasting live stream data to Telegram.</string>
-    <!--invite links-->
+    
     <string name="ManageInviteLinks">Manage Invite Links</string>
     <string name="ManageLinksInfoHelp">You can create additional invite links that have a limited time or number of uses.</string>
     <string name="ManageLinksInfoHelpPaid">You can create additional invite links that have a limited time, number of uses or require a paid subscription.</string>
@@ -4674,11 +4674,11 @@
     <string name="LinkActionShare">Share</string>
     <string name="InviteRevokedHint">The invite link has been revoked.</string>
     <string name="ExpiredLink">Expired Link</string>
-    <!--contacts shortcuts-->
+    
     <string name="ContactShortcutMessage">Message %1$s</string>
     <string name="ContactShortcutVoiceCall">Voice call %1$s</string>
     <string name="ContactShortcutVideoCall">Video call %1$s</string>
-    <!--plural-->
+    
     <string name="RevokeLinks_one">Revoke link</string>
     <string name="RevokeLinks_other">Revoke %d links</string>
 
@@ -4865,7 +4865,7 @@
     <string name="Shared_other">%1$s shared</string>
     <string name="StickerSets_one">%1$s sticker set</string>
     <string name="StickerSets_other">%1$s sticker sets</string>
-    <!--forwarded messages-->
+    
     <string name="ForwardedMessageCount_one">Forwarded message</string>
     <string name="ForwardedMessageCount_other">%1$d forwarded messages</string>
     <string name="PreviewForwardMessagesCount_one">Forward message</string>
@@ -4983,7 +4983,7 @@
 
     <string name="MessagePlayed_one">Played</string>
     <string name="MessagePlayed_other">%1$d Played</string>
-    <!--accessibility descriptions-->
+    
     <string name="AccDescrGroup">Group</string>
     <string name="AccDescrChannel">Channel</string>
     <string name="AccDescrTopic">Topic</string>
@@ -5185,7 +5185,7 @@
     <string name="AccDescrCaptureStory">Capture story</string>
     <string name="AccDescrProfileMusic">Profile Music</string>
     <string name="AccDescrProfileRatingLevel">Profile Stars Rating Level</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">MMM dd, yyyy</string>
     <string name="formatterGiveawayCard">dd MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">MMMM dd</string>
@@ -5877,7 +5877,7 @@
     <string name="DeleteReaction">Delete Reaction</string>
     <string name="BanUser">Ban user</string>
     <string name="BanUserMonoforum">Ban User From Channel</string>
-    <string name="UnbanUserMonoforum">Ban User From Channel</string>
+    <string name="UnbanUserMonoforum">Unban User From Channel</string>
     <string name="AccDescrCustomEmoji">Custom emoji</string>
     <string name="RecentlyUsed">Recently Used</string>
     <string name="PopularReactions">Popular</string>
@@ -6365,6 +6365,7 @@
     <string name="AccDescrRateTranscriptionUp">Rate up</string>
     <string name="AccDescrRateTranscriptionDown">Rate down</string>
     <string name="PauseMusicOnMedia">Pause music while playing media</string>
+    <string name="CompactMode">Compact Mode</string>
     <string name="ProxyBottomSheetCheckStatus">**Check Status**</string>
     <string name="ProxyBottomSheetChecking">Checking</string>
     <string name="ProxyBottomSheetCheckWarning">Warning</string>
@@ -10040,6 +10041,7 @@
     <string name="TopicsLayoutInfo">Choose how topics appear for all members.</string>
     <string name="TopicsLayoutList">List</string>
     <string name="TopicsLayoutTabs">Tabs</string>
+    <string name="TopicsSidebar">Sidebar</string>
     <string name="SendInStandardQuality">Send in standard quality</string>
     <string name="SendInHighQuality">Send in high quality</string>
     <string name="ShortHighQuality">HD</string>
@@ -10050,6 +10052,8 @@
     <string name="AllChatsShort">All</string>
     <string name="AllTopicsShort">All</string>
     <string name="AllTopicsSide">All</string>
+    <string name="TopicsPanelAllMessages">All Messages</string>
+    <string name="TopicsPanelDirectMessages">Direct messages</string>
     <string name="VoicePauseHint">Pause to trim or replay</string>
     <string name="RecordingTrimTitle">Trim to selected range?</string>
     <string name="RecordingTrimText">Audio outside that range will be discarded, and recording will start immediately.</string>
@@ -11093,6 +11097,7 @@
     <string name="CommunitySectionHiddenChats">Hidden chats</string>
     <string name="CommunitySectionChatsYouCanRequestToJoin">Chats you can request to join</string>
     <string name="CommunityAddAChatToCommunity">Add a Chat to Community</string>
+    <string name="CommunityAddAChatToCommunityHeader">Add a Chat to Community</string>
     <string name="CommunityMenuAddChat">Add Chat to Community</string>
     <string name="CommunityMenuSettings">Settings</string>
     <string name="CommunityMenuShowAsOneChat">Show as One Chat</string>
@@ -11323,6 +11328,19 @@
     <string name="FG_RoundPhotoDuration">Duration: %1$s</string>
     <string name="FG_RoundMediaError">Unable to prepare this media as a video message.</string>
 
+    <string name="HeaderSettings">Header</string>
+    <string name="HeaderDoneButtonColor">Done button color</string>
+    <string name="HeaderDoneButtonColorGlass">White</string>
+    <string name="HeaderDoneButtonColorAccent">Blue</string>
+    <string name="HeaderDoneButtonColorInfo">A white button appears only when there is something to save. A blue button is always shown and is dimmed until then.</string>
+    <string name="HeaderDoneButtonShape">Done button shape</string>
+    <string name="HeaderDoneButtonShapeIcon">Round with a check</string>
+    <string name="HeaderDoneButtonShapeText">Text</string>
+    <string name="HeaderDoneButtonPreview">Preview</string>
+    <string name="HeaderDoneButtonPreviewChanges">Has changes</string>
+    <string name="HeaderDoneButtonPreviewInfo">Toggle to see how the button in the header above reacts to changes.</string>
+    <string name="Apply">Apply</string>
+
     <string name="AudioRecorderSettings">Voice Messages</string>
     <string name="AudioRecorderGeneral">Recorder</string>
     <string name="AudioRecorderUseNewRecorder">Use new recorder</string>
@@ -11331,7 +11349,7 @@
     <string name="AudioRecorderNoiseSuppressionRNNoise">RNNoise</string>
     <string name="AudioRecorderGeneralInfo">RNNoise removes background noise may affect music or very quiet speech.</string>
 
-    <!-- Wallet -->
+    
     <string name="WalletUseDevicePasscode">Use device PIN or password</string>
     <string name="WalletTouchFingerprint">Touch the fingerprint sensor to unlock your wallet.</string>
     <string name="WalletFingerprintRetry">Fingerprint not recognized. Try again.</string>
@@ -11583,6 +11601,8 @@
     <string name="WalletAddressNoLinkedAccount">This address has no linked\nTelegram account.</string>
     <string name="WalletTapToSetAmount">Tap to set amount</string>
     <string name="WalletTonConnectRequestUnavailable">This TON Connect request is unavailable or has already been answered</string>
+    <string name="WalletWidgetNoWallet">Your wallet is not available on this device.</string>
+    <string name="WalletWidgetRequestExpired">This request has expired.</string>
     <string name="WalletTonConnectSessionResponseEmpty">Empty TON Connect session response</string>
     <string name="WalletTonConnectManifestLoadFailed">Could not load dApp manifest: %1$s</string>
     <string name="WalletTonConnectSessionClosed">TON Connect session is closed</string>
@@ -11652,4 +11672,32 @@
     <string name="NoPaidMessagesTokenUsed">un1 used your QR code and can message you for free</string>
     <string name="NoPaidMessagesTokenUsedOut">You used the QR code of un1 and can message them for free</string>
     <string name="NoPaidMessagesTokenImported">You can now message **%1$s** for free.</string>
+    <string name="WidgetStopped">Widget stopped</string>
+    <string name="WidgetLoading">Loading widget…</string>
+    <string name="WidgetLoadFailed">Widget failed to load</string>
+    <string name="WidgetOpenLinkTitle">Open link</string>
+    <string name="WidgetOpenLinkText">This widget wants to open:\n%1$s</string>
+    <string name="WidgetTextCopied">Copied: %1$s</string>
+    <string name="NewContactPhoneNotOnTelegram">This phone number is not on Telegram. **Invite >**</string>
+    <string name="NewContactPhoneInContacts">This phone number is already in your contacts. **View >**</string>
+    <string name="NewContactPhoneOnTelegram">This phone number is on Telegram.</string>
+    <string name="StoryPrivacyGroupNoContacts">All group members are not in your contact list.</string>
+    <string name="StoryPrivacyGroupNonContacts_one">%1$d member is not in your contact list</string>
+    <string name="StoryPrivacyGroupNonContacts_other">%1$d members are not in your contact list</string>
+    <string name="StoryPrivacyGroupAddContacts_one">Add %1$d contact</string>
+    <string name="StoryPrivacyGroupAddContacts_other">Add %1$d contacts</string>
+    <string name="ForwardHideSenderNamePremium">Subscribe to **Telegram Premium** to forward formatted messages without the sender’s name.</string>
+    <string name="StoryEditWaitUpload">Wait until current upload is complete</string>
+    <string name="UnsupportedContent">Unsupported content</string>
+    <string name="LocationPoweredBy">Powered by</string>
+    <string name="SettingsExperimental">Experimental</string>
+    <string name="FpnvConsentTitle">Log In with SIM Card</string>
+    <string name="FpnvConsentText">Telegram can confirm the phone number of this SIM card with your carrier and log you in without a code.</string>
+    <string name="FpnvConsentContinue">Continue</string>
+    <string name="FpnvConsentCarrier">Carrier</string>
+    <string name="FpnvConsentSimSlot">SIM Slot</string>
+    <string name="FpnvConsentSimSlotValue">SIM %1$d</string>
+    <string name="FpnvConsentCountry">Country</string>
+    <string name="FpnvConsentMccMnc">MCC / MNC</string>
+    <string name="FpnvConsentPhoneNumber">Phone Number</string>
 </resources>

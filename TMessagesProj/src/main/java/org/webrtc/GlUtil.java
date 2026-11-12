@@ -16,9 +16,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-/**
- * Some OpenGL static utility functions.
- */
 public class GlUtil {
   private GlUtil() {}
 
@@ -28,7 +25,6 @@ public class GlUtil {
     }
   }
 
-  // Assert that no OpenGL ES 2.0 error has been raised.
   public static void checkNoGLES2Error(String msg) {
     int error = GLES20.glGetError();
     if (error != GLES20.GL_NO_ERROR) {
@@ -39,7 +35,6 @@ public class GlUtil {
   }
 
   public static FloatBuffer createFloatBuffer(float[] coords) {
-    // Allocate a direct ByteBuffer, using 4 bytes per float, and copy coords into it.
     ByteBuffer bb = ByteBuffer.allocateDirect(coords.length * 4);
     bb.order(ByteOrder.nativeOrder());
     FloatBuffer fb = bb.asFloatBuffer();
@@ -48,9 +43,6 @@ public class GlUtil {
     return fb;
   }
 
-  /**
-   * Generate texture with standard parameters.
-   */
   public static int generateTexture(int target) {
     final int textureArray[] = new int[1];
     GLES20.glGenTextures(1, textureArray, 0);

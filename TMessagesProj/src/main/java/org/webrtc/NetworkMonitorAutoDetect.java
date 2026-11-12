@@ -37,24 +37,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Borrowed from Chromium's
- * src/net/android/java/src/org/chromium/net/NetworkChangeNotifierAutoDetect.java
- *
- * <p>Used by the NetworkMonitor to listen to platform changes in connectivity. Note that use of
- * this class requires that the app have the platform ACCESS_NETWORK_STATE permission.
- */
 public class NetworkMonitorAutoDetect extends BroadcastReceiver implements NetworkChangeDetector {
   static class NetworkState {
     private final boolean connected;
-    // Defined from ConnectivityManager.TYPE_XXX for non-mobile; for mobile, it is
-    // further divided into 2G, 3G, or 4G from the subtype.
     private final int type;
-    // Defined from NetworkInfo.subtype, which is one of the TelephonyManager.NETWORK_TYPE_XXXs.
-    // Will be useful to find the maximum bandwidth.
     private final int subtype;
-    // When the type is TYPE_VPN, the following two fields specify the similar type and subtype as
-    // above for the underlying network that is used by the VPN.
     private final int underlyingNetworkTypeForVpn;
     private final int underlyingNetworkSubtypeForVpn;
 
@@ -87,11 +74,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return underlyingNetworkSubtypeForVpn;
     }
   }
-  /**
-   * The methods in this class get called when the network changes if the callback
-   * is registered with a proper network request. It is only available in Android Lollipop
-   * and above.
-   */
   @SuppressLint("NewApi")
   private class SimpleNetworkCallback extends NetworkCallback {
     @Override
@@ -102,27 +84,18 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
 
     @Override
     public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
-      // A capabilities change may indicate the ConnectionType has changed,
-      // so forward the new NetworkInformation along to the observer.
       Logging.d(TAG, "capabilities changed: " + networkCapabilities.toString());
       onNetworkChanged(network);
     }
 
     @Override
     public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
-      // A link property change may indicate the IP address changes.
-      // so forward the new NetworkInformation to the observer.
-      //
-      // linkProperties.toString() has PII that cannot be redacted
-      // very reliably, so do not include in log.
       Logging.d(TAG, "link properties changed");
       onNetworkChanged(network);
     }
 
     @Override
     public void onLosing(Network network, int maxMsToLive) {
-      // Tell the network is going to lose in MaxMsToLive milliseconds.
-      // We may use this signal later.
       Logging.d(
           TAG, "Network " + network.toString() + " is about to lose in " + maxMsToLive + "ms");
     }
@@ -141,12 +114,7 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     }
   }
 
-  /** Queries the ConnectivityManager for information about the current connection. */
   static class ConnectivityManagerDelegate {
-    /**
-     *  Note: In some rare Android systems connectivityManager is null.  We handle that
-     *  gracefully below.
-     */
     @Nullable private final ConnectivityManager connectivityManager;
 
     ConnectivityManagerDelegate(Context context) {
@@ -154,16 +122,10 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
           (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
-    // For testing.
     ConnectivityManagerDelegate() {
-      // All the methods below should be overridden.
       connectivityManager = null;
     }
 
-    /**
-     * Returns connection type and status information about the current
-     * default network.
-     */
     NetworkState getNetworkState() {
       if (connectivityManager == null) {
         return new NetworkState(false, -1, -1, -1, -1);
@@ -171,10 +133,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return getNetworkState(connectivityManager.getActiveNetworkInfo());
     }
 
-    /**
-     * Returns connection type and status information about |network|.
-     * Only callable on Lollipop and newer releases.
-     */
     @SuppressLint("NewApi")
     NetworkState getNetworkState(@Nullable Network network) {
       if (network == null || connectivityManager == null) {
@@ -185,52 +143,22 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
         Logging.w(TAG, "Couldn't retrieve information from network " + network.toString());
         return new NetworkState(false, -1, -1, -1, -1);
       }
-      // The general logic of handling a VPN in this method is as follows. getNetworkInfo will
-      // return the info of the network with the same id as in |network| when it is registered via
-      // ConnectivityManager.registerNetworkAgent in Android. |networkInfo| may or may not indicate
-      // the type TYPE_VPN if |network| is a VPN. To reliably detect the VPN interface, we need to
-      // query the network capability as below in the case when networkInfo.getType() is not
-      // TYPE_VPN. On the other hand when networkInfo.getType() is TYPE_VPN, the only solution so
-      // far to obtain the underlying network information is to query the active network interface.
-      // However, the active network interface may not be used for the VPN, for example, if the VPN
-      // is restricted to WiFi by the implementation but the WiFi interface is currently turned
-      // off and the active interface is the Cell. Using directly the result from
-      // getActiveNetworkInfo may thus give the wrong interface information, and one should note
-      // that getActiveNetworkInfo would return the default network interface if the VPN does not
-      // specify its underlying networks in the implementation. Therefore, we need further compare
-      // |network| to the active network. If they are not the same network, we will have to fall
-      // back to report an unknown network.
 
       if (networkInfo.getType() != ConnectivityManager.TYPE_VPN) {
-        // Note that getNetworkCapabilities returns null if the network is unknown.
         NetworkCapabilities networkCapabilities =
             connectivityManager.getNetworkCapabilities(network);
         if (networkCapabilities == null
             || !networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
           return getNetworkState(networkInfo);
         }
-        // When |network| is in fact a VPN after querying its capability but |networkInfo| is not of
-        // type TYPE_VPN, |networkInfo| contains the info for the underlying network, and we return
-        // a NetworkState constructed from it.
         return new NetworkState(networkInfo.isConnected(), ConnectivityManager.TYPE_VPN, -1,
             networkInfo.getType(), networkInfo.getSubtype());
       }
 
-      // When |networkInfo| is of type TYPE_VPN, which implies |network| is a VPN, we return the
-      // NetworkState of the active network via getActiveNetworkInfo(), if |network| is the active
-      // network that supports the VPN. Otherwise, NetworkState of an unknown network with type -1
-      // will be returned.
-      //
-      // Note that getActiveNetwork and getActiveNetworkInfo return null if no default network is
-      // currently active.
       if (networkInfo.getType() == ConnectivityManager.TYPE_VPN) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
             && network.equals(connectivityManager.getActiveNetwork())) {
-          // If a VPN network is in place, we can find the underlying network type via querying the
-          // active network info thanks to
-          // https://android.googlesource.com/platform/frameworks/base/+/d6a7980d
           NetworkInfo underlyingActiveNetworkInfo = connectivityManager.getActiveNetworkInfo();
-          // We use the NetworkInfo of the underlying network if it is not of TYPE_VPN itself.
           if (underlyingActiveNetworkInfo != null
               && underlyingActiveNetworkInfo.getType() != ConnectivityManager.TYPE_VPN) {
             return new NetworkState(networkInfo.isConnected(), ConnectivityManager.TYPE_VPN, -1,
@@ -244,11 +172,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return getNetworkState(networkInfo);
     }
 
-    /**
-     * Returns connection type and status information gleaned from networkInfo. Note that to obtain
-     * the complete information about a VPN including the type of the underlying network, one should
-     * use the above method getNetworkState with a Network object.
-     */
     private NetworkState getNetworkState(@Nullable NetworkInfo networkInfo) {
       if (networkInfo == null || !networkInfo.isConnected()) {
         return new NetworkState(false, -1, -1, -1, -1);
@@ -256,10 +179,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(), -1, -1);
     }
 
-    /**
-     * Returns all connected networks.
-     * Only callable on Lollipop and newer releases.
-     */
     @SuppressLint("NewApi")
     Network[] getAllNetworks() {
       if (connectivityManager == null) {
@@ -283,20 +202,11 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return netInfoList;
     }
 
-    /**
-     * Returns the NetID of the current default network. Returns
-     * INVALID_NET_ID if no current default network connected.
-     * Only callable on Lollipop and newer releases.
-     */
     @SuppressLint("NewApi")
     long getDefaultNetId() {
       if (!supportNetworkCallback()) {
         return INVALID_NET_ID;
       }
-      // Android Lollipop had no API to get the default network; only an
-      // API to return the NetworkInfo for the default network. To
-      // determine the default network one can find the network with
-      // type matching that of the default network.
       final NetworkInfo defaultNetworkInfo = connectivityManager.getActiveNetworkInfo();
       if (defaultNetworkInfo == null) {
         return INVALID_NET_ID;
@@ -309,13 +219,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
         }
         final NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
         if (networkInfo != null && networkInfo.getType() == defaultNetworkInfo.getType()) {
-          // There should not be multiple connected networks of the
-          // same type. At least as of Android Marshmallow this is
-          // not supported. If this becomes supported this assertion
-          // may trigger. At that point we could consider using
-          // ConnectivityManager.getDefaultNetwork() though this
-          // may give confusing results with VPNs and is only
-          // available with Android Marshmallow.
           if (defaultNetId != INVALID_NET_ID) {
             throw new RuntimeException(
                 "Multiple connected networks of same type are not supported.");
@@ -332,7 +235,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
         return null;
       }
       LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
-      // getLinkProperties will return null if the network is unknown.
       if (linkProperties == null) {
         Logging.w(TAG, "Detected unknown network: " + network.toString());
         return null;
@@ -345,23 +247,16 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       NetworkState networkState = getNetworkState(network);
       NetworkChangeDetector.ConnectionType connectionType = getConnectionType(networkState);
       if (connectionType == NetworkChangeDetector.ConnectionType.CONNECTION_NONE) {
-        // This may not be an error. The OS may signal a network event with connection type
-        // NONE when the network disconnects.
         Logging.d(TAG, "Network " + network.toString() + " is disconnected");
         return null;
       }
 
-      // Some android device may return a CONNECTION_UNKNOWN_CELLULAR or CONNECTION_UNKNOWN type,
-      // which appears to be usable. Just log them here.
       if (connectionType == NetworkChangeDetector.ConnectionType.CONNECTION_UNKNOWN
           || connectionType == NetworkChangeDetector.ConnectionType.CONNECTION_UNKNOWN_CELLULAR) {
         Logging.d(TAG, "Network " + network.toString() + " connection type is " + connectionType
                 + " because it has type " + networkState.getNetworkType() + " and subtype "
                 + networkState.getNetworkSubType());
       }
-      // NetworkChangeDetector.ConnectionType.CONNECTION_UNKNOWN if the network is not a VPN or the
-      // underlying network is
-      // unknown.
       ConnectionType underlyingConnectionTypeForVpn =
           getUnderlyingConnectionTypeForVpn(networkState);
 
@@ -371,10 +266,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return networkInformation;
     }
 
-    /**
-     * Returns true if {@code network} can provide Internet access. Can be used to
-     * ignore specialized networks (e.g. IMS, FOTA).
-     */
     @SuppressLint("NewApi")
     boolean hasInternetCapability(Network network) {
       if (connectivityManager == null) {
@@ -385,7 +276,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
           && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
     }
 
-    /** Only callable on Lollipop and newer releases. */
     @SuppressLint("NewApi")
     public void registerNetworkCallback(NetworkCallback networkCallback) {
       connectivityManager.registerNetworkCallback(
@@ -395,7 +285,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
           networkCallback);
     }
 
-    /** Only callable on Lollipop and newer releases. */
     @SuppressLint("NewApi")
     public void requestMobileNetwork(NetworkCallback networkCallback) {
       NetworkRequest.Builder builder = new NetworkRequest.Builder();
@@ -428,16 +317,13 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     }
   }
 
-  /** Queries the WifiManager for SSID of the current Wifi connection. */
   static class WifiManagerDelegate {
     @Nullable private final Context context;
     WifiManagerDelegate(Context context) {
       this.context = context;
     }
 
-    // For testing.
     WifiManagerDelegate() {
-      // All the methods below should be overridden.
       context = null;
     }
 
@@ -463,15 +349,10 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     }
   }
 
-  /** Maintains the information about wifi direct (aka WifiP2p) networks. */
   static class WifiDirectManagerDelegate extends BroadcastReceiver {
-    // Network "handle" for the Wifi P2p network. We have to bind to the default network id
-    // (NETWORK_UNSPECIFIED) for these addresses.
     private static final int WIFI_P2P_NETWORK_HANDLE = 0;
     private final Context context;
     private final NetworkChangeDetector.Observer observer;
-    // Network information about a WifiP2p (aka WiFi-Direct) network, or null if no such network is
-    // connected.
     @Nullable private NetworkInformation wifiP2pNetworkInfo;
 
     WifiDirectManagerDelegate(NetworkChangeDetector.Observer observer, Context context) {
@@ -486,18 +367,14 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
         context.registerReceiver(this, intentFilter);
       }
       if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-        // Starting with Android Q (10), WIFI_P2P_CONNECTION_CHANGED_ACTION is no longer sticky.
-        // This means we have to explicitly request WifiP2pGroup info during initialization in order
-        // to get this data if we are already connected to a Wi-Fi Direct network.
         WifiP2pManager manager =
             (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         WifiP2pManager.Channel channel =
-            manager.initialize(context, context.getMainLooper(), null /* listener */);
+            manager.initialize(context, context.getMainLooper(), null               );
         manager.requestGroupInfo(channel, wifiP2pGroup -> { onWifiP2pGroupChange(wifiP2pGroup); });
       }
     }
 
-    // BroadcastReceiver
     @Override
     @SuppressLint("InlinedApi")
     public void onReceive(Context context, Intent intent) {
@@ -505,12 +382,11 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
         WifiP2pGroup wifiP2pGroup = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_GROUP);
         onWifiP2pGroupChange(wifiP2pGroup);
       } else if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(intent.getAction())) {
-        int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0 /* default to unknown */);
+        int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0                         );
         onWifiP2pStateChange(state);
       }
     }
 
-    /** Releases the broadcast receiver. */
     public void release() {
       context.unregisterReceiver(this);
     }
@@ -523,7 +399,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       return Collections.emptyList();
     }
 
-    /** Handle a change notification about the wifi p2p group. */
     private void onWifiP2pGroupChange(@Nullable WifiP2pGroup wifiP2pGroup) {
       if (wifiP2pGroup == null || wifiP2pGroup.getInterface() == null) {
         return;
@@ -550,7 +425,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       observer.onNetworkConnect(wifiP2pNetworkInfo);
     }
 
-    /** Handle a state change notification about wifi p2p. */
     private void onWifiP2pStateChange(int state) {
       if (state == WifiP2pManager.WIFI_P2P_STATE_DISABLED) {
         wifiP2pNetworkInfo = null;
@@ -562,16 +436,11 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
   private static final long INVALID_NET_ID = -1;
   private static final String TAG = "NetworkMonitorAutoDetect";
 
-  // Observer for the connection type change.
   private final NetworkChangeDetector.Observer observer;
   private final IntentFilter intentFilter;
   private final Context context;
-  // Used to request mobile network. It does not do anything except for keeping
-  // the callback for releasing the request.
   @Nullable private final NetworkCallback mobileNetworkCallback;
-  // Used to receive updates on all networks.
   @Nullable private final NetworkCallback allNetworkCallback;
-  // connectivityManagerDelegate and wifiManagerDelegate are only non-final for testing.
   private ConnectivityManagerDelegate connectivityManagerDelegate;
   private WifiManagerDelegate wifiManagerDelegate;
   private WifiDirectManagerDelegate wifiDirectManagerDelegate;
@@ -580,7 +449,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
   private NetworkChangeDetector.ConnectionType connectionType;
   private String wifiSSID;
 
-  /** Constructs a NetworkMonitorAutoDetect. Should only be called on UI thread. */
   @SuppressLint("NewApi")
   public NetworkMonitorAutoDetect(NetworkChangeDetector.Observer observer, Context context) {
     this.observer = observer;
@@ -599,8 +467,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
 
     registerReceiver();
     if (connectivityManagerDelegate.supportNetworkCallback()) {
-      // On Android 6.0.0, the WRITE_SETTINGS permission is necessary for
-      // requestNetwork, so it will fail. This was fixed in Android 6.0.1.
       NetworkCallback tempNetworkCallback = new NetworkCallback();
       try {
         connectivityManagerDelegate.requestMobileNetwork(tempNetworkCallback);
@@ -622,24 +488,14 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     return connectivityManagerDelegate.supportNetworkCallback();
   }
 
-  /**
-   * Allows overriding the ConnectivityManagerDelegate for tests.
-   */
   void setConnectivityManagerDelegateForTests(ConnectivityManagerDelegate delegate) {
     connectivityManagerDelegate = delegate;
   }
 
-  /**
-   * Allows overriding the WifiManagerDelegate for tests.
-   */
   void setWifiManagerDelegateForTests(WifiManagerDelegate delegate) {
     wifiManagerDelegate = delegate;
   }
 
-  /**
-   * Returns whether the object has registered to receive network connectivity intents.
-   * Visible for testing.
-   */
   boolean isReceiverRegisteredForTesting() {
     return isRegistered;
   }
@@ -674,9 +530,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     unregisterReceiver();
   }
 
-  /**
-   * Registers a BroadcastReceiver in the given context.
-   */
   private void registerReceiver() {
     if (isRegistered)
       return;
@@ -689,9 +542,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     }
   }
 
-  /**
-   * Unregisters the BroadcastReceiver in the given context.
-   */
   private void unregisterReceiver() {
     if (!isRegistered)
       return;
@@ -704,12 +554,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     return connectivityManagerDelegate.getNetworkState();
   }
 
-  /**
-   * Returns NetID of device's current default connected network used for
-   * communication.
-   * Only implemented on Lollipop and newer releases, returns INVALID_NET_ID
-   * when not implemented.
-   */
   public long getDefaultNetId() {
     return connectivityManagerDelegate.getDefaultNetId();
   }
@@ -730,7 +574,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
       case ConnectivityManager.TYPE_BLUETOOTH:
         return NetworkChangeDetector.ConnectionType.CONNECTION_BLUETOOTH;
       case ConnectivityManager.TYPE_MOBILE:
-        // Use information from TelephonyManager to classify the connection.
         switch (networkSubtype) {
           case TelephonyManager.NETWORK_TYPE_GPRS:
           case TelephonyManager.NETWORK_TYPE_EDGE:
@@ -791,7 +634,6 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     return wifiManagerDelegate.getWifiSSID();
   }
 
-  // BroadcastReceiver
   @Override
   public void onReceive(Context context, Intent intent) {
     final NetworkState networkState = getCurrentNetworkState();
@@ -812,19 +654,12 @@ public class NetworkMonitorAutoDetect extends BroadcastReceiver implements Netwo
     observer.onConnectionTypeChanged(newConnectionType);
   }
 
-  /**
-   * Extracts NetID of network on Lollipop and NetworkHandle (which is mungled
-   * NetID) on Marshmallow and newer releases. Only available on Lollipop and
-   * newer releases. Returns long since getNetworkHandle returns long.
-   */
   @SuppressLint("NewApi")
   private static long networkToNetId(Network network) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       return network.getNetworkHandle();
     }
 
-    // NOTE(honghaiz): This depends on Android framework implementation details.
-    // These details cannot change because Lollipop has been released.
     return Integer.parseInt(network.toString());
   }
 }

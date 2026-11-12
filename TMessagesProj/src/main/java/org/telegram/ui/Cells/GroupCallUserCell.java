@@ -1,7 +1,7 @@
 package org.telegram.ui.Cells;
 
 import com.th3nekit.finegram.core.ui.FGAvatars;
-
+import org.telegram.messenger.FileLog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -43,6 +43,7 @@ import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
@@ -56,7 +57,7 @@ import org.telegram.ui.Components.WaveDrawable;
 
 import java.util.ArrayList;
 
-public class GroupCallUserCell extends FrameLayout {
+public class GroupCallUserCell extends FrameLayout implements Theme.Colorable {
 
     private AvatarWavesDrawable avatarWavesDrawable;
 
@@ -292,7 +293,7 @@ public class GroupCallUserCell extends FrameLayout {
         AndroidUtilities.updateViewVisibilityAnimated(avatarProgressView, false, 1f, false);
 
         nameTextView = new SimpleTextView(context);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_voipgroup_nameText));
+        ThemeBind.textColor(nameTextView, Theme.key_voipgroup_nameText);
         nameTextView.setTypeface(AndroidUtilities.bold());
         nameTextView.setTextSize(16);
         nameTextView.setDrawablePadding(AndroidUtilities.dp(6));
@@ -302,7 +303,7 @@ public class GroupCallUserCell extends FrameLayout {
         rightDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(nameTextView, AndroidUtilities.dp(20), AnimatedEmojiDrawable.CACHE_TYPE_ALERT_EMOJI_STATUS);
 
         speakingDrawable = context.getResources().getDrawable(R.drawable.voice_volume_mini);
-        speakingDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_voipgroup_speakingText), PorterDuff.Mode.MULTIPLY));
+        ThemeBind.drawableColorFilter(this, speakingDrawable, Theme.key_voipgroup_speakingText, PorterDuff.Mode.MULTIPLY);
 
         for (int a = 0; a < statusTextView.length; a++) {
             int num = a;
@@ -354,21 +355,21 @@ public class GroupCallUserCell extends FrameLayout {
             statusTextView[a].setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
             if (a == 4) {
                 statusTextView[a].setBuildFullLayout(true);
-                statusTextView[a].setTextColor(Theme.getColor(Theme.key_voipgroup_mutedIcon));
+                ThemeBind.textColor(statusTextView[a], Theme.key_voipgroup_mutedIcon);
                 addView(statusTextView[a], LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 54 : 67, 32, LocaleController.isRTL ? 67 : 54, 0));
             } else {
                 if (a == 0) {
-                    statusTextView[a].setTextColor(Theme.getColor(Theme.key_voipgroup_listeningText));
+                    ThemeBind.textColor(statusTextView[a], Theme.key_voipgroup_listeningText);
                     statusTextView[a].setText(LocaleController.getString(R.string.Listening));
                 } else if (a == 1) {
-                    statusTextView[a].setTextColor(Theme.getColor(Theme.key_voipgroup_speakingText));
+                    ThemeBind.textColor(statusTextView[a], Theme.key_voipgroup_speakingText);
                     statusTextView[a].setText(LocaleController.getString(R.string.Speaking));
                     statusTextView[a].setDrawablePadding(AndroidUtilities.dp(2));
                 } else if (a == 2) {
-                    statusTextView[a].setTextColor(Theme.getColor(Theme.key_voipgroup_mutedByAdminIcon));
+                    ThemeBind.textColor(statusTextView[a], Theme.key_voipgroup_mutedByAdminIcon);
                     statusTextView[a].setText(LocaleController.getString(R.string.VoipGroupMutedForMe));
                 } else if (a == 3) {
-                    statusTextView[a].setTextColor(Theme.getColor(Theme.key_voipgroup_listeningText));
+                    ThemeBind.textColor(statusTextView[a], Theme.key_voipgroup_listeningText);
                     statusTextView[a].setText(LocaleController.getString(R.string.WantsToSpeak));
                 }
                 addView(statusTextView[a], LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 54 : 67, 32, LocaleController.isRTL ? 67 : 54, 0));
@@ -378,7 +379,7 @@ public class GroupCallUserCell extends FrameLayout {
         fullAboutTextView = new SimpleTextView(context);
         fullAboutTextView.setMaxLines(3);
         fullAboutTextView.setTextSize(15);
-        fullAboutTextView.setTextColor(Theme.getColor(Theme.key_voipgroup_mutedIcon));
+        ThemeBind.textColor(fullAboutTextView, Theme.key_voipgroup_mutedIcon);
         fullAboutTextView.setVisibility(View.GONE);
         addView(fullAboutTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20 * 3, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 14, 32, 14, 0));
 
@@ -644,16 +645,8 @@ public class GroupCallUserCell extends FrameLayout {
         muteButton.setEnabled(!isSelfUser() || participant.raise_hand_rating != 0);
 
         boolean hasVoice;
-        /*if (updateVoiceRunnableScheduled) {
-            AndroidUtilities.cancelRunOnUIThread(updateVoiceRunnable);
-            updateVoiceRunnableScheduled = false;
-        }*/
         if (SystemClock.elapsedRealtime() - participant.lastVoiceUpdateTime < 500) {
             hasVoice = participant.hasVoiceDelayed;
-            /*if (hasVoice) {
-                AndroidUtilities.runOnUIThread(updateVoiceRunnable, 500 - participant.lastVoiceUpdateTime);
-                updateVoiceRunnableScheduled = true;
-            }*/
         } else {
             hasVoice = participant.hasVoice;
         }
@@ -729,7 +722,7 @@ public class GroupCallUserCell extends FrameLayout {
         }
 
         if (!isSelfUser()) {
-            statusTextView[4].setTextColor(Theme.getColor(grayIconColor));
+            ThemeBind.textColor(statusTextView[4], grayIconColor);
         }
 
         if (isSelfUser()) {
@@ -739,26 +732,29 @@ public class GroupCallUserCell extends FrameLayout {
                 } else {
                     statusTextView[4].setText(LocaleController.getString(R.string.TapToAddPhotoOrDescription));
                 }
-                statusTextView[4].setTextColor(Theme.getColor(grayIconColor));
+                ThemeBind.textColor(statusTextView[4], grayIconColor);
             } else if (!hasAbout ){
                 if (currentUser != null) {
                     statusTextView[4].setText(LocaleController.getString(R.string.TapToAddBio));
                 } else {
                     statusTextView[4].setText(LocaleController.getString(R.string.TapToAddDescription));
                 }
-                statusTextView[4].setTextColor(Theme.getColor(grayIconColor));
+                ThemeBind.textColor(statusTextView[4], grayIconColor);
             } else if (!hasAvatar) {
                 statusTextView[4].setText(LocaleController.getString(R.string.TapToAddPhoto));
-                statusTextView[4].setTextColor(Theme.getColor(grayIconColor));
+                ThemeBind.textColor(statusTextView[4], grayIconColor);
             } else {
                 statusTextView[4].setText(LocaleController.getString(R.string.ThisIsYou));
-                statusTextView[4].setTextColor(Theme.getColor(Theme.key_voipgroup_listeningText));
+                ThemeBind.textColor(statusTextView[4], Theme.key_voipgroup_listeningText);
             }
             if (hasAbout) {
                 fullAboutTextView.setText(AndroidUtilities.replaceNewLines(participant.about));
-                fullAboutTextView.setTextColor(Theme.getColor(Theme.key_voipgroup_mutedIcon));
+                fullAboutStatus = -1;
+                ThemeBind.textColor(fullAboutTextView, Theme.key_voipgroup_mutedIcon);
             } else {
                 fullAboutTextView.setText(statusTextView[newStatus].getText());
+                fullAboutStatus = newStatus;
+                ThemeBind.clear(fullAboutTextView);
                 fullAboutTextView.setTextColor(statusTextView[newStatus].getTextColor());
             }
         } else if (hasAbout) {
@@ -816,9 +812,6 @@ public class GroupCallUserCell extends FrameLayout {
                 if (animators == null) {
                     animators = new ArrayList<>();
                 }
-                /*for (int a = 0; a < statusTextView.length; a++) {
-                    statusTextView[a].setVisibility(VISIBLE);
-                }*/
                 if (newStatus == 0) {
                     for (int a = 0; a < statusTextView.length; a++) {
                         animators.add(ObjectAnimator.ofFloat(statusTextView[a], View.TRANSLATION_Y, a == newStatus ? 0 : AndroidUtilities.dp(-2)));
@@ -903,20 +896,16 @@ public class GroupCallUserCell extends FrameLayout {
     }
 
     private void applyStatus(int newStatus) {
-        // Visibility toggling is disabled to allow the alpha cross-fade; gate accessibility
-        // importance instead so TalkBack announces only the current status, not all four.
         for (int a = 0; a < statusTextView.length; a++) {
             statusTextView[a].setImportantForAccessibility(a == newStatus ? IMPORTANT_FOR_ACCESSIBILITY_YES : IMPORTANT_FOR_ACCESSIBILITY_NO);
         }
         if (newStatus == 0) {
             for (int a = 0; a < statusTextView.length; a++) {
-                //statusTextView[a].setVisibility(a == newStatus ? VISIBLE : INVISIBLE);
                 statusTextView[a].setTranslationY(a == newStatus ? 0 : AndroidUtilities.dp(-2));
                 statusTextView[a].setAlpha(a == newStatus ? 1.0f : 0.0f);
             }
         } else {
             for (int a = 0; a < statusTextView.length; a++) {
-                //statusTextView[a].setVisibility(a == newStatus ? VISIBLE : INVISIBLE);
                 statusTextView[a].setTranslationY(a == newStatus ? 0 : AndroidUtilities.dp(a == 0 ? 2 : -2));
                 statusTextView[a].setAlpha(a == newStatus ? 1.0f : 0.0f);
             }
@@ -1122,5 +1111,21 @@ public class GroupCallUserCell extends FrameLayout {
             return 0;
         }
         return MessageObject.getPeerId(participant.peer);
+    }
+
+    private int fullAboutStatus = -1;
+    @Override
+    public void updateColors() {
+        try {
+            dividerPaint.setColor(Theme.getColor(Theme.key_voipgroup_actionBar));
+            if (fullAboutStatus >= 0 && fullAboutTextView != null && statusTextView != null && fullAboutStatus < statusTextView.length && statusTextView[fullAboutStatus] != null) {
+                ThemeBind.update(statusTextView[fullAboutStatus]);
+                fullAboutTextView.setTextColor(statusTextView[fullAboutStatus].getTextColor());
+            }
+            invalidate();
+    
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

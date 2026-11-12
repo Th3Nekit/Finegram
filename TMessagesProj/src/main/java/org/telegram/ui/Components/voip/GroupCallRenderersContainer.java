@@ -39,7 +39,6 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserObject;
-import org.telegram.messenger.pip.utils.PipUtils;
 import org.telegram.messenger.support.LongSparseIntArray;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.TLRPC;
@@ -288,20 +287,11 @@ public class GroupCallRenderersContainer extends FrameLayout {
         pipView.setBackground(Theme.createSelectorDrawable(ColorUtils.setAlphaComponent(Color.WHITE, 55)));
         pipView.setOnClickListener(v -> {
             if (isRtmpStream()) {
-                if (PipUtils.checkAnyPipPermissions(groupCallActivity.getParentActivity())) {
-                    RTMPStreamPipOverlay.show(groupCallActivity.getParentActivity());
-                    groupCallActivity.dismiss();
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    AlertsCreator.createDrawOverlayPermissionDialog(groupCallActivity.getParentActivity(), null, true).show();
-                }
+                RtmpStreamPipContent.openFloating(groupCallActivity.getParentActivity());
                 return;
             }
-            if (AndroidUtilities.checkInlinePermissions(groupCallActivity.getParentActivity())) {
-                GroupCallPip.clearForce();
-                groupCallActivity.dismiss();
-            } else {
-                AlertsCreator.createDrawOverlayGroupCallPermissionDialog(getContext()).show();
-            }
+            GroupCallPip.clearForce();
+            groupCallActivity.dismiss();
         });
         addView(pipView, LayoutHelper.createFrame(32, 32, Gravity.RIGHT | Gravity.TOP, 12, 12, 12, 12));
 
@@ -649,14 +639,6 @@ public class GroupCallRenderersContainer extends FrameLayout {
         if ((videoParticipant == null && fullscreenParticipant == null) || (videoParticipant != null && videoParticipant.equals(fullscreenParticipant))) {
             return;
         }
-//        if (videoParticipant != null && fullscreenParticipant != null && fullscreenTextureView != null) {
-//            if (!fullscreenTextureView.hasVideo && MessageObject.getPeerId(fullscreenParticipant.participant.peer) == MessageObject.getPeerId(videoParticipant.participant.peer)) {
-//                fullscreenTextureView.participant = videoParticipant;
-//                fullscreenParticipant = videoParticipant;
-//                fullscreenTextureView.updateAttachState(true);
-//                return;
-//            }
-//        }
         long peerId = videoParticipant == null ? 0 : MessageObject.getPeerId(videoParticipant.participant.peer);
         if (fullscreenTextureView != null) {
             fullscreenTextureView.runDelayedAnimations();
@@ -904,7 +886,6 @@ public class GroupCallRenderersContainer extends FrameLayout {
                     fullscreenTextureView.participant = videoParticipant;
                     fullscreenTextureView.setFullscreenMode(inFullscreenMode, false);
                     fullscreenTextureView.setShowingInFullscreen(true, false);
-                    // fullscreenTextureView.textureView.renderer.setAlpha(1f);
                     fullscreenTextureView.setShowingInFullscreen(true, false);
 
                     replaceFullscreenViewAnimator = ObjectAnimator.ofFloat(fullscreenTextureView, View.ALPHA, 0f, 1f);
@@ -1191,7 +1172,7 @@ public class GroupCallRenderersContainer extends FrameLayout {
                 pinchTranslationX = 0f;
                 pinchTranslationY = 0f;
                 getParent().requestDisallowInterceptTouchEvent(true);
-                zoomStarted = true;//
+                zoomStarted = true;
                 isInPinchToZoomTouchMode = true;
             }
 

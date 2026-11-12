@@ -28,6 +28,7 @@ import org.telegram.ui.Components.UniversalAdapter;
 import org.telegram.ui.Components.UniversalRecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class RichDetailsCell extends FrameLayout implements Theme.Colorable, TextSelectionHelper.ArticleSelectableView {
 
@@ -227,8 +228,6 @@ public class RichDetailsCell extends FrameLayout implements Theme.Colorable, Tex
         return textX >= left && textX <= right;
     }
 
-    // See RichTextCell#isPressOnEmptyEditText: on an empty title, skip the block drag so the system
-    // can show the insertion handle + Paste toolbar.
     public boolean isPressOnEmptyEditText(int localX, int localY) {
         if (editText.length() != 0) return false;
         return localX >= editText.getLeft() && localX <= editText.getLeft() + editText.getWidth()
@@ -245,6 +244,11 @@ public class RichDetailsCell extends FrameLayout implements Theme.Colorable, Tex
         editText.updateColors();
         arrow.setColor(Theme.getColor(Theme.key_chat_inArticleDetailsArrow, resourcesProvider));
         dividerPaint.setColor(Theme.getColor(Theme.key_chat_inArticleDetailsLine, resourcesProvider));
+    }
+    @Override
+    public void addColorKeys(HashSet<Integer> colors) {
+        colors.add(Theme.key_chat_inArticleDetailsArrow);
+        colors.add(Theme.key_chat_inArticleDetailsLine);
     }
 
     @Override
@@ -267,7 +271,6 @@ public class RichDetailsCell extends FrameLayout implements Theme.Colorable, Tex
 
     @Override
     protected void onDraw(Canvas canvas) {
-        // The divider only marks a collapsed section's edge; an open one already shows its end view.
         if (currentRow != null && currentRow.block instanceof TL_iv.pageBlockDetails
                 && ((TL_iv.pageBlockDetails) currentRow.block).open) {
             return;
@@ -278,7 +281,6 @@ public class RichDetailsCell extends FrameLayout implements Theme.Colorable, Tex
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        // Selection is drawn by us (TextSelectionHelper), behind the title text, same as RichTextCell.
         final TextSelectionHelper.ArticleTextSelectionHelper helper = delegate != null ? delegate.getSelectionHelper() : null;
         if (helper != null && editText.getLayout() != null) {
             canvas.save();

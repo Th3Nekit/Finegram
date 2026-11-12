@@ -13,12 +13,7 @@ package org.webrtc;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-/**
- * This class is only used from jni_helper.cc to give some Java functionality that were not possible
- * to generate in other ways due to bugs.webrtc.org/8606 and bugs.webrtc.org/8632.
- */
 class JniHelper {
-  // TODO(bugs.webrtc.org/8632): Remove.
   @CalledByNative
   static byte[] getStringBytes(String s) {
     try {
@@ -28,19 +23,16 @@ class JniHelper {
     }
   }
 
-  // TODO(bugs.webrtc.org/8632): Remove.
   @CalledByNative
   static Object getStringClass() {
     return String.class;
   }
 
-  // TODO(bugs.webrtc.org/8606): Remove.
   @CalledByNative
   static Object getKey(Map.Entry entry) {
     return entry.getKey();
   }
 
-  // TODO(bugs.webrtc.org/8606): Remove.
   @CalledByNative
   static Object getValue(Map.Entry entry) {
     return entry.getValue();

@@ -20,16 +20,12 @@ import org.telegram.ui.LaunchActivity;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/** Owns platform callbacks directly; never replaces AndroidX Biometric's activity-wide callback. */
 public final class GramWalletStorageAuth {
-    // Reserved wallet result range. Distinct codes prevent a late result from a timed-out
-    // credential screen from completing a subsequent request on the same activity.
     private static final int CREDENTIAL_FIRST = 0x5740, CREDENTIAL_LAST = 0x577f;
     private static int nextCredentialCode = CREDENTIAL_FIRST;
-    private static Request active; // Main thread only.
+    private static Request active;
     interface Current { boolean get(); }
 
-    /** Called on the storage worker, never the main thread. All UI state lives on the main thread. */
     static String authenticate(String walletId, boolean credentialOnly, Current isCurrent) throws InterruptedException {
         Request request = new Request();
         request.walletId = walletId;
@@ -73,7 +69,6 @@ public final class GramWalletStorageAuth {
         });
     }
 
-    /** Called by LaunchActivity before dispatching activity results to its screens. */
     public static boolean onActivityResult(Activity activity, int requestCode, int resultCode) {
         if (requestCode < CREDENTIAL_FIRST || requestCode > CREDENTIAL_LAST) return false;
         if (active != null && active.activity == activity && active.credentialStarted && active.credentialCode == requestCode) {
@@ -140,8 +135,6 @@ public final class GramWalletStorageAuth {
                             });
         }
 
-        // On M-Q, own the FingerprintManager callback rather than sharing AndroidX 1.1.0's
-        // activity ViewModel with BotBiometry. No Cipher crosses the framework/OEM boundary.
         @SuppressWarnings("deprecation")
         private void fingerprints() {
             FingerprintManager manager = (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);

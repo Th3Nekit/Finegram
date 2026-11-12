@@ -12,14 +12,6 @@ import org.telegram.messenger.ApplicationLoader;
 
 import java.io.FileNotFoundException;
 
-/**
- * This is a very dirty hack to allow Telegram calls to respect user's DND settings.
- * URIs to this content provider are specified as the sound for the incoming call notifications.
- * We then assume that the system will only try opening these if it actually wants to make a sound
- * for this particular call - that's how we know whether the call went through DND and start
- * ringing for it. To avoid any potential issues, this serves a wav file containing 5 samples
- * of silence.
- */
 public class CallNotificationSoundProvider extends ContentProvider {
 
 	@Override

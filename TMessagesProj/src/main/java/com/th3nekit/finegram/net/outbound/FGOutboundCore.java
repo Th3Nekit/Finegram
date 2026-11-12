@@ -3,6 +3,7 @@
  * It is licensed under GNU GPL v. 2 or later.
  *
  * Uses sing-box (GPL-3.0, Copyright the sing-box authors, https://github.com/SagerNet/sing-box).
+ * Runs Xray-core (MPL-2.0, Copyright the Xray authors, https://github.com/XTLS/Xray-core).
  */
 
 package com.th3nekit.finegram.net.outbound;
@@ -18,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntConsumer;
 
 import com.th3nekit.finegram.core.FinegramLogger;
@@ -44,6 +46,7 @@ public final class FGOutboundCore {
     private static final ConcurrentHashMap<Integer, FGOutboundCredentials> probeCredentials = new ConcurrentHashMap<>();
 
     private static volatile CommandServer server;
+    private static volatile FGXrayProcess xray;
 
     private static volatile String runningLink;
 
@@ -100,7 +103,7 @@ public final class FGOutboundCore {
 
     private static void startOnWorker(String link, long request, IntConsumer onReady) {
         if (request != requests.get()) return;
-        if (server != null && link != null && link.equals(runningLink)) {
+        if ((server != null || xray != null && xray.isAlive()) && link != null && link.equals(runningLink)) {
             readyRequest = request;
             runningCallback = onReady;
             notifyReady(request, onReady, credentials.port);
@@ -119,6 +122,10 @@ public final class FGOutboundCore {
         if (parsed == null) {
             FinegramLogger.e("FGOutbound", () -> "ссылка не разобралась");
             notifyReady(request, onReady, 0);
+            return;
+        }
+        if (parsed.xray != null) {
+            startXrayOnWorker(link, parsed, request, onReady);
             return;
         }
         CommandServer started = null;
@@ -172,6 +179,51 @@ public final class FGOutboundCore {
         }
     }
 
+    private static void startXrayOnWorker(String link, FGOutboundLink.Parsed parsed, long request, IntConsumer onReady) {
+        FGXrayProcess started = null;
+        try {
+            final int free = freePort();
+            if (free == 0) {
+                notifyReady(request, onReady, 0);
+                return;
+            }
+            final FGOutboundCredentials startedCredentials = FGOutboundCredentials.create(free);
+            started = FGXrayProcess.start(parsed.xray, startedCredentials, FGOutboundCore::onXrayExit,
+                    () -> request != requests.get());
+            if (request != requests.get()) {
+                started.close();
+                return;
+            }
+            xray = started;
+            credentials = startedCredentials;
+            runningLink = link;
+            runningCallback = onReady;
+            readyRequest = request;
+            FinegramLogger.d("FGOutbound", () -> "xray поднят: XHTTP, SOCKS на " + free);
+            notifyReady(request, onReady, free);
+        } catch (Throwable t) {
+            FinegramLogger.e("FGOutbound", () -> "xray не поднялся: " + t.getClass().getSimpleName());
+            if (started != null) {
+                if (xray == started) {
+                    stopOnWorker();
+                } else {
+                    started.close();
+                }
+            }
+            notifyReady(request, onReady, 0);
+        }
+    }
+
+    private static void onXrayExit(FGXrayProcess exited) {
+        worker.execute(() -> {
+            if (xray != exited) return;
+            final long request = readyRequest;
+            final IntConsumer callback = runningCallback;
+            stopOnWorker();
+            notifyReady(request, callback, 0);
+        });
+    }
+
     public static void stop() {
         final long request = requests.incrementAndGet();
         worker.execute(() -> {
@@ -190,11 +242,14 @@ public final class FGOutboundCore {
 
     private static void stopOnWorker() {
         final CommandServer running = server;
+        final FGXrayProcess runningXray = xray;
         server = null;
+        xray = null;
         credentials = null;
         runningLink = null;
         runningCallback = null;
         close(running);
+        if (runningXray != null) runningXray.close();
     }
 
     private static void close(CommandServer running) {
@@ -214,18 +269,26 @@ public final class FGOutboundCore {
         public final int port;
         public final FGOutboundCredentials credentials;
         private final CommandServer server;
+        private final FGXrayProcess xray;
         private final AtomicBoolean closed = new AtomicBoolean();
 
         private Probe(FGOutboundCredentials credentials, CommandServer server) {
+            this(credentials, server, null);
+        }
+
+        private Probe(FGOutboundCredentials credentials, CommandServer server, FGXrayProcess xray) {
             this.credentials = credentials;
             this.port = credentials.port;
             this.server = server;
+            this.xray = xray;
         }
 
         @Override
-        public void close() {
+        public synchronized void close() {
             if (!closed.compareAndSet(false, true)) return;
             probeCredentials.remove(port, credentials);
+            if (xray != null) xray.close();
+            if (server == null) return;
             try {
                 server.closeService();
             } catch (Throwable ignored) {
@@ -235,12 +298,20 @@ public final class FGOutboundCore {
             } catch (Throwable ignored) {
             }
         }
+
+        private synchronized boolean register() {
+            if (closed.get() || Thread.currentThread().isInterrupted() || xray != null && !xray.isAlive()) return false;
+            probeCredentials.put(port, credentials);
+            return true;
+        }
     }
 
     public static Probe startProbe(String link) {
+        if (Thread.currentThread().isInterrupted()) return null;
         if (!isSupported()) return null;
         final FGOutboundLink.Parsed parsed = FGOutboundLink.parse(link);
         if (parsed == null) return null;
+        if (parsed.xray != null) return startXrayProbe(parsed);
         Probe probe = null;
         try {
             setup();
@@ -253,10 +324,38 @@ public final class FGOutboundCore {
             final CommandServer started = new CommandServer(new Handler(false), new FGOutboundPlatform());
             probe = new Probe(startedCredentials, started);
             started.startOrReloadService(config, new OverrideOptions());
-            probeCredentials.put(free, startedCredentials);
+            if (!probe.register()) {
+                probe.close();
+                return null;
+            }
             return probe;
         } catch (Throwable ignored) {
             if (probe != null) probe.close();
+            return null;
+        }
+    }
+
+    private static Probe startXrayProbe(FGOutboundLink.Parsed parsed) {
+        Probe probe = null;
+        try {
+            final int free = freePort();
+            if (free == 0) return null;
+            final FGOutboundCredentials startedCredentials = FGOutboundCredentials.create(free);
+            final AtomicReference<Probe> owner = new AtomicReference<>();
+            final FGXrayProcess started = FGXrayProcess.start(parsed.xray, startedCredentials, exited -> {
+                final Probe running = owner.get();
+                if (running != null) running.close();
+            });
+            probe = new Probe(startedCredentials, null, started);
+            owner.set(probe);
+            if (!probe.register()) {
+                probe.close();
+                return null;
+            }
+            return probe;
+        } catch (Throwable t) {
+            if (probe != null) probe.close();
+            FinegramLogger.e("FGOutbound", () -> "проверка xray не поднялась: " + t.getClass().getSimpleName());
             return null;
         }
     }

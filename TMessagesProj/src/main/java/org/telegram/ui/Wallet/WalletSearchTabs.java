@@ -22,11 +22,11 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.EditTextBoldCursor;
 import org.telegram.ui.Components.LayoutHelper;
 
-/** Compact pager tabs with an expanding collectible search island. */
 class WalletSearchTabs extends FrameLayout {
     private final View tabs;
     private final EditTextBoldCursor field;
@@ -56,9 +56,9 @@ class WalletSearchTabs extends FrameLayout {
         field = new EditTextBoldCursor(context);
         field.setSingleLine(true);
         field.setTextSize(15);
-        field.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
-        field.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText, resourcesProvider));
-        field.setCursorColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+        ThemeBind.textColor(field, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
+        ThemeBind.hintTextColor(field, Theme.key_windowBackgroundWhiteHintText, resourcesProvider);
+        ThemeBind.cursorColor(field, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
         field.setHint(LocaleController.getString(R.string.WalletSearchGifts));
         field.setBackground(null);
         field.setPadding(0, 0, 0, 0);
@@ -79,7 +79,7 @@ class WalletSearchTabs extends FrameLayout {
         addView(field, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.TOP, 40, 0, 44, 0));
         button = new View(context);
         button.setContentDescription(LocaleController.getString(R.string.Search));
-        button.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), 1));
+        ThemeBind.selectorBackground(button, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), 1), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         button.setOnClickListener(v -> setOpen(!open));
         addView(button, LayoutHelper.createFrame(40, 40, Gravity.TOP | Gravity.RIGHT));
     }
@@ -121,7 +121,6 @@ class WalletSearchTabs extends FrameLayout {
         animator = ValueAnimator.ofFloat(progress, value ? 1 : 0);
         animator.setDuration(value ? 380 : 300);
         animator.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
-        // The field overlays the fading tab labels during the transition.
         tabs.setVisibility(VISIBLE);
         animator.addUpdateListener(a -> {
             progress = (float) a.getAnimatedValue();
@@ -194,7 +193,6 @@ class WalletSearchTabs extends FrameLayout {
         float end = dp(6.5f) * (1 - m) + dp(5) * m;
         canvas.drawLine(cx + start, cy + start, cx + end, cy + end, paint);
         float cross = dp(5) * m;
-        // A zero-length stroke with round caps renders as a dot in the closed icon.
         if (cross > 0.3f) {
             canvas.drawLine(cx + cross, cy - cross, cx - cross, cy + cross, paint);
         }

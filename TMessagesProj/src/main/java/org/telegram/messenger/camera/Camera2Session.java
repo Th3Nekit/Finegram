@@ -799,8 +799,8 @@ public class Camera2Session {
             int displayOrientation;
             if (isFront) {
                 displayOrientation = (sensorOrientation + degrees) % 360;
-                displayOrientation = (360 - displayOrientation) % 360; // compensate the mirror
-            } else { // back-facing
+                displayOrientation = (360 - displayOrientation) % 360;
+            } else {
                 displayOrientation = (sensorOrientation - degrees + 360) % 360;
             }
             return displayOrientation;
@@ -837,8 +837,8 @@ public class Camera2Session {
             int jpegOrientation;
             if (isFront) {
                 jpegOrientation = (sensorOrientation + degrees) % 360;
-                jpegOrientation = (360 - jpegOrientation) % 360; // compensate the mirror
-            } else { // back-facing
+                jpegOrientation = (360 - jpegOrientation) % 360;
+            } else {
                 jpegOrientation = (sensorOrientation - degrees + 360) % 360;
             }
             return jpegOrientation;

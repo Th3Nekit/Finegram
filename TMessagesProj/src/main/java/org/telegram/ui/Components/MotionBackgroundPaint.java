@@ -76,7 +76,6 @@ public class MotionBackgroundPaint {
 
 
 
-    /* Implementations */
 
     private static class ShaderImpl {
         private final Paint paint = new Paint();
@@ -269,7 +268,6 @@ public class MotionBackgroundPaint {
 
 
 
-    /* Local Matrix */
 
     private final Matrix tmpMatrix = new Matrix();
     private final RectF tmpRectF = new RectF();
@@ -299,7 +297,6 @@ public class MotionBackgroundPaint {
 
 
 
-    /* Utils */
 
     private static class BitmapShaderState {
         final Shader.TileMode tileMode;
@@ -395,9 +392,9 @@ public class MotionBackgroundPaint {
         tmpPts[3] = 1;
 
         tmpInverse.mapPoints(tmpPts);
-        out[0] = tmpPts[2] - tmpPts[0]; // scaleX
-        out[1] = tmpPts[3] - tmpPts[1]; // scaleY
-        out[2] = tmpPts[0];              // translateX
-        out[3] = tmpPts[1];              // translateY
+        out[0] = tmpPts[2] - tmpPts[0];
+        out[1] = tmpPts[3] - tmpPts[1];
+        out[2] = tmpPts[0];
+        out[3] = tmpPts[1];
     }
 }

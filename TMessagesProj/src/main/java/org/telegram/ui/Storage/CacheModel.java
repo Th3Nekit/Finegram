@@ -27,7 +27,6 @@ public class CacheModel {
     private long selectedSize;
     public HashSet<Long> selectedDialogs = new HashSet<>();
 
-    //dialogs only properties
     public boolean allPhotosSelected;
     public boolean allVideosSelected;
     public boolean allDocumentsSelected;
@@ -75,7 +74,6 @@ public class CacheModel {
 
     public void remove(CacheControlActivity.DialogFileEntities dialogEntities) {
         entities.remove(dialogEntities);
-        //TODO
     }
 
     public void sortBySize() {

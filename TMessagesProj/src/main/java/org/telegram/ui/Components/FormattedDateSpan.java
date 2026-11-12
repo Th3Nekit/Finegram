@@ -52,7 +52,6 @@ public class FormattedDateSpan extends URLSpan {
 
     @Override
     public void onClick(@NonNull View widget) {
-        // nothing
     }
 
 

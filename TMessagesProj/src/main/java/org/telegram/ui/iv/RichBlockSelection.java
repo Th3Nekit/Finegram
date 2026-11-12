@@ -7,14 +7,6 @@ import android.text.TextPaint;
 
 import org.telegram.ui.Cells.TextSelectionHelper;
 
-/**
- * Builds a {@link TextSelectionHelper.TextLayoutBlock} for non-text blocks (divider, math, …) that
- * have no real text to select. The block carries a 1-char placeholder layout purely to satisfy the
- * selection machinery (length / offset bookkeeping); the actual selection-handle positions come from
- * {@link TextSelectionHelper.TextLayoutBlock#getSelectionBounds()}, whose bottom-left / bottom-right
- * corners the handles snap to. Bounds are passed in fresh on every call, so width / size changes are
- * handled for free without caching a layout.
- */
 final class RichBlockSelection {
 
     private static Layout placeholder;

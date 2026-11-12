@@ -100,15 +100,10 @@ public class SequenceParameterSetRbsp {
         }
         boolean sps_temporal_mvp_enabled_flag = bsr.readBool("sps_temporal_mvp_enabled_flag");
         boolean strong_intra_smoothing_enabled_flag = bsr.readBool("strong_intra_smoothing_enabled_flag");
-//        boolean vui_parameters_present_flag = bsr.readBool("vui_parameters_present_flag");
-//        if (vui_parameters_present_flag) {
-//            vuiParameters = new VuiParameters(sps_max_sub_layers_minus1, bsr);
-//        }
     }
 
     private void parse_short_term_ref_pic_sets(int num_short_term_ref_pic_sets, CAVLCReader bsr) throws IOException
     {
-        // Based on FFMPEG implementation -- see hevc.c "parse_rps"
         long[] num_delta_pocs = new long[num_short_term_ref_pic_sets];
         for (int rpsIdx = 0; rpsIdx < num_short_term_ref_pic_sets; rpsIdx++) {
             if (rpsIdx != 0 && bsr.readBool()) {
@@ -139,7 +134,6 @@ public class SequenceParameterSetRbsp {
 
     private static void skip_scaling_list_data(CAVLCReader bsr) throws IOException
     {
-        // Based on FFMPEG implementation see hevc.c "skip_scaling_list_data"
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < (i == 3 ? 2 : 6); j++)

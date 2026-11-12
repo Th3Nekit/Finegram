@@ -54,6 +54,7 @@ public class FGPreferencesEntry extends BaseCGPreferencesEntry {
     private final int bypassRow = 11;
     private final int pluginsRow = 12;
     private final int cardsRow = 13;
+    private final int playerRow = 14;
 
 
 
@@ -194,6 +195,16 @@ public class FGPreferencesEntry extends BaseCGPreferencesEntry {
         .slug(DeeplinkHelper.DeepLinksRepo.FG_Camera));
         items.add(
                 SettingsActivity.SettingCell.Factory.of(
+                        playerRow,
+                        0xFFFF5A8A, 0xFFE8336B,
+                        R.drawable.msg_filled_data_music,
+                        getString(R.string.FG_Player_Title),
+                        getString(R.string.FG_Player_Desc),
+                        true
+                )
+        );
+        items.add(
+                SettingsActivity.SettingCell.Factory.of(
                         cardsRow,
                         IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom,
                         R.drawable.fg_settings_cards,
@@ -273,6 +284,8 @@ public class FGPreferencesEntry extends BaseCGPreferencesEntry {
             FinegramPreferencesNavigator.INSTANCE.createCamera(this);
         } else if (item.id == cardsRow) {
             presentFragment(new com.th3nekit.finegram.cards.preferences.FGCardsPreferencesEntry());
+        } else if (item.id == playerRow) {
+            presentFragment(new MusicPlayerPreferencesEntry());
         } else if (item.id == pluginsRow) {
             presentFragment(new com.exteragram.messenger.plugins.ui.PluginsActivity());
         } else if (item.id == bypassRow) {

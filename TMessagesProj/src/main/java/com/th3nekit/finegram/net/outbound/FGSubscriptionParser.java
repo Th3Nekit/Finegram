@@ -35,7 +35,7 @@ public final class FGSubscriptionParser {
     public static final int MAX_LINK_LENGTH = 8192;
     private static final Set<String> VLESS_PARAMS = new HashSet<>(Arrays.asList(
             "encryption", "security", "sni", "peer", "allowInsecure", "insecure", "alpn",
-            "fp", "pbk", "sid", "type", "headerType", "host", "path", "serviceName", "flow"));
+            "fp", "pbk", "sid", "spx", "pcs", "vcn", "enableSessionResumption", "type", "headerType", "host", "path", "serviceName", "flow", "mode", "extra"));
     private static final Set<String> HY_PARAMS = new HashSet<>(Arrays.asList(
             "sni", "peer", "allowInsecure", "insecure", "alpn", "obfs", "obfs-password"));
     private static final Set<String> OTHER_SCHEMES = new HashSet<>(Arrays.asList(
@@ -54,7 +54,7 @@ public final class FGSubscriptionParser {
         private Server(String link, FGOutboundLink.Parsed parsed) throws Exception {
             this.link = link;
             this.parsed = parsed;
-            id = digest(canonical(parsed.outbound));
+            id = digest(canonical(parsed.outbound != null ? parsed.outbound : parsed.xray));
             kind = parsed.kind;
             host = parsed.host;
             port = parsed.port;
@@ -145,6 +145,7 @@ public final class FGSubscriptionParser {
         LinkedHashMap<String, Server> servers = new LinkedHashMap<>();
         int skipped = 0;
         boolean unsupportedTransport = false;
+        boolean xhttp = false;
         int count = 0;
         String title = "";
         String[] lines = text.split("\\r?\\n|\\r", -1);
@@ -175,16 +176,23 @@ public final class FGSubscriptionParser {
             } catch (FGSubscriptionError error) {
                 if (error.code != FGSubscriptionError.Code.UNSUPPORTED_LINK) throw error;
                 unsupportedTransport = true;
+                xhttp |= isXhttp(Uri.parse(line).getQueryParameter("type")) && !FGXrayProcess.isAvailable();
                 skipped++;
             }
         }
-        if (servers.isEmpty()) fail(unsupportedTransport ? FGSubscriptionError.Code.UNSUPPORTED_LINK
+        if (servers.isEmpty()) fail(xhttp ? FGSubscriptionError.Code.UNSUPPORTED_XHTTP
+                : unsupportedTransport ? FGSubscriptionError.Code.UNSUPPORTED_LINK
                 : skipped > 0 ? FGSubscriptionError.Code.UNSUPPORTED_PROTOCOL : FGSubscriptionError.Code.NO_SERVERS);
         return new Parsed(new ArrayList<>(servers.values()), skipped, title);
     }
 
+    static boolean isXhttp(String transport) {
+        return FGOutboundLink.isXhttp(transport);
+    }
+
     static Server server(String link) throws FGSubscriptionError {
         try {
+            if (!FGOutboundLink.looksLikeLink(link)) fail(FGSubscriptionError.Code.INVALID_LINK);
             if (link.length() > MAX_LINK_LENGTH) fail(FGSubscriptionError.Code.INVALID_LINK);
             URI strict = new URI(link);
             Uri uri = Uri.parse(link);
@@ -205,7 +213,7 @@ public final class FGSubscriptionParser {
                 if (!allowed.contains(key)) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 if (uri.getQueryParameters(key).size() != 1) fail(FGSubscriptionError.Code.INVALID_LINK);
             }
-            for (String key : Arrays.asList("insecure", "allowInsecure")) {
+            for (String key : Arrays.asList("insecure", "allowInsecure", "enableSessionResumption")) {
                 String value = uri.getQueryParameter(key);
                 if (value != null && !value.matches("(?i)0|1|true|false")) fail(FGSubscriptionError.Code.INVALID_LINK);
             }
@@ -220,8 +228,23 @@ public final class FGSubscriptionParser {
                 String security = uri.getQueryParameter("security");
                 if (!"reality".equalsIgnoreCase(security) && (nonempty(uri, "pbk") || nonempty(uri, "sid"))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 String type = uri.getQueryParameter("type");
-                if (type != null && !Arrays.asList("", "tcp", "raw", "ws", "httpupgrade", "http", "h2", "grpc")
+                boolean xhttp = isXhttp(type);
+                if (xhttp && flow != null && !flow.isEmpty()) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (xhttp && (truthy(insecure) || truthy(allowInsecure))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if ((nonempty(uri, "pcs") || nonempty(uri, "vcn"))
+                        && (!xhttp || !"tls".equalsIgnoreCase(security))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (truthy(uri.getQueryParameter("enableSessionResumption"))
+                        && (!xhttp || !"tls".equalsIgnoreCase(security))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (xhttp && !FGXrayProcess.isAvailable()) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (type != null && !xhttp && !Arrays.asList("", "tcp", "raw", "ws", "httpupgrade", "http", "h2", "grpc")
                         .contains(type.toLowerCase(Locale.ROOT))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (!xhttp && (nonempty(uri, "mode") || nonempty(uri, "extra"))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (xhttp && nonempty(uri, "mode") && !Arrays.asList("auto", "packet-up", "stream-up", "stream-one")
+                        .contains(uri.getQueryParameter("mode"))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                if (xhttp && nonempty(uri, "extra")) {
+                    FGSubscriptionXray.extra(uri.getQueryParameter("extra"));
+                }
+                if (nonempty(uri, "spx") && !"reality".equalsIgnoreCase(security)) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 boolean tcp = type == null || type.isEmpty() || "tcp".equalsIgnoreCase(type) || "raw".equalsIgnoreCase(type);
                 boolean grpc = "grpc".equalsIgnoreCase(type);
                 boolean tls = "tls".equalsIgnoreCase(security) || "reality".equalsIgnoreCase(security);
@@ -231,7 +254,7 @@ public final class FGSubscriptionParser {
                         && !uri.getQueryParameter("serviceName").equals(uri.getQueryParameter("path"))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 if (!tls && (nonempty(uri, "fp") || nonempty(uri, "alpn") || nonempty(uri, "peer")
                         || truthy(insecure) || truthy(allowInsecure))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
-                boolean hostTransport = Arrays.asList("ws", "httpupgrade", "http", "h2").contains(type == null ? "" : type.toLowerCase(Locale.ROOT));
+                boolean hostTransport = xhttp || Arrays.asList("ws", "httpupgrade", "http", "h2").contains(type == null ? "" : type.toLowerCase(Locale.ROOT));
                 if (!tls && !hostTransport && (nonempty(uri, "host") || nonempty(uri, "sni"))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 if (!tls && nonempty(uri, "sni") && (nonempty(uri, "host") || "http".equalsIgnoreCase(type) || "h2".equalsIgnoreCase(type))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 if ("reality".equalsIgnoreCase(uri.getQueryParameter("security"))) {
@@ -246,7 +269,7 @@ public final class FGSubscriptionParser {
                 if (obfs != null && !obfs.isEmpty() && (uri.getQueryParameter("obfs-password") == null || uri.getQueryParameter("obfs-password").isEmpty())) fail(FGSubscriptionError.Code.INVALID_LINK);
                 if ((obfs == null || obfs.isEmpty()) && nonempty(uri, "obfs-password")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
             }
-            FGOutboundLink.Parsed parsed = FGOutboundLink.parse(link);
+            FGOutboundLink.Parsed parsed = FGOutboundLink.parseUnchecked(link);
             if (parsed == null || parsed.host.length() > 253 || parsed.host.matches(".*[\\s\\p{Cntrl}].*")) fail(FGSubscriptionError.Code.INVALID_LINK);
             FGSubscriptionError.Code rejection = rejectionName(parsed.title);
             if (rejection != null) fail(rejection);

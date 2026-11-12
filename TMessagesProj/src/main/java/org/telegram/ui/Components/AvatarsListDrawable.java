@@ -209,7 +209,6 @@ public class AvatarsListDrawable extends Drawable {
 
         canvas.saveLayer(startX, startY, startX + animator.getMetadata().getTotalWidth(), startY + avatarSize, null);
 
-        // final int oldAlpha = paint != null ? paint.getAlpha() : 255;
         for (int N = animator.size() - 1, a = N; a >= 0; a--) {
             ListAnimator.Entry<AvatarItem> entry = animator.getEntry(a);
             final RectF rect = entry.getRectF();
@@ -223,11 +222,8 @@ public class AvatarsListDrawable extends Drawable {
 
             canvas.save();
             canvas.scale(visibility, visibility, cx, cy);
-            //if (paint != null) {
                 final float r = (w / 2 + avatarStroke);
-             //   paint.setAlpha((int)(alpha * visibility));
                 canvas.drawCircle(cx, cy, r, Theme.PAINT_CLEAR);
-            //}
 
             entry.item.imageReceiver.setImageCoords(startX + x, startY, w, w);
             entry.item.imageReceiver.setAlpha(entry.getVisibility() * (alpha / 255f));
@@ -237,9 +233,6 @@ public class AvatarsListDrawable extends Drawable {
 
         canvas.restore();
 
-        //if (paint != null) {
-        //    paint.setAlpha(oldAlpha);
-        //}
     }
 
     public float getAnimatedWidth() {

@@ -21,7 +21,6 @@ public class CloseFriendsBadge extends ImageView {
         super(context);
         paint.setColor(0xff7BD11F);
         setScaleType(ScaleType.CENTER_INSIDE);
-        //setPadding(AndroidUtilities.dp(12), AndroidUtilities.dp(12), AndroidUtilities.dp(12), AndroidUtilities.dp(12));
         setImageResource(R.drawable.msg_mini_closefriends);
         ScaleStateListAnimator.apply(this);
     }

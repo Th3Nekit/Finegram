@@ -9,7 +9,6 @@ import android.widget.FrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
 
-/** Draws the legacy-style round-video recording progress. */
 public final class RoundVideoProgressView extends FrameLayout {
     private final Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG) {
@@ -26,7 +25,6 @@ public final class RoundVideoProgressView extends FrameLayout {
 
     private float progress;
 
-    /** Creates a round-video progress view matching the legacy camera ring. */
     public RoundVideoProgressView(Context context) {
         super(context);
         strokeWidth = AndroidUtilities.dp(3);
@@ -36,12 +34,10 @@ public final class RoundVideoProgressView extends FrameLayout {
         setWillNotDraw(false);
     }
 
-    /** Returns the paint controlling the whole ring opacity. */
     public Paint getPaint() {
         return progressPaint;
     }
 
-    /** Sets normalized recorded progress. */
     public void setProgress(float progress) {
         float value = clamp(progress, 0f, 1f);
         if (this.progress == value) return;

@@ -2842,7 +2842,7 @@ public class TL_legacy_message {
             if (hasFlag(flags, FLAG_9)) {
                 media = TLRPC.MessageMedia.TLdeserialize(stream, stream.readInt32(exception), exception);
                 if (media != null) {
-                    ttl = media.ttl_seconds; //custom
+                    ttl = media.ttl_seconds;
                 }
                 if (media != null && !TextUtils.isEmpty(media.captionLegacy)) {
                     message = media.captionLegacy;
@@ -2941,7 +2941,7 @@ public class TL_legacy_message {
             if (hasFlag(flags, FLAG_25)) {
                 stream.writeInt32(ttl_period);
             }
-            writeAttachPath(stream); //custom
+            writeAttachPath(stream);
         }
     }
     public static class TL_message_layer123 extends TLRPC.TL_message {
@@ -2977,7 +2977,7 @@ public class TL_legacy_message {
             if (hasFlag(flags, FLAG_9)) {
                 media = TLRPC.MessageMedia.TLdeserialize(stream, stream.readInt32(exception), exception);
                 if (media != null) {
-                    ttl = media.ttl_seconds; //custom
+                    ttl = media.ttl_seconds;
                 }
                 if (media != null && !TextUtils.isEmpty(media.captionLegacy)) {
                     message = media.captionLegacy;
@@ -3108,7 +3108,7 @@ public class TL_legacy_message {
             if (hasFlag(flags, FLAG_9)) {
                 media = TLRPC.MessageMedia.TLdeserialize(stream, stream.readInt32(exception), exception);
                 if (media != null) {
-                    ttl = media.ttl_seconds; //custom
+                    ttl = media.ttl_seconds;
                 }
                 if (media != null && !TextUtils.isEmpty(media.captionLegacy)) {
                     message = media.captionLegacy;

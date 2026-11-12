@@ -15,12 +15,14 @@ import android.util.Base64;
 import android.util.LongSparseArray;
 
 import com.th3nekit.finegram.core.LocalPremiumEmojiStatus;
+import com.th3nekit.finegram.core.LocalPremiumPeerColors;
 
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_account;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class UserConfig extends BaseController {
@@ -33,6 +35,7 @@ public class UserConfig extends BaseController {
     private volatile boolean configLoaded;
     private TLRPC.User currentUser;
     private LocalPremiumEmojiStatus localEmojiStatus;
+    private LocalPremiumPeerColors localPeerColors;
     public boolean registeredForPush;
     public int lastSendMessageId = -210000;
     public int lastBroadcastId = -1;
@@ -221,7 +224,11 @@ public class UserConfig extends BaseController {
                                 if (localEmojiStatus != null) {
                                     currentUser.emoji_status = localEmojiStatus.getServerStatus(currentUser);
                                 }
-                                currentUser.serializeToStream(data);
+                                if (localPeerColors != null) {
+                                    localPeerColors.serializeUser(currentUser, data);
+                                } else {
+                                    currentUser.serializeToStream(data);
+                                }
                                 String string = Base64.encodeToString(data.toByteArray(), Base64.DEFAULT);
                                 editor.putString("user", string);
                             } finally {
@@ -266,6 +273,7 @@ public class UserConfig extends BaseController {
     public TLRPC.User getCurrentUser() {
         synchronized (sync) {
             applyLocalEmojiStatus(currentUser);
+            applyLocalPeerColors(currentUser);
             return currentUser;
         }
     }
@@ -276,7 +284,63 @@ public class UserConfig extends BaseController {
             currentUser = user;
             clientUserId = user.id;
             refreshLocalEmojiStatus();
+            refreshLocalPeerColors();
             checkPremiumSelf(oldUser, user);
+        }
+    }
+
+    private LocalPremiumPeerColors getLocalPeerColors() {
+        if (localPeerColors == null) {
+            localPeerColors = new LocalPremiumPeerColors(getPreferences());
+        }
+        return localPeerColors;
+    }
+
+    public boolean setLocalPeerColors(boolean nameChanged, TLRPC.PeerColor name, boolean profileChanged, TLRPC.PeerColor profile) {
+        synchronized (sync) {
+            if (currentUser == null || currentUser.premium
+                    || !com.th3nekit.finegram.core.configs.FinegramPrivacyConfig.INSTANCE.getLocalPremium()) {
+                return false;
+            }
+            if (!getLocalPeerColors().set(currentUser.id, nameChanged, name, profileChanged, profile)) {
+                return false;
+            }
+            refreshLocalPeerColors();
+            return true;
+        }
+    }
+
+    public void applyLocalPeerColors(TLRPC.User user) {
+        synchronized (sync) {
+            if (user == null || user.id != clientUserId) return;
+            getLocalPeerColors().apply(user, clientUserId,
+                    com.th3nekit.finegram.core.configs.FinegramPrivacyConfig.INSTANCE.getLocalPremium() && !isPremiumReal());
+        }
+    }
+
+    public byte[] serializeUserWithServerPeerColors(TLRPC.User user) {
+        if (user == null || user.id != clientUserId) return null;
+        synchronized (sync) {
+            SerializedData data = new SerializedData();
+            try {
+                if (localPeerColors != null) {
+                    localPeerColors.serializeUser(user, data);
+                } else {
+                    user.serializeToStream(data);
+                }
+                return data.toByteArray();
+            } finally {
+                data.cleanup();
+            }
+        }
+    }
+
+    public void refreshLocalPeerColors() {
+        synchronized (sync) {
+            boolean enabled = currentUser != null && !currentUser.premium
+                    && com.th3nekit.finegram.core.configs.FinegramPrivacyConfig.INSTANCE.getLocalPremium();
+            getLocalPeerColors().refresh(clientUserId, enabled);
+            getLocalPeerColors().apply(currentUser, clientUserId, enabled);
         }
     }
 
@@ -440,6 +504,7 @@ public class UserConfig extends BaseController {
                 checkPremiumSelf(null, currentUser);
                 clientUserId = currentUser.id;
                 refreshLocalEmojiStatus();
+                refreshLocalPeerColors();
             }
             configLoaded = true;
         }
@@ -532,6 +597,10 @@ public class UserConfig extends BaseController {
             if (localEmojiStatus != null) {
                 localEmojiStatus.clear();
                 localEmojiStatus = null;
+            }
+            if (localPeerColors != null) {
+                localPeerColors.clear();
+                localPeerColors = null;
             }
         }
         getPreferences().edit().clear().apply();
@@ -664,6 +733,17 @@ public class UserConfig extends BaseController {
 
     public Long getEmojiStatus() {
         return UserObject.getEmojiStatusDocumentId(getCurrentUser());
+    }
+
+    public static ArrayList<Long> getLoggedInAccountIds() {
+        ArrayList<Long> ids = new ArrayList<>();
+        for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+            UserConfig config = UserConfig.getInstance(account);
+            if (config.isClientActivated()) {
+                ids.add(config.getClientUserId());
+            }
+        }
+        return ids;
     }
 
 

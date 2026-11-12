@@ -11,24 +11,10 @@
 package org.webrtc;
 
 public final class IceCandidateErrorEvent {
-  /** The local IP address used to communicate with the STUN or TURN server. */
   public final String address;
-  /** The port used to communicate with the STUN or TURN server. */
   public final int port;
-  /**
-   * The STUN or TURN URL that identifies the STUN or TURN server for which the failure occurred.
-   */
   public final String url;
-  /**
-   * The numeric STUN error code returned by the STUN or TURN server. If no host candidate can reach
-   * the server, errorCode will be set to the value 701 which is outside the STUN error code range.
-   * This error is only fired once per server URL while in the RTCIceGatheringState of "gathering".
-   */
   public final int errorCode;
-  /**
-   * The STUN reason text returned by the STUN or TURN server. If the server could not be reached,
-   * errorText will be set to an implementation-specific value providing details about the error.
-   */
   public final String errorText;
 
   @CalledByNative

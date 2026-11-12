@@ -19,10 +19,6 @@ import org.telegram.ui.Components.RLottieNative;
 
 import java.io.File;
 
-/**
- * The gift's pattern symbol: the first frame of its lottie as a white silhouette with mip levels (it is minified a
- * lot), rendered once in the background and coloured by the caller.
- */
 final class QrGiftSymbol {
 
     private QrGiftSymbol() {
@@ -36,7 +32,6 @@ final class QrGiftSymbol {
         private final Utilities.Callback<Bitmap> onPattern;
         private boolean cancelled, started, done;
 
-        /** @param onPattern receives the white silhouette; not called when it could not be rendered */
         Loader(int currentAccount, TLRPC.Document pattern, Object parentObject, int size, Utilities.Callback<Bitmap> onPattern) {
             this.currentAccount = currentAccount;
             this.pattern = pattern;
@@ -53,7 +48,6 @@ final class QrGiftSymbol {
             return FileLoader.getInstance(currentAccount).getPathToAttach(pattern, true);
         }
 
-        /** The symbol has been delivered (or failed). */
         boolean isDone() {
             return done;
         }

@@ -43,51 +43,34 @@ import org.telegram.ui.Components.RecyclerListView;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-/**
- * The emoji keyboard of the QR screen's sheet: a glass strip of pack tabs over a grid of custom emoji (the presets, the
- * recent ones and the installed packs). Only animated (Lottie) custom emoji: the theme on the server keeps custom emoji
- * only and the backdrop pattern animates them. Without Premium only the presets are free; the packs show "Unlock".
- * <p>
- * The screen styles it from outside: the strip draws the glass under and the rim over itself
- * ({@link Tabs#underDraw} / {@link Tabs#overDraw}), the grid lets the screen draw under its cells and mask them
- * ({@link Grid#beforeChildrenDraw} / {@link Grid#afterChildrenDraw}), and the cells take an extra scale for the
- * open / close cascade and the picked state ({@link Cell#cascadeScale} / {@link Cell#selectScale}).
- */
 @SuppressLint("ViewConstructor")
 public class QrEmojiPanel extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
 
     public interface Delegate {
         void onEmojiPicked(long documentId, @Nullable TLRPC.Document document);
 
-        /** "Unlock" of a pack: the Premium screen. */
         void onUnlock();
     }
 
-    /** Draws in the visible bounds of a view (left, top, right, bottom). */
     public interface BoundsDraw {
         void draw(Canvas canvas, float left, float top, float right, float bottom);
     }
 
     public static final int TABS_HEIGHT_DP = 36;
     private static final int TAB_SIZE_DP = 30, TAB_ICON_DP = 26, TABS_PAD_DP = 3;
-    private static final int CELL_DP = 46;   // 7 columns in the sheet of a usual phone
+    private static final int CELL_DP = 46;
     private static final int RECENT_ROWS = 3;
     private static final int TYPE_HEADER = 0, TYPE_EMOJI = 1;
     private static final int TAB_RECENT_COLOR = 0x99FFFFFF, TAB_ACTIVE_COLOR = 0x5CFFFFFF;
-    private static final int PLACEHOLDER_COLOR = 0x2BFFFFFF; // the white loading silhouettes, 17%
-    private static final int UNLOCK_COLOR = 0x24FFFFFF;      // the "Unlock" pill: white 14% on the glass
+    private static final int PLACEHOLDER_COLOR = 0x2BFFFFFF;
+    private static final int UNLOCK_COLOR = 0x24FFFFFF;
     private static final int KIND_PRESETS = 0, KIND_RECENT = 1, KIND_PACK = 2;
 
-    /**
-     * The presets (3 rows × 7, row by row): ❤️🔥😎🤩❄️🌸🎉 / 🚀🗿🏆👻💸🎮💎 / 🦄🧸🐶🦊🐱🐵🐥, custom emoji of the animated emoji set
-     * "RestrictedEmoji"; any not found there resolve through the custom emoji cache / fetcher. Free for everyone.
-     */
     private static final long[] PRESETS = {
         5449505950283078474L, 5420315771991497307L, 5373141891321699086L, 5373026167722876724L, 5435957248314579621L, 5440354006335495210L, 5436040291507247633L,
         5445284980978621387L, 5442983582882601962L, 5409008750893734809L, 5371017798065592581L, 5472030678633684592L, 5467583879948803288L, 5471952986970267163L,
         5415696465945173620L, 5397915559037785261L, 5283020991981693429L, 5283051451889756068L, 5282816560128336499L, 5465449362807070392L, 5470012829983580233L
     };
-    /** In the presets the ⭐ (slot 4) is replaced by the set's ❄️. */
     private static final int PRESET_SNOW_SLOT = 4;
     private static final String PRESETS_SET = "RestrictedEmoji";
     private static final String PREF_APPLIED = "qrAppliedEmoji";
@@ -100,13 +83,12 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
     private final RecyclerAnimationScrollHelper scrollHelper;
     private final Tabs tabs;
 
-    /** A section of the grid: the presets, the recent emoji or a pack. */
     private static final class Section {
         final int kind;
         final @Nullable String title;
         final long setId;
         final ArrayList<TLRPC.Document> documents;
-        int start;   // adapter position of its header (or of its first emoji when it has no title)
+        int start;
 
         Section(int kind, @Nullable String title, long setId, ArrayList<TLRPC.Document> documents) {
             this.kind = kind;
@@ -126,7 +108,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
     private boolean presetsRequested, presetsFailed;
     private final java.util.HashSet<Long> presetsFetched = new java.util.HashSet<>();
     private final java.util.HashSet<Long> presetIds = new java.util.HashSet<>();
-    /** The emoji applied to the QR (presets included), newest first: the start of Recent. */
     private @Nullable ArrayList<Long> applied;
     private boolean recentDirty;
 
@@ -153,7 +134,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
             }
         });
         grid.setAdapter(adapter);
-        // taps go through the list (it sets the pressed state on the cell, like the stock keyboard); no own selector
         grid.setSelectorDrawableColor(0);
         grid.setOnItemClickListener((view, position) -> {
             if (view instanceof Cell && ((Cell) view).document != null && ((Cell) view).document.id != 0) {
@@ -199,8 +179,8 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getInstance(account).addObserver(this, NotificationCenter.stickersDidLoad);
-        NotificationCenter.getInstance(account).addObserver(this, NotificationCenter.groupStickersDidLoad);
+        NotificationCenter.getInstance(account).addWeakObserver(this, NotificationCenter.stickersDidLoad);
+        NotificationCenter.getInstance(account).addWeakObserver(this, NotificationCenter.groupStickersDidLoad);
         reload();
     }
 
@@ -227,24 +207,17 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         if (span != spanCount) {
             spanCount = span;
             layoutManager.setSpanCount(span);
-            // not inside this layout pass: the tabs are rebuilt and need a layout of their own
             post(this::reload);
         }
     }
 
-    /* Text-colour emoji */
 
     private static final PorterDuffColorFilter TEXT_COLOR = new PorterDuffColorFilter(0xFFFFFFFF, PorterDuff.Mode.SRC_IN);
 
-    /** A custom emoji that takes the colour of the text (e.g. the plain icon packs): white on the QR screen. */
     static boolean isTextColor(@Nullable Drawable d) {
         return d instanceof AnimatedEmojiDrawable && org.telegram.messenger.MessageObject.isTextColorEmoji(((AnimatedEmojiDrawable) d).getDocument());
     }
 
-    /**
-     * Draws an emoji, white if it takes the text colour. The drawables are shared with the rest of the app (the stock
-     * keyboard, statuses), so the filter is set only for this draw.
-     */
     static void drawEmoji(Canvas canvas, Drawable d) {
         final boolean textColor = isTextColor(d);
         if (textColor) d.setColorFilter(TEXT_COLOR);
@@ -252,18 +225,15 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         if (textColor) d.setColorFilter(null);
     }
 
-    /* Data */
 
     private static boolean isLottie(@Nullable TLRPC.Document document) {
         return document != null && "application/x-tgsticker".equals(document.mime_type);
     }
 
-    /** Whether a custom emoji is one of the free presets (applies without Premium). */
     public boolean isPreset(long documentId) {
         return presetIds.contains(documentId);
     }
 
-    /** An emoji has been applied to the QR: it goes to the start of Recent, shown from the next time the panel shows. */
     public void addRecent(long documentId) {
         final ArrayList<Long> l = applied();
         l.remove(documentId);
@@ -278,7 +248,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         recentDirty = true;
     }
 
-    /** Before the panel shows again: Recent takes the emoji applied since (never while it is open). */
     public void refreshRecent() {
         if (recentDirty) {
             recentDirty = false;
@@ -286,7 +255,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
-    /** One colour for every section header, tinted by the scene. */
     public void setHeaderColor(int color) {
         if (headerColor == color) return;
         headerColor = color;
@@ -310,7 +278,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         return applied;
     }
 
-    /** The presets; empty placeholders (id 0) until the animated emoji set has come. */
     private ArrayList<TLRPC.Document> presets() {
         if (presetSet == null && !presetsRequested) {
             presetsRequested = true;
@@ -319,7 +286,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
             final TLRPC.TL_messages_stickerSet cached = MediaDataController.getInstance(account).getStickerSet(input, null, false, true, set -> {
                 if (presetSet != null) return;
                 if (set == null || set.documents == null) {
-                    // no set (e.g. another server): the presets come one by one from the custom emoji, or not at all
                     presetsFailed = true;
                 } else {
                     presetSet = set;
@@ -357,7 +323,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
                 docs.add(d);
                 presetIds.add(d.id);
             } else if (presetsFetched.add(id)) {
-                // one fetch per id; the section is rebuilt with it
                 AnimatedEmojiDrawable.getDocumentFetcher(account).fetchDocument(id, doc -> AndroidUtilities.runOnUIThread(() -> {
                     if (doc != null) reload();
                 }));
@@ -369,7 +334,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
     private void reload() {
         final MediaDataController data = MediaDataController.getInstance(account);
         sections.clear();
-        // the packs: installed custom emoji packs, their animated (Lottie) emoji only
         final ArrayList<Section> packs = new ArrayList<>();
         for (TLRPC.TL_messages_stickerSet set : data.getStickerSets(MediaDataController.TYPE_EMOJIPACKS)) {
             if (set == null || set.set == null || set.documents == null) {
@@ -385,7 +349,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
                 packs.add(new Section(KIND_PACK, set.set.title, set.set.id, docs));
             }
         }
-        // the presets on top, then Recent: what was applied to the QR, then the recent custom emoji (a few rows)
         final ArrayList<TLRPC.Document> presets = presets();
         if (!presets.isEmpty()) {
             sections.add(new Section(KIND_PRESETS, org.telegram.messenger.LocaleController.getString(R.string.QrEmojiPresets), 0, presets));
@@ -444,7 +407,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         return 0;
     }
 
-    /** The first row shown: the grid scrolls on under the tabs (no clip to padding), so the first one below them. */
     private int firstShownPosition() {
         final int top = grid.getPaddingTop();
         int position = RecyclerView.NO_POSITION, bestTop = Integer.MAX_VALUE;
@@ -462,7 +424,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         return position != RecyclerView.NO_POSITION ? position : 0;
     }
 
-    /** Like the stock emoji keyboard: a far pack is reached with a short jump animation, not by scrolling through all. */
     private void scrollToSection(int index) {
         if (index < 0 || index >= sections.size()) {
             return;
@@ -480,20 +441,17 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         final LinearSmoothScroller scroller = new LinearSmoothScroller(getContext()) {
             @Override
             protected int getVerticalSnapPreference() {
-                return SNAP_TO_START; // the box starts below the grid's top padding: right under the tabs
+                return SNAP_TO_START;
             }
         };
         scroller.setTargetPosition(sections.get(index).start);
         layoutManager.startSmoothScroll(scroller);
     }
 
-    /* Grid */
 
-    /** The emoji grid; the screen draws under its cells and masks them (fades) through the two hooks. */
     public static class Grid extends RecyclerListView {
 
         public @Nullable Consumer<Canvas> beforeChildrenDraw;
-        /** When set, the grid draws into its own layer and this masks it, e.g. DST_IN gradients. */
         public @Nullable Consumer<Canvas> afterChildrenDraw;
 
         Grid(Context context) {
@@ -514,7 +472,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
-    /** One custom emoji of the grid. */
     public static class Cell extends View {
 
         private final int account;
@@ -525,9 +482,7 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         private @Nullable String key;
         private float pressK;
 
-        /** The picked state's scale (the screen drives it). */
         public float selectScale = 1f;
-        /** The open / close cascade's scale (the screen drives it). */
         public float cascadeScale = 1f;
 
         Cell(Context context, int account) {
@@ -536,7 +491,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
             placeholder.setColor(PLACEHOLDER_COLOR);
         }
 
-        /** The key the screen uses for a picked emoji: "c:" + document id. */
         @Nullable
         public String getKey() {
             return key;
@@ -544,7 +498,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
 
         void set(TLRPC.Document document) {
             if (document.id == 0) {
-                // a preset still on its way: the placeholder only
                 if (drawable != null && isAttachedToWindow()) drawable.removeView(this);
                 drawable = null;
                 documentId = 0;
@@ -624,7 +577,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
-    /** A section title (one line, the scene's header colour); without Premium a pack's title ends in "Unlock". */
     private final class Header extends FrameLayout {
 
         final TextView title;
@@ -659,7 +611,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
             title.setText(text != null ? text.replace('\n', ' ') : null);
             title.setTextColor(headerColor);
             unlock.setVisibility(locked ? VISIBLE : GONE);
-            // one line, cut before the pill
             final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) title.getLayoutParams();
             final int right = dp(15) + (locked ? dp(12) + (int) Math.ceil(unlock.getPaint().measureText(unlock.getText().toString())) + dp(20) + dp(6) : 0);
             if (lp.rightMargin != right) {
@@ -715,14 +666,10 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
-    /* Tabs */
 
-    /** The strip of pack tabs: Recent, then a tab per pack with its first emoji; the active one sits in a white circle. */
     public class Tabs extends HorizontalScrollView {
 
-        /** Drawn under the strip in its visible bounds: the island's glass. */
         public @Nullable BoundsDraw underDraw;
-        /** Drawn over the strip in its visible bounds: the glass rim. */
         public @Nullable BoundsDraw overDraw;
 
         private final LinearLayout content;
@@ -773,7 +720,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
                 circleX = Float.NaN;
             }
             final View tab = content.getChildAt(index);
-            // keep the active tab in view
             final int left = tab.getLeft() - dp(TAB_SIZE_DP), right = tab.getRight() + dp(TAB_SIZE_DP);
             if (left < getScrollX()) {
                 if (animated) smoothScrollTo(left, 0);
@@ -813,7 +759,6 @@ public class QrEmojiPanel extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
-    /** A tab: the star of the presets, the clock of Recent, or a pack's first emoji. */
     private final class Tab extends View {
 
         private final @Nullable AnimatedEmojiDrawable emoji;

@@ -2,7 +2,6 @@ package org.telegram.ui.Wallet;
 
 import android.opengl.Matrix;
 
-/** Pure matrix math shared by the Canvas face and its simulated depth; no GL context. */
 final class WalletCardProjection {
     private static final float FIELD_OF_VIEW = 10.4f;
     private static final float CAMERA_DISTANCE = 6.70f;
@@ -16,11 +15,6 @@ final class WalletCardProjection {
             int width,
             int height
     ) {
-        // The projection allows equal overscan on every side.
-        // Recover the card's visible (non-overscan) dimensions from the
-        // surface aspect, then widen the FOV by the overscan ratio. This keeps
-        // the resting card exactly the same size while leaving room for both
-        // pitched and yawed corners.
         float visibleWidth = (width - height)
                 / (1.0f - 1.0f / CARD_ASPECT);
         if (visibleWidth <= 0.0f || visibleWidth > width) {
@@ -63,8 +57,6 @@ final class WalletCardProjection {
         Matrix.rotateM(matrix, 0, -rotationX, 1, 0, 0);
         Matrix.rotateM(matrix, 0, -rotationY, 0, 1, 0);
 
-        // The Blender card's faces point along X. Rotate them to face the camera,
-        // retaining the calibrated camera-space offset of the card.
         Matrix.rotateM(matrix, 0, 90, 0, 1, 0);
         Matrix.translateM(matrix, 0, -0.02f, 0, 0);
         Matrix.scaleM(matrix, 0, MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
@@ -116,7 +108,6 @@ final class WalletCardProjection {
             projectPoint(faceX, WalletCardGeometry.BOTTOM, leftZ, width, height, result, 6);
         }
 
-        /** Project matching front/back contour points using the MVP prepared by project(). */
         void projectDepthContour(int width, int height, float[] uv, float[] front, float[] back, float[] depth) {
             for (int i = 0; i < uv.length / 2; i++) {
                 float y = WalletCardGeometry.TOP + (WalletCardGeometry.BOTTOM - WalletCardGeometry.TOP) * uv[i * 2 + 1];

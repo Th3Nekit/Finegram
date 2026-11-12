@@ -56,12 +56,6 @@ public class RadioButton extends View {
             eraser.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
 
-//        try {
-//            bitmap = Bitmap.createBitmap(AndroidUtilities.dp(size), AndroidUtilities.dp(size), Bitmap.Config.ARGB_4444);
-//            bitmapCanvas = new Canvas(bitmap);
-//        } catch (Throwable e) {
-//            FileLog.e(e);
-//        }
     }
 
     @Keep
@@ -95,6 +89,10 @@ public class RadioButton extends View {
 
     public int getColor() {
         return color;
+    }
+
+    public int getCheckedColor() {
+        return checkedColor;
     }
 
     public void setColor(int color1, int color2) {

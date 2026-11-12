@@ -96,7 +96,6 @@ public class VideoScreenPreview extends FrameLayout implements PagerHeaderView, 
     boolean firstFrameRendered;
 
     float progress;
-//    VideoPlayer videoPlayer;
     VideoPlayerHolderBase videoPlayerBase;
     AspectRatioFrameLayout aspectRatioFrameLayout;
     TextureView textureView;
@@ -301,10 +300,6 @@ public class VideoScreenPreview extends FrameLayout implements PagerHeaderView, 
         ((MarginLayoutParams) aspectRatioFrameLayout.getLayoutParams()).topMargin = (int) AndroidUtilities.rectTmp.top;
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//        super.onMeasure(
-//            MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY),
-//            MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY)
-//        );
     }
 
     @Override
@@ -507,7 +502,7 @@ public class VideoScreenPreview extends FrameLayout implements PagerHeaderView, 
         if (!firstFrameRendered) {
             checkVideo();
         }
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileLoaded);
     }
 
     @Override

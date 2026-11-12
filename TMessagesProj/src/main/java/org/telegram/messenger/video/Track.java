@@ -310,7 +310,6 @@ public class Track {
             descriptor.setDecoderConfigDescriptor(decoderConfigDescriptor);
 
             ByteBuffer data = descriptor.serialize();
-            //esds.setEsDescriptor(descriptor);
             esds.setData(data);
             audioSampleEntry.addBox(esds);
             sampleDescriptionBox.addBox(audioSampleEntry);
@@ -375,10 +374,6 @@ public class Track {
                 sampleCompositions[presentationTime.index] = (int) (presentationTime.presentationTime - presentationTime.dt);
             }
         }
-        //if (!first) {
-        //    sampleDurations.add(sampleDurations.size() - 1, delta);
-        //    duration += delta;
-        //}
     }
 
     public ArrayList<Sample> getSamples() {

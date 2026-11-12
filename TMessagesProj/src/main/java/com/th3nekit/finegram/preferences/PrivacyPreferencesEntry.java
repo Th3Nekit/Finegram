@@ -45,6 +45,7 @@ import com.th3nekit.finegram.preferences.helpers.SettingsHelper;
 public class PrivacyPreferencesEntry extends BaseCGPreferencesEntry {
 
 
+    private final int peekOnlineRow = 62, peekOnlineAutoRow = 63, botWidgetsRow = 64;
     private final int hideArchiveFromChatsListRow = 1;
     private final int askBiometricsToOpenDialogsRow = 2;
     private final int askBiometricsToOpenChatsRow = 3;
@@ -143,6 +144,14 @@ public class PrivacyPreferencesEntry extends BaseCGPreferencesEntry {
         items.add(UItem.asButton(testFingerprintRow, R.drawable.fingerprint, getString(R.string.SP_TestFingerprint)));
         items.add(UItem.asShadow(getString(R.string.SP_TestFingerprint_Desc)));
 
+        items.add(SettingsHelper.asSwitchCG(peekOnlineRow, getString(R.string.FG_PeekOnline), getString(R.string.FG_PeekOnline_Desc))
+                .setChecked(FinegramPrivacyConfig.INSTANCE.getPeekOnline()).slug("peekOnline"));
+        items.add(SettingsHelper.asSwitchCG(peekOnlineAutoRow, getString(R.string.FG_PeekOnlineAuto), getString(R.string.FG_PeekOnlineAuto_Desc))
+                .setChecked(FinegramPrivacyConfig.INSTANCE.getPeekOnlineAutoRefresh())
+                .setEnabled(FinegramPrivacyConfig.INSTANCE.getPeekOnline()).slug("peekOnlineAutoRefresh"));
+        items.add(SettingsHelper.asSwitchCG(botWidgetsRow, getString(R.string.FG_BotWidgets), getString(R.string.FG_BotWidgets_Desc))
+                .setChecked(FinegramPrivacyConfig.INSTANCE.getBotWidgets()).slug("botWidgets"));
+        items.add(UItem.asShadow(null));
         items.add(UItem.asHeader(getString(R.string.LocalMiscellaneousCache)));
         UItem deleteAccountButton = UItem.asButton(
                 deleteAccountRow,
@@ -156,7 +165,20 @@ public class PrivacyPreferencesEntry extends BaseCGPreferencesEntry {
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
-        if (item.id == hideArchivedStoriesRow) {
+        if (item.id == peekOnlineRow) {
+            FinegramPrivacyConfig.INSTANCE.setPeekOnline(!FinegramPrivacyConfig.INSTANCE.getPeekOnline());
+            updateRows(true);
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
+        } else if (item.id == botWidgetsRow) {
+            FinegramPrivacyConfig.INSTANCE.setBotWidgets(!FinegramPrivacyConfig.INSTANCE.getBotWidgets());
+            SettingsHelper.updateCheckState(view, FinegramPrivacyConfig.INSTANCE.getBotWidgets());
+            if (!FinegramPrivacyConfig.INSTANCE.getBotWidgets()) {
+                org.telegram.utils.twidget.WidgetMedia.onKillSwitch();
+            }
+        } else if (item.id == peekOnlineAutoRow) {
+            FinegramPrivacyConfig.INSTANCE.setPeekOnlineAutoRefresh(!FinegramPrivacyConfig.INSTANCE.getPeekOnlineAutoRefresh());
+            SettingsHelper.updateCheckState(view, FinegramPrivacyConfig.INSTANCE.getPeekOnlineAutoRefresh());
+        } else if (item.id == hideArchivedStoriesRow) {
             FinegramPrivacyConfig.INSTANCE.setHideArchivedStories(!FinegramPrivacyConfig.INSTANCE.getHideArchivedStories());
             SettingsHelper.updateCheckState(view, FinegramPrivacyConfig.INSTANCE.getHideArchivedStories());
 

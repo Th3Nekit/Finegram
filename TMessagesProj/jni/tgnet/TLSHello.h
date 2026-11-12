@@ -7,10 +7,7 @@
 #include <vector>
 #include <openssl/rand.h>
 
-// NOTE: MAX_GREASE and the key-generation helpers below were not part of
-// TLSHello.cpp as uploaded — they must already exist somewhere in the
 // project (the original file relied on them via #include "TLSHello.h").
-// Adjust/remove these declarations to match the real ones.
 #ifndef MAX_GREASE
 #define MAX_GREASE 8
 #endif
@@ -58,4 +55,4 @@ private:
     void writeOp(const Op &op, uint8_t *data, uint32_t &offset);
 };
 
-#endif // TLSHELLO_H
+#endif

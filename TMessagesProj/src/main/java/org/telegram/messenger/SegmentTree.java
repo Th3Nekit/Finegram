@@ -10,7 +10,6 @@ public class SegmentTree {
         if (array.length < 30) {
             return;
         }
-        //The max size of this array is about 2 * 2 ^ log2(n) + 1
         int size = (int) (2 * Math.pow(2.0, Math.floor((Math.log(array.length) / Math.log(2.0)) + 1)));
         heap = new Node[size];
         build(1, 0, array.length);
@@ -26,12 +25,10 @@ public class SegmentTree {
             heap[v].max = array[from];
             heap[v].min = array[from];
         } else {
-            //Build childs
             build(2 * v, from, size / 2);
             build(2 * v + 1, from + size / 2, size - size / 2);
 
             heap[v].sum = heap[2 * v].sum + heap[2 * v + 1].sum;
-            //max = max of the children
             heap[v].max = Math.max(heap[2 * v].max, heap[2 * v + 1].max);
             heap[v].min = Math.min(heap[2 * v].min, heap[2 * v + 1].min);
         }
@@ -52,7 +49,6 @@ public class SegmentTree {
 
     private long rMaxQ(int v, int from, int to) {
         Node n = heap[v];
-        //If you did a range update that contained this node, you can infer the Min value without going down the tree
         if (n.pendingVal != null && contains(n.from, n.to, from, to)) {
             return n.pendingVal;
         }
@@ -87,7 +83,6 @@ public class SegmentTree {
 
     private long rMinQ(int v, int from, int to) {
         Node n = heap[v];
-        //If you did a range update that contained this node, you can infer the Min value without going down the tree
         if (n.pendingVal != null && contains(n.from, n.to, from, to)) {
             return n.pendingVal;
         }
@@ -131,8 +126,8 @@ public class SegmentTree {
     }
 
     private boolean intersects(int from1, int to1, int from2, int to2) {
-        return from1 <= from2 && to1 >= from2   //  (.[..)..] or (.[...]..)
-                || from1 >= from2 && from1 <= to2; // [.(..]..) or [..(..)..
+        return from1 <= from2 && to1 >= from2
+                || from1 >= from2 && from1 <= to2;
     }
 
     static class Node {

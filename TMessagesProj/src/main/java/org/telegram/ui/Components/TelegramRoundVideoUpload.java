@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/** Bridges growing round-video output generations to Telegram's file uploader. */
 final class TelegramRoundVideoUpload implements
         RoundVideoSession.OutputListener,
         NotificationCenter.NotificationCenterDelegate {

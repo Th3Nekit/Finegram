@@ -22,59 +22,32 @@ import java.util.UUID;
 import org.telegram.messenger.SharedConfig;
 import org.webrtc.Logging;
 
-// This class wraps control of three different platform effects. Supported
-// effects are: AcousticEchoCanceler (AEC) and NoiseSuppressor (NS).
-// Calling enable() will active all effects that are
-// supported by the device if the corresponding |shouldEnableXXX| member is set.
 public class WebRtcAudioEffects {
   private static final boolean DEBUG = false;
 
   private static final String TAG = "WebRtcAudioEffects";
 
-  // UUIDs for Software Audio Effects that we want to avoid using.
-  // The implementor field will be set to "The Android Open Source Project".
   private static final UUID AOSP_ACOUSTIC_ECHO_CANCELER =
       UUID.fromString("bb392ec0-8d4d-11e0-a896-0002a5d5c51b");
   private static final UUID AOSP_NOISE_SUPPRESSOR =
       UUID.fromString("c06c8400-8e06-11e0-9cb6-0002a5d5c51b");
 
-  // Contains the available effect descriptors returned from the
-  // AudioEffect.getEffects() call. This result is cached to avoid doing the
-  // slow OS call multiple times.
   private static @Nullable Descriptor[] cachedEffects;
 
-  // Contains the audio effect objects. Created in enable() and destroyed
-  // in release().
   private @Nullable AcousticEchoCanceler aec;
   private @Nullable NoiseSuppressor ns;
 
-  // Affects the final state given to the setEnabled() method on each effect.
-  // The default state is set to "disabled" but each effect can also be enabled
-  // by calling setAEC() and setNS().
-  // To enable an effect, both the shouldEnableXXX member and the static
-  // canUseXXX() must be true.
   private boolean shouldEnableAec;
   private boolean shouldEnableNs;
 
-  // Checks if the device implements Acoustic Echo Cancellation (AEC).
-  // Returns true if the device implements AEC, false otherwise.
   public static boolean isAcousticEchoCancelerSupported() {
-    // Note: we're using isAcousticEchoCancelerEffectAvailable() instead of
-    // AcousticEchoCanceler.isAvailable() to avoid the expensive getEffects()
-    // OS API call.
     return isAcousticEchoCancelerEffectAvailable();
   }
 
-  // Checks if the device implements Noise Suppression (NS).
-  // Returns true if the device implements NS, false otherwise.
   public static boolean isNoiseSuppressorSupported() {
-    // Note: we're using isNoiseSuppressorEffectAvailable() instead of
-    // NoiseSuppressor.isAvailable() to avoid the expensive getEffects()
-    // OS API call.
     return isNoiseSuppressorEffectAvailable();
   }
 
-  // Returns true if the device is blacklisted for HW AEC usage.
   public static boolean isAcousticEchoCancelerBlacklisted() {
     List<String> blackListedModels = WebRtcAudioUtils.getBlackListedModelsForAecUsage();
     boolean isBlacklisted = blackListedModels.contains(Build.MODEL);
@@ -84,7 +57,6 @@ public class WebRtcAudioEffects {
     return isBlacklisted;
   }
 
-  // Returns true if the device is blacklisted for HW NS usage.
   public static boolean isNoiseSuppressorBlacklisted() {
     List<String> blackListedModels = WebRtcAudioUtils.getBlackListedModelsForNsUsage();
     boolean isBlacklisted = blackListedModels.contains(Build.MODEL);
@@ -94,8 +66,6 @@ public class WebRtcAudioEffects {
     return isBlacklisted;
   }
 
-  // Returns true if the platform AEC should be excluded based on its UUID.
-  // AudioEffect.queryEffects() can throw IllegalStateException.
   private static boolean isAcousticEchoCancelerExcludedByUUID() {
     if (Build.VERSION.SDK_INT < 18)
       return false;
@@ -108,8 +78,6 @@ public class WebRtcAudioEffects {
     return false;
   }
 
-  // Returns true if the platform NS should be excluded based on its UUID.
-  // AudioEffect.queryEffects() can throw IllegalStateException.
   private static boolean isNoiseSuppressorExcludedByUUID() {
     if (Build.VERSION.SDK_INT < 18)
       return false;
@@ -121,22 +89,18 @@ public class WebRtcAudioEffects {
     return false;
   }
 
-  // Returns true if the device supports Acoustic Echo Cancellation (AEC).
   private static boolean isAcousticEchoCancelerEffectAvailable() {
     if (Build.VERSION.SDK_INT < 18)
       return false;
     return isEffectTypeAvailable(AudioEffect.EFFECT_TYPE_AEC);
   }
 
-  // Returns true if the device supports Noise Suppression (NS).
   private static boolean isNoiseSuppressorEffectAvailable() {
     if (Build.VERSION.SDK_INT < 18)
       return false;
     return isEffectTypeAvailable(AudioEffect.EFFECT_TYPE_NS);
   }
 
-  // Returns true if all conditions for supporting the HW AEC are fulfilled.
-  // It will not be possible to enable the HW AEC if this method returns false.
   public static boolean canUseAcousticEchoCanceler() {
     boolean canUseAcousticEchoCanceler = isAcousticEchoCancelerSupported()
         && !WebRtcAudioUtils.useWebRtcBasedAcousticEchoCanceler()
@@ -145,8 +109,6 @@ public class WebRtcAudioEffects {
     return canUseAcousticEchoCanceler;
   }
 
-  // Returns true if all conditions for supporting the HW NS are fulfilled.
-  // It will not be possible to enable the HW NS if this method returns false.
   public static boolean canUseNoiseSuppressor() {
     boolean canUseNoiseSuppressor = isNoiseSuppressorSupported()
         && !WebRtcAudioUtils.useWebRtcBasedNoiseSuppressor() && !isNoiseSuppressorBlacklisted()
@@ -163,10 +125,6 @@ public class WebRtcAudioEffects {
     Logging.d(TAG, "ctor" + WebRtcAudioUtils.getThreadInfo());
   }
 
-  // Call this method to enable or disable the platform AEC. It modifies
-  // |shouldEnableAec| which is used in enable() where the actual state
-  // of the AEC effect is modified. Returns true if HW AEC is supported and
-  // false otherwise.
   public boolean setAEC(boolean enable) {
     Logging.d(TAG, "setAEC(" + enable + ")");
     if (!canUseAcousticEchoCanceler()) {
@@ -182,10 +140,6 @@ public class WebRtcAudioEffects {
     return true;
   }
 
-  // Call this method to enable or disable the platform NS. It modifies
-  // |shouldEnableNs| which is used in enable() where the actual state
-  // of the NS effect is modified. Returns true if HW NS is supported and
-  // false otherwise.
   public boolean setNS(boolean enable) {
     Logging.d(TAG, "setNS(" + enable + ")");
     if (!canUseNoiseSuppressor()) {
@@ -207,9 +161,6 @@ public class WebRtcAudioEffects {
     assertTrue(ns == null);
 
     if (DEBUG) {
-      // Add logging of supported effects but filter out "VoIP effects", i.e.,
-      // AEC, AEC and NS. Avoid calling AudioEffect.queryEffects() unless the
-      // DEBUG flag is set since we have seen crashes in this API.
       for (Descriptor d : AudioEffect.queryEffects()) {
         if (effectTypeIsVoIP(d.type)) {
           Logging.d(TAG, "name: " + d.name + ", "
@@ -221,8 +172,6 @@ public class WebRtcAudioEffects {
     }
 
     if (isAcousticEchoCancelerSupported()) {
-      // Create an AcousticEchoCanceler and attach it to the AudioRecord on
-      // the specified audio session.
       aec = AcousticEchoCanceler.create(audioSession);
       if (aec != null) {
         boolean enabled = aec.getEnabled();
@@ -239,8 +188,6 @@ public class WebRtcAudioEffects {
     }
 
     if (isNoiseSuppressorSupported()) {
-      // Create an NoiseSuppressor and attach it to the AudioRecord on the
-      // specified audio session.
       ns = NoiseSuppressor.create(audioSession);
       if (ns != null) {
         boolean enabled = ns.getEnabled();
@@ -256,9 +203,6 @@ public class WebRtcAudioEffects {
     }
   }
 
-  // Releases all native audio effect resources. It is a good practice to
-  // release the effect engine when not in use as control can be returned
-  // to other applications or the native resources released.
   public void release() {
     Logging.d(TAG, "release");
     if (aec != null) {
@@ -271,13 +215,6 @@ public class WebRtcAudioEffects {
     }
   }
 
-  // Returns true for effect types in |type| that are of "VoIP" types:
-  // Acoustic Echo Canceler (AEC) or Automatic Gain Control (AGC) or
-  // Noise Suppressor (NS). Note that, an extra check for support is needed
-  // in each comparison since some devices includes effects in the
-  // AudioEffect.Descriptor array that are actually not available on the device.
-  // As an example: Samsung Galaxy S6 includes an AGC in the descriptor but
-  // AutomaticGainControl.isAvailable() returns false.
   private boolean effectTypeIsVoIP(UUID type) {
     if (Build.VERSION.SDK_INT < 18)
       return false;
@@ -286,30 +223,20 @@ public class WebRtcAudioEffects {
         || (AudioEffect.EFFECT_TYPE_NS.equals(type) && isNoiseSuppressorSupported());
   }
 
-  // Helper method which throws an exception when an assertion has failed.
   private static void assertTrue(boolean condition) {
     if (!condition) {
       throw new AssertionError("Expected condition to be true");
     }
   }
 
-  // Returns the cached copy of the audio effects array, if available, or
-  // queries the operating system for the list of effects.
   private static @Nullable Descriptor[] getAvailableEffects() {
     if (cachedEffects != null) {
       return cachedEffects;
     }
-    // The caching is best effort only - if this method is called from several
-    // threads in parallel, they may end up doing the underlying OS call
-    // multiple times. It's normally only called on one thread so there's no
-    // real need to optimize for the multiple threads case.
     cachedEffects = AudioEffect.queryEffects();
     return cachedEffects;
   }
 
-  // Returns true if an effect of the specified type is available. Functionally
-  // equivalent to (NoiseSuppressor|AutomaticGainControl|...).isAvailable(), but
-  // faster as it avoids the expensive OS call to enumerate effects.
   private static boolean isEffectTypeAvailable(UUID effectType) {
     Descriptor[] effects = getAvailableEffects();
     if (effects == null) {

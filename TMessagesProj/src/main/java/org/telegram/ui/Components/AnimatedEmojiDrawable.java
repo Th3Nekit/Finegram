@@ -447,6 +447,7 @@ public class AnimatedEmojiDrawable extends Drawable {
     private boolean attached;
     private ArrayList<View> views;
     private ArrayList<AnimatedEmojiSpan.InvalidateHolder> holders;
+    private HashSet<AnimatedEmojiSpan.InvalidateHolder> holderSet;
 
     public int sizedp;
 
@@ -559,24 +560,16 @@ public class AnimatedEmojiDrawable extends Drawable {
 
     private void createImageReceiver() {
         if (imageReceiver == null) {
-            imageReceiver = new ImageReceiver() {
-                @Override
-                public void invalidate() {
-                    AnimatedEmojiDrawable.this.invalidate();
-                    super.invalidate();
-                }
-
-                @Override
-                protected boolean setImageBitmapByKey(Drawable drawable, String key, int type, boolean memCache, int guid) {
-                    AnimatedEmojiDrawable.this.invalidate();
-                    boolean r = super.setImageBitmapByKey(drawable, key, type, memCache, guid);
-                    if (preloading && hasImageLoaded()) {
-                        preloading = false;
-                        AndroidUtilities.runOnUIThread(AnimatedEmojiDrawable.this::updateAttachState);
-                    }
-                    return r;
+            final ImageReceiver receiver = new ImageReceiver();
+            receiver.invalidateListener = AnimatedEmojiDrawable.this::invalidate;
+            receiver.bitmapSetListener = () -> {
+                AnimatedEmojiDrawable.this.invalidate();
+                if (preloading && receiver.hasImageLoaded()) {
+                    preloading = false;
+                    AndroidUtilities.runOnUIThread(AnimatedEmojiDrawable.this::updateAttachState);
                 }
             };
+            imageReceiver = receiver;
             imageReceiver.setCurrentAccount(currentAccount);
             imageReceiver.setAllowLoadingOnAttachedOnly(true);
             if (cacheType == CACHE_TYPE_RENDERING_VIDEO) {
@@ -717,6 +710,7 @@ public class AnimatedEmojiDrawable extends Drawable {
             roundRadius = dp(14);
         }
         imageReceiver.setRoundRadius(roundRadius);
+        visibilityPaused = false;
         updateAttachState();
         invalidate();
     }
@@ -754,6 +748,47 @@ public class AnimatedEmojiDrawable extends Drawable {
                     imageReceiver.setAutoRepeat(0);
                     imageReceiver.stopAnimation();
                 }
+                drawable.visibilityPaused = false;
+                drawable.updateVisibility();
+            }
+        }
+    }
+
+    private final HashSet<AnimatedEmojiSpan.InvalidateHolder> hiddenHolders = new HashSet<>();
+    private boolean visibilityPaused;
+    private boolean resumeAnimation;
+    private boolean visibilityUpdatePending;
+    private final Runnable visibilityUpdate = () -> {
+        visibilityUpdatePending = false;
+        updateVisibility();
+    };
+
+    public void setViewVisible(AnimatedEmojiSpan.InvalidateHolder holder, boolean visible) {
+        if (holders == null || (holderSet != null ? !holderSet.contains(holder) : !holders.contains(holder))) return;
+        boolean changed = visible ? hiddenHolders.remove(holder) : hiddenHolders.add(holder);
+        if (changed && !visibilityUpdatePending) {
+            visibilityUpdatePending = true;
+            AndroidUtilities.runOnUIThread(visibilityUpdate, 1);
+        }
+    }
+
+    private void updateVisibility() {
+        if (imageReceiver == null) return;
+        boolean visible = preloading || views != null && !views.isEmpty()
+                || holders != null && holders.size() > hiddenHolders.size();
+        boolean paused = attached && !visible;
+        if (visibilityPaused == paused) return;
+        visibilityPaused = paused;
+        if (paused) {
+            resumeAnimation = imageReceiver.getAllowStartAnimation();
+            imageReceiver.setAllowStartAnimation(false);
+            imageReceiver.setAllowStartLottieAnimation(false);
+            imageReceiver.stopAnimation();
+        } else {
+            imageReceiver.setAllowStartAnimation(resumeAnimation);
+            imageReceiver.setAllowStartLottieAnimation(resumeAnimation);
+            if (attached && resumeAnimation) {
+                imageReceiver.resumeAnimation();
             }
         }
     }
@@ -872,19 +907,32 @@ public class AnimatedEmojiDrawable extends Drawable {
     }
 
     public void addView(AnimatedEmojiSpan.InvalidateHolder holder) {
+        hiddenHolders.remove(holder);
         if (holders == null) {
             holders = new ArrayList<>(10);
         }
         preloading = false;
-        if (!holders.contains(holder)) {
+        if (holderSet != null ? !holderSet.contains(holder) : !holders.contains(holder)) {
             holders.add(holder);
+            if (holderSet != null) {
+                holderSet.add(holder);
+            } else if (holders.size() > 16) {
+                holderSet = new HashSet<>(holders);
+            }
         }
         updateAttachState();
     }
 
     public void removeView(AnimatedEmojiSpan.InvalidateHolder holder) {
+        hiddenHolders.remove(holder);
         if (holders != null) {
             holders.remove(holder);
+            if (holderSet != null) {
+                holderSet.remove(holder);
+                if (holders.size() <= 16) {
+                    holderSet = null;
+                }
+            }
         }
         preloading = false;
         updateAttachState();
@@ -899,6 +947,8 @@ public class AnimatedEmojiDrawable extends Drawable {
     }
 
     public void clear() {
+        hiddenHolders.clear();
+        holderSet = null;
         if (holders != null) {
             holders.clear();
         }
@@ -943,6 +993,9 @@ public class AnimatedEmojiDrawable extends Drawable {
                 AndroidUtilities.runOnUIThread(cleanup, 5000);
             }
         }
+        AndroidUtilities.cancelRunOnUIThread(visibilityUpdate);
+        visibilityUpdatePending = false;
+        updateVisibility();
     }
 
     private static final Runnable cleanup = () -> {
@@ -1023,9 +1076,18 @@ public class AnimatedEmojiDrawable extends Drawable {
     }
 
     private ColorFilter colorFilterToSet;
+    private ColorFilter lastColorFilter;
+
+    /** the filter passed to setColorFilter last (lets ThemeBind.drawableColorFilter re-apply it on theme changes) */
+    @Nullable
+    @Override
+    public ColorFilter getColorFilter() {
+        return lastColorFilter;
+    }
 
     @Override
     public void setColorFilter(@Nullable ColorFilter colorFilter) {
+        lastColorFilter = colorFilter;
         if (imageReceiver == null || document == null) {
             colorFilterToSet = colorFilter;
         } else if (canOverrideColor()) {

@@ -65,33 +65,6 @@ public class ChatAttachAlertEmojiLayout extends ChatAttachAlert.AttachAlertLayou
         });
         layoutManager = (LinearLayoutManager) gridView.getLayoutManager();
 
-        /*
-        layoutManager = new GridLayoutManager(context, itemSize) {
-            @Override
-            public boolean supportsPredictiveItemAnimations() {
-                return false;
-            }
-
-            @Override
-            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
-                LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(recyclerView.getContext()) {
-                    @Override
-                    public int calculateDyToMakeVisible(View view, int snapPreference) {
-                        int dy = super.calculateDyToMakeVisible(view, snapPreference);
-                        dy -= (gridView.getPaddingTop() - AndroidUtilities.dp(7));
-                        return dy;
-                    }
-
-                    @Override
-                    protected int calculateTimeForDeceleration(int dx) {
-                        return super.calculateTimeForDeceleration(dx) * 2;
-                    }
-                };
-                linearSmoothScroller.setTargetPosition(position);
-                startSmoothScroll(linearSmoothScroller);
-            }
-        };
-        */
         checkTopTabPosition();
     }
 

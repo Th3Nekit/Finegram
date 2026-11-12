@@ -45,6 +45,7 @@ import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.PremiumPreviewFragment;
 
@@ -58,7 +59,6 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
     private final static int SHADOW_DURATION = 150;
     private final static float SCALE_START = 0.25f;
 
-//    public View dimView;
     public LinearLayout recyclerContainer;
     public TextView headerText;
 
@@ -114,15 +114,13 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
         setBackgroundDrawable(null);
 
         Drawable shadowDrawable = ContextCompat.getDrawable(context, R.drawable.popup_fixed_alert4).mutate();
-        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider), PorterDuff.Mode.MULTIPLY));
+        ThemeBind.drawableColorFilter(scrimPopupContainerLayout, shadowDrawable, Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider, PorterDuff.Mode.MULTIPLY);
         scrimPopupContainerLayout.setBackground(shadowDrawable);
 
         Rect padding = new Rect();
         shadowDrawable.getPadding(padding);
         scrimPopupContainerLayout.setPadding(padding.left, padding.top, padding.right, padding.bottom);
 
-//        dimView = new View(context);
-//        dimView.setBackgroundColor(0x33000000);
 
         int maxHeight = AndroidUtilities.dp(450);
         int maxWidth = (int) ((parentFragment == null ? AndroidUtilities.displaySize.x : parentFragment.contentView.getWidth()) * 0.75f);
@@ -139,7 +137,7 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
         };
         recyclerContainer.setOrientation(LinearLayout.VERTICAL);
         headerText = new TextView(context);
-        headerText.setTextColor(Theme.getColor(Theme.key_dialogTextBlue, resourcesProvider));
+        ThemeBind.textColor(headerText, Theme.key_dialogTextBlue, resourcesProvider);
         headerText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         headerText.setText(LocaleController.getString(R.string.SendMessageAsTitle));
         headerText.setTypeface(AndroidUtilities.bold(), Typeface.BOLD);
@@ -399,7 +397,6 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
         scrimPopupContainerLayout.setScaleY(SCALE_START);
         recyclerContainer.setAlpha(SCALE_START);
 
-//        dimView.setAlpha(0);
 
         List<SpringAnimation> newSpringAnimations = Arrays.asList(
                 new SpringAnimation(scrimPopupContainerLayout, DynamicAnimation.SCALE_X)
@@ -420,10 +417,6 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
                         .setSpring(new SpringForce(1f)
                                 .setStiffness(SPRING_STIFFNESS)
                                 .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY))
-//                new SpringAnimation(dimView, DynamicAnimation.ALPHA)
-//                        .setSpring(new SpringForce(1f)
-//                                .setStiffness(SPRING_STIFFNESS)
-//                                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY))
         );
 
         for (SpringAnimation animation : newSpringAnimations) {
@@ -452,7 +445,6 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
         scrimPopupContainerLayout.setScaleX(1);
         scrimPopupContainerLayout.setScaleY(1);
         recyclerContainer.setAlpha(1);
-//        dimView.setAlpha(1);
 
         List<SpringAnimation> newSpringAnimations = new ArrayList<>();
         newSpringAnimations.addAll(Arrays.asList(
@@ -474,16 +466,6 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
                         .setSpring(new SpringForce(SCALE_START)
                                 .setStiffness(SPRING_STIFFNESS)
                                 .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY))
-//                new SpringAnimation(dimView, DynamicAnimation.ALPHA)
-//                        .setSpring(new SpringForce(0f)
-//                                .setStiffness(SPRING_STIFFNESS)
-//                                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY))
-//                        .addEndListener((animation, canceled, value, velocity) -> {
-//                            if (dimView.getParent() != null) {
-//                                ((ViewGroup)dimView.getParent()).removeView(dimView);
-//                            }
-//                            dismiss();
-//                        })
         ));
         for (int i = 0; i < animations.length; ++i) {
             if (animations[i] != null) {
@@ -530,14 +512,14 @@ public class SenderSelectPopup extends ActionBarPopupWindow {
             addView(textRow, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1f, 12, 0, 0, 0));
 
             title = new TextView(context);
-            title.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider));
+            ThemeBind.textColor(title, Theme.key_actionBarDefaultSubmenuItem, resourcesProvider);
             title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             title.setTag(this.title);
             title.setMaxLines(1);
             textRow.addView(title);
 
             subtitle = new TextView(context);
-            subtitle.setTextColor(ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), 0x66));
+            ThemeBind.textColor(subtitle, ThemeBind.alpha(Theme.key_actionBarDefaultSubmenuItem, 0x66), resourcesProvider);
             subtitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             subtitle.setTag(this.subtitle);
             subtitle.setMaxLines(1);

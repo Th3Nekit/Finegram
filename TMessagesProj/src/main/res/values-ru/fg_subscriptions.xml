@@ -62,4 +62,5 @@
     <string name="FG_Subscription_ErrorAppNotSupported">Провайдер отклонил этот клиент. Уточните у провайдера, как получить совместимую подписку.</string>
     <string name="FG_Subscription_ErrorUnsupportedFormat">Этот формат подписки не поддерживается. Используйте список ссылок VLESS/Hysteria2 или поддерживаемую конфигурацию JSON Xray.</string>
     <string name="FG_Subscription_ErrorUnsupportedProtocol">В подписке только неподдерживаемые протоколы. Поддерживаются VLESS и Hysteria2. Прежние серверы сохранены.</string>
+    <string name="FG_Subscription_ErrorXhttp">Серверы этой подписки работают через XHTTP, клиент его пока не поддерживает. Прежние серверы сохранены.</string>
 </resources>

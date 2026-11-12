@@ -103,12 +103,9 @@ public class ChatAttachRestrictedLayout extends ChatAttachAlert.AttachAlertLayou
         int newOffset = top > 0 && holder != null && holder.getAdapterPosition() == 0 ? top : 0;
         if (top >= 0 && holder != null && holder.getAdapterPosition() == 0) {
             newOffset = top;
-            //   runShadowAnimation(false);
         } else {
-//            runShadowAnimation(true);
         }
         progressView.setTranslationY(newOffset + (getMeasuredHeight() - newOffset - AndroidUtilities.dp(50) - progressView.getMeasuredHeight()) / 2);
-//        frameLayout.setTranslationY(newOffset);
         return newOffset + AndroidUtilities.dp(12);
     }
 

@@ -75,7 +75,6 @@ public final class ViewUtils {
   public static void hapticVibrate (View view, boolean isForce, boolean ignoreSetting) {
     if (view != null) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ignoreSetting) {
-        // TODO[sdk]: replacement for HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
       }
       int feedbackConstant = isForce ? HapticFeedbackConstants.LONG_PRESS : HapticFeedbackConstants.KEYBOARD_TAP;
       int flags = ignoreSetting ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0;
@@ -84,13 +83,10 @@ public final class ViewUtils {
   }
 
   public static void fixViewPager (View pager) {
-    // Whenever ViewPager gets re-attached to window (e.g. inside RecyclerView while scrolling),
-    // first touch event gets processed improperly
     try {
       Method method = pager.getClass().getDeclaredMethod("resetTouch");
       method.setAccessible(true);
       method.invoke(pager);
     } catch (Throwable ignored) { }
-    // pager.requestLayout();
   }
 }

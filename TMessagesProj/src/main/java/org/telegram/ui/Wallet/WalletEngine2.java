@@ -49,12 +49,10 @@ public class WalletEngine2 implements AutoCloseable {
     private volatile boolean closed;
     private final HttpTransport transport;
     private final ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "WalletEngine2"));
-    // Accessed only on worker; callbacks are delivered on the UI thread.
     private PendingSend pendingSend;
     private ScheduledFuture<?> resolutionTask;
     private long nextAuxiliaryRequestId = -1;
 
-    /** Returns the 2,048 English mnemonic words in their canonical order. */
     private static String[] mnemonicWordlist;
     private static native String[] mnemonicWordlist();
     public static String[] getMnemonicWordlist() {
@@ -64,11 +62,6 @@ public class WalletEngine2 implements AutoCloseable {
         return mnemonicWordlist;
     }
 
-    /**
-     * Returns whether the phrase is a valid Rotation mnemonic supported by TG Wallet.
-     * Call off the UI thread. This does not check a deployed contract or wallet ownership.
-     * Invalid, unsupported, null and empty phrases return false; engine failures propagate.
-     */
     public static boolean isTgWalletSecretPhrase(@Nullable SecretPhrase secretPhrase) {
         try {
             secretPhraseToPublicKey(secretPhrase);
@@ -78,7 +71,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /** Returns the current signing public key after validating the complete rotation phrase. */
     public static byte[] secretPhraseToPublicKey(SecretPhrase secretPhrase) {
         if (secretPhrase == null || secretPhrase.isEmpty()) {
             throw new IllegalArgumentException("Recovery phrase is required");
@@ -91,11 +83,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Returns the 32-byte address anchor public key derived from the first 12 words.
-     * Accepts 12- or 24-word Rotation phrases; only the anchor half is validated.
-     * The anchor stays fixed across signing-key rotations. Call off the UI thread.
-     */
     public static byte[] secretPhraseToAnchorPublicKey(SecretPhrase secretPhrase) {
         if (secretPhrase == null || secretPhrase.isEmpty()) {
             throw new IllegalArgumentException("Recovery phrase is required");
@@ -109,15 +96,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Derives the friendly non-bounceable Wallet rev00 mainnet address in workchain 0.
-     * Accepts a valid 12- or 24-word TG Wallet Rotation mnemonic; both halves of a
-     * 24-word phrase are validated. The anchor preserves the address across signing-key
-     * rotations. This is not a generic TON/BIP39 wallet-discovery helper, and does not
-     * verify that the phrase's signing key still controls the deployed wallet.
-     * Call off the UI thread. No network access or persistent storage is used.
-     * Throws IllegalArgumentException for an invalid or unsupported phrase.
-     */
     public static String secretPhraseToAddress(SecretPhrase secretPhrase) {
         if (secretPhrase == null || secretPhrase.isEmpty()) {
             throw new IllegalArgumentException("Recovery phrase is required");
@@ -130,8 +108,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /** Uses wallet-engine derived sessions and signData through the native adapter.
-     * Call off the UI thread; session private keys stay in Rust. */
     static JSONObject tonConnectCrypto(SecretPhrase secretPhrase, TL_wallet.tonConnectSession session,
             String address, byte[] publicKey, JSONObject parameters) throws JSONException {
         if (session == null || session.nonce == null || session.dapp_client_id == null
@@ -240,7 +216,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /** Signs protocol-specific data hashes; never exposes a generic raw-key signing operation. */
     static JSONObject signData(SecretPhrase phrase, TL_wallet.tonConnectSession session, String address,
             byte[] publicKey, JSONObject payload, String domain, int timestamp) throws JSONException {
         JSONObject signed = tonConnectCrypto(phrase, session, address, publicKey, new JSONObject()
@@ -257,7 +232,6 @@ public class WalletEngine2 implements AutoCloseable {
 
     private static native byte[] nativeTonConnectCrypto(byte[] phrase, byte[] parameters);
 
-    /** Public material for an imported wallet's ownership proof; publicKey is the address anchor. */
     @Keep
     public static final class ImportedWalletProof {
         public final byte[] publicKey;
@@ -272,20 +246,10 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Signs a TON Connect ownership proof for an imported Rotation mnemonic.
-     * Call off the UI thread; no engine instance, network access or persistent storage is used.
-     * Validates the full Rotation mnemonic, then signs with the anchor key. MTProto
-     * import derives the address from publicKey and verifies with that same key.
-     * The current signing half remains necessary for subsequent wallet operations.
-     * Pass the exact challenge domain and payload, and server-adjusted Unix seconds.
-     * The caller handles challenge expiry and obtains a new challenge for each submission.
-     */
     public static ImportedWalletProof createImportProof(SecretPhrase phrase, String domain, String payload, int timestamp) {
         return createProof(phrase, domain, payload, timestamp, true);
     }
 
-    /** Signs an existing wallet's address-bound proof with its current signing key. */
     public static ImportedWalletProof createOwnershipProof(SecretPhrase phrase, String domain, String payload, int timestamp) {
         return createProof(phrase, domain, payload, timestamp, false);
     }
@@ -306,14 +270,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Decrypts a base64 raw TON encrypted-comment payload (64..1024 decoded bytes,
-     * excluding the opcode and BOC wrapper). Uses the Rotation mnemonic's anchor key.
-     * senderAddress is the actual sender, also for outgoing transfers.
-     * Call off the UI thread. No engine instance, network or persistent storage is needed.
-     * Throws IllegalArgumentException for invalid inputs and IllegalStateException if
-     * authentication/decryption fails. Never returns unauthenticated plaintext.
-     */
     public static String decryptComment(SecretPhrase secretPhrase, String senderAddress, String encryptedComment) {
         if (secretPhrase == null || secretPhrase.isEmpty()) {
             throw new IllegalArgumentException("Recovery phrase is required");
@@ -335,7 +291,6 @@ public class WalletEngine2 implements AutoCloseable {
     }
 
     private static byte[] decodeEncryptedComment(String comment) {
-        // Accept standard base64, with optional padding; bound allocation before decoding.
         if (comment == null || comment.isEmpty() || comment.length() > 1368
                 || !comment.matches("[A-Za-z0-9+/]+={0,2}")) {
             throw new IllegalArgumentException("Invalid encrypted comment base64");
@@ -348,13 +303,9 @@ public class WalletEngine2 implements AutoCloseable {
     }
 
     private static String encryptedCommentBody(byte[] payload) {
-        // Adapt the server's raw bytes to the engine's message-body BOC API.
-        // A snake cell holds 35 payload bytes at the root (after the opcode), then
-        // up to 127 bytes per reference. All cells are byte-aligned and ordinary.
         int cells = 1 + (payload.length - 35 + 126) / 127;
         int totalCellBytes = payload.length + 4 + cells * 2 + cells - 1;
         ByteArrayOutputStream boc = new ByteArrayOutputStream(12 + totalCellBytes);
-        // Generic BOC: no index/CRC, one-byte cell indices, two-byte content size.
         byte[] header = {(byte) 0xb5, (byte) 0xee, (byte) 0x9c, 0x72,
             1, 2, (byte) cells, 1, 0, (byte) (totalCellBytes >> 8), (byte) totalCellBytes, 0};
         boc.write(header, 0, header.length);
@@ -377,25 +328,17 @@ public class WalletEngine2 implements AutoCloseable {
         return Base64.encodeToString(boc.toByteArray(), Base64.NO_WRAP);
     }
 
-    /**
-     * Parses a raw or user-friendly TON address, including its checksum and flags.
-     * Returns false for null, empty or malformed input. Accepts mainnet and testnet
-     * formats; this checks the address format, not whether an account exists on-chain.
-     */
     public static boolean isValidAddress(@Nullable String address) {
         return address != null && !address.isEmpty() && nativeIsValidAddress(address);
     }
 
-    /** Checks a transfer destination, rejecting friendly addresses marked as testnet-only. */
     public static boolean isValidRecipientAddress(@Nullable String address) {
         if (!isValidAddress(address)) return false;
-        // Raw addresses do not carry a network flag.
         if (address.indexOf(':') >= 0) return true;
         final byte[] decoded = Base64.decode(address.replace('-', '+').replace('_', '/'), Base64.NO_WRAP);
         return (decoded[0] & 0x80) == 0;
     }
 
-    /** Formats a validated address as a non-bounceable, user-friendly mainnet address. */
     static String toUserFriendlyAddress(String address) {
         return nativeTransactionAddress(address);
     }
@@ -409,9 +352,8 @@ public class WalletEngine2 implements AutoCloseable {
             ApplicationLoader.applicationContext.getNoBackupFilesDir().getAbsolutePath() + "/wallet-engine");
     }
 
-    /** Returns the current balance in nanograms, or an error, on the UI thread. */
     public synchronized void balance(
-        Utilities.Callback2<Long, String /* error message*/> onResult
+        Utilities.Callback2<Long, String                   > onResult
     ) {
         worker.execute(() -> {
             Long balance = null;
@@ -429,19 +371,12 @@ public class WalletEngine2 implements AutoCloseable {
         });
     }
 
-    /**
-     * Emulates an exact-value transfer without unlocking the phrase. Encrypted comments
-     * use a placeholder with the same padding and cell layout to estimate their fee.
-     * A null recipient public key selects a plaintext comment.
-     * Returns an idempotent cancellation callback. Cancellation skips queued work and
-     * suppresses undelivered results; an already running native call is not interrupted.
-     */
     public Runnable emulateSend(
         String address,
         long amount,
         String comment,
         byte[] comment_recipient_public_key,
-        Utilities.Callback2<TL_wallet.walletTransaction, String /* error message */> onResult
+        Utilities.Callback2<TL_wallet.walletTransaction, String                    > onResult
     ) {
         final byte[] commentBytes = comment == null ? null : comment.getBytes(StandardCharsets.UTF_8);
         final AtomicBoolean cancelled = new AtomicBoolean();
@@ -476,17 +411,13 @@ public class WalletEngine2 implements AutoCloseable {
         };
     }
 
-    // Application funding policy, matching wallet-engine's NFT example. These are
-    // attached/forwarded values, not the estimated transaction fee.
     private static final long NFT_ATTACHED_NANOGRAMS = 100_000_000L;
     private static final long NFT_FORWARD_NANOGRAMS = 10_000_000L;
-    // Worker-thread only. Preparation still receives and validates both addresses explicitly.
     private String nftPreviewRecipient;
     private String nftPreviewAddress;
     private String nftPreviewComment;
     private String nftPreviewOperationId;
 
-    /** Validates current NFT ownership and emulates its transfer. Callback runs on the UI thread. */
     public synchronized Runnable emulateSendNFT(String address, String gift_address,
             Utilities.Callback2<TL_wallet.walletTransaction, String> onResult) {
         return emulateSendNFT(address, gift_address, null, onResult);
@@ -534,7 +465,6 @@ public class WalletEngine2 implements AutoCloseable {
         return () -> { cancelled.set(true); task.cancel(false); };
     }
 
-    /** Prepares a normal signed NFT transfer for wallet.sendTransfer; does not broadcast. */
     public synchronized void prepareSendNFT(SecretPhrase secret_phrase, String address, String gift_address,
             Utilities.Callback2<TL_wallet.sendTransfer, String> onResult) {
         prepareSendNFT(secret_phrase, address, gift_address, null, onResult);
@@ -593,17 +523,15 @@ public class WalletEngine2 implements AutoCloseable {
         if (commentLength > 960) {
             throw new IllegalArgumentException("The encrypted comment exceeds 960 UTF-8 bytes");
         }
-        // Match wallet-engine's encrypted_payload_boc: 32-byte public-key XOR,
-        // 16-byte message key, and AES ciphertext with a 16..31-byte prefix.
         final int payloadLength = 48 + commentLength + 16 + (16 - commentLength % 16) % 16;
         final int cells = 1 + (payloadLength - 35 + 126) / 127;
         final int dataSize = 4 + payloadLength + 2 * cells + cells - 1;
         final java.nio.ByteBuffer boc = java.nio.ByteBuffer.allocate(12 + dataSize);
         boc.putInt(0xb5ee9c72);
-        boc.put((byte) 1); // No index or checksum; one-byte cell references.
-        boc.put((byte) 2); // Two-byte total cell-data size.
+        boc.put((byte) 1);
+        boc.put((byte) 2);
         boc.put((byte) cells).put((byte) 1).put((byte) 0);
-        boc.putShort((short) dataSize).put((byte) 0); // Root is cell zero.
+        boc.putShort((short) dataSize).put((byte) 0);
         int remaining = payloadLength;
         for (int i = 0; i < cells; i++) {
             final int chunk = Math.min(remaining, i == 0 ? 35 : 127);
@@ -611,7 +539,6 @@ public class WalletEngine2 implements AutoCloseable {
             boc.put((byte) (hasNext ? 1 : 0));
             boc.put((byte) ((chunk + (i == 0 ? 4 : 0)) * 2));
             if (i == 0) boc.putInt(0x2167da4b);
-            // Zero-filled dummy ciphertext; never include the private plaintext.
             boc.position(boc.position() + chunk);
             if (hasNext) boc.put((byte) (i + 1));
             remaining -= chunk;
@@ -619,9 +546,8 @@ public class WalletEngine2 implements AutoCloseable {
         return android.util.Base64.encode(boc.array(), android.util.Base64.NO_WRAP);
     }
 
-    /** Emulates external key rotation using fake signatures, without unlocking a phrase. */
     public void emulateRotateKey(
-        Utilities.Callback2<TL_wallet.walletTransaction, String /* error */> onResult
+        Utilities.Callback2<TL_wallet.walletTransaction, String            > onResult
     ) {
         if (onResult == null) throw new IllegalArgumentException("Result callback is required");
         if (closed) {
@@ -648,19 +574,11 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Prepares alternative key-rotation BOCs without submitting or saving them.
-     * Both forms share one replacement signing key, seqno and expiration. A null
-     * gasless_address leaves data_gasless null. The callback runs on the UI thread.
-     * Persist the replacement phrase before submitting one selected BOC, retain
-     * the old phrase until confirmation, and block other signing while unresolved.
-     * newPublicKey is the signing key; the wallet address and anchor key stay fixed.
-     */
     public void prepareRotateKey(
         SecretPhrase secret_phrase,
         @Nullable String gasless_address,
-        Utilities.Callback4<TL_wallet.sendTransfer, SecretPhrase /* newSecretPhrase */,
-            byte[] /* newPublicKey */, String /* error */> onResult
+        Utilities.Callback4<TL_wallet.sendTransfer, SecretPhrase                      ,
+            byte[]                   , String            > onResult
     ) {
         if (onResult == null) throw new IllegalArgumentException("Result callback is required");
         if (closed) {
@@ -710,13 +628,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Loads a single-transfer transaction for this wallet from Toncenter.
-     * Calls done on the UI thread, with null if missing, unsupported or the lookup fails.
-     * id is a local chain-derived identifier, not a server history id; fee is the
-     * account transaction fee, not the full trace fee. Encrypted comments contain the
-     * raw payload in Base64, excluding the opcode and BOC wrapper, for decryptComment().
-     */
     public void getTransactionByHash(String tx_hash, Utilities.Callback<TL_wallet.walletTransaction> done) {
         if (done == null) {
             throw new IllegalArgumentException("Result callback is required");
@@ -782,8 +693,6 @@ public class WalletEngine2 implements AutoCloseable {
     }
 
     static String encryptedCommentPayload(String body) {
-        // Read a single-root, ordinary, byte-aligned snake from a generic BOC.
-        // Bound the container before allocating; valid comments have at most 1024 payload bytes.
         if (body == null || body.length() > 8192) {
             throw new IllegalArgumentException("Invalid encrypted comment BOC");
         }
@@ -843,9 +752,6 @@ public class WalletEngine2 implements AutoCloseable {
         return payload;
     }
 
-    /** Extracts the plain text from a text_comment message body BOC, or null when the body is not one.
-     *  Unlike encrypted payloads the last cell may be bit-truncated, so its completion bit is stripped.
-     *  The streaming API returns decoded=null on confirmed events, so comments must come from the BOC. */
     static String textCommentFromBody(String body) {
         if (body == null || body.length() > 8192) return null;
         try {
@@ -891,7 +797,7 @@ public class WalletEngine2 implements AutoCloseable {
                         else data[i][bytesCount - 1] = (byte) trimmed;
                     }
                 } else if ((bits & 1) != 0) {
-                    return null; // only the snake tail cell may be bit-truncated
+                    return null;
                 }
                 next[i] = refs == 0 ? -1 : readBocInt(boc, indexBytes);
                 if (refs != 0 && (next[i] <= i || next[i] >= cells)) return null;
@@ -918,14 +824,10 @@ public class WalletEngine2 implements AutoCloseable {
         return (int) value;
     }
 
-    /**
-     * Loads a transaction from Toncenter by hash and decrypts its encrypted comment.
-     * The callback runs on the UI thread and receives a null error on success.
-     */
     public void decryptTransactionComment(
         SecretPhrase secretPhrase,
         String transactionTxHash,
-        Utilities.Callback2<String /* comment */, String /* error; null on success */> onResult
+        Utilities.Callback2<String              , String                             > onResult
     ) {
         if (onResult == null) {
             throw new IllegalArgumentException("Result callback is required");
@@ -1050,22 +952,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Prepares signed BOCs for wallet.sendTransfer without broadcasting them.
-     * Uses the library's prepare_transfer API; both variants share fresh seqno and
-     * expiration. A null gasless_address leaves data_gasless null, although the
-     * library prepares both forms. The callback runs on the UI thread, with a
-     * null error on success.
-     * The gasless BOC is a complete relaxed internal_signed message; the relayer
-     * supplies its source and gas when submitting it. No refund action is added.
-     * The caller owns submission, retries and confirmation of the returned BOCs;
-     * preparation does not register a pending send with this engine.
-     * The second callback argument is the exact encrypted comment sent, as raw Base64
-     * without the opcode or BOC wrapper, suitable for decryptComment(). It is null
-     * for unencrypted comments or on failure.
-     * A null recipient public key sends plaintext; otherwise the supplied 32-byte
-     * Ed25519 key is used directly, without fetching a key from the provider.
-     */
     public void prepareSend(
         SecretPhrase secret_phrase,
         String address,
@@ -1073,7 +959,7 @@ public class WalletEngine2 implements AutoCloseable {
         String comment,
         byte[] comment_recipient_public_key,
         String gasless_address,
-        Utilities.Callback3<TL_wallet.sendTransfer, String /* encrypted_comment */, String /* error */> onResult
+        Utilities.Callback3<TL_wallet.sendTransfer, String                        , String            > onResult
     ) {
         if (onResult == null) throw new IllegalArgumentException("Result callback is required");
         if (closed) {
@@ -1094,8 +980,6 @@ public class WalletEngine2 implements AutoCloseable {
                 String error = null;
                 try {
                     resolveBeforeNewSend();
-                    // prepare_transfer does not consult the journal. Check it even
-                    // after restart, when this wrapper has no in-memory pending send.
                     if (isPendingPhase(nativeResolvePending(ptr).phase)) {
                         throw new IllegalStateException("Previous wallet send is still unresolved");
                     }
@@ -1171,7 +1055,6 @@ public class WalletEngine2 implements AutoCloseable {
         if (closed) return 4000;
         pending.resolutionError = null;
         if (!pending.operationId.equals(resolution.operationId)) {
-            // Another client may have replaced the wallet-wide journal. Never attach its hash.
             pendingSend = null;
             pending.callbacks.state(pending.phase.nativeValue, "Send journal changed before confirmation was observed", null);
             return 4000;
@@ -1191,9 +1074,6 @@ public class WalletEngine2 implements AutoCloseable {
     private void resolveBeforeNewSend() {
         if (closed) throw new IllegalStateException("NO_WALLET_ENGINE");
         if (pendingSend == null) return;
-        // Collect any available confirmation before a new send overwrites the journal.
-        // The engine itself decides whether signing is allowed; a polling error must
-        // not add a separate submission failure in this wrapper.
         try {
             resolvePendingSend();
         } catch (RuntimeException e) {
@@ -1240,17 +1120,10 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Generates and submits a replacement signing key. Both callbacks run on the UI thread.
-     * onNewSecretPhrase must persist the replacement before returning; throwing aborts submission.
-     * Retain the old phrase until on-chain confirmation, including after SUBMISSION_UNKNOWN.
-     * The callback's public key is the new signing key; this wallet's anchor publicKey is unchanged.
-     * This call reports submission status without waiting for on-chain confirmation.
-     */
     public void rotateKey(
         SecretPhrase current_secret_phrase,
-        Utilities.Callback2<SecretPhrase /* new secret phrase */, byte[] /* new public key */> onNewSecretPhrase,
-        Utilities.Callback2<SendPhase, String /* error message */> onState
+        Utilities.Callback2<SecretPhrase                        , byte[]                     > onNewSecretPhrase,
+        Utilities.Callback2<SendPhase, String                    > onState
     ) {
         final RotationCallbacks callbacks = new RotationCallbacks(onState, onNewSecretPhrase);
         if (current_secret_phrase == null || current_secret_phrase.isEmpty() || onNewSecretPhrase == null) {
@@ -1296,7 +1169,6 @@ public class WalletEngine2 implements AutoCloseable {
                     return null;
                 });
                 AndroidUtilities.runOnUIThread(delivery);
-                // Finish the callback before clearing its bytes, even if the worker is interrupted.
                 while (true) {
                     try {
                         delivery.get();
@@ -1407,7 +1279,6 @@ public class WalletEngine2 implements AutoCloseable {
         peer.address = nativeTransactionAddress(address);
         transaction.peer = peer;
         transaction.amount = amount;
-        // id, tx_hash and date are unknown until a server/on-chain transaction is observed.
         return transaction;
     }
 
@@ -1418,7 +1289,6 @@ public class WalletEngine2 implements AutoCloseable {
         transaction.pending = !transaction.preview && isPendingPhase(transaction.phase);
     }
 
-    /** Explicit values match wallet-engine's SendPhase, independently of enum order. */
     @Keep
     public enum SendPhase {
         IDLE(1), VALIDATING(2), AUTHORIZING(3), PREPARING(4), PERSISTING(5),
@@ -1440,10 +1310,6 @@ public class WalletEngine2 implements AutoCloseable {
         }
     }
 
-    /**
-     * Whether tracking has reached a terminal outcome. Submission alone is not final;
-     * SUBMITTED, HANDED_OFF and SUBMISSION_UNKNOWN still need on-chain resolution.
-     */
     public static boolean isFinalPhase(SendPhase phase) {
         if (phase == null) return false;
         switch (phase) {
@@ -1498,7 +1364,6 @@ public class WalletEngine2 implements AutoCloseable {
 
         @Keep
         private static class HostException extends RuntimeException {
-            // Matches wallet-engine's StatuslessHostErrorKind.
             @Keep final int kind;
 
             HostException(int kind) {

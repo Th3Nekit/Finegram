@@ -241,10 +241,10 @@ public class CollageLayoutButton extends ToggleButton2 {
                     -iw / 2f + pw * (part.x + 1) + p * part.x,
                     -ih / 2f + ph * (part.y + 1) + p * part.y
                 );
-                radii[0] = radii[1] = part.x == 0        && part.y == 0            ? ir : 0; // top left
-                radii[2] = radii[3] = part.x == cols - 1 && part.y == 0            ? ir : 0; // top right
-                radii[4] = radii[5] = part.x == cols - 1 && part.y == layout.h - 1 ? ir : 0; // bottom right
-                radii[6] = radii[7] = part.x == 0        && part.y == layout.h - 1 ? ir : 0; // bottom left
+                radii[0] = radii[1] = part.x == 0        && part.y == 0            ? ir : 0;
+                radii[2] = radii[3] = part.x == cols - 1 && part.y == 0            ? ir : 0;
+                radii[4] = radii[5] = part.x == cols - 1 && part.y == layout.h - 1 ? ir : 0;
+                radii[6] = radii[7] = part.x == 0        && part.y == layout.h - 1 ? ir : 0;
                 path.addRoundRect(AndroidUtilities.rectTmp, radii, Path.Direction.CW);
             }
 

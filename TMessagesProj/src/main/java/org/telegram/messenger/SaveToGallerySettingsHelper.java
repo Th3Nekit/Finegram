@@ -10,7 +10,6 @@ import android.util.LongSparseArray;
 
 public class SaveToGallerySettingsHelper {
 
-    //shared settings
     public static SharedSettings user;
     public static SharedSettings groups;
     public static SharedSettings channels;
@@ -19,8 +18,8 @@ public class SaveToGallerySettingsHelper {
     public static String CHANNELS_PREF_NAME = "channels_save_gallery_exceptions";
     public static String GROUPS_PREF_NAME = "groups_save_gallery_exceptions";
 
-    public static final long DEFAULT_VIDEO_LIMIT = 100 * 1024 * 1024;//100 MB
-    public static final long MAX_VIDEO_LIMIT = 4L * 1000 * 1024 * 1024;//100 MB
+    public static final long DEFAULT_VIDEO_LIMIT = 100 * 1024 * 1024;
+    public static final long MAX_VIDEO_LIMIT = 4L * 1000 * 1024 * 1024;
 
     public static void load(SharedPreferences preferences) {
         boolean saveToGalleryLegacy = preferences.getBoolean("save_gallery", false);
@@ -30,7 +29,6 @@ public class SaveToGallerySettingsHelper {
         } else {
             saveToGalleryFlags = preferences.getInt("save_gallery_flags", -1);
         }
-        //migration
         if (saveToGalleryFlags != -1) {
             preferences.edit().remove("save_gallery").remove("save_gallery_flags").apply();
             user = new SharedSettings();
@@ -127,7 +125,7 @@ public class SaveToGallerySettingsHelper {
     public static abstract class Settings {
         public boolean savePhoto;
         public boolean saveVideo;
-        public long limitVideo = 100 * 1024 * 1024; ///100 MB
+        public long limitVideo = 100 * 1024 * 1024;
 
         public boolean enabled() {
             return savePhoto || saveVideo;

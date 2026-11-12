@@ -21,6 +21,7 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.Premium.boosts.BoostDialogs;
 import org.telegram.ui.Components.Premium.boosts.BoostRepository;
 import org.telegram.ui.Components.Premium.boosts.cells.ActionBtnCell;
@@ -147,7 +148,6 @@ public abstract class GiftInfoAdapter extends RecyclerListView.SelectionAdapter 
                 if (giftCode.boost != null && slug == null) {
                     cell.hideSlug(this::onHiddenLinkClicked);
                 }
-                //unclaimed and slug visible only for giveaway creator
                 if ((slug == null || slug.isEmpty()) && giftCode.to_id == NO_USER_ID) {
                     cell.hideSlug(this::onHiddenLinkClicked);
                 }
@@ -161,16 +161,14 @@ public abstract class GiftInfoAdapter extends RecyclerListView.SelectionAdapter 
             case HOLDER_TYPE_TEXT: {
                 TextInfoCell cell = (TextInfoCell) holder.itemView;
                 cell.setTextGravity(Gravity.CENTER);
-                cell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                ThemeBind.textColor(cell.getTextView(), Theme.key_windowBackgroundWhiteBlackText);
                 cell.setTopPadding(14);
                 cell.setBottomPadding(15);
 
                 if (giftCode.boost != null) {
                     if (slug == null || slug.isEmpty()) {
-                        //not activated link
                         cell.setText(LocaleController.getString(R.string.BoostingLinkNotActivated));
                     } else {
-                        //activated link
                         cell.setFixedSize(14);
                         cell.setText(null);
                     }

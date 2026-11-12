@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">German</string>
     <string name="LanguageCode">de</string>
     <string name="ContinueOnThisLanguage">Weiter auf Deutsch</string>
-    <!--signin view-->
+    
     <string name="YourPhone">Dein Telefon</string>
     <string name="StartText">Bitte bestätige deine Landeskennzahl und deine Telefonnummer.</string>
     <string name="Country">Land</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">Falls du den Code nicht per SMS oder Anruf erhalten hast, prüfe deine **Mobilfunk-Einstellungen** und Handynummer: **%1$s**\n\nHilft das nicht, probiere bitte eine andere Handynummer oder melde dich bei uns, indem du auf **HILFE** tippst.</string>
     <string name="DidNotGetTheCodeHelpButton">Hilfe</string>
     <string name="DidNotGetTheCodeEditNumberButton">Nummer ändern</string>
-    <!--code enter view-->
+    
     <string name="YourCode">Nummer verifizieren</string>
     <string name="SentSmsCode">Wir haben eine SMS mit Aktivierungscode an **%1$s** gesendet.</string>
     <string name="SentAppCode">Code wurde dir per **Telegram** an deine aktive App geschickt.</string>
@@ -69,7 +69,7 @@
     <string name="RequestMissedCall">Code per Anruf erhalten</string>
     <string name="LoginAccessibilityCountryCode">Landeskennzahl</string>
     <string name="SignInWithGoogle">Mit Google anmelden</string>
-    <!--signup view-->
+    
     <string name="YourName">Dein Name</string>
     <string name="RegisterText2">Namen eingeben und ein Profilbild hochladen.</string>
     <string name="FirstName">Vorname (erforderlich)</string>
@@ -78,7 +78,7 @@
     <string name="LastNameSmall">Nachname</string>
     <string name="CancelRegistration">Registrierung abbrechen</string>
     <string name="RegistrationProfileInfo">Profil</string>
-    <!--widgets-->
+    
     <string name="EditWidget">Widget bearbeiten</string>
     <string name="EditWidgetContactsInfo">Verknüpfung zu deinen Lieblingschats.\n\nEntscheidest du dich keinen auszuwählen, erscheinen häufige Kontakte im Widget.</string>
     <string name="EditWidgetChatsInfo">Zeigt die letzten Nachrichten deiner Wunschchats an.\n\nEntscheidest du dich keine auszuwählen, erscheinen deine letzten Chats im Widget.</string>
@@ -90,7 +90,7 @@
     <string name="WidgetChats">Chats</string>
     <string name="WidgetShortcuts">Verknüpfungen</string>
     <string name="WidgetLoggedOff">Konto wurde abgemeldet.</string>
-    <!--notification-->
+    
     <string name="NotificationMessageGiftCode">%1$s hat dir einen Geschenkcode für %2$s von Telegram Premium geschickt</string>
     <string name="NotificationMessageGiveaway">%1$s hat dir eine Verlosung von %2$sx %3$sm Premium-Abonnements geschickt</string>
     <string name="NotificationMessageChannelGiveaway">%1$s hat eine Verlosung von %2$sx %3$sm Premium-Abonnements veröffentlicht</string>
@@ -246,7 +246,7 @@
     <string name="NotificationActionPinnedGifUser">%1$s hat ein GIF angeheftet</string>
     <string name="NotificationActionPinnedMusicUser">%1$s hat eine Audiodatei angeheftet</string>
     <string name="SecretChatName">Telegram</string>
-    <!--settings view-->
+    
     <string name="ResetNotificationsText">Einstellungen wurden zurückgesetzt</string>
     <string name="ResetNotificationsAlertTitle">Benachrichtigungen zurücksetzen</string>
     <string name="ResetNotificationsAlert">Möchtest du wirklich alle Benachrichtigungseinstellungen auf die Standardeinstellungen zurücksetzen?</string>
@@ -684,7 +684,7 @@
     <string name="CheckPhoneNumberLearnMoreUrl">https://telegram.org/faq/de#f-ich-habe-eine-neue-nummer-was-soll-ich-tun</string>
     <string name="CheckPhoneNumberYes">Ja</string>
     <string name="CheckPhoneNumberNo">Nein</string>
-    <!--filters-->
+    
     <string name="Filters">Ordner</string>
     <string name="CreateNewFilter">Neuen Ordner erstellen</string>
     <string name="CreateNewFilterInfo">Erstelle Ordner für verschiedene Gruppen von Chats, um schnell zwischen ihnen zu wechseln.</string>
@@ -760,7 +760,7 @@
     <string name="FilterChatsRemovedFrom">**%1$s** wurde aus **%2$s** entfernt.</string>
     <string name="FilterAddToAlertFullTitle">Limt erreicht</string>
     <string name="FilterAddToAlertFullText">Mehr als 100 Chats kann man leider nicht aus einem Ordner ausschließen.</string>
-    <!--media view-->
+    
     <string name="January">Januar</string>
     <string name="February">Februar</string>
     <string name="March">März</string>
@@ -794,7 +794,7 @@
     <string name="NoSharedLinksSecret">Alle geteilten Links werden hier angezeigt.</string>
     <string name="NoSharedVoiceSecret">Sprachnachrichten aus diesem Chat werden hier angezeigt.</string>
     <string name="NoSharedGifSecret">GIFs aus diesem Chat werden hier angezeigt.</string>
-    <!--photo gallery view-->
+    
     <string name="Speed">Geschwindigkeit</string>
     <string name="SpeedSlow">Langsam</string>
     <string name="SpeedVerySlow">Sehr langsam</string>
@@ -929,7 +929,7 @@
     <string name="AudiosSavedHint_other">%1$d Dateien in Musik gespeichert.</string>
     <string name="MediaSavedHint_one">Ein Objekt in Galerie gespeichert.</string>
     <string name="MediaSavedHint_other">%1$d Objekte in Galerie gespeichert.</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">Zweistufige Bestätigung</string>
     <string name="TwoStepVerificationTitle">Zweistufige Bestätigung</string>
     <string name="TwoStepVerificationPasswordSet">Passwort festgelegt!</string>
@@ -1051,10 +1051,10 @@
     <string name="CheckYourNewEmail">Prüfe jetzt deine E-Mails</string>
     <string name="CheckYourNewEmailSubtitle">Bitte Code eingeben, der dir an die neue Adresse %1$s geschickt wurde.</string>
     <string name="LoginOrSingInWithGoogle">oder</string>
-    <!--edit video view-->
+    
     <string name="SendingVideo">Sende Video...</string>
     <string name="SendingGif">Sende GIF...</string>
-    <!--messages-->
+    
     <string name="ActionInviteYou">Du bist der Gruppe per Link beigetreten</string>
     <string name="ActionDeletedInviteLinkClickable">un1 hat Einladungslink un2 gelöscht</string>
     <string name="ActionEditedInviteLinkClickable">un1 hat Einladungslink un2 zu un3 geändert</string>
@@ -1156,7 +1156,7 @@
     <string name="ActionTakeScreenshootYou">Du hast ein Bildschirmfoto gemacht!</string>
     <string name="ActionTakeScreenshoot">un1 hat ein Bildschirmfoto gemacht!</string>
     <string name="Album">Album</string>
-    <!--Alert messages-->
+    
     <string name="LimitReachedPinnedTopics">Mehr als %d Themen kannst du derzeit nicht oben anheften.</string>
     <string name="DeleteAllMessagesAlert">Warnung! Das wird **alle Nachrichten** in diesem Chat **für beide Teilnehmer löschen**.</string>
     <string name="DeleteAllMessagesChannelAlert">Wichtig! Das wird **alle Nachrichten** in diesem Kanal **löschen**.</string>
@@ -1312,7 +1312,7 @@
     <string name="TosAgeText">Tippe auf Zustimmen, um zu bestätigen, dass du mindestens %1$s oder älter bist.</string>
     <string name="TosUpdateDecline">Leider gibt es keine anderen Alternativen. Im Gegensatz zu anderen Apps verwendet Telegram die Nutzerdaten nicht für Werbezwecke oder andere kommerzielle Zwecke. Telegram speichert nur die Informationen, die es braucht, um als funktionsreicher Clouddienst zu funktionieren. Du kannst in den Privatsphäre- und Sicherheitseinstellungen einstellen, wie deine Daten verwendet werden.\n\nWenn du mit diesen bescheidenen Anforderungen von Telegram nicht einverstanden bist, ist es uns nicht möglich, dir den Dienst zur Verfügung zu stellen.</string>
     <string name="TosDeclineDeleteAccount">Warnung! Das wird dein Konto mit all deinen Daten aus der Telegram-Cloud unwiderruflich löschen.\n\nWichtig: Du kannst jetzt abbrechen und deine Daten vor der Löschung noch exportieren. (Öffne dazu die aktuellste Version von Telegram Desktop &gt; Einstellungen &gt; Erweitert &gt; Daten exportieren.)</string>
-    <!--permissions-->
+    
     <string name="PermissionStorageWithHint">**Telegram** benötigt Zugriff auf deinen **Speicher**, damit du Bilder, Videos, Musik und weitere Medien senden und speichern kannst. Tippe unten auf Einstellungen -&gt; Berechtigungen und schalte den Zugriff ein.</string>
     <string name="PermissionNoAudioWithHint">**Telegram** benötigt Zugriff auf dein **Mikrofon**, damit du Sprachnachrichten senden kannst. Tippe unten auf Einstellungen &gt; Berechtigungen und aktiviere den Zugriff.</string>
     <string name="PermissionNoAudioVideoWithHint">**Telegram** benötigt Zugriff auf dein **Mikrofon**, damit du Sprachnachrichten senden kannst. Tippe unten auf Einstellungen &gt; Berechtigungen und aktiviere den Zugriff.</string>
@@ -1332,11 +1332,11 @@
     <string name="PermissionBackgroundLocation">Um deinen Live-Standort in diesem Chat zu teilen, muss Telegram die ganze Zeit Zugang zu deinem Standort haben, auch während die App im Hintergrund läuft.\n\nWir greifen nur für die von dir gewählte Dauer auf deinen Standort zu und du kannst jederzeit aufhören, ihn zu teilen. Wir werden deinen Standort für keinen anderen Zweck nutzen, als ihn in diesem Chat zu teilen.</string>
     <string name="PermissionDrawAboveOtherAppsTitle">Bild-in-Bild</string>
     <string name="PermissionDrawAboveOtherAppsGroupCallTitle">Videochat-Überlagerung</string>
-    <!--contacts shortcuts-->
+    
     <string name="ContactShortcutMessage">Nachricht in Telegram %1$s</string>
     <string name="ContactShortcutVoiceCall">Sprachanruf in Telegram %1$s</string>
     <string name="ContactShortcutVideoCall">Videoanruf in Telegram %1$s</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">dd. MMMM yyyy</string>
     <string name="formatterGiveawayCard">dd. MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">dd MMMM</string>

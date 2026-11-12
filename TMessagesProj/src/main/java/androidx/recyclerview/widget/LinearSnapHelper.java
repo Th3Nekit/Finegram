@@ -22,19 +22,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * Implementation of the {@link SnapHelper} supporting snapping in either vertical or horizontal
- * orientation.
- * <p>
- * The implementation will snap the center of the target child view to the center of
- * the attached {@link RecyclerView}. If you intend to change this behavior then override
- * {@link SnapHelper#calculateDistanceToFinalSnap}.
- */
 public class LinearSnapHelper extends SnapHelper {
 
     private static final float INVALID_DISTANCE = 1f;
 
-    // Orientation helpers are lazily created per LayoutManager.
     @Nullable
     private OrientationHelper mVerticalHelper;
     @Nullable
@@ -84,12 +75,8 @@ public class LinearSnapHelper extends SnapHelper {
 
         RecyclerView.SmoothScroller.ScrollVectorProvider vectorProvider =
                 (RecyclerView.SmoothScroller.ScrollVectorProvider) layoutManager;
-        // deltaJumps sign comes from the velocity which may not match the order of children in
-        // the LayoutManager. To overcome this, we ask for a vector from the LayoutManager to
-        // get the direction.
         PointF vectorForEnd = vectorProvider.computeScrollVectorForPosition(itemCount - 1);
         if (vectorForEnd == null) {
-            // cannot get a vector for the given position.
             return RecyclerView.NO_POSITION;
         }
 
@@ -151,17 +138,6 @@ public class LinearSnapHelper extends SnapHelper {
         return childCenter - containerCenter;
     }
 
-    /**
-     * Estimates a position to which SnapHelper will try to scroll to in response to a fling.
-     *
-     * @param layoutManager The {@link RecyclerView.LayoutManager} associated with the attached
-     *                      {@link RecyclerView}.
-     * @param helper        The {@link OrientationHelper} that is created from the LayoutManager.
-     * @param velocityX     The velocity on the x axis.
-     * @param velocityY     The velocity on the y axis.
-     *
-     * @return The diff between the target scroll position and the current position.
-     */
     private int estimateNextPositionDiffForFling(RecyclerView.LayoutManager layoutManager,
             OrientationHelper helper, int velocityX, int velocityY) {
         int[] distances = calculateScrollDistance(velocityX, velocityY);
@@ -174,15 +150,6 @@ public class LinearSnapHelper extends SnapHelper {
         return (int) Math.round(distance / distancePerChild);
     }
 
-    /**
-     * Return the child view that is currently closest to the center of this parent.
-     *
-     * @param layoutManager The {@link RecyclerView.LayoutManager} associated with the attached
-     *                      {@link RecyclerView}.
-     * @param helper The relevant {@link OrientationHelper} for the attached {@link RecyclerView}.
-     *
-     * @return the child view that is currently closest to the center of this parent.
-     */
     @Nullable
     private View findCenterView(RecyclerView.LayoutManager layoutManager,
             OrientationHelper helper) {
@@ -206,7 +173,6 @@ public class LinearSnapHelper extends SnapHelper {
                     + (helper.getDecoratedMeasurement(child) / 2);
             int absDistance = Math.abs(childCenter - center);
 
-            /** if child center is closer than previous closest, set it as closest  **/
             if (absDistance < absClosest) {
                 absClosest = absDistance;
                 closestChild = child;
@@ -215,19 +181,6 @@ public class LinearSnapHelper extends SnapHelper {
         return closestChild;
     }
 
-    /**
-     * Computes an average pixel value to pass a single child.
-     * <p>
-     * Returns a negative value if it cannot be calculated.
-     *
-     * @param layoutManager The {@link RecyclerView.LayoutManager} associated with the attached
-     *                      {@link RecyclerView}.
-     * @param helper        The relevant {@link OrientationHelper} for the attached
-     *                      {@link RecyclerView.LayoutManager}.
-     *
-     * @return A float value that is the average number of pixels needed to scroll by one view in
-     * the relevant direction.
-     */
     private float computeDistancePerChild(RecyclerView.LayoutManager layoutManager,
             OrientationHelper helper) {
         View minPosView = null;

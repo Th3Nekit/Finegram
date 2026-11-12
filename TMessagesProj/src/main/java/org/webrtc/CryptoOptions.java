@@ -10,34 +10,10 @@
 
 package org.webrtc;
 
-/**
- * CryptoOptions defines advanced cryptographic settings for native WebRTC.
- * These settings must be passed into RTCConfiguration. WebRTC is secur by
- * default and you should not need to set any of these options unless you are
- * specifically looking for an additional crypto feature such as AES_GCM
- * support. This class is the Java binding of native api/crypto/cryptooptions.h
- */
 public final class CryptoOptions {
-  /**
-   * SRTP Related Peer Connection Options.
-   */
   public final class Srtp {
-    /**
-     * Enable GCM crypto suites from RFC 7714 for SRTP. GCM will only be used
-     * if both sides enable it
-     */
     private final boolean enableGcmCryptoSuites;
-    /**
-     * If set to true, the (potentially insecure) crypto cipher
-     * kSrtpAes128CmSha1_32 will be included in the list of supported ciphers
-     * during negotiation. It will only be used if both peers support it and no
-     * other ciphers get preferred.
-     */
     private final boolean enableAes128Sha1_32CryptoCipher;
-    /**
-     * If set to true, encrypted RTP header extensions as defined in RFC 6904
-     * will be negotiated. They will only be used if both peers support them.
-     */
     private final boolean enableEncryptedRtpHeaderExtensions;
 
     private Srtp(boolean enableGcmCryptoSuites, boolean enableAes128Sha1_32CryptoCipher,
@@ -63,15 +39,7 @@ public final class CryptoOptions {
     }
   }
 
-  /**
-   * Options to be used when the FrameEncryptor / FrameDecryptor APIs are used.
-   */
   public final class SFrame {
-    /**
-     * If set all RtpSenders must have an FrameEncryptor attached to them before
-     * they are allowed to send packets. All RtpReceivers must have a
-     * FrameDecryptor attached to them before they are able to receive packets.
-     */
     private final boolean requireFrameEncryption;
 
     private SFrame(boolean requireFrameEncryption) {

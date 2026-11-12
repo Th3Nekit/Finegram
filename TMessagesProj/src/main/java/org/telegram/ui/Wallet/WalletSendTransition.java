@@ -77,8 +77,6 @@ public final class WalletSendTransition {
         overlay.setClipChildren(false);
         overlay.setClipToPadding(false);
         overlay.setClickable(true);
-        // The flight is short-lived: use the texture renderer whose GL cleanup
-        // runs asynchronously instead of joining a GLSurfaceView thread on removal.
         diamond = new WalletDiamondView(root.getContext(), 60, true);
         diamond.setContinuousRotation(540f);
         diamond.copyRotationFrom(source);
@@ -133,7 +131,6 @@ public final class WalletSendTransition {
                 }
             }
         }
-        // Never hold navigation hostage to a slow GL driver, missing row, or destroyed window.
         if (SystemClock.uptimeMillis() - created > 450 || !root.isAttachedToWindow()) {
             started = true;
             diamond.setAlpha(0f);
@@ -199,8 +196,6 @@ public final class WalletSendTransition {
         RectF rect = new RectF(0, 0, source.getWidth(), source.getHeight());
         for (View current = source; current != root;) {
             current.getMatrix().mapRect(rect);
-            // Follow keyboard/layout motion, but don't pull the flight down with
-            // the outgoing container's own exit animation.
             if (current == outgoing) rect.offset(0, -outgoing.getTranslationY());
             rect.offset(current.getLeft(), current.getTop());
             ViewParent parent = current.getParent();
@@ -208,7 +203,6 @@ public final class WalletSendTransition {
             current = (View) parent;
             rect.offset(-current.getScrollX(), -current.getScrollY());
         }
-        // Keep the last valid origin if the source detaches or leaves this root.
         result.set(rect);
     }
 
@@ -252,7 +246,6 @@ public final class WalletSendTransition {
         source.setAlpha(sourceAlpha);
         if (sheet == null) outgoing.setTranslationY(0f);
         else sheet.setGramSendTransitionProgress(1f);
-        // Keep the last trail particles alive after the sheet window disappears.
         ViewGroup particleRoot = root;
         if (sheet != null && particles.isActive() && wallet.getParentLayout() != null) {
             ViewGroup walletRoot = wallet.getParentLayout().getView();

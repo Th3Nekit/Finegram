@@ -47,6 +47,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.AnimatedTextView;
 import org.telegram.ui.Components.Bulletin;
@@ -377,13 +378,6 @@ public class BotDownloads {
     public static void showAlert(Context context, String url, String file_name, String botname, Utilities.Callback<Boolean> whenDone) {
         if (whenDone == null) return;
         showAlert(context, url, file_name, botname, whenDone, 0, "");
-//
-//        final AlertDialog progressDialog = new AlertDialog(context, AlertDialog.ALERT_TYPE_SPINNER);
-//        progressDialog.showDelayed(300);
-//        getMimeAndSize(url, (mime, size) -> {
-//            progressDialog.dismiss();
-//            showAlert(context, url, file_name, botname, whenDone, size, mime);
-//        });
     }
 
     public static AlertDialog showAlert(Context context, String url, String file_name, String botname, Utilities.Callback<Boolean> whenDone, final long size, final String mime) {
@@ -400,7 +394,7 @@ public class BotDownloads {
 
         final ImageView imageView = new ImageView(context);
         imageView.setScaleType(ImageView.ScaleType.CENTER);
-        imageView.setBackground(Theme.createCircleDrawable(dp(44), Theme.getColor(Theme.key_featuredStickers_addButton)));
+        ThemeBind.fillBackground(imageView, Theme.createCircleDrawable(dp(44), Theme.getColor(Theme.key_featuredStickers_addButton)), ThemeBind.of(Theme.key_featuredStickers_addButton));
         imageView.setImageResource(R.drawable.msg_round_file_s);
         layout.addView(imageView, LayoutHelper.createLinear(44, 44, Gravity.LEFT | Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
 
@@ -411,7 +405,7 @@ public class BotDownloads {
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         titleView.setTypeface(AndroidUtilities.bold());
         titleView.setText(file_name);
-        titleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlue2));
+        ThemeBind.textColor(titleView, Theme.key_dialogTextBlue2);
         textLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 3));
 
         final AnimatedTextView subtitleView = new AnimatedTextView(context, true, true, true);
@@ -437,7 +431,7 @@ public class BotDownloads {
             if (sb.length() <= 0) sb.append(LocaleController.getString(R.string.AttachDocument));
             subtitleView.setText(sb);
         });
-        subtitleView.setTextColor(Theme.getColor(Theme.key_chat_inFileInfoText));
+        ThemeBind.textColor(subtitleView, Theme.key_chat_inFileInfoText);
         textLayout.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 15));
 
         layout.addView(textLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.FILL_HORIZONTAL, 0, 0, 0, 2));
@@ -533,6 +527,19 @@ public class BotDownloads {
         private final TextView titleView;
         private final TextView subtitleView;
 
+        @Override
+        public void updateColors() {
+            super.updateColors();
+            try {
+                if (background != null) {
+                    background.setColor(Theme.getColor(Theme.key_undo_background, resourcesProvider));
+                    background.invalidateSelf();
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+
         public DownloadBulletin(@NonNull Context context, Theme.ResourcesProvider resourcesProvider) {
             super(context, resourcesProvider);
 
@@ -550,13 +557,13 @@ public class BotDownloads {
 
             titleView = new TextView(context);
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-            titleView.setTextColor(Theme.getColor(Theme.key_undo_infoColor, resourcesProvider));
+            ThemeBind.textColor(titleView, Theme.key_undo_infoColor, resourcesProvider);
             titleView.setTypeface(AndroidUtilities.bold());
             textLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.FILL_HORIZONTAL | Gravity.TOP, 0, 0, 0, 2));
 
             subtitleView = new TextView(context);
             subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
-            subtitleView.setTextColor(Theme.getColor(Theme.key_undo_infoColor, resourcesProvider));
+            ThemeBind.textColor(subtitleView, Theme.key_undo_infoColor, resourcesProvider);
             textLayout.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.FILL_HORIZONTAL | Gravity.TOP, 0, 0, 0, 0));
         }
 
@@ -742,16 +749,6 @@ public class BotDownloads {
                         segment1 += CircularProgressDrawable.interpolator.getInterpolation((t - i * 1350) / 667f) * 250;
                         segment0 += CircularProgressDrawable.interpolator.getInterpolation((t - (667 + i * 1350)) / 667f) * 250;
                     }
-//
-////                    float offset = 0, length = 0;
-////                    if (hasPercent < 1) {
-////                        offset += (-90 + -((-1.0f + ((System.currentTimeMillis() - start) % 600) / 600.0f) * 360)) * (1.0f - hasPercent);
-////                        length += -90.0f * (1.0f - hasPercent);
-////                    }
-////                    if (hasPercent > 0) {
-////                        offset += -90 * hasPercent;
-////                        length += -animatedProgress.set(progress) * 360 * hasPercent;
-////                    }
                     strokePaint.setColor(Theme.multAlpha(0xFFFFFFFF, 1.0f * (1.0f - done)));
                     canvas.drawArc(rect, -90 - segment0, -360 * Math.max(.02f, animatedProgress.set(progress)) * hasPercent, false, strokePaint);
                     invalidateSelf();
@@ -821,8 +818,6 @@ public class BotDownloads {
             }
 
             public void setArrow(int rightMargin) {
-//                if (arrow == (rightMargin >= 0) && (!arrow || arrowMargin == rightMargin))
-//                    return;
                 arrow = rightMargin >= 0;
                 if (arrow) {
                     arrowMargin = rightMargin;

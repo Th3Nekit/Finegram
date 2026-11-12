@@ -1043,7 +1043,7 @@ public class WebActionBar extends FrameLayout {
         private AnimatedFloat animatedState = new AnimatedFloat(this::invalidateSelf, 0, 350, CubicBezierInterpolator.EASE_OUT_QUINT);
         private boolean state;
 
-        public void setState(boolean state) { // false = collapse, true = forward
+        public void setState(boolean state) {
             this.state = state;
             invalidateSelf();
         }

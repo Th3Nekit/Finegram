@@ -30,6 +30,7 @@ import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.Forum.ForumUtilities;
 import org.telegram.ui.DialogsActivity;
@@ -78,7 +79,7 @@ public class BackButtonMenu {
         android.graphics.Rect backgroundPaddings = new Rect();
         Drawable shadowDrawable = thisFragment.getParentActivity().getResources().getDrawable(R.drawable.popup_fixed_alert4).mutate();
         shadowDrawable.getPadding(backgroundPaddings);
-        layout.setBackgroundColor(Theme.getColor(Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider));
+        ThemeBind.backgroundColor(layout, Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider);
 
         AtomicReference<ActionBarPopupWindow> scrimPopupWindowRef = new AtomicReference<>();
 
@@ -104,7 +105,7 @@ public class BackButtonMenu {
             TextView titleView = new TextView(context);
             titleView.setLines(1);
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-            titleView.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider));
+            ThemeBind.textColor(titleView, Theme.key_actionBarDefaultSubmenuItem, resourcesProvider);
             titleView.setEllipsize(TextUtils.TruncateAt.END);
             cell.addView(titleView, LayoutHelper.createFrameRelatively(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.START | Gravity.CENTER_VERTICAL, 52, 0, 8, 0));
 
@@ -198,7 +199,6 @@ public class BackButtonMenu {
                                 fragments.get(j).removeSelfFromStack();
                             }
                             if (pDialog.stackIndex < parentLayout.getFragmentStack().size()) {
-                               // parentLayout.bringToFront(pDialog.stackIndex);
                                 parentLayout.closeLastFragment(true);
                                 return;
                             }
@@ -210,7 +210,7 @@ public class BackButtonMenu {
             layout.addView(cell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 44, 0, Gravity.NO_GRAVITY, 0, first ? 3 : 0, 0, last ? 3 : 0));
             if (addDivider) {
                 FrameLayout gap = new FrameLayout(context);
-                gap.setBackgroundColor(Theme.getColor(Theme.key_actionBarDefaultSubmenuSeparator, resourcesProvider));
+                ThemeBind.backgroundColor(gap, Theme.key_actionBarDefaultSubmenuSeparator, resourcesProvider);
                 gap.setTag(R.id.fit_width_tag, 1);
                 layout.addView(gap, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
             }
@@ -241,9 +241,6 @@ public class BackButtonMenu {
         int popupY = (int) (backButton.getBottom() - backgroundPaddings.top - AndroidUtilities.dp(1));
         scrimPopupWindow.showAtLocation(fragmentView, Gravity.LEFT | Gravity.TOP, popupX, popupY);
 
-//        try {
-//            fragmentView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
-//        } catch (Exception ignore) {}
 
         return scrimPopupWindow;
     }

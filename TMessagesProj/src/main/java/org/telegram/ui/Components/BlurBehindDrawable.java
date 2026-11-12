@@ -199,7 +199,7 @@ public class BlurBehindDrawable {
     }
 
     private int getBlurRadius() {
-        return 15; // Math.max(7, Math.max(lastH, lastW) / 180);
+        return 15;
     }
 
     public void clear() {

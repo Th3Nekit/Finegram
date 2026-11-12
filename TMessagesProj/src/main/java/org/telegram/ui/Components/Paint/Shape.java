@@ -18,7 +18,6 @@ public class Shape {
     public float rounding;
     public float rotation;
 
-    // for arrows it is middle, for bubbles it is corner
     public float middleX, middleY;
 
     public float arrowTriangleLength;

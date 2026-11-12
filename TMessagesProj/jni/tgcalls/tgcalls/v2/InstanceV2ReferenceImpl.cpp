@@ -471,7 +471,8 @@ public:
                 [signalingDataEmitted = _signalingDataEmitted](const std::vector<uint8_t> &data) {
                     signalingDataEmitted(data);
                 },
-                _encryptionKey.isOutgoing
+                _encryptionKey.isOutgoing,
+                SignalingSctpConnection::Options::fromCustomParameters(_customParameters)
             );
         }
         if (!_signalingConnection) {
@@ -557,7 +558,7 @@ public:
 
                 if (strong->_didBeginNegotiation) {
                     if (strong->_encryptionKey.isOutgoing || strong->_peerConnection->remote_description()) {
-                        strong->sendLocalDescription();
+                        strong->requestRenegotiation();
                     }
                 } else {
                     RTC_LOG(LS_INFO) << "onRenegotiationNeeded: not sending local description";
@@ -694,7 +695,7 @@ public:
         _networkMonitorFactory = PlatformInterface::SharedInstance()->createNetworkMonitorFactory();
         _socketFactory = std::make_unique<rtc::BasicPacketSocketFactory>(_threads->getNetworkThread()->socketserver());
         _networkManager = std::make_unique<rtc::BasicNetworkManager>(_networkMonitorFactory.get(), _threads->getNetworkThread()->socketserver());
-        _relayPortFactory = std::make_unique<ReflectorRelayPortFactory>(_rtcServers, false, 0, _threads->getNetworkThread()->socketserver(), getCustomParameterBool(_customParameters, "network_reflector_resolve_remote_candidate_ip"));
+        _relayPortFactory = std::make_unique<ReflectorRelayPortFactory>(_rtcServers, false, 0, _threads->getNetworkThread()->socketserver(), getCustomParameterBoolDefaultTrue(_customParameters, "network_reflector_resolve_remote_candidate_ip"));
         
         auto portAllocator = std::make_unique<cricket::BasicPortAllocator>(_networkManager.get(), _socketFactory.get(), nullptr, _relayPortFactory.get());
 
@@ -1198,8 +1199,10 @@ public:
     }
 
     void requestRenegotiation() {
-        // A capture change wants a new offer, but only from a quiet stable
-        // state: never while our own offer is in flight, never while we owe or
+        // A capture change, or WebRTC's own OnRenegotiationNeeded (an ICE
+        // restart, say; it was raised in stable but runs a task later, when an
+        // exchange may be under way), wants a new offer, but only from a quiet
+        // stable state: never while our own offer is in flight, never while we owe or
         // await an answer, and on the callee never before the caller's first
         // offer has arrived - an unsolicited callee offer collides with it and
         // rolls it back, and a rollback of the very first offer orphans the
@@ -1984,8 +1987,9 @@ private:
     bool _didBeginNegotiation = false;
     bool _isMakingOffer = false;
     bool _isSettingRemoteAnswerPending = false;
-    // setVideoCapture() asked for a new offer while one was in flight, an
-    // answer was pending, or (callee) the first remote offer had not arrived.
+    // setVideoCapture() or OnRenegotiationNeeded asked for a new offer while one
+    // was in flight, an answer was pending, or (callee) the first remote offer
+    // had not arrived.
     bool _pendingRenegotiation = false;
     bool _isPerformingConfiguration = false;
     bool _useAddTrack = false;

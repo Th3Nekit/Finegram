@@ -25,6 +25,7 @@ import java.io.FileDescriptor;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.th3nekit.finegram.core.configs.FinegramCoreConfig;
 
@@ -41,13 +42,16 @@ public class FileUploadOperation {
     private int operationGuid;
     private static final int minUploadChunkSize = 128;
     private static final int minUploadChunkSizeBoost = 512;
+    private static final int minUploadChunkSizeBig = 512;
     private static final int minUploadChunkSlowNetworkSize = 32;
     private static final int initialRequestsCount = 8;
     private static final int initialRequestsSlowNetworkCount = 1;
-    private static final int maxUploadingKBytes = 1024 * 2;
+    private static final int maxUploadingKBytes = 1024 * 8;
     private static final int maxUploadingSlowNetworkKBytes = 32;
 
     private int maxRequestsCount;
+    private int uploadConnectionsCount = 4;
+    private final int[] uploadRequestsPerConnection = new int[ConnectionsManager.UploadConnectionsCountPremium];
     private int uploadChunkSize = 64 * 1024;
     private boolean slowNetwork;
     private ArrayList<byte[]> freeRequestIvs;
@@ -127,7 +131,18 @@ public class FileUploadOperation {
             for (int a = 0, count = (slowNetwork ? initialRequestsSlowNetworkCount : initialRequestsCount); a < count; a++) {
                 startUploadRequest();
             }
+            startUploadRequests();
         });
+    }
+
+    private void startUploadRequests() {
+        while (state == 1 && currentUploadRequetsCount < maxRequestsCount) {
+            int count = currentUploadRequetsCount;
+            startUploadRequest();
+            if (currentUploadRequetsCount == count) {
+                break;
+            }
+        }
     }
 
     protected void onNetworkChanged(final boolean slow) {
@@ -156,6 +171,7 @@ public class FileUploadOperation {
                 iv = null;
                 ivChange = null;
                 currentUploadRequetsCount = 0;
+                Arrays.fill(uploadRequestsPerConnection, 0);
                 lastSavedPartNum = 0;
                 uploadFirstPartLater = false;
                 cachedResults.clear();
@@ -282,9 +298,6 @@ public class FileUploadOperation {
             started = true;
             if (stream == null) {
                 File cacheFile = new File(uploadingFilePath);
-//                if (AndroidUtilities.isInternalUri(Uri.fromFile(cacheFile))) {
-//                    throw new FileLog.IgnoreSentException("trying to upload internal file");
-//                }
                 stream = new RandomAccessFile(cacheFile, "r");
                 boolean isInternalFile = false;
                 try {
@@ -312,7 +325,7 @@ public class FileUploadOperation {
                 if (AccountInstance.getInstance(currentAccount).getUserConfig().isPremium() && totalFileSize > FileLoader.DEFAULT_MAX_FILE_SIZE) {
                     maxUploadParts = MessagesController.getInstance(currentAccount).uploadMaxFilePartsPremium;
                 }
-                uploadChunkSize = (int) Math.max(slowNetwork ? minUploadChunkSlowNetworkSize : FinegramCoreConfig.INSTANCE.getUploadSpeedBoost() ? minUploadChunkSizeBoost : minUploadChunkSize, (totalFileSize + 1024L * maxUploadParts - 1) / (1024L * maxUploadParts));
+                uploadChunkSize = (int) Math.max(slowNetwork ? minUploadChunkSlowNetworkSize : FinegramCoreConfig.INSTANCE.getUploadSpeedBoost() ? minUploadChunkSizeBoost : isBigFile ? minUploadChunkSizeBig : minUploadChunkSize, (totalFileSize + 1024L * maxUploadParts - 1) / (1024L * maxUploadParts));
                 if (1024 % uploadChunkSize != 0) {
                     int chunkSize = 64;
                     while (uploadChunkSize > chunkSize) {
@@ -321,6 +334,7 @@ public class FileUploadOperation {
                     uploadChunkSize = chunkSize;
                 }
                 maxRequestsCount = Math.max(1, (slowNetwork ? maxUploadingSlowNetworkKBytes : maxUploadingKBytes) / uploadChunkSize);
+                uploadConnectionsCount = AccountInstance.getInstance(currentAccount).getUserConfig().isPremium() ? ConnectionsManager.UploadConnectionsCountPremium : 4;
 
                 if (isEncrypted) {
                     freeRequestIvs = new ArrayList<>(maxRequestsCount);
@@ -549,14 +563,24 @@ public class FileUploadOperation {
         if (slowNetwork) {
             connectionType = ConnectionsManager.ConnectionTypeUpload;
         } else {
-            connectionType = ConnectionsManager.ConnectionTypeUpload | ((requestNumFinal % 4) << 16);
+            int connectionNum = requestNumFinal % uploadConnectionsCount;
+            for (int a = 1; a < uploadConnectionsCount; a++) {
+                int num = (requestNumFinal + a) % uploadConnectionsCount;
+                if (uploadRequestsPerConnection[num] < uploadRequestsPerConnection[connectionNum]) {
+                    connectionNum = num;
+                }
+            }
+            connectionType = ConnectionsManager.ConnectionTypeUpload | (connectionNum << 16);
         }
+        final int requestConnectionNum = connectionType >> 16;
+        uploadRequestsPerConnection[requestConnectionNum]++;
         long time = System.currentTimeMillis();
         int[] requestToken = new int[1];
         requestToken[0] = ConnectionsManager.getInstance(currentAccount).sendRequest(finalRequest, (response, error) -> {
             if (currentOperationGuid != operationGuid) {
                 return;
             }
+            uploadRequestsPerConnection[requestConnectionNum]--;
             if (BuildVars.LOGS_ENABLED) {
                 FileLog.d("debug_uploading: " + " response reqId " + requestToken[0] + " time" + uploadingFilePath);
             }
@@ -669,7 +693,7 @@ public class FileUploadOperation {
                         }
                         saveInfoTimes++;
                     }
-                    startUploadRequest();
+                    startUploadRequests();
                 }
             } else {
                 state = 4;
@@ -677,9 +701,7 @@ public class FileUploadOperation {
                 cleanup();
             }
         }, null, () -> Utilities.stageQueue.postRunnable(() -> {
-            if (currentUploadRequetsCount < maxRequestsCount) {
-                startUploadRequest();
-            }
+            startUploadRequests();
         }), forceSmallFile ? ConnectionsManager.RequestFlagCanCompress : 0, ConnectionsManager.DEFAULT_DATACENTER_ID, connectionType, true);
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("debug_uploading: " + " send reqId " + requestToken[0] + " " + uploadingFilePath + " file_part=" + currentRequestPartNum + " isBig=" + isBigFile + " file_id=" + currentFileId);

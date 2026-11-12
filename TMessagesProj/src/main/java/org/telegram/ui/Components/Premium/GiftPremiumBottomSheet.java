@@ -38,6 +38,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.AlertsCreator;
@@ -161,28 +162,6 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
         if (userFull != null) {
             List<QueryProductDetailsParams.Product> products = new ArrayList<>();
             long pricePerMonthMax = 0;
-//            for (TLRPC.TL_premiumGiftOption option : userFull.premium_gifts) {
-//                if ("XTR".equalsIgnoreCase(option.currency)) continue;
-//                TLRPC.TL_premiumGiftOption starsOption = null;
-//                for (TLRPC.TL_premiumGiftOption o : userFull.premium_gifts) {
-//                    if (o != option && "XTR".equalsIgnoreCase(o.currency) && o.months == option.months) {
-//                        starsOption = o;
-//                        break;
-//                    }
-//                }
-//                final GiftTier giftTier = new GiftTier(option, starsOption);
-//                giftTiers.add(giftTier);
-//                if (BuildVars.useInvoiceBilling()) {
-//                    if (giftTier.getPricePerMonth() > pricePerMonthMax) {
-//                        pricePerMonthMax = giftTier.getPricePerMonth();
-//                    }
-//                } else if (giftTier.giftOption.store_product != null && BillingController.getInstance().isReady()) {
-//                    products.add(QueryProductDetailsParams.Product.newBuilder()
-//                            .setProductType(BillingClient.ProductType.INAPP)
-//                            .setProductId(giftTier.giftOption.store_product)
-//                            .build());
-//                }
-//            }
             if (BuildVars.useInvoiceBilling()) {
                 for (GiftTier tier : giftTiers) {
                     tier.setPricePerMonthRegular(pricePerMonthMax);
@@ -232,7 +211,7 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.billingProductDetailsUpdated);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.billingProductDetailsUpdated);
     }
 
     @Override
@@ -348,7 +327,7 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
 
         FrameLayout buttonContainer = new FrameLayout(getContext());
         buttonContainer.addView(premiumButtonView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.CENTER_VERTICAL, 16, 0, 16, 0));
-        buttonContainer.setBackgroundColor(getThemedColor(Theme.key_dialogBackground));
+        ThemeBind.backgroundColor(buttonContainer, Theme.key_dialogBackground, resourcesProvider);
         containerView.addView(buttonContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 68, Gravity.BOTTOM));
     }
 

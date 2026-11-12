@@ -78,7 +78,6 @@ public class SpoilerEffectBitmapFactory {
             shaderPaint.setShader(bitmapBuffers[0].shader);
             lastUpdateTime = System.currentTimeMillis();
         } else if (isDrawnWithClipRegion && !LiteMode.isEnabled(LiteMode.FLAG_CHAT_SPOILER)) {
-            // restore full-drawn texture
 
             currentBitmapBuffer = 0;
             doDraw(new Canvas(bitmapBuffers[0].bitmap), new Rect(0, 0, size, size));

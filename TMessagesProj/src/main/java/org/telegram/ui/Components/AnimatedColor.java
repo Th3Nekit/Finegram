@@ -114,8 +114,6 @@ public class AnimatedColor {
         return set(mustBeColor, true);
     }
 
-    // set() must be called inside onDraw/dispatchDraw
-    // the main purpose of AnimatedColor is to interpolate between abrupt changing states
 
     public int set(int mustBeColor) {
         return this.set(mustBeColor, false);

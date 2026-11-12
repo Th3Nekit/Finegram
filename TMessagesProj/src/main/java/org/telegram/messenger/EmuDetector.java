@@ -127,7 +127,7 @@ public class EmuDetector {
     private boolean detected;
     private boolean detectResult;
 
-    @SuppressLint("StaticFieldLeak") //Since we use application context now this won't leak memory anymore. This is only to please Lint
+    @SuppressLint("StaticFieldLeak")
     private static EmuDetector mEmulatorDetector;
 
     public static EmuDetector with(Context pContext) {
@@ -334,7 +334,7 @@ public class EmuDetector {
         return false;
     }
 
-    private boolean checkFiles(String[] targets, EmulatorTypes type) { //TODO scoped storage
+    private boolean checkFiles(String[] targets, EmulatorTypes type) {
         for (String pipe : targets) {
             File qemu_file;
             if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -388,7 +388,6 @@ public class EmuDetector {
                 in.close();
 
             } catch (Exception ex) {
-                // empty catch
             }
 
             String netData = stringBuilder.toString();
@@ -421,7 +420,6 @@ public class EmuDetector {
 
             return (String) get.invoke(systemProperties, params);
         } catch (Exception exception) {
-            // empty catch
         }
         return null;
     }

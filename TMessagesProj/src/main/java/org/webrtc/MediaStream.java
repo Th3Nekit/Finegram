@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/** Java wrapper for a C++ MediaStreamInterface. */
 public class MediaStream {
   private static final String TAG = "MediaStream";
 
@@ -46,9 +45,6 @@ public class MediaStream {
     return false;
   }
 
-  // Tracks added in addTrack() call will be auto released once MediaStream.dispose()
-  // is called. If video track need to be preserved after MediaStream is destroyed it
-  // should be added to MediaStream using addPreservedTrack() call.
   public boolean addPreservedTrack(VideoTrack track) {
     checkMediaStreamExists();
     if (nativeAddVideoTrackToNativeStream(nativeStream, track.getNativeVideoTrack())) {
@@ -74,20 +70,18 @@ public class MediaStream {
   @CalledByNative
   public void dispose() {
     checkMediaStreamExists();
-    // Remove and release previously added audio and video tracks.
     while (!audioTracks.isEmpty()) {
-      AudioTrack track = audioTracks.get(0 /* index */);
+      AudioTrack track = audioTracks.get(0            );
       removeTrack(track);
       track.dispose();
     }
     while (!videoTracks.isEmpty()) {
-      VideoTrack track = videoTracks.get(0 /* index */);
+      VideoTrack track = videoTracks.get(0            );
       removeTrack(track);
       track.dispose();
     }
-    // Remove, but do not release preserved video tracks.
     while (!preservedVideoTracks.isEmpty()) {
-      removeTrack(preservedVideoTracks.get(0 /* index */));
+      removeTrack(preservedVideoTracks.get(0            ));
     }
     JniCommon.nativeReleaseRef(nativeStream);
     nativeStream = 0;
@@ -123,7 +117,6 @@ public class MediaStream {
     removeMediaStreamTrack(videoTracks, nativeTrack);
   }
 
-  /** Returns a pointer to webrtc::MediaStreamInterface. */
   long getNativeMediaStream() {
     checkMediaStreamExists();
     return nativeStream;

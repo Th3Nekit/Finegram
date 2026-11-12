@@ -21,13 +21,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Class to synchronize rendering updates with display refresh cycles and save power by blocking
- * updates that exceeds the target frame rate.
- */
 public final class RenderSynchronizer {
 
-  /** Interface for listening to render window updates. */
   public interface Listener {
     void onRenderWindowOpen();
 
@@ -91,9 +86,6 @@ public final class RenderSynchronizer {
     long refreshDeltaNanos = refreshTimeNanos - lastRefreshTimeNanos;
     lastRefreshTimeNanos = refreshTimeNanos;
 
-    // Make a greedy choice whether to open (or keep open) the render window. If the current time
-    // since the render window was last opened is closer to the target than what we predict it would
-    // be in the next refresh cycle then we open the window.
     if (Math.abs(lastOpenDeltaNanos - targetFrameIntervalNanos)
         < Math.abs(lastOpenDeltaNanos - targetFrameIntervalNanos + refreshDeltaNanos)) {
       lastOpenedTimeNanos = refreshTimeNanos;

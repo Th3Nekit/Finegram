@@ -129,12 +129,6 @@ public class GroupCallTabletGridAdapter extends RecyclerListView.SelectionAdapte
     }
 
     public void scrollToPeerId(long peerId, RecyclerListView fullscreenUsersListView) {
-//        for (int i = 0; i < participants.size(); i++) {
-//            if (peerId == MessageObject.getPeerId(participants.get(i).peer)) {
-//                ((LinearLayoutManager) fullscreenUsersListView.getLayoutManager()).scrollToPositionWithOffset(i, AndroidUtilities.dp(13));
-//                break;
-//            }
-//        }
     }
 
     public void update(boolean animated, RecyclerListView listView) {

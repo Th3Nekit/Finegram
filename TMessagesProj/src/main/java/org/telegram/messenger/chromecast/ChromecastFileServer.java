@@ -133,7 +133,6 @@ public class ChromecastFileServer extends NanoHTTPD {
 
         Log.d(TAG, "Request " + reqId + " " + session.getMethod() + " " + session.getUri() + " " + session.getHeaders().get("range"));
         try {
-            // Log.d(TAG, "Response " + reqId);
             return addCorsHeaders(serveImpl(session));
         } catch (Throwable e) {
             Log.d(TAG, "Error " + reqId);
@@ -231,7 +230,6 @@ public class ChromecastFileServer extends NanoHTTPD {
             dataSpecBuilder.setLength(readSize);
         }
 
-        /* * */
 
         if (isHlsManifest) {
             final byte[] readBuffer = new byte[(int) readSize];
@@ -285,7 +283,6 @@ public class ChromecastFileServer extends NanoHTTPD {
 
 
 
-    /* * */
 
     private static Response addCorsHeaders(Response response) {
         response.addHeader("Access-Control-Allow-Origin", "*");
@@ -353,7 +350,7 @@ public class ChromecastFileServer extends NanoHTTPD {
         final WifiManager wifiManager = (WifiManager) ApplicationLoader.applicationContext.getSystemService(Context.WIFI_SERVICE);
         int ip = wifiManager.getConnectionInfo().getIpAddress();
 
-        if (ip == 0) { // for hotspot
+        if (ip == 0) {
             try {
                 for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                     NetworkInterface networkInterface = en.nextElement();

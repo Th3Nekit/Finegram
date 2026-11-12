@@ -363,21 +363,21 @@ public class TL_wallet {
         public String tx_hash;
         public nftItem nft;
 
-        public boolean comment_encrypted_preparing; //custom, comment still contains local plaintext
-        public boolean pending; //custom
-        public SendPhase phase; //custom
-        public boolean preview; //custom
-        public boolean feeUnknown; //custom
-        public String traceFeesNanograms; //custom
-        public long validUntil; //custom
-        public boolean traceSucceeded; //custom
-        public boolean traceIncomplete; //custom
-        public String operationId; //custom
-        public long random_id; //custom, not serialized
-        public int localMessageId; //custom, local chat message used by the send flight
-        public String messageHash; //custom
-        public String gaslessMessageBodyHash; //custom
-        public String normalMessageBodyHash; //custom
+        public boolean comment_encrypted_preparing;
+        public boolean pending;
+        public SendPhase phase;
+        public boolean preview;
+        public boolean feeUnknown;
+        public String traceFeesNanograms;
+        public long validUntil;
+        public boolean traceSucceeded;
+        public boolean traceIncomplete;
+        public String operationId;
+        public long random_id;
+        public int localMessageId;
+        public String messageHash;
+        public String gaslessMessageBodyHash;
+        public String normalMessageBodyHash;
 
         @Override
         public void readParams(InputSerializedData stream, boolean exception) {
@@ -452,15 +452,15 @@ public class TL_wallet {
                 TextUtils.equals(this.comment, t.comment) &&
                 TextUtils.equals(this.tx_hash, t.tx_hash) &&
                 Objects.equals(this.nft, t.nft) &&
-                this.preview == t.preview && //custom
-                this.feeUnknown == t.feeUnknown && //custom
-                Objects.equals(this.traceFeesNanograms, t.traceFeesNanograms) && //custom
-                this.validUntil == t.validUntil && //custom
-                this.traceSucceeded == t.traceSucceeded && //custom
-                this.traceIncomplete == t.traceIncomplete && //custom
-                Objects.equals(this.operationId, t.operationId) && //custom
-                Objects.equals(this.messageHash, t.messageHash) && //custom
-                this.phase == t.phase; //custom
+                this.preview == t.preview &&
+                this.feeUnknown == t.feeUnknown &&
+                Objects.equals(this.traceFeesNanograms, t.traceFeesNanograms) &&
+                this.validUntil == t.validUntil &&
+                this.traceSucceeded == t.traceSucceeded &&
+                this.traceIncomplete == t.traceIncomplete &&
+                Objects.equals(this.operationId, t.operationId) &&
+                Objects.equals(this.messageHash, t.messageHash) &&
+                this.phase == t.phase;
         }
 
         private static boolean peerEquals(WalletTransactionPeer a, WalletTransactionPeer b) {
@@ -468,7 +468,6 @@ public class TL_wallet {
         }
 
         public boolean set(walletTransaction t) {
-            // assuming id is the same
             if (
                 this.incoming != t.incoming ||
                 this.pending != t.pending ||
@@ -483,15 +482,15 @@ public class TL_wallet {
                 !TextUtils.equals(this.comment, t.comment) ||
                 !TextUtils.equals(this.tx_hash, t.tx_hash) ||
                 !Objects.equals(this.nft, t.nft) ||
-                this.preview != t.preview || //custom
-                this.feeUnknown != t.feeUnknown || //custom
-                !TextUtils.equals(this.traceFeesNanograms, t.traceFeesNanograms) || //custom
-                this.validUntil != t.validUntil || //custom
-                this.traceSucceeded != t.traceSucceeded || //custom
-                this.traceIncomplete != t.traceIncomplete || //custom
-                !TextUtils.equals(this.operationId, t.operationId) || //custom
-                !TextUtils.equals(this.messageHash, t.messageHash) || //custom
-                this.phase != t.phase //custom
+                this.preview != t.preview ||
+                this.feeUnknown != t.feeUnknown ||
+                !TextUtils.equals(this.traceFeesNanograms, t.traceFeesNanograms) ||
+                this.validUntil != t.validUntil ||
+                this.traceSucceeded != t.traceSucceeded ||
+                this.traceIncomplete != t.traceIncomplete ||
+                !TextUtils.equals(this.operationId, t.operationId) ||
+                !TextUtils.equals(this.messageHash, t.messageHash) ||
+                this.phase != t.phase
             ) {
                 this.incoming = t.incoming;
                 this.pending = t.pending;
@@ -506,15 +505,15 @@ public class TL_wallet {
                 this.comment = t.comment;
                 this.tx_hash = t.tx_hash;
                 this.nft = t.nft;
-                this.preview = t.preview; //custom
-                this.feeUnknown = t.feeUnknown; //custom
-                this.traceFeesNanograms = t.traceFeesNanograms; //custom
-                this.validUntil = t.validUntil; //custom
-                this.traceSucceeded = t.traceSucceeded; //custom
-                this.traceIncomplete = t.traceIncomplete; //custom
-                this.operationId = t.operationId; //custom
-                this.messageHash = t.messageHash; //custom
-                this.phase = t.phase; //custom
+                this.preview = t.preview;
+                this.feeUnknown = t.feeUnknown;
+                this.traceFeesNanograms = t.traceFeesNanograms;
+                this.validUntil = t.validUntil;
+                this.traceSucceeded = t.traceSucceeded;
+                this.traceIncomplete = t.traceIncomplete;
+                this.operationId = t.operationId;
+                this.messageHash = t.messageHash;
+                this.phase = t.phase;
                 return true;
             }
             return false;
@@ -983,8 +982,8 @@ public class TL_wallet {
         public byte[] data_gasless;
         public TLRPC.InputUser user_id;
         public long random_id;
-        public String gaslessMessageBodyHash; //custom, not serialized
-        public String normalMessageBodyHash; //custom, not serialized
+        public String gaslessMessageBodyHash;
+        public String normalMessageBodyHash;
 
         @Override
         public TLRPC.Updates deserializeResponseT(InputSerializedData stream, int constructor, boolean exception) {
@@ -1051,15 +1050,15 @@ public class TL_wallet {
 
         public String currency;
         public double rate;
-        public String symbol; // custom
-        public String title; // custom
-        public String translatedTitle; // custom
-        public String thousandsSeparator; // custom
-        public String decimalSeparator; // custom
-        public boolean symbolLeft; // custom
-        public boolean spaceBetween; // custom
-        public boolean dropZeros; // custom
-        public int exp; // custom
+        public String symbol;
+        public String title;
+        public String translatedTitle;
+        public String thousandsSeparator;
+        public String decimalSeparator;
+        public boolean symbolLeft;
+        public boolean spaceBetween;
+        public boolean dropZeros;
+        public int exp;
 
         @Override
         public void readParams(InputSerializedData stream, boolean exception) {

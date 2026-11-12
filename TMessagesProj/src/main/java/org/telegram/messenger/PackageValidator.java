@@ -13,15 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Validates which callers are allowed to use the MediaBrowserService.
- * Combines a package-name allowlist (Android Auto / Automotive OS / Assistant / Wear)
- * with caller's own UID + system UID, and a permission gate so only properly
- * privileged callers (MEDIA_CONTENT_CONTROL holders + notification listeners) get through.
- *
- * Non-allowlisted callers must hold MEDIA_CONTENT_CONTROL or BIND_NOTIFICATION_LISTENER_SERVICE,
- * which mirrors Google's reference PackageValidator pattern.
- */
 public final class PackageValidator {
 
     private PackageValidator() {}
@@ -29,21 +20,15 @@ public final class PackageValidator {
     private static final Set<String> KNOWN_PACKAGES = new HashSet<>();
 
     static {
-        // Android Auto (projection mode)
         KNOWN_PACKAGES.add("com.google.android.projection.gearhead");
-        // Auto media simulator (DHU)
         KNOWN_PACKAGES.add("com.google.android.mediasimulator");
-        // Android Automotive OS embedded media client
         KNOWN_PACKAGES.add("com.android.car.media");
         KNOWN_PACKAGES.add("com.android.car.carlauncher");
         KNOWN_PACKAGES.add("com.google.android.car.kitchensink");
-        // Wear OS
         KNOWN_PACKAGES.add("com.google.android.wearable.app");
         KNOWN_PACKAGES.add("com.google.android.wearable.media.sessions");
-        // Google Assistant
         KNOWN_PACKAGES.add("com.google.android.googlequicksearchbox");
         KNOWN_PACKAGES.add("com.google.android.apps.gsa.staticplugins");
-        // Bluetooth media browser
         KNOWN_PACKAGES.add("com.google.android.bluetooth");
     }
 

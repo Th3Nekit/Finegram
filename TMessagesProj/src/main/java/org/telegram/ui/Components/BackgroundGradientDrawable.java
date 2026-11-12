@@ -57,7 +57,6 @@ public class BackgroundGradientDrawable extends GradientDrawable {
             }
         }
 
-        /** @param additionalSizes [width1, height1, width2, height2, ...] */
         public static Sizes of(int width, int height, int... additionalSizes) {
             return new Sizes(width, height, additionalSizes);
         }
@@ -83,8 +82,6 @@ public class BackgroundGradientDrawable extends GradientDrawable {
             }
 
             if (orientation == Orientation.BOTH) {
-                // displaySize is orientation-dependent, so we will firstly dither a gradient
-                // for the current orientation and only then for another one
                 return of(width, height, height, width);
             }
 
@@ -145,9 +142,9 @@ public class BackgroundGradientDrawable extends GradientDrawable {
             if (size.width == width && size.height == height) {
                 final Bitmap bitmap = bitmaps.valueAt(i);
 
-                if (bitmap != null) { // ready
+                if (bitmap != null) {
                     canvas.drawBitmap(bitmap, null, bounds, bitmapPaint);
-                } else { // processing
+                } else {
                     super.draw(canvas);
                 }
 
@@ -387,7 +384,7 @@ public class BackgroundGradientDrawable extends GradientDrawable {
                 outRect.right = width;
                 outRect.bottom = outRect.top;
                 break;
-            default: // TL_BR
+            default:
                 outRect.left = 0;
                 outRect.top = 0;
                 outRect.right = width;
@@ -417,7 +414,7 @@ public class BackgroundGradientDrawable extends GradientDrawable {
                 return Orientation.RIGHT_LEFT;
             case 315:
                 return Orientation.BR_TL;
-            default: // 45
+            default:
                 return Orientation.BL_TR;
         }
     }

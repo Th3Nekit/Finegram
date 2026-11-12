@@ -187,9 +187,6 @@ public class BillingController implements PurchasesUpdatedListener, BillingClien
             responseListener.onProductDetailsResponse(billingResult, queryProductDetailsResult.getProductDetailsList()));
     }
 
-    /**
-     * {@link BillingClient#queryPurchasesAsync} returns only active subscriptions and not consumed purchases.
-     */
     public void queryPurchases(String productType, PurchasesResponseListener responseListener) {
         billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(productType).build(), responseListener);
     }
@@ -443,10 +440,6 @@ public class BillingController implements PurchasesUpdatedListener, BillingClien
         }
     }
 
-    /**
-     * All consumable purchases must be consumed. For us it is a gift.
-     * Without confirmation the user will not be able to buy the product again.
-     */
     public void consumeGiftPurchase(Purchase purchase, TLRPC.InputStorePaymentPurpose purpose, Runnable onDone) {
         if (purpose instanceof TLRPC.TL_inputStorePaymentGiftPremium ||
             purpose instanceof TLRPC.TL_inputStorePaymentPremiumGiftCode ||
@@ -471,10 +464,6 @@ public class BillingController implements PurchasesUpdatedListener, BillingClien
         }
     }
 
-    /**
-     * May occur in extremely rare cases.
-     * For example when Google Play decides to update.
-     */
     @SuppressWarnings("Convert2MethodRef")
     @Override
     public void onBillingServiceDisconnected() {

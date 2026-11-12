@@ -63,14 +63,14 @@ public class VideoCompressButton extends View {
     }
 
     private final int[] sizes = new int[] {
-        144, // 144x256
+        144,
         240,
-        360, // 360x640
+        360,
         480,
-        720, // 720x1280
-        1080, // 1080x1920
-        1440, // 1440x2560, 2K
-        2160, // 2160x3840, 4K
+        720,
+        1080,
+        1440,
+        2160,
     };
 
     public void setState(boolean enabled, boolean muted, int mn) {

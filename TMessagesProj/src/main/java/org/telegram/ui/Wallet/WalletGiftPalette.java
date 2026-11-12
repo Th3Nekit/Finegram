@@ -5,7 +5,6 @@ import androidx.core.graphics.ColorUtils;
 import org.telegram.tgnet.tl.TL_stars;
 import org.telegram.ui.ActionBar.OKLCH;
 
-/** Direct Telegram backdrop material colors and UI transition helpers. */
 final class WalletGiftPalette {
     static float[] of(TL_stars.starGiftAttributeBackdrop backdrop) {
         if (backdrop == null) return new float[]{0, 1, 1};
@@ -51,8 +50,6 @@ final class WalletGiftPalette {
         return ColorUtils.setAlphaComponent(OKLCH.rgb(OKLCH.srgbLinear2rgb(gamut(lch,1))),Color.alpha(color));
     }
 
-    /** Card surface tone for a backdrop, as in GramWalletCards3 paletteFor: stock lightness/chroma, gift hue. */
-    /** A stock-blue UI color moved into the card's gift palette, following the reveal; stock when no gift. */
     static int cardTone(int stock, float[] style) {
         if(style==null || style.length<18) return stock;
         int[] sides=new int[2];
@@ -67,7 +64,6 @@ final class WalletGiftPalette {
         return oklch(color)[0];
     }
 
-    /** Keeps a color's OKLCH lightness within [min, max], preserving hue and chroma. */
     static int clampLightness(int color, float min, float max) {
         float[] c=oklch(color);
         if(c[0]>=min && c[0]<=max) return color;
@@ -95,7 +91,6 @@ final class WalletGiftPalette {
 
     private static final android.util.LruCache<String, Integer> EDGE_2D_COLORS = new android.util.LruCache<>(128);
 
-    /** Canvas study baseTones(), kept separate from the original GL palette calibration. */
     static int card2DEdgeTone(int stock, float[] style) {
         int fallback = stock == 0xff088fee ? 0xff2368d5 : 0xff278ff7;
         if (style == null || style.length < 18) return fallback;
@@ -176,7 +171,6 @@ final class WalletGiftPalette {
 
     private static final float[] BLUE_MATERIAL = {0.017513231635093687f,0.28449588418006894f,1.2347647094726564f,0.012535676658153534f,0.21663006767630577f,0.8356013679504395f,0.026820781230926512f,0.400800558924675f,2.404087600708008f,0.003239999860525131f,0.1710000067949295f,0.4703999853134156f};
 
-    /** Append exact Telegram colors while preserving the UI transition contract. */
     static void putBackdrop(float[] style, int side, TL_stars.starGiftAttributeBackdrop backdrop) {
         int i=10+side*4;
         style[i]=backdrop==null ? -1 : backdrop.center_color & 0xffffff;
@@ -185,7 +179,6 @@ final class WalletGiftPalette {
         style[i+3]=backdrop==null ? -1 : backdrop.text_color & 0xffffff;
     }
 
-    /** Gift material gain; wallet_card_rim_fragment.glsl divides it back out. */
     private static final float GIFT_GAIN = .73f;
 
     private static float linear(int color, int shift) {
@@ -193,10 +186,8 @@ final class WalletGiftPalette {
         return v<=.04045f?v/12.92f:(float)Math.pow((v+.055f)/1.055f,2.4);
     }
 
-    /** Tint direction of the diamond artwork's blue layer (sRGB, peak 1). */
     private static final float[] DIAMOND_TINT = {0f, .47809f, 1f};
 
-    /** Center color's normalized chroma; fades to an equally light gray for neutral palettes. */
     private static void diamondTint(int color, float[] out, int offset) {
         float r=((color>>16)&255)/255f,g=((color>>8)&255)/255f,b=(color&255)/255f;
         float min=Math.min(r,Math.min(g,b)),chroma=Math.max(r,Math.max(g,b))-min;
@@ -210,7 +201,6 @@ final class WalletGiftPalette {
     private static final android.util.LruCache<Integer, Integer> CARD_2D_INKS = new android.util.LruCache<>(64);
     private static final int STOCK_2D_INK = makeStock2DInk();
 
-    /** Canvas study addressInk(): preserve the stock ink's contrast against each face palette. */
     static int cardNumber2DColor(float[] style) {
         return ColorUtils.blendARGB(cardNumber2DColor(style, 0), cardNumber2DColor(style, 1),
                 style == null || style.length < 18 ? 0 : style[8]);
@@ -265,7 +255,6 @@ final class WalletGiftPalette {
         return .2126f * linear(color, 16) + .7152f * linear(color, 8) + .0722f * linear(color, 0);
     }
 
-    /** Card number ink: pattern color lerped toward edge color (tuned in wallet-backdrop-lab). */
     private static final float CARD_NUMBER_EDGE_MIX = .2f;
 
     static int cardNumberColor(float[] style, int side) {
@@ -279,13 +268,11 @@ final class WalletGiftPalette {
         return ColorUtils.blendARGB(0xFF000000|pattern, 0xFF000000|edge, CARD_NUMBER_EDGE_MIX);
     }
 
-    /** Current card number ink, following the gift reveal like tint(). */
     static int cardNumberColor(float[] style) {
         if(style==null || style.length<18) return cardNumberColor(null, 0);
         return ColorUtils.blendARGB(cardNumberColor(style, 0), cardNumberColor(style, 1), style[8]);
     }
 
-    /** 0-23 palettes, 24-27 reveal, 28-29 pre-tone-map scale, 30-35 diamond tints, 36-41 card number ink (sRGB). */
     static float[] material(float[] style) {
         float[] result=new float[42];
         for(int side=0;side<2;side++) {
@@ -297,8 +284,6 @@ final class WalletGiftPalette {
             } else {
                 result[28+side]=.6f;
                 diamondTint((int)style[offset],result,30+side*3);
-                // GramWalletCards3 surface tones: card color is their midpoint, dark/grazing the
-                // dark tone, bright the light one. The shader's gift look is calibrated to GIFT_GAIN.
                 int center=(int)style[offset],edge=(int)style[offset+1];
                 int dark=surface(0xFF088FEE,center,edge),light=surface(0xFF16ABF9,center,edge);
                 for(int channel=0;channel<3;channel++) {

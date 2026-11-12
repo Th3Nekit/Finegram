@@ -43,6 +43,7 @@ import org.telegram.messenger.SvgHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.ListView.RecyclerListViewWithOverlayDraw;
@@ -93,8 +94,10 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
                     editModeIconColor = AndroidUtilities.getDominantColor(bitmap);
                     if (editModeIconColor == Color.WHITE || editModeIconColor == 0) {
                         editModeIconColor = Theme.getColor(Theme.key_dialogTextGray2, resourcesProvider);
+                        ThemeBind.fillBackground(editModeIcon, Theme.createRoundRectDrawable(dp(12), editModeIconColor), ThemeBind.of(Theme.key_dialogTextGray2), resourcesProvider);
+                    } else {
+                        editModeIcon.setBackground(Theme.createRoundRectDrawable(dp(12), editModeIconColor));
                     }
-                    editModeIcon.setBackground(Theme.createRoundRectDrawable(dp(12), editModeIconColor));
                     invalidate();
                 }
                 return accepted;
@@ -106,7 +109,6 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
 
         emojiTextView = new TextView(context);
         emojiTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-       // addView(emojiTextView, LayoutHelper.createFrame(28, 28, Gravity.BOTTOM | Gravity.RIGHT));
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Theme.getColor(Theme.key_featuredStickers_addButton));
@@ -120,7 +122,7 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
         editModeIcon = new ImageView(context);
         editModeIcon.setImageResource(R.drawable.mini_more_dots);
         editModeIcon.setPadding(dp(2), dp(2), dp(2), dp(2));
-        editModeIcon.setBackground(Theme.createRoundRectDrawable(dp(12), Theme.getColor(Theme.key_dialogTextGray2, resourcesProvider)));
+        ThemeBind.fillBackground(editModeIcon, Theme.createRoundRectDrawable(dp(12), Theme.getColor(Theme.key_dialogTextGray2, resourcesProvider)), ThemeBind.of(Theme.key_dialogTextGray2), resourcesProvider);
         editModeIcon.setAlpha(0f);
         addView(editModeIcon, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.RIGHT));
         setFocusable(true);
@@ -205,7 +207,7 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
         drawInParentView = false;
         imageView.setColorFilter(null);
         editModeIconColor = 0;
-        editModeIcon.setBackground(Theme.createRoundRectDrawable(dp(12), Theme.getColor(Theme.key_dialogTextGray2)));
+        ThemeBind.fillBackground(editModeIcon, Theme.createRoundRectDrawable(dp(12), Theme.getColor(Theme.key_dialogTextGray2)), ThemeBind.of(Theme.key_dialogTextGray2));
         if (editModeEnabled) {
             enableEditMode(false);
         } else {
@@ -228,7 +230,6 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
                 emojiTextView.setVisibility(INVISIBLE);
             }
         } else if (document != null) {
-            //boolean isVideoSticker = MessageObject.isVideoSticker(document);
             TLRPC.PhotoSize thumb = FileLoader.getClosestPhotoSizeWithSize(document.thumbs, 90);
             SvgHelper.SvgDrawable svgThumb = DocumentObject.getSvgThumb(document, fromEmojiPanel ? Theme.key_emptyListPlaceholder : Theme.key_windowBackgroundGray, fromEmojiPanel ? 0.2f : 1.0f, 1f, resourceProvider);
             String imageFilter = fromEmojiPanel ? "66_66_pcache_compress" : "66_66";
@@ -241,7 +242,6 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
                 }
                 if (svgThumb != null) {
                     imageView.setImage(ImageLocation.getForDocument(document), imageFilter, ImageLocation.getForDocument(thumb, document), null, null, null, svgThumb, 0, null, parentObject, 1);
-                    //imageView.setImage(ImageLocation.getForDocument(document), imageFilter, svgThumb, null, parentObject, 1);
                 } else if (thumb != null) {
                     imageView.setImage(ImageLocation.getForDocument(document), imageFilter, ImageLocation.getForDocument(thumb, document), null, (String) null, parentObject, 1);
                 } else {
@@ -411,7 +411,7 @@ public class StickerEmojiCell extends FrameLayout implements NotificationCenter.
         super.onAttachedToWindow();
         updateImageParent();
         imageView.onAttachedToWindow();
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.currentUserPremiumStatusChanged);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.currentUserPremiumStatusChanged);
     }
 
     @Override

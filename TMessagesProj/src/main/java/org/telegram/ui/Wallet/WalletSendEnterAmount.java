@@ -1,5 +1,6 @@
 package org.telegram.ui.Wallet;
 
+import org.telegram.messenger.FileLog;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.AnimatorListenerAdapter;
@@ -67,6 +68,7 @@ import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.MessageDrawable;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.AnimatedColor;
@@ -99,7 +101,26 @@ import java.util.Locale;
 
 public class WalletSendEnterAmount extends UniversalFragment implements NotificationCenter.NotificationCenterDelegate {
 
-    public static class AmountInputView extends FrameLayout {
+    public static class AmountInputView extends FrameLayout implements Theme.Colorable {
+
+        private int cursorColorKey = Theme.key_featuredStickers_addButton;
+
+        @Override
+        public void updateColors() {
+            try {
+                if (editText == null) {
+                    return;
+                }
+                final int color = Theme.getColor(cursorColorKey, resourcesProvider);
+                editText.setCursorColor(color);
+                editText.setHandlesColor(color);
+                if (walletAmountStyle && currencyView != null) {
+                    currencyView.setTextColor(color, false);
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
         public static final long ANIMATION_DURATION_MS = 320;
         public static final float ANIMATION_MOVE_AMPLITUDE = .1f;
         public static final float ANIMATION_START_SCALE = .5f;
@@ -151,18 +172,15 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             prefixContainer = new FrameLayout(context);
             prefixContainer.setClipChildren(false);
             prefixContainer.setClipToPadding(false);
-            // Keep the enlarged texture above its text siblings within this row.
-            // Its Z remains local to the row, beneath the Add Comment dialog.
             prefixContainer.setTranslationZ(dp(1));
             row.addView(prefixContainer, LayoutHelper.createLinear(59, 60, Gravity.CENTER_VERTICAL));
             prefixTargetWidth = dp(59);
-            // Compose beneath the Add Comment decor dialog and its dim layer.
             diamondView = new WalletDiamondView(context, 60, true);
             diamondView.setInputDrivenRotation();
             prefixContainer.addView(diamondView, LayoutHelper.createFrame(60, 60, Gravity.LEFT | Gravity.CENTER_VERTICAL, 0, -5, -2, 0));
 
             symbolView = new TextView(context);
-            symbolView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
+            ThemeBind.textColor(symbolView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
             symbolView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 44);
             symbolView.setTypeface(AndroidUtilities.getTypeface("fonts/gram.ttf"));
             symbolView.setGravity(Gravity.CENTER_VERTICAL);
@@ -182,8 +200,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 protected void drawCursor(Canvas canvas, GradientDrawable drawable) {
                     if (walletAmountStyle) {
                         drawable.setCornerRadius(dpf2(1.5f));
-                        // Fractional glyphs share the integer glyphs' baseline.
-                        // Scale the cursor around that baseline as well.
                         int baseline = getLayout().getLineBaseline(0);
                         android.graphics.Rect bounds = drawable.getBounds();
                         int top = Math.round(baseline + (bounds.top - baseline) * currentCursorScale);
@@ -191,8 +207,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                         int left = bounds.left;
                         int width = bounds.width();
                         if (hintCursorProgress > 0f) {
-                            // The hint is right-aligned in the visible content area.
-                            // Blend into the native caret position as the hint becomes text.
                             float hintLeft = getScrollX() + getWidth() - getCompoundPaddingLeft()
                                     - getCompoundPaddingRight() - getPaint().measureText("0") - width;
                             left = Math.round(left + (hintLeft - left) * hintCursorProgress);
@@ -207,7 +221,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                     if (walletAmountStyle) {
                         CharSequence text = getText();
                         int decimalIndex = Math.max(TextUtils.indexOf(text, '.'), TextUtils.indexOf(text, ','));
-                        // Advance even during the hidden phase of the cursor blink.
                         currentCursorScale = cursorScale.set(decimalIndex >= 0 && getSelectionStart() > decimalIndex ? 28f / 44f : 1f);
                         hintCursorProgress = hintCursor.set(length() == 0);
                     }
@@ -215,12 +228,8 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                     if (animationProgress >= 1f) return;
                     Paint paint = getPaint();
                     float size = paint.getTextSize();
-                    // onDraw's canvas already accounts for the view's scroll. Match
-                    // TextView's layout coordinates without subtracting it again.
                     float origin = getCompoundPaddingLeft();
                     if (length() == 0) {
-                        // The empty layout's right-aligned origin differs from the
-                        // deleted text's origin. Keep its last visible position.
                         origin += getScrollX() + emptyFromOrigin;
                     } else if (getLayout() != null) {
                         origin += getLayout().getLineLeft(0);
@@ -243,16 +252,14 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 @Override
                 public boolean onTouchEvent(MotionEvent event) {
                     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                        // Freeze character geometry before Android starts hit testing or
-                        // dragging selection handles. Selection itself is entirely native.
                         finishAnimation();
                         if (walletAmountStyle) hintCursor.force(length() == 0);
                     }
                     return super.onTouchEvent(event);
                 }
             };
-            editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
-            editText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
+            ThemeBind.textColor(editText, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
+            ThemeBind.hintTextColor(editText, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
             editText.setHint("0");
             editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 44);
             editText.setTypeface(AndroidUtilities.getTypeface("fonts/gram.ttf"));
@@ -266,9 +273,9 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             editText.setCursorWidth(walletAmountStyle ? 3 : 2);
             editText.setCursorSize(dp(48));
             int cursorColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
-            editText.setCursorColor(cursorColor);
-            editText.setHandlesColor(cursorColor);
-            editText.setHighlightColor(Theme.multAlpha(cursorColor, .3f));
+            ThemeBind.cursorColor(editText, Theme.key_featuredStickers_addButton, resourcesProvider);
+            ThemeBind.editHandlesColor(editText, Theme.key_featuredStickers_addButton, resourcesProvider);
+            ThemeBind.highlightColor(editText, ThemeBind.multAlpha(Theme.key_featuredStickers_addButton, .3f), resourcesProvider);
             editText.setAllowDrawCursor(true);
             editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             editText.setKeyListener(DigitsKeyListener.getInstance("0123456789.,"));
@@ -278,8 +285,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             currencyView = new AnimatedTextView(context, false, true, false, true, true) {
                 @Override
                 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    // Keep the drawable's layout width stable as the prefix resizes;
-                    // AnimatedTextView otherwise resets its animation on every measure.
                     super.onMeasure(MeasureSpec.makeMeasureSpec(AndroidUtilities.displaySize.x, MeasureSpec.AT_MOST), heightMeasureSpec);
                     setMeasuredDimension(resolveSize((int) Math.ceil(getDrawable().getCurrentWidth()), widthMeasureSpec), getMeasuredHeight());
                 }
@@ -294,7 +299,11 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             currencyView.setScaleProperty(.2f);
             currencyView.setAllowCancel(true);
             currencyView.getDrawable().setOnWidthUpdatedListener(currencyView::requestLayout);
-            currencyView.setTextColor(Theme.getColor(walletAmountStyle ? Theme.key_featuredStickers_addButton : Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
+            if (walletAmountStyle) {
+                currencyView.setTextColor(Theme.getColor(cursorColorKey, resourcesProvider));
+            } else {
+                ThemeBind.textColor(currencyView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
+            }
             currencyView.setTextSize(dp(28));
             currencyView.setTypeface(AndroidUtilities.getTypeface("fonts/gram.ttf"));
             currencyView.setGravity(Gravity.LEFT);
@@ -385,12 +394,13 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         public void setCurrency(GramWallet wallet, boolean inCurrency) {
             final boolean animated = currencyInitialized && isAttachedToWindow() && isShown();
             if (walletAmountStyle) {
-                int color = Theme.getColor(inCurrency ? Theme.key_wallet_inputCurrency : Theme.key_featuredStickers_addButton, resourcesProvider);
-                symbolView.setTextColor(color);
+                cursorColorKey = inCurrency ? Theme.key_wallet_inputCurrency : Theme.key_featuredStickers_addButton;
+                int color = Theme.getColor(cursorColorKey, resourcesProvider);
+                ThemeBind.textColor(symbolView, inCurrency ? Theme.key_wallet_inputCurrency : Theme.key_featuredStickers_addButton, resourcesProvider);
                 currencyView.setTextColor(color, animated);
-                editText.setCursorColor(color);
-                editText.setHandlesColor(color);
-                editText.setHighlightColor(Theme.multAlpha(color, .3f));
+                ThemeBind.cursorColor(editText, cursorColorKey, resourcesProvider);
+                ThemeBind.editHandlesColor(editText, cursorColorKey, resourcesProvider);
+                ThemeBind.highlightColor(editText, ThemeBind.multAlpha(inCurrency ? Theme.key_wallet_inputCurrency : Theme.key_featuredStickers_addButton, .3f), resourcesProvider);
             }
             final TL_wallet.currencyRate rate = wallet.currencies.getSelectedCurrencyRate();
             final String code = wallet.currencies.getCurrency();
@@ -460,7 +470,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             prefixAnimator.addUpdateListener(a -> {
                 float progress = (float) a.getAnimatedValue();
                 float move = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(progress);
-                // Finish the fade quickly while the sign continues to swing and settle.
                 float fade = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(Math.min(1f, progress * 320f / 120f));
                 diamondView.setAlpha(fromDiamond + (toDiamond - fromDiamond) * fade);
                 symbolView.setAlpha(fromSymbol + (toSymbol - fromSymbol) * fade);
@@ -622,8 +631,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         private void refreshCharacterLayout() {
             Editable text = editText.getText();
             if (walletAmountStyle) {
-                // TextView measures the hint even when text hides it, so remove it
-                // while editing to let narrow digits use their actual width.
                 CharSequence hint = text.length() == 0 ? "0" : null;
                 if (!TextUtils.equals(editText.getHint(), hint)) editText.setHint(hint);
             }
@@ -668,7 +675,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             DisappearingGlyph(String glyph, boolean fraction, GlyphMotion previous) {
                 this.glyph = glyph;
                 this.fraction = fraction;
-                // Fade at the last visible position instead of sliding into retained digits.
                 motion = new GlyphMotion(previous, previous.fromX, true);
             }
         }
@@ -686,8 +692,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 this.exiting = exiting;
                 this.toX = toX;
                 fromX = previous == null ? toX : previous.fromX;
-                // Retained glyphs keep their original appearance timeline while
-                // their horizontal position retargets with the amount layout.
                 appearanceStart = previous == null || exiting ? SystemClock.uptimeMillis() : previous.appearanceStart;
                 float t = previous != null && exiting ? previous.appearanceProgress() : 0f;
                 fromAlpha = previous == null ? 0f : previous.fromAlpha + (1f - previous.fromAlpha) * t;
@@ -828,7 +832,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
     private boolean loadingRecipient;
 
     public String getAddress() {
-        // Resolution supplies user metadata; preserve the destination and its bounce flag.
         return recipientAddress;
     }
     public byte[] getPublicKey() {
@@ -846,6 +849,31 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
     private FrameLayout centerBottomContainer;
     private LinearLayout centerBottom;
     private AmountInputView amountInput;
+    private android.graphics.drawable.ShapeDrawable usdPillDrawable;
+    private MessageDrawable commentBackgroundDrawable;
+
+    private void applyThemeColorsHook() {
+        try {
+            if (usdPillDrawable != null) {
+                usdPillDrawable.getPaint().setColor(Theme.multAlpha(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2), 0.08f));
+                usdPillDrawable.invalidateSelf();
+                if (usdView != null) {
+                    usdView.invalidate();
+                }
+            }
+            if (commentBackgroundDrawable != null) {
+                final int color = getThemedColor(Theme.key_wallet_out_commentBorder);
+                commentBackgroundDrawable.paint.setColor(color);
+                commentBackgroundDrawable.overrideColor = color;
+                commentBackgroundDrawable.invalidateSelf();
+                if (commentView != null) {
+                    commentView.invalidate();
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
     private EditTextBoldCursor amountEdit;
     private boolean pendingAmountKeyboard;
     private final Runnable showAmountKeyboard = this::showPendingAmountKeyboard;
@@ -899,7 +927,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         GramWallet.getInstance(currentAccount).resolveWallet(user, true, (w, error) -> {
             loadingRecipient = false;
             if (TextUtils.equals(error, "WALLET_USER_UNAVAILABLE")) {
-                // server shows alert already
                 finishFragment();
                 return;
             }
@@ -973,9 +1000,9 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         fragmentView = super.createView(context);
         fragmentView.setFocusableInTouchMode(true);
         listView.setVisibility(View.GONE);
-        fragmentView.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
+        ThemeBind.backgroundColor(fragmentView, Theme.key_windowBackgroundWhite, getResourceProvider());
 
-        actionBar.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
+        ThemeBind.backgroundColor(actionBar, Theme.key_windowBackgroundWhite, getResourceProvider());
         actionBar.setCastShadows(false);
 
         final ActionBarMenu menu = actionBar.createMenu();
@@ -997,7 +1024,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         });
 
         final FrameLayout content = (FrameLayout) fragmentView;
-        // The swipe-enlarged diamond extends above the center group's bounds.
         content.setClipChildren(false);
         content.setClipToPadding(false);
 
@@ -1019,7 +1045,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
 
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                // Keep the full height of comments and hints before scaling the group.
                 super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
             }
 
@@ -1124,10 +1149,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         usdView.setAnimationProperties(.35f, 0, 320, 3.5f, CubicBezierInterpolator.EASE_OUT_QUINT);
         usdView.setScaleProperty(0.25f);
         usdView.setText(getCurrencyPreviewText(GramWallet.getInstance(currentAccount), 0));
-        usdView.setTextColor(Theme.blendOver(
-                getThemedColor(Theme.key_windowBackgroundWhite),
-                getThemedColor(Theme.key_windowBackgroundWhiteGrayText2)
-        ));
+        ThemeBind.textColor(usdView, ThemeBind.blendOver(Theme.key_windowBackgroundWhite, Theme.key_windowBackgroundWhiteGrayText2), getResourceProvider());
         usdView.setTextSize(dp(14));
         usdView.setTypeface(AndroidUtilities.getTypeface("fonts/gram.ttf"));
         usdView.setGravity(Gravity.CENTER);
@@ -1137,7 +1159,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 getThemedColor(Theme.key_windowBackgroundWhiteGrayText2),
                 0.08f
         );
-        usdView.setSizeableBackground(Theme.createRoundRectDrawable(dp(14), pillColor));
+        usdView.setSizeableBackground(usdPillDrawable = Theme.createRoundRectDrawable(dp(14), pillColor));
         center.addView(usdView, LayoutHelper.createLinear(
                 LayoutHelper.WRAP_CONTENT,
                 28,
@@ -1155,8 +1177,8 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
 
         depositFundsView = new TextView(context);
         depositFundsView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        depositFundsView.setTextColor(getThemedColor(Theme.key_featuredStickers_addButton));
-        depositFundsView.setBackground(Theme.createRadSelectorDrawable(Theme.multAlpha(getThemedColor(Theme.key_featuredStickers_addButton), .10f), Theme.multAlpha(getThemedColor(Theme.key_featuredStickers_addButton), .25f), 14, 14));
+        ThemeBind.textColor(depositFundsView, Theme.key_featuredStickers_addButton, getResourceProvider());
+        ThemeBind.selectorBackground(depositFundsView, Theme.createRadSelectorDrawable(Theme.multAlpha(getThemedColor(Theme.key_featuredStickers_addButton), .10f), Theme.multAlpha(getThemedColor(Theme.key_featuredStickers_addButton), .25f), 14, 14), ThemeBind.multAlpha(Theme.key_featuredStickers_addButton, .10f), ThemeBind.multAlpha(Theme.key_featuredStickers_addButton, .25f), getResourceProvider());
         depositFundsView.setPadding(dp(10), 0, dp(10), 0);
         depositFundsView.setGravity(Gravity.CENTER);
         depositFundsView.setTypeface(AndroidUtilities.bold());
@@ -1194,8 +1216,9 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         commentBackground.overrideColor = getThemedColor(Theme.key_wallet_out_commentBorder);
         commentView.setPadding(dp(15), dp(7), dp(19), dp(8));
         commentView.setBackground(commentBackground);
+        commentBackgroundDrawable = commentBackground;
         commentView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        commentView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(commentView, Theme.key_windowBackgroundWhiteGrayText2, getResourceProvider());
         commentView.setTypeface(AndroidUtilities.bold());
         commentView.setEllipsize(TextUtils.TruncateAt.END);
         commentView.setMaxLines(4);
@@ -1218,8 +1241,8 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         updateCenterBottom();
 
         insufficientFundsView = new LinkSpanDrawable.LinksTextView(context, resourceProvider);
-        insufficientFundsView.setTextColor(getThemedColor(Theme.key_text_RedBold));
-        insufficientFundsView.setLinkTextColor(getThemedColor(Theme.key_featuredStickers_addButton));
+        ThemeBind.textColor(insufficientFundsView, Theme.key_text_RedBold, getResourceProvider());
+        ThemeBind.linkTextColor(insufficientFundsView, Theme.key_featuredStickers_addButton, getResourceProvider());
         insufficientFundsView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         insufficientFundsView.setGravity(Gravity.CENTER);
         insufficientFundsView.setTypeface(AndroidUtilities.bold());
@@ -1246,7 +1269,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         ));
 
         balanceView = new TextView(context);
-        balanceView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(balanceView, Theme.key_windowBackgroundWhiteGrayText2, getResourceProvider());
         balanceView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         balanceView.setGravity(Gravity.CENTER);
         bottomContainer.addView(balanceView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.FILL_HORIZONTAL, 16, 0, 16, 0));
@@ -1262,7 +1285,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 setMeasuredDimension(getMeasuredWidth(), Math.round(getMeasuredHeight() * feeVisibilityProgress));
             }
         };
-        feeView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(feeView, Theme.key_windowBackgroundWhiteGrayText2, getResourceProvider());
         feeView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         feeView.setGravity(Gravity.CENTER);
         feeView.setPadding(0, dp(4), 0, dp(4));
@@ -1321,12 +1344,9 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
 
     private void updateIntroGeometry() {
         final float remaining = 1f - introProgress;
-        // Let the flight overshoot, but keep the reveals opaque once they appear.
         introRevealProgress = Math.max(introRevealProgress, Math.max(0f, Math.min(1f, introProgress)));
         final float revealRemaining = 1f - introRevealProgress;
         amountInput.setIntroProgress(introProgress, introRevealProgress, introAnimator == null && introProgress == 1f);
-        // The group's center follows the live space above the keyboard. Start the
-        // diamond there, then move the amount row into its final place in the group.
         amountInput.setTranslationY((center.getHeight() / 2f - amountInput.getTop()
                 - amountInput.getHeight() / 2f) * remaining);
         usdView.setAlpha(introRevealProgress);
@@ -1334,8 +1354,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         centerBottomContainer.setAlpha(introRevealProgress);
         centerBottomContainer.setTranslationY(dp(16) * revealRemaining);
         bottomContainer.setAlpha(introRevealProgress);
-        // Keep the IME translation on the parent independent of the intro offsets.
-        // Fee alpha remains owned by its visibility animation.
         for (int i = 0; i < bottomContainer.getChildCount(); i++) {
             bottomContainer.getChildAt(i).setTranslationY(dp(24) * revealRemaining);
         }
@@ -1372,7 +1390,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
                 int from = sb.length();
                 sb.append(getString(R.string.WalletDepositFunds));
                 sb.append(" >");
-                sb.setSpan(new ColoredImageSpan(R.drawable.settings_arrow).setOverrideColor(getThemedColor(Theme.key_featuredStickers_addButton)).translate(0, dpf2(0.66f)), sb.length() - 1, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(new ColoredImageSpan(R.drawable.settings_arrow).translate(0, dpf2(0.66f)), sb.length() - 1, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 sb.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(@NonNull View view) {
@@ -1468,24 +1486,20 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             }
         };
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editText.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
-        editText.setHintTextColor(getThemedColor(Theme.key_dialogTextHint));
+        ThemeBind.textColor(editText, Theme.key_dialogTextBlack, getResourceProvider());
+        ThemeBind.hintTextColor(editText, Theme.key_dialogTextHint, getResourceProvider());
         editText.setHint(getString(R.string.WalletCommentOptionalMessage));
         editText.setText(comment);
         editText.setSelection(editText.length());
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setMaxLines(5);
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        editText.setLineColors(
-            getThemedColor(Theme.key_windowBackgroundWhiteInputField),
-            getThemedColor(Theme.key_windowBackgroundWhiteInputFieldActivated),
-            getThemedColor(Theme.key_text_RedRegular)
-        );
+        ThemeBind.lineColors(editText, Theme.key_windowBackgroundWhiteInputField, Theme.key_windowBackgroundWhiteInputFieldActivated, Theme.key_text_RedRegular, getResourceProvider());
         editText.setBackground(null);
         editText.setPadding(0, dp(10), dp(48), dp(10));
 
         final CheckBoxCell publicCommentCell = new CheckBoxCell(context, 1, getResourceProvider());
-        publicCommentCell.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourceProvider), Theme.RIPPLE_MASK_ROUNDRECT_6DP, dp(12)));
+        ThemeBind.selectorBackground(publicCommentCell, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourceProvider), Theme.RIPPLE_MASK_ROUNDRECT_6DP, dp(12)), null, ThemeBind.of(Theme.key_listSelector), resourceProvider);
         publicCommentCell.setText(getString(R.string.WalletMakeCommentPublic), "", !comment_encrypted || getPublicKey() == null, false);
         publicCommentCell.setMultiline(true);
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) publicCommentCell.getCheckBoxView().getLayoutParams();
@@ -1570,7 +1584,7 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
 
     @Override
     public boolean onFragmentCreate() {
-        getNotificationCenter().addObserver(this, NotificationCenter.walletUpdate);
+        getNotificationCenter().addWeakObserver(this, NotificationCenter.walletUpdate);
         return super.onFragmentCreate();
     }
 
@@ -1610,8 +1624,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             } else {
                 pendingAmountKeyboard = true;
                 amountEdit.requestFocus();
-                // Queue after the opening transition is set up, without waiting
-                // for it to finish, so the IME and intro move together.
                 amountEdit.post(showAmountKeyboard);
             }
         }
@@ -1643,7 +1655,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         pendingAmountKeyboard = false;
         if (amountEdit == null) return;
         amountEdit.removeCallbacks(showAmountKeyboard);
-        // Keep the amount field from reopening the IME when authorization closes.
         fragmentView.requestFocus();
         AndroidUtilities.hideKeyboard(amountEdit);
     }
@@ -1968,8 +1979,6 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
         sendButton.setLoading(true);
         queuedTransaction = null;
         if (recipientUser != null && TextUtils.isEmpty(recipientDomain)) {
-            // Queuing publishes wallet updates before navigation. Keep the spinner
-            // through those updates and the transition's asynchronous readiness wait.
             sendingToUser = true;
             wallet.send(recipientUser, recipientAddress, amount, comment, comment_encrypted ? getPublicKey() : null, null, error2 -> {
                 if ("PASSCODE_FAILED".equalsIgnoreCase(error2)) {
@@ -2231,6 +2240,23 @@ public class WalletSendEnterAmount extends UniversalFragment implements Notifica
             bottomContainer.animate().cancel();
             bottomContainer.animate().translationY(-bottom).setDuration(320).setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).start();
             lastBottom = bottom;
+        }
+    }
+
+    private int lastBottomContainerColor;
+
+    @Override
+    public void onThemeColorsChanged() {
+        try {
+            super.onThemeColorsChanged();
+            applyThemeColorsHook();
+            final int bottomColor = getThemedColor(Theme.key_windowBackgroundWhite);
+            if (bottomContainer != null && bottomColor != lastBottomContainerColor && bottomContainer.getBackground() instanceof GradientDrawable) {
+                lastBottomContainerColor = bottomColor;
+                ((GradientDrawable) bottomContainer.getBackground()).setColors(new int[]{ Theme.multAlpha(bottomColor, 0.0f), bottomColor, bottomColor });
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
         }
     }
 }

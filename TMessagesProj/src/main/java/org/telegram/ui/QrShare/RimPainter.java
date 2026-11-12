@@ -10,11 +10,6 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 
-/**
- * The "Dark out" glass rim (Glass Lab) for views outside QrShareView (emoji islands): white crescents inside with the
- * white blend (Plus), a dark ring outside drawn as black at alpha a(θ) (== Multiply by grey 1 − a). Same RimTune values,
- * so the glass looks the same everywhere. Round rects only.
- */
 final class RimPainter {
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final SweepGradient[] sweeps = new SweepGradient[RimTune.NG];
@@ -23,7 +18,6 @@ final class RimPainter {
     private final Path b = new Path();
     private final RectF r = new RectF(), r2 = new RectF();
 
-    /** The light axis rotation (°) and top/bottom balance, shared with the QR screen's tilt. */
     static float tiltRot, tiltBal;
 
     RimPainter() {
@@ -44,22 +38,20 @@ final class RimPainter {
                 final float sn = (float) Math.sin(th);
                 final float tb = (sn < 0 ? gk[RimTune.D_TOP] : gk[RimTune.D_BOT]) / 100f;
                 final float al = Math.max(0f, Math.min(1f, tb + (gk[RimTune.D_A] / 100f - tb) * side));
-                cols[i] = ((int) (255 * al + 0.5f)) << 24; // black at alpha a
+                cols[i] = ((int) (255 * al + 0.5f)) << 24;
                 pos[i] = i / (float) (n - 1);
             }
             sweeps[k] = new SweepGradient(0, 0, cols, pos);
         }
     }
 
-    /** Draws the rim of the round rect (rect, radius) in group grp, faded by alpha. */
     void draw(Canvas c, RectF rect, float radius, int grp, float alpha) {
         draw(c, rect, radius, grp, alpha, false);
     }
 
-    /** layered = drawn into an offscreen layer without the real pixels beneath: no Plus (it would turn grey). */
     void draw(Canvas c, RectF rect, float radius, int grp, float alpha, boolean layered) {
         if (alpha <= 0.004f) return;
-        if (QrGlass.drawRim(c, rect, radius, grp, alpha)) return; // baked: the same outline as the QR screen's
+        if (QrGlass.drawRim(c, rect, radius, grp, alpha)) return;
         ensure();
         final float[] gk = RimTune.g[grp];
         final float rot = tiltRot, bal = tiltBal;
@@ -92,7 +84,6 @@ final class RimPainter {
             final float s = pass == 0 ? aTop : aBot;
             final float off = pass == 0 ? tTop : -tBot;
             if (s <= 0.004f || Math.abs(off) < 0.1f) continue;
-            // the crescent: the shape with its shifted copy clipped out (Path.op gave wrong shapes on some devices)
             r2.set(r);
             r2.offset(sx * off, sy * off);
             b.rewind();

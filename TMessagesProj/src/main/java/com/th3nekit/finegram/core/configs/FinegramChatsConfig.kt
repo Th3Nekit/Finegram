@@ -38,6 +38,8 @@ object FinegramChatsConfig: CoroutineScope by CoroutineScope(
     var weekdayNearDate by sharedPreferences.boolean("FG_WeekdayNearDate", false)
 
     var glareEffects by sharedPreferences.boolean("CP_GlareEffects", true)
+    var glassPeerTint by sharedPreferences.boolean("FG_GlassPeerTint", false)
+    var glassSolidStroke by sharedPreferences.boolean("FG_GlassSolidStroke", false)
     var centerChatTitle by sharedPreferences.boolean("AP_CenterChatTitle_v2", true)
     var centerChatTitle_AdaptiveWidth by sharedPreferences.boolean("AP_CenterChatTitle_AdaptiveWidth_v2", true)
     var unreadBadgeOnBackButton by sharedPreferences.boolean("CP_UnreadBadgeOnBackButton", centerChatTitle)
@@ -72,6 +74,8 @@ object FinegramChatsConfig: CoroutineScope by CoroutineScope(
     var drawSnowInChat by sharedPreferences.boolean("AP_DrawSnowInChat", false)
     var discussInsteadOfMute by sharedPreferences.boolean("CP_DiscussInsteadOfMute", true)
     var iOSMessageInputField by sharedPreferences.boolean("CP_iOSMessageInputField", true)
+    var joinedInputBubbles by sharedPreferences.boolean("FG_JoinedInputBubbles", false)
+    var menuBeforeAttach by sharedPreferences.boolean("FG_MenuBeforeAttach", false)
     var hideSendAsChannel by sharedPreferences.boolean("CP_HideSendAsChannel", false)
     var hideMuteUnmuteButton by sharedPreferences.boolean("CP_HideMuteUnmuteButton", false)
     var slider_RecentEmojisAmplifier by sharedPreferences.int("CP_Slider_RecentEmojisAmplifier", 45)

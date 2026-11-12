@@ -75,6 +75,7 @@ import org.telegram.tgnet.tl.TL_phone;
 import org.telegram.tgnet.tl.TL_update;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
@@ -431,7 +432,6 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         arrowButton.setColorFilter(new PorterDuffColorFilter(0xFFFFFFFF, PorterDuff.Mode.SRC_IN));
         arrowButton.setRotation(90.0f);
         arrowButton.setBackground(Theme.createSelectorDrawable(0x40FFFFFF));
-//        addView(arrowButton, LayoutHelper.createFrame(26, 26, Gravity.LEFT | Gravity.BOTTOM, 10, 9, 10, 9));
         arrowButton.setOnClickListener(v -> {
             setCollapsed(!collapsed, true);
         });
@@ -501,11 +501,6 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
             adapter.notifyItemChanged(msg_position);
             listView.setItemAnimator(ia);
 
-//            final ItemOptions o = ItemOptions.makeOptions(container, new DarkThemeResourceProvider(), v);
-//            o.addDialog(currentAccount, sender.dialogId, () -> {
-//                storyViewer.presentFragment(ProfileActivity.of(sender.dialogId));
-//            });
-//            o.show();
         });
 
         itemAnimator = new DefaultItemAnimator() {
@@ -570,7 +565,6 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         final long minStars = lastMinStars = livePlayer == null ? 0 : livePlayer.getSendPaidMessagesStars();
         for (int i = 0; i < messages.size(); ++i) {
             final Message msg = messages.get(i);
-            // do not show reaction messages lower than required minimum for a message
             if (!(!msg.fromAdmin && msg.isReaction && msg.stars < minStars)) {
                 items.add(LiveCommentView.Factory.of(msg));
             }
@@ -692,7 +686,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         this.dialogId = dialogId;
         this.inputCall = inputCall;
         if (this.inputCall != null) {
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.liveStoryMessageUpdate);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.liveStoryMessageUpdate);
         }
         if (changed) {
             closeBulletin.run();
@@ -939,13 +933,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
     }
 
     private String getStarsToastTitle() {
-//        if (isAnonymous()) {
-//            return getString(R.string.StarsSentAnonymouslyTitle);
-//        } else if (getPeerId() != 0 && getPeerId() != UserConfig.getInstance(currentAccount).getClientUserId()) {
-//            return formatString(R.string.StarsSentTitleChannel, DialogObject.getShortName(getPeerId()));
-//        } else {
             return getString(R.string.StarsSentTitle);
-//        }
     }
 
     private CharSequence getStarsToastSubtitle() {
@@ -1065,7 +1053,6 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
     private int lastNow;
     private int sortTopMessages(TopSender a, TopSender b) {
         return b.lastSentDate - a.lastSentDate;
-        // return b.getStars(lastNow) - a.getStars(lastNow);
     }
 
     public void deleteAllFrom(long peer) {
@@ -2095,7 +2082,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
 
         final TextView title = new TextView(context);
         title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        title.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
+        ThemeBind.textColor(title, Theme.key_dialogTextBlack, resourcesProvider);
         title.setTypeface(AndroidUtilities.bold());
         title.setText(getString(R.string.DeleteSingleMessagesTitle));
         layout.addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 22, 12, 22, 0));
@@ -2110,7 +2097,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         check1.setOnClickListener(v -> {
             check1.setChecked(!check1.isChecked(), true);
         });
-        check1.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL));
+        ThemeBind.selectorBackground(check1, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         layout.addView(check1, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         final CheckBoxCell check2 = new CheckBoxCell(context, CheckBoxCell.TYPE_CHECK_BOX_ROUND, 21, true, resourcesProvider);
@@ -2119,7 +2106,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         check2.setOnClickListener(v -> {
             check2.setChecked(!check2.isChecked(), true);
         });
-        check2.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL));
+        ThemeBind.selectorBackground(check2, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         layout.addView(check2, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         final CheckBoxCell check3 = new CheckBoxCell(context, CheckBoxCell.TYPE_CHECK_BOX_ROUND, 21, true, resourcesProvider);
@@ -2128,7 +2115,7 @@ public class LiveCommentsView extends FrameLayout implements NotificationCenter.
         check3.setOnClickListener(v -> {
             check3.setChecked(!check3.isChecked(), true);
         });
-        check3.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL));
+        ThemeBind.selectorBackground(check3, Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), Theme.RIPPLE_MASK_ALL), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         layout.addView(check3, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         final TextInfoPrivacyCell infoView = new TextInfoPrivacyCell(context, resourcesProvider);

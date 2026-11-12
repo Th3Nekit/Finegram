@@ -64,6 +64,8 @@ public class DebugRecordingCanvasReplayFragment extends BaseFragment {
         replayView = new View(context) {
             @Override
             protected void onDraw(@NonNull Canvas canvas) {
+                canvas.drawColor(0xFFFF00FF);
+
                 Trace.beginSection("render_" + currentFrame + "_" + framesCount);
                 super.onDraw(canvas);
                 if (!isPlaying) {
@@ -81,13 +83,11 @@ public class DebugRecordingCanvasReplayFragment extends BaseFragment {
 
         contentView.addView(replayView, LayoutHelper.createFrameMatchParent());
 
-        // Play button
         playButton = new ImageButton(context);
         updatePlayButtonIcon();
         playButton.setBackgroundColor(Color.TRANSPARENT);
         playButton.setOnClickListener(v -> togglePlayback());
 
-        // SeekBar
         seekBarView = new SeekBarView(context);
         seekBarView.setReportChanges(true);
         seekBarView.setDelegate(new SeekBarView.SeekBarViewDelegate() {
@@ -100,7 +100,6 @@ public class DebugRecordingCanvasReplayFragment extends BaseFragment {
         });
         seekBarView.setProgress((float) currentFrame / framesCount);
 
-        // Bottom bar: [Play] [SeekBar]
         FrameLayout bottomBar = new FrameLayout(context);
         bottomBar.addView(playButton, LayoutHelper.createFrame(38, 38, Gravity.LEFT | Gravity.CENTER_VERTICAL, 0, 0, 0, 0));
         bottomBar.addView(seekBarView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38, Gravity.CENTER_VERTICAL, 46, 0, 0, 0));

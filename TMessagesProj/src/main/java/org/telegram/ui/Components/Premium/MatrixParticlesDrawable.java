@@ -102,9 +102,6 @@ public class MatrixParticlesDrawable {
                     }
                 }
             }
-//            for (int y = 0; y <= ny; y++) {
-//                matrixTextParticles[x][y].draw(canvas, size * x, size * y, currentTime);
-//            }
         }
     }
 

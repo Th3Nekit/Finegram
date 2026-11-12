@@ -42,6 +42,7 @@ import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.ContentPreviewViewer;
 
@@ -49,7 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-public class SuggestEmojiView extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
+public class SuggestEmojiView extends FrameLayout implements NotificationCenter.NotificationCenterDelegate, Theme.Colorable {
 
     public final static int DIRECTION_TO_BOTTOM = 0;
     public final static int DIRECTION_TO_TOP = 1;
@@ -315,7 +316,7 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
         itemAnimator.setDurations(45);
         itemAnimator.setTranslationInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
         listView.setItemAnimator(itemAnimator);
-        listView.setSelectorDrawableColor(Theme.getColor(Theme.key_listSelector, resourcesProvider));
+        ThemeBind.listSelectorColor(listView, Theme.key_listSelector, resourcesProvider);
         RecyclerListView.OnItemClickListener onItemClickListener;
         listView.setOnItemClickListener(onItemClickListener = (view, position) -> {
             onClick(((EmojiImageView) view).emoji);
@@ -375,12 +376,27 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
         }
     }
 
+    private PorterDuffColorFilter gradientFilter;
+    private int gradientFilterColor;
+
+    @Override
     public void updateColors() {
         if (backgroundPaint != null) {
             backgroundPaint.setColor(Theme.getColor(Theme.key_chat_stickersHintPanel, resourcesProvider));
         }
-        Theme.chat_gradientLeftDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_stickersHintPanel, resourcesProvider), PorterDuff.Mode.MULTIPLY));
-        Theme.chat_gradientRightDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_stickersHintPanel, resourcesProvider), PorterDuff.Mode.MULTIPLY));
+        final int gradientColor = Theme.getColor(Theme.key_chat_stickersHintPanel, resourcesProvider);
+        if (gradientFilter == null || gradientFilterColor != gradientColor) {
+            gradientFilter = new PorterDuffColorFilter(gradientFilterColor = gradientColor, PorterDuff.Mode.MULTIPLY);
+        }
+        if (Theme.chat_gradientLeftDrawable != null && Theme.chat_gradientLeftDrawable.getColorFilter() != gradientFilter) {
+            Theme.chat_gradientLeftDrawable.setColorFilter(gradientFilter);
+        }
+        if (Theme.chat_gradientRightDrawable != null && Theme.chat_gradientRightDrawable.getColorFilter() != gradientFilter) {
+            Theme.chat_gradientRightDrawable.setColorFilter(gradientFilter);
+        }
+        if (containerView != null) {
+            containerView.invalidate();
+        }
     }
 
     public void forceClose() {
@@ -433,7 +449,6 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
                     String emoji = text.toString().substring(emojiStart, emojiEnd);
                     show = true;
                     createListView();
-//                    containerView.setVisibility(View.VISIBLE);
                     arrowToSpan = lastEmoji;
                     arrowToStart = arrowToEnd = null;
                     searchAnimated(emoji);
@@ -448,7 +463,6 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
             if ((aspans == null || aspans.length == 0) && selectionEnd < 52) {
                 show = true;
                 createListView();
-//                containerView.setVisibility(View.VISIBLE);
                 arrowToSpan = null;
                 searchKeywords(text.toString().substring(0, selectionEnd));
                 if (containerView != null) {
@@ -474,9 +488,6 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
     private Runnable searchRunnable;
     private long lastLangChangedTime = 0;
 
-    /**
-     * The user needs time to change the locale. We estimate this time to be at least 360 ms.
-     */
     private String[] detectKeyboardLangThrottleFirstWithDelay() {
         long currentTime = System.currentTimeMillis();
         int delay = 360;
@@ -521,7 +532,6 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
         searchRunnable = () -> {
             final HashSet<String> addedToResult = new HashSet<>();
             final ArrayList<MediaDataController.KeywordResult> result = new ArrayList<>();
-//            Runnable localSearch = () -> {
                 MediaDataController.getInstance(currentAccount).getEmojiSuggestions(lang, query, true, (param, alias) -> {
                     if (id != lastQueryId) return;
                     lastQueryType = 1;
@@ -557,28 +567,6 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
                         forceClose();
                     }
                 }, SharedConfig.suggestAnimatedEmoji && UserConfig.getInstance(currentAccount).isPremium());
-//            };
-//            Runnable serverSearch = () -> {
-//                if (ConnectionsManager.getInstance(currentAccount).getConnectionState() != ConnectionsManager.ConnectionStateConnected) {
-//                    localSearch.run();
-//                    return;
-//                }
-//                loadingKey = MediaDataController.getInstance(currentAccount).searchStickers(true, query, lang == null ? "" : lang[0], emojis -> {
-//                    if (id != lastQueryId) return;
-//                    AnimatedEmojiDrawable.getDocumentFetcher(currentAccount).putDocuments(emojis);
-//                    for (TLRPC.Document doc : emojis) {
-//                        final String emoji = "animated_" + doc.id;
-//                        if (!addedToResult.contains(emoji)) {
-//                            MediaDataController.KeywordResult keywordResult = new MediaDataController.KeywordResult();
-//                            keywordResult.emoji = emoji;
-//                            addedToResult.add(emoji);
-//                            result.add(keywordResult);
-//                        }
-//                    }
-//                    localSearch.run();
-//                });
-//            };
-//            serverSearch.run();
         };
         if (keywordResults == null || keywordResults.isEmpty()) {
             AndroidUtilities.runOnUIThread(searchRunnable, 600);
@@ -935,8 +923,8 @@ public class SuggestEmojiView extends FrameLayout implements NotificationCenter.
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.newEmojiSuggestionsAvailable);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.newEmojiSuggestionsAvailable);
     }
 
     @Override

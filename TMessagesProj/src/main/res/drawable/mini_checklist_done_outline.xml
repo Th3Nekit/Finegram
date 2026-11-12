@@ -5,14 +5,14 @@
     android:viewportWidth="48"
     android:viewportHeight="48">
 
-    <!-- Scale group to add ~1dp padding without distorting shape -->
+    
     <group
         android:scaleX="0.75"
         android:scaleY="0.75"
         android:pivotX="24"
         android:pivotY="18">
 
-        <!-- Original box (unchanged geometry) -->
+        
         <path
             android:fillColor="#00000000"
             android:strokeColor="#FFFFFF"
@@ -27,7 +27,7 @@
                               C2,6.92486775 6.92486775,2 13,2
                               L35,2 Z" />
 
-        <!-- Check mark (left + slightly down) -->
+        
         <path
             android:fillColor="#00000000"
             android:strokeColor="#FFFFFF"

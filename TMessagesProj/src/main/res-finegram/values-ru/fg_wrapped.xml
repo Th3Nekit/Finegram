@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Wrapped_ChatScope">По %1$d доступным чатам. Без ботов, каналов и секретных чатов.</string>
+    <string name="FG_Wrapped_PartialScope">Часть данных недоступна. Проверено чатов: %1$d; числа могут быть неполными.</string>
+    <string name="FG_Wrapped_SampleScope">По выборке из %1$s отправленных сообщений</string>
+    <string name="FG_Wrapped_MediaScope">Медиа в %1$d самых активных чатах</string>
+    <string name="FG_Wrapped_CallScope">Состоявшиеся звонки из доступной истории</string>
+    <string name="FG_Wrapped_SampleChars">В сообщениях выборки — %1$s символов</string>
+    <string name="FG_Wrapped_Unavailable">Не удалось собрать достаточно данных. Попробуй открыть итоги позже.</string>
+    <string name="FG_Wrapped_ActivityTitle">Когда было что сказать</string>
+    <string name="FG_Wrapped_ActivityDays">дней с сообщениями в выборке</string>
+    <string name="FG_Wrapped_LongestSample">Самое длинное сообщение в выборке — %1$s символов</string>
+    <string name="FG_Wrapped_ExportError">Не удалось подготовить изображение. Попробуй ещё раз.</string>
+    <string name="FG_Wrapped_LimitedScope">По %1$d недавно активным доступным чатам. Часть чатов не вошла в обзор.</string>
+    <string name="FG_Wrapped_Incomplete">Часть данных недоступна</string>
+    <string name="FG_Wrapped_SummaryScope">Сообщения: %1$d доступных чатов · медиа: топ-%2$d.\nРитм и слова: выборка из %3$s сообщений.</string>
+    <string name="FG_Wrapped_NoMessagesObserved">В доступных чатах за этот период сообщений не найдено.</string>
+    <string name="FG_Wrapped_BestChatMonth">Твой чат месяца</string>
+    <string name="FG_Wrapped_BestChatYear">Твой чат года</string>
+    <string name="FG_Wrapped_CallMostTime">Больше всего времени — с %1$s</string>
+    <string name="FG_Wrapped_W_Seconds">секунда|секунды|секунд</string>
+</resources>

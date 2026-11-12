@@ -127,12 +127,10 @@ public class MotionPhotoDrawable extends Drawable {
         return dp(24);
     }
 
-//    private float alpha = 1.0f;
     @Override
     public void setAlpha(int alpha) {
         strokePaint.setAlpha(alpha);
         playPaint.setAlpha(alpha);
-//        this.alpha = alpha / 255.0f;
     }
 
     @Override

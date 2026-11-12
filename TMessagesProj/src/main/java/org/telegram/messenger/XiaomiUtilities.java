@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 
 public class XiaomiUtilities {
 
-	// custom permissions
 	public static final int OP_ACCESS_XIAOMI_ACCOUNT = 10015;
 	public static final int OP_AUTO_START = 10008;
 	public static final int OP_BACKGROUND_START_ACTIVITY = 10021;

@@ -13,9 +13,7 @@ package org.webrtc;
 import androidx.annotation.Nullable;
 import java.util.List;
 
-/** Interface for detecting network changes */
 public interface NetworkChangeDetector {
-  // java equivalent of c++ android_network_monitor.h / NetworkType.
   public static enum ConnectionType {
     CONNECTION_UNKNOWN,
     CONNECTION_ETHERNET,
@@ -43,11 +41,9 @@ public interface NetworkChangeDetector {
     }
   }
 
-  /** Java version of NetworkMonitor.NetworkInformation */
   public static class NetworkInformation {
     public final String name;
     public final ConnectionType type;
-    // Used to specify the underlying network type if the type is CONNECTION_VPN.
     public final ConnectionType underlyingTypeForVpn;
     public final long handle;
     public final IPAddress[] ipAddresses;
@@ -87,22 +83,13 @@ public interface NetworkChangeDetector {
     }
   };
 
-  /** Observer interface by which observer is notified of network changes. */
   public static interface Observer {
-    /** Called when default network changes. */
     public void onConnectionTypeChanged(ConnectionType newConnectionType);
 
     public void onNetworkConnect(NetworkInformation networkInfo);
 
     public void onNetworkDisconnect(long networkHandle);
 
-    /**
-     * Called when network preference change for a (list of) connection type(s). (e.g WIFI) is
-     * |NOT_PREFERRED| or |NEUTRAL|.
-     *
-     * <p>note: |types| is a list of ConnectionTypes, so that all cellular types can be modified in
-     * one call.
-     */
     public void onNetworkPreference(List<ConnectionType> types, int preference);
   }
 

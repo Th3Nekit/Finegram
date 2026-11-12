@@ -170,10 +170,6 @@ class MessageThreadUtil<T> implements ThreadUtil<T> {
         };
     }
 
-    /**
-     * Replica of android.os.Message. Unfortunately, cannot use it without a Handler and don't want
-     * to create a thread just for this component.
-     */
     static class SyncQueueItem {
 
         private static SyncQueueItem sPool;

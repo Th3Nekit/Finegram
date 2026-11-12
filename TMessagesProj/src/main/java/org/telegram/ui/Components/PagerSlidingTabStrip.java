@@ -31,9 +31,25 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.FileLog;
 import org.telegram.ui.ActionBar.Theme;
 
-public class PagerSlidingTabStrip extends HorizontalScrollView {
+public class PagerSlidingTabStrip extends HorizontalScrollView implements Theme.Colorable {
+
+    @Override
+    public void updateColors() {
+        try {
+            if (tabsContainer == null) {
+                return;
+            }
+            for (int i = 0; i < tabsContainer.getChildCount(); ++i) {
+                final View child = tabsContainer.getChildAt(i);
+                child.setSelected(child.isSelected());
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
 
     public interface IconTabProvider {
         Drawable getPageIconDrawable(int position);
@@ -181,11 +197,6 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         tab.setTextColor(getGlassIconColor(0.6f));
         tab.setFocusable(true);
         tab.setGravity(Gravity.CENTER);
-//        if (Build.VERSION.SDK_INT >= 21) {
-//            RippleDrawable rippleDrawable = (RippleDrawable) Theme.createSelectorDrawable(getThemedColor(Theme.key_chat_emojiBottomPanelIcon), Theme.RIPPLE_MASK_CIRCLE_TO_BOUND_EDGE);
-//            Theme.setRippleDrawableForceSoftware(rippleDrawable);
-//            tab.setBackground(rippleDrawable);
-//        }
         tab.setText(text);
         ScaleStateListAnimator.apply(tab, .025f, 1.2f);
         tab.setOnClickListener(v -> {

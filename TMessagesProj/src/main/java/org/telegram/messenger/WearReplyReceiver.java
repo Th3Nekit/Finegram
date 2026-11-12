@@ -91,7 +91,6 @@ public class WearReplyReceiver extends BroadcastReceiver {
             accountInstance.getMessagesStorage().markVoiceMessageContentAsRead(dialog_id, ids);
         }
 
-        //TODO handle topics
         if (topicId == 0) {
             accountInstance.getMessagesController().markDialogAsRead(dialog_id, max_id, max_id, 0, false, topicId, 0, true, 0);
         }

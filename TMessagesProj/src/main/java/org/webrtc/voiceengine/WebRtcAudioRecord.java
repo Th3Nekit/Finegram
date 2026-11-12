@@ -34,23 +34,14 @@ public class WebRtcAudioRecord {
 
   private static final String TAG = "WebRtcAudioRecord";
 
-  // Default audio data format is PCM 16 bit per sample.
-  // Guaranteed to be supported by all devices.
   private static final int BITS_PER_SAMPLE = 16;
 
-  // Requested size of each recorded buffer provided to the client.
   private static final int CALLBACK_BUFFER_SIZE_MS = 10;
 
-  // Average number of callbacks per second.
   private static final int BUFFERS_PER_SECOND = 1000 / CALLBACK_BUFFER_SIZE_MS;
 
-  // We ask for a native buffer size of BUFFER_SIZE_FACTOR * (minimum required
-  // buffer size). The extra space is allocated to guard against glitches under
-  // high load.
   private static final int BUFFER_SIZE_FACTOR = 2;
 
-  // The AudioRecordJavaThread is allowed to wait for successful call to join()
-  // but the wait times out afther this amount of time.
   private static final long AUDIO_RECORD_THREAD_JOIN_TIMEOUT_MS = 2000;
 
   private static final int DEFAULT_AUDIO_SOURCE = getDefaultAudioSource();
@@ -77,7 +68,6 @@ public class WebRtcAudioRecord {
 
   public static WebRtcAudioRecord Instance;
 
-  // Audio recording error handler functions.
   public enum AudioRecordStartErrorCode {
     AUDIO_RECORD_START_EXCEPTION,
     AUDIO_RECORD_START_STATE_MISMATCH,
@@ -96,16 +86,9 @@ public class WebRtcAudioRecord {
     WebRtcAudioRecord.errorCallback = errorCallback;
   }
 
-  /**
-   * Contains audio sample information. Object is passed using {@link
-   * WebRtcAudioRecord.WebRtcAudioRecordSamplesReadyCallback}
-   */
   public static class AudioSamples {
-    /** See {@link AudioRecord#getAudioFormat()} */
     private final int audioFormat;
-    /** See {@link AudioRecord#getChannelCount()} */
     private final int channelCount;
-    /** See {@link AudioRecord#getSampleRate()} */
     private final int sampleRate;
 
     private final byte[] data;
@@ -134,7 +117,6 @@ public class WebRtcAudioRecord {
     }
   }
 
-  /** Called when new audio samples are ready. This should only be set for debug purposes */
   public interface WebRtcAudioRecordSamplesReadyCallback {
     void onWebRtcAudioRecordSamplesReady(AudioSamples samples);
   }
@@ -145,12 +127,6 @@ public class WebRtcAudioRecord {
     audioSamplesReadyCallback = callback;
   }
 
-  /**
-   * Audio thread which keeps calling ByteBuffer.read() waiting for audio
-   * to be recorded. Feeds recorded data to the native counterpart as a
-   * periodic sequence of callbacks using DataIsRecorded().
-   * This thread uses a Process.THREAD_PRIORITY_URGENT_AUDIO priority.
-   */
   private class AudioRecordThread extends Thread {
     private volatile boolean keepAlive = true;
 
@@ -158,7 +134,6 @@ public class WebRtcAudioRecord {
       super(name);
     }
 
-    // TODO(titovartem) make correct fix during webrtc:9175
     @SuppressWarnings("ByteBufferBackingArray")
     @Override
     public void run() {
@@ -193,9 +168,6 @@ public class WebRtcAudioRecord {
               byteBuffer.putShort(a * 2, (short) mixed);
             }
           }
-          // It's possible we've been shut down during the read, and stopRecording() tried and
-          // failed to join this thread. To be a bit safer, try to avoid calling any native methods
-          // in case they've been unregistered after stopRecording() returned.
           if (keepAlive) {
             try {
               nativeDataIsRecorded(bytesRead, nativeAudioRecord);
@@ -205,8 +177,6 @@ public class WebRtcAudioRecord {
             }
           }
           if (audioSamplesReadyCallback != null) {
-            // Copy the entire byte buffer array.  Assume that the start of the byteBuffer is
-            // at index 0.
             byte[] data = Arrays.copyOf(byteBuffer.array(), byteBuffer.capacity());
             audioSamplesReadyCallback.onWebRtcAudioRecordSamplesReady(
                 new AudioSamples(audioRecord, data));
@@ -230,8 +200,6 @@ public class WebRtcAudioRecord {
       }
     }
 
-    // Stops the inner thread loop and also calls AudioRecord.stop().
-    // Does not block the calling thread.
     public void stopThread() {
       Logging.d(TAG, "stopThread");
       keepAlive = false;
@@ -290,14 +258,8 @@ public class WebRtcAudioRecord {
     byteBuffer.order(ByteOrder.nativeOrder());
     Logging.d(TAG, "byteBuffer.capacity: " + byteBuffer.capacity());
     emptyBytes = new byte[byteBuffer.capacity()];
-    // Rather than passing the ByteBuffer with every callback (requiring
-    // the potentially expensive GetDirectBufferAddress) we simply have the
-    // the native class cache the address to the memory once.
     nativeCacheDirectBufferAddress(byteBuffer, nativeAudioRecord);
 
-    // Get the minimum buffer size required for the successful creation of
-    // an AudioRecord object, in byte units.
-    // Note that this size doesn't guarantee a smooth recording under load.
     final int channelConfig = channelCountToConfiguration(channels);
     int minBufferSize =
         AudioRecord.getMinBufferSize(sampleRate, channelConfig, AudioFormat.ENCODING_PCM_16BIT);
@@ -307,9 +269,6 @@ public class WebRtcAudioRecord {
     }
     Logging.d(TAG, "AudioRecord.getMinBufferSize: " + minBufferSize);
 
-    // Use a larger buffer size than the minimum required when creating the
-    // AudioRecord instance to ensure smooth recording under load. It has been
-    // verified that it does not increase the actual recording latency.
     int bufferSizeInBytes = Math.max(BUFFER_SIZE_FACTOR * minBufferSize, byteBuffer.capacity());
     Logging.d(TAG, "bufferSizeInBytes: " + bufferSizeInBytes);
 
@@ -471,12 +430,10 @@ public class WebRtcAudioRecord {
   private void logMainParametersExtended() {
     if (Build.VERSION.SDK_INT >= 23) {
       Logging.d(TAG, "AudioRecord: "
-              // The frame count of the native AudioRecord buffer.
               + "buffer size in frames: " + audioRecord.getBufferSizeInFrames());
     }
   }
 
-  // Helper method which throws an exception  when an assertion has failed.
   private static void assertTrue(boolean condition) {
     if (!condition) {
       throw new AssertionError("Expected condition to be true");
@@ -502,14 +459,11 @@ public class WebRtcAudioRecord {
     return AudioSource.VOICE_COMMUNICATION;
   }
 
-  // Sets all recorded samples to zero if |mute| is true, i.e., ensures that
-  // the microphone is muted.
   public static void setMicrophoneMute(boolean mute) {
     Logging.w(TAG, "setMicrophoneMute(" + mute + ")");
     microphoneMute = mute;
   }
 
-  // Releases the native AudioRecord resources.
   private void releaseAudioResources(boolean device) {
     Logging.d(TAG, "releaseAudioResources " + device);
     if (device) {

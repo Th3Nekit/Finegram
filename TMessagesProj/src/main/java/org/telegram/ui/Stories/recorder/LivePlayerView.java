@@ -107,7 +107,7 @@ public class LivePlayerView extends FrameLayout implements RendererCommon.Render
         if (currentAccount == account) return;
         if (isAttachedToWindow()) {
             NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.liveStoryUpdated);
-            NotificationCenter.getInstance(currentAccount = account).addObserver(this, NotificationCenter.liveStoryUpdated);
+            NotificationCenter.getInstance(currentAccount = account).addWeakObserver(this, NotificationCenter.liveStoryUpdated);
         } else {
             currentAccount = account;
         }
@@ -118,14 +118,13 @@ public class LivePlayerView extends FrameLayout implements RendererCommon.Render
         super.onAttachedToWindow();
         if (surfaceView != null) {
             surfaceView.init(VideoCapturerDevice.getEglBase().getEglBaseContext(), this);
-            // TODO: support blur on surfaceView
         }
         if (textureView != null) {
             textureView.init(VideoCapturerDevice.getEglBase().getEglBaseContext(), this);
             textureView.setBackgroundRenderer(blurRenderer);
         }
 
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.liveStoryUpdated);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.liveStoryUpdated);
     }
 
     @Override
@@ -326,7 +325,6 @@ public class LivePlayerView extends FrameLayout implements RendererCommon.Render
             textureView.setScreenRotation(display.getRotation());
         }
         if (surfaceView != null) {
-            // TODO: surfaceView.setScreenRotation(display.getRotation());
         }
         ignoreLayout = false;
 
@@ -336,7 +334,6 @@ public class LivePlayerView extends FrameLayout implements RendererCommon.Render
         blurRenderer.getLayoutParams().height = view.getMeasuredHeight();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (surfaceView != null) {
-            // TODO: surfaceView.updateRotation();
         }
         if (textureView != null) {
             textureView.updateRotation();

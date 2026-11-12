@@ -24,6 +24,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 
 public class EmptyTextProgressView extends FrameLayout {
 
@@ -66,17 +67,11 @@ public class EmptyTextProgressView extends FrameLayout {
         lottieImageView.setScaleType(ImageView.ScaleType.FIT_XY);
         lottieImageView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         lottieImageView.setVisibility(GONE);
-//        lottieImageView.setOnClickListener(v -> {
-//            if (!lottieImageView.isPlaying()) {
-//                lottieImageView.setProgress(0.0f);
-//                lottieImageView.playAnimation();
-//            }
-//        });
         textViewLayout.addView(lottieImageView, LayoutHelper.createLinear(150, 150, Gravity.CENTER, 0, 0, 0, 20));
 
         textView = new TextView(context);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        textView.setTextColor(getThemedColor(Theme.key_emptyListPlaceholder));
+        ThemeBind.textColor(textView, Theme.key_emptyListPlaceholder, resourcesProvider);
         textView.setGravity(Gravity.CENTER_HORIZONTAL);
         textView.setText(LocaleController.getString(R.string.NoResult));
         textViewLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
@@ -108,6 +103,7 @@ public class EmptyTextProgressView extends FrameLayout {
     }
 
     public void setTextColor(int color) {
+        ThemeBind.clear(textView);
         textView.setTextColor(color);
     }
 
@@ -131,7 +127,7 @@ public class EmptyTextProgressView extends FrameLayout {
         } else {
             Drawable drawable = getContext().getResources().getDrawable(resId).mutate();
             if (drawable != null) {
-                drawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_emptyListPlaceholder), PorterDuff.Mode.MULTIPLY));
+                ThemeBind.drawableColorFilter(this, drawable, Theme.key_emptyListPlaceholder, resourcesProvider, PorterDuff.Mode.MULTIPLY);
             }
             textView.setCompoundDrawablesWithIntrinsicBounds(null, drawable, null, null);
             textView.setCompoundDrawablePadding(AndroidUtilities.dp(1));

@@ -229,7 +229,6 @@ const int with_cvbr = 1;
 const int max_ogg_delay = 0;
 const int comment_padding = 512;
 
-/* Сколько дорожек пишем: одна или две. Решает Java по тому, что умеет микрофон. */
 int channelCount = 1;
 opus_int32 rate = 48000;
 opus_int32 coding_rate = 48000;
@@ -1027,7 +1026,6 @@ int cropOpusAudio(const char *inputPath, const char *outputPath, float startTime
         return 0;
     }
 
-    // Столько же дорожек, сколько в исходном файле: мы его перезаписываем, а не пишем заново.
     if (!initRecorder(outputPath, rate, channels)) {
         LOGE("Failed to init recorder");
         op_free(opusFile);
@@ -1158,7 +1156,6 @@ int joinOpusAudios(const char* file1, const char* file2, const char* dest) {
     int channels = MIN(head1->channel_count, head2->channel_count);
     opus_int32 rate = 48000;
 
-    // channels посчитан выше как общий для обоих файлов.
     if (!initRecorder(dest, rate, channels)) {
         LOGE("Failed to init recorder");
         op_free(opusFile1);

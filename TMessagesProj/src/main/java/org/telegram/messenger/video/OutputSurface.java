@@ -16,6 +16,7 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.Surface;
 
 import org.telegram.messenger.FileLog;
@@ -41,79 +42,28 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
     private final Object mFrameSyncObject = new Object();
     private boolean mFrameAvailable;
     private TextureRenderer mTextureRender;
+    private HandlerThread frameAvailableThread;
 
     public OutputSurface(MediaController.SavedFilterState savedFilterState, String imagePath, String paintPath, String blurPath, ArrayList<VideoEditedInfo.MediaEntity> mediaEntities, MediaController.CropState cropState, int w, int h, int originalW, int originalH, int rotation, float fps, boolean photo, Integer gradientTopColor, Integer gradientBottomColor, StoryEntry.HDRInfo hdrInfo, MediaCodecVideoConvertor.ConvertVideoParams params) {
         mTextureRender = new TextureRenderer(savedFilterState, imagePath, paintPath, blurPath, mediaEntities, cropState, w, h, originalW, originalH, rotation, fps, photo, gradientTopColor, gradientBottomColor, hdrInfo, params);
         mTextureRender.surfaceCreated();
         mSurfaceTexture = new SurfaceTexture(mTextureRender.getTextureId());
-        mSurfaceTexture.setOnFrameAvailableListener(this);
+        frameAvailableThread = new HandlerThread("VideoFrameAvailable");
+        frameAvailableThread.start();
+        mSurfaceTexture.setOnFrameAvailableListener(this, new Handler(frameAvailableThread.getLooper()));
         mSurface = new Surface(mSurfaceTexture);
     }
 
-//    private void eglSetup(int width, int height) {
-//        mEGL = (EGL10) EGLContext.getEGL();
-//        mEGLDisplay = mEGL.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-//
-//        if (mEGLDisplay == EGL10.EGL_NO_DISPLAY) {
-//            throw new RuntimeException("unable to get EGL10 display");
-//        }
-//
-//        if (!mEGL.eglInitialize(mEGLDisplay, null)) {
-//            mEGLDisplay = null;
-//            throw new RuntimeException("unable to initialize EGL10");
-//        }
-//
-//        int[] attribList = {
-//                EGL10.EGL_RED_SIZE, 8,
-//                EGL10.EGL_GREEN_SIZE, 8,
-//                EGL10.EGL_BLUE_SIZE, 8,
-//                EGL10.EGL_ALPHA_SIZE, 8,
-//                EGL10.EGL_SURFACE_TYPE, EGL10.EGL_PBUFFER_BIT,
-//                EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-//                EGL10.EGL_NONE
-//        };
-//        EGLConfig[] configs = new EGLConfig[1];
-//        int[] numConfigs = new int[1];
-//        if (!mEGL.eglChooseConfig(mEGLDisplay, attribList, configs, configs.length, numConfigs)) {
-//            throw new RuntimeException("unable to find RGB888+pbuffer EGL config");
-//        }
-//        int[] attrib_list = {
-//                EGL_CONTEXT_CLIENT_VERSION, 2,
-//                EGL10.EGL_NONE
-//        };
-//        mEGLContext = mEGL.eglCreateContext(mEGLDisplay, configs[0], EGL10.EGL_NO_CONTEXT, attrib_list);
-//        checkEglError("eglCreateContext");
-//        if (mEGLContext == null) {
-//            throw new RuntimeException("null context");
-//        }
-//        int[] surfaceAttribs = {
-//                EGL10.EGL_WIDTH, width,
-//                EGL10.EGL_HEIGHT, height,
-//                EGL10.EGL_NONE
-//        };
-//        mEGLSurface = mEGL.eglCreatePbufferSurface(mEGLDisplay, configs[0], surfaceAttribs);
-//        checkEglError("eglCreatePbufferSurface");
-//        if (mEGLSurface == null) {
-//            throw new RuntimeException("surface was null");
-//        }
-//    }
 
     public void release() {
-//        if (mEGL != null) {
-//        if (EGL14.eglGetCurrentContext().equals(mEGLContext)) {
-//            EGL14.eglMakeCurrent(mEGLDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
-//        }
-//        if (mEGLSurface != null) {
-//            EGL14.eglDestroySurface(mEGLDisplay, mEGLSurface);
-//        }
-//        if (mEGLContext != null) {
-//            EGL14.eglDestroyContext(mEGLDisplay, mEGLContext);
-//        }
-//        }
         if (mTextureRender != null) {
             mTextureRender.release();
         }
         mSurface.release();
+        if (frameAvailableThread != null) {
+            frameAvailableThread.quitSafely();
+            frameAvailableThread = null;
+        }
         mEGLDisplay = null;
         mEGLContext = null;
         mEGLSurface = null;
@@ -123,15 +73,6 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         mSurfaceTexture = null;
     }
 
-//    public void makeCurrent() {
-//        if (mEGL == null) {
-//            throw new RuntimeException("not configured for makeCurrent");
-//        }
-//        checkEglError("before makeCurrent");
-//        if (!mEGL.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext)) {
-//            throw new RuntimeException("eglMakeCurrent failed");
-//        }
-//    }
 
     public Surface getSurface() {
         return mSurface;

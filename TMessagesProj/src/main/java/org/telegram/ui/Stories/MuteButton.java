@@ -123,7 +123,6 @@ public class MuteButton extends FrameLayout {
         }
         if (!animated) {
             mutedT = muted ? 1.0f : 0.0f;
-//            background.setBackgroundColor(ColorUtils.blendARGB(0xFF31AA28, 0xFF20242A, mutedT));
             filledBackgroundView.setAlpha(1.0f - mutedT);
             filledBackgroundView.setScaleX(1.0f - mutedT);
             filledBackgroundView.setScaleY(1.0f - mutedT);
@@ -133,7 +132,6 @@ public class MuteButton extends FrameLayout {
             animator = ValueAnimator.ofFloat(mutedT, muted ? 1.0f : 0.0f);
             animator.addUpdateListener(a -> {
                 mutedT = (float) a.getAnimatedValue();
-//                background.setBackgroundColor(ColorUtils.blendARGB(0xFF31AA28, 0xFF20242A, mutedT));
                 filledBackgroundView.setAlpha(1.0f - mutedT);
                 filledBackgroundView.setScaleX(1.0f - mutedT);
                 filledBackgroundView.setScaleY(1.0f - mutedT);

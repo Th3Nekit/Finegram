@@ -14,15 +14,6 @@ import androidx.core.graphics.ColorUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.R;
 
-/**
- * Reusable collapse/expand pill button: an animated "Expand"/"Collapse" label followed by a
- * chevron, with a show/hide scale and a press bounce. Extracted from {@link QuoteSpan} so the
- * same control can be reused outside of quotes.
- *
- * The caller owns positioning: it passes the bottom-right anchor to {@link #draw} on every frame,
- * receives the drawn (unscaled) rect back for hit-testing, and forwards touch state through
- * {@link #setPressed(boolean)} / {@link #isPressed()}.
- */
 public class QuoteCollapseButton {
 
     private final AnimatedFloat scale;
@@ -56,15 +47,10 @@ public class QuoteCollapseButton {
         return who == text || who == drawable;
     }
 
-    /**
-     * Full layout width including horizontal padding on both sides. Use this to reserve space,
-     * not the animated width used while drawing.
-     */
     public int width() {
         return (int) (dp(6 + 11.66f + 6) + textWidth + 2 * dp(3.333f));
     }
 
-    /** Pill height, for callers that need to reserve vertical space around the button. */
     public int height() {
         return dp(17.66f);
     }
@@ -78,15 +64,6 @@ public class QuoteCollapseButton {
         bounce.setPressed(pressed);
     }
 
-    /**
-     * Draws the button with its bottom-right corner anchored at ({@code right}, {@code bottom}).
-     * The drawn (unscaled) rect is written into {@code bounds} for hit-testing regardless of the
-     * current scale.
-     *
-     * @param collapsed current collapsed state, selects the label and chevron direction
-     * @param visible   whether the button should be shown (drives the show/hide scale)
-     * @return the applied scale, {@code 0} when fully hidden
-     */
     public float draw(Canvas canvas, RectF bounds, float right, float bottom, int color, boolean collapsed, boolean visible) {
         if (collapsed != textCollapsed) {
             text.setText(getString((textCollapsed = collapsed) ? R.string.QuoteExpand : R.string.QuoteCollapse), true);

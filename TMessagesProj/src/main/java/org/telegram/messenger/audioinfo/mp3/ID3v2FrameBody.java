@@ -84,7 +84,6 @@ public class ID3v2FrameBody {
         if (searchZeros) {
             int zeros = 0;
             for (int i = 0; i < length; i++) {
-                // UTF-16LE may have a zero byte as second byte of a 2-byte character -> skip first zero at odd index
                 if (bytes[offset + i] == 0 && (encoding != ID3v2Encoding.UTF_16 || zeros != 0 || (offset + i) % 2 == 0)) {
                     if (++zeros == encoding.getZeroBytes()) {
                         length = i + 1 - encoding.getZeroBytes();
@@ -97,7 +96,7 @@ public class ID3v2FrameBody {
         }
         try {
             String string = new String(bytes, offset, length, encoding.getCharset().name());
-            if (string.length() > 0 && string.charAt(0) == '\uFEFF') { // remove BOM
+            if (string.length() > 0 && string.charAt(0) == '\uFEFF') {
                 string = string.substring(1);
             }
             return string;
@@ -111,7 +110,6 @@ public class ID3v2FrameBody {
         int length = Math.min(maxLength, (int) getRemainingLength());
         byte[] bytes = textBuffer.get().bytes(length);
         for (int i = 0; i < length; i++) {
-            // UTF-16LE may have a zero byte as second byte of a 2-byte character -> skip first zero at odd index
             if ((bytes[i] = data.readByte()) == 0 && (encoding != ID3v2Encoding.UTF_16 || zeros != 0 || i % 2 == 0)) {
                 if (++zeros == encoding.getZeroBytes()) {
                     return extractString(bytes, 0, i + 1 - encoding.getZeroBytes(), encoding, false);

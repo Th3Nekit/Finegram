@@ -25,13 +25,8 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
-/**
- * Holds EGL state and utility methods for handling an egl 1.0 EGLContext, an EGLDisplay,
- * and an EGLSurface.
- */
 class EglBase10Impl implements EglBase10 {
     private static final String TAG = "EglBase10Impl";
-    // This constant is taken from EGL14.EGL_CONTEXT_CLIENT_VERSION.
     private static final int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 
     private final EGL10 egl;
@@ -42,7 +37,6 @@ class EglBase10Impl implements EglBase10 {
     private EGLSurface eglSurface = EGL10.EGL_NO_SURFACE;
     private EGLSurface eglBackgroundSurface = EGL10.EGL_NO_SURFACE;
 
-    // EGL wrapper for an actual EGLContext.
     private static class Context implements EglBase10.Context {
         private final EGL10 egl;
         private final EGLContext eglContext;
@@ -93,7 +87,6 @@ class EglBase10Impl implements EglBase10 {
         }
     }
 
-    // Create a new context with the specified config type, sharing data with sharedContext.
     public EglBase10Impl(EGLContext sharedContext, int[] configAttributes) {
         this.egl = (EGL10) EGLContext.getEGL();
         eglDisplay = getEglDisplay();
@@ -108,13 +101,11 @@ class EglBase10Impl implements EglBase10 {
         createSurfaceInternal(new FakeSurfaceHolder(surface), false);
     }
 
-    // Create EGLSurface from the Android SurfaceTexture.
     @Override
     public void createSurface(SurfaceTexture surfaceTexture) {
         createSurfaceInternal(surfaceTexture, false);
     }
 
-    // Create EGLSurface from either a SurfaceHolder or a SurfaceTexture.
     private void createSurfaceInternal(Object nativeWindow, boolean background) {
         if (!(nativeWindow instanceof SurfaceHolder) && !(nativeWindow instanceof SurfaceTexture)) {
             throw new IllegalStateException("Input must be either a SurfaceHolder or SurfaceTexture");
@@ -143,7 +134,6 @@ class EglBase10Impl implements EglBase10 {
         }
     }
 
-    // Create dummy 1x1 pixel buffer surface so the context can be made current.
     @Override
     public void createDummyPbufferSurface() {
         createPbufferSurface(1, 1);
@@ -236,7 +226,6 @@ class EglBase10Impl implements EglBase10 {
         }
     }
 
-    // Detach the current EGL context, so that it can be made current on another thread.
     @Override
     public void detachCurrent() {
         synchronized (EglBase.lock) {
@@ -262,7 +251,6 @@ class EglBase10Impl implements EglBase10 {
 
     @Override
     public void swapBuffers(long timeStampNs, boolean background) {
-        // Setting presentation time is not supported for EGL 1.0.
         swapBuffers(background);
     }
 
@@ -290,7 +278,6 @@ class EglBase10Impl implements EglBase10 {
         return eglBackgroundSurface != EGL10.EGL_NO_SURFACE;
     }
 
-    // Return an EGLDisplay, or die trying.
     private EGLDisplay getEglDisplay() {
         EGLDisplay eglDisplay = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
         if (eglDisplay == EGL10.EGL_NO_DISPLAY) {
@@ -305,7 +292,6 @@ class EglBase10Impl implements EglBase10 {
         return eglDisplay;
     }
 
-    // Return an EGLConfig, or die trying.
     private static EGLConfig getEglConfig(EGL10 egl, EGLDisplay eglDisplay, int[] configAttributes) {
         EGLConfig[] configs = new EGLConfig[1];
         int[] numConfigs = new int[1];
@@ -323,7 +309,6 @@ class EglBase10Impl implements EglBase10 {
         return eglConfig;
     }
 
-    // Return an EGLConfig, or die trying.
     private EGLContext createEglContext(@Nullable EGLContext sharedContext, EGLDisplay eglDisplay,
                                         EGLConfig eglConfig, int openGlesVersion) {
         if (sharedContext != null && sharedContext == EGL10.EGL_NO_CONTEXT) {
@@ -343,11 +328,6 @@ class EglBase10Impl implements EglBase10 {
     }
 
 
-    /**
-     * We have to wrap Surface in a SurfaceHolder because for some reason eglCreateWindowSurface
-     * couldn't actually take a Surface object until API 17. Older versions fortunately just call
-     * SurfaceHolder.getSurface(), so we'll do that. No other methods are relevant.
-     */
     private class FakeSurfaceHolder implements SurfaceHolder {
         private final Surface surface;
 

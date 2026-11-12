@@ -48,6 +48,7 @@ public class MediaCodecVideoConvertor {
 
     private static final int MEDIACODEC_TIMEOUT_DEFAULT = 2500;
     private static final int MEDIACODEC_TIMEOUT_INCREASED = 22000;
+    private static final int MAX_DECODER_INPUTS_PER_LOOP = 8;
     private String outputMimeType;
 
     public boolean convertVideo(ConvertVideoParams convertVideoParams) {
@@ -324,9 +325,6 @@ public class MediaCodecVideoConvertor {
                         }
                     }
                 } catch (Exception e) {
-                    // in some case encoder.dequeueOutputBuffer return IllegalStateException
-                    // stable reproduced on xiaomi
-                    // fix it by increasing timeout
                     if (e instanceof IllegalStateException && !increaseTimeout) {
                         repeatWithIncreasedTimeout = true;
                     }
@@ -378,6 +376,7 @@ public class MediaCodecVideoConvertor {
                     long lastFramePts = -1;
 
                     if (videoIndex >= 0) {
+                        DecoderFeeder feeder = null;
                         try {
                             long videoTime = -1;
                             boolean outputDone = false;
@@ -407,7 +406,6 @@ public class MediaCodecVideoConvertor {
                                     bitrate = 1560000;
                                 }
                                 avatarStartTime = 0;
-                                //this encoder work with bitrate better, prevent case when result video max 2MB
                                 if (originalBitrate >= 15_000_000) {
                                     encoderName = "OMX.google.h264.encoder";
                                 }
@@ -418,8 +416,8 @@ public class MediaCodecVideoConvertor {
                                 bitrate = Math.min(originalBitrate, bitrate);
                             }
 
-                            long trueStartTime;// = startTime < 0 ? 0 : startTime;
-                            if (avatarStartTime >= 0/* && trueStartTime == avatarStartTime*/) {
+                            long trueStartTime;
+                            if (avatarStartTime >= 0                                        ) {
                                 avatarStartTime = -1;
                             }
 
@@ -465,7 +463,6 @@ public class MediaCodecVideoConvertor {
                             outputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
                             outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
                             if (isAvatar) {
-                                // prevent case when result video max 2MB
                                 outputFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR);
                             }
                             outputFormat.setInteger("max-bitrate", bitrate);
@@ -499,6 +496,7 @@ public class MediaCodecVideoConvertor {
                             selectedEncoderName = encoder.getName();
                             canBeBrokenEncoder = "c2.qti.avc.encoder".equalsIgnoreCase(selectedEncoderName);
                             FileLog.d("selected encoder " + selectedEncoderName);
+                            setEncoderOperatingRate(outputFormat);
                             encoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
                             inputSurface = new InputSurface(encoder.createInputSurface());
                             inputSurface.makeCurrent();
@@ -529,6 +527,7 @@ public class MediaCodecVideoConvertor {
                                 );
                             }
                             decoder = getDecoderByFormat(videoFormat);
+                            setDecoderOperatingRate(videoFormat);
                             decoder.configure(videoFormat, outputSurface.getSurface(), null, 0);
                             decoder.start();
 
@@ -563,7 +562,7 @@ public class MediaCodecVideoConvertor {
                                         try {
                                             maxBufferSize = audioFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE);
                                         } catch (Exception e) {
-                                            FileLog.e(e); //s20 ultra exception
+                                            FileLog.e(e);
                                         }
                                         if (maxBufferSize <= 0) {
                                             maxBufferSize = 64 * 1024;
@@ -609,19 +608,29 @@ public class MediaCodecVideoConvertor {
 
                             checkConversionCanceled();
 
+                            if (avatarStartTime < 0) {
+                                feeder = new DecoderFeeder(extractor, decoder, videoIndex, copyAudioBuffer ? audioIndex : -1, muxer, audioTrackIndex, startTime, endTime, durationS, audioBuffer, maxBufferSize);
+                                feeder.start();
+                            }
+
                             while (!outputDone || (!copyAudioBuffer && !audioEncoderDone)) {
                                 checkConversionCanceled();
+                                if (feeder != null && feeder.error != null) {
+                                    throw new RuntimeException(feeder.error);
+                                }
 
                                 if (audioRecoder != null) {
                                     audioEncoderDone = audioRecoder.step(muxer, audioTrackIndex);
                                 }
 
-                                if (!inputDone) {
+                                for (int feedCount = 0; feeder == null && feedCount < MAX_DECODER_INPUTS_PER_LOOP && !inputDone; feedCount++) {
+                                    boolean fed = false;
                                     boolean eof = false;
                                     int index = extractor.getSampleTrackIndex();
                                     if (index == videoIndex) {
-                                        int inputBufIndex = decoder.dequeueInputBuffer(MEDIACODEC_TIMEOUT_DEFAULT);
+                                        int inputBufIndex = decoder.dequeueInputBuffer(0);
                                         if (inputBufIndex >= 0) {
+                                            fed = true;
                                             ByteBuffer inputBuf;
                                             inputBuf = decoder.getInputBuffer(inputBufIndex);
                                             int chunkSize = extractor.readSampleData(inputBuf, 0);
@@ -634,6 +643,7 @@ public class MediaCodecVideoConvertor {
                                             }
                                         }
                                     } else if (copyAudioBuffer && audioIndex != -1 && index == audioIndex) {
+                                        fed = true;
                                         if (Build.VERSION.SDK_INT >= 28) {
                                             long size = extractor.getSampleSize();
                                             if (size > maxBufferSize) {
@@ -672,13 +682,16 @@ public class MediaCodecVideoConvertor {
                                             inputDone = true;
                                         }
                                     }
+                                    if (!fed) {
+                                        break;
+                                    }
                                 }
 
                                 boolean decoderOutputAvailable = !decoderDone;
                                 boolean encoderOutputAvailable = true;
                                 while (decoderOutputAvailable || encoderOutputAvailable) {
                                     checkConversionCanceled();
-                                    int encoderStatus = encoder.dequeueOutputBuffer(info, increaseTimeout ? MEDIACODEC_TIMEOUT_INCREASED : MEDIACODEC_TIMEOUT_DEFAULT);
+                                    int encoderStatus = encoder.dequeueOutputBuffer(info, increaseTimeout ? MEDIACODEC_TIMEOUT_INCREASED : decoderDone ? MEDIACODEC_TIMEOUT_DEFAULT : 0);
                                     if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                                         encoderOutputAvailable = false;
                                     } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
@@ -710,13 +723,15 @@ public class MediaCodecVideoConvertor {
                                                     cutOfNalData(outputMimeType, encodedData, info);
                                                     firstEncode = false;
                                                 }
-                                                long availableSize = muxer.writeSampleData(videoTrackIndex, encodedData, info, true);
-                                                if (availableSize != 0) {
-                                                    if (callback != null) {
-                                                        if (info.presentationTimeUs - startTime > currentPts) {
-                                                            currentPts = info.presentationTimeUs - startTime;
+                                                synchronized (muxer) {
+                                                    long availableSize = muxer.writeSampleData(videoTrackIndex, encodedData, info, true);
+                                                    if (availableSize != 0) {
+                                                        if (callback != null) {
+                                                            if (info.presentationTimeUs - startTime > currentPts) {
+                                                                currentPts = info.presentationTimeUs - startTime;
+                                                            }
+                                                            callback.didWriteData(availableSize, (currentPts / 1000f) / durationS);
                                                         }
-                                                        callback.didWriteData(availableSize, (currentPts / 1000f) / durationS);
                                                     }
                                                 }
                                             } else if (videoTrackIndex == -5) {
@@ -766,7 +781,6 @@ public class MediaCodecVideoConvertor {
                                             if (BuildVars.LOGS_ENABLED) {
                                                 FileLog.d("newFormat = " + newFormat);
                                             }
-                                            // TODO: apply hdr static info here
                                         } else if (decoderStatus < 0) {
                                             throw new RuntimeException("unexpected result from decoder.dequeueOutputBuffer: " + decoderStatus);
                                         } else {
@@ -774,6 +788,9 @@ public class MediaCodecVideoConvertor {
                                             long originalPresentationTime = info.presentationTimeUs;
                                             if (endTime > 0 && originalPresentationTime >= endTime) {
                                                 inputDone = true;
+                                                if (feeder != null) {
+                                                    feeder.stopFeeding = true;
+                                                }
                                                 decoderDone = true;
                                                 doRender = false;
                                                 info.flags |= MediaCodec.BUFFER_FLAG_END_OF_STREAM;
@@ -850,9 +867,6 @@ public class MediaCodecVideoConvertor {
                                 }
                             }
                         } catch (Exception e) {
-                            // in some case encoder.dequeueOutputBuffer return IllegalStateException
-                            // stable reproduced on xiaomi
-                            // fix it by increasing timeout
                             if (e instanceof IllegalStateException && !increaseTimeout) {
                                 repeatWithIncreasedTimeout = true;
                             }
@@ -861,6 +875,9 @@ public class MediaCodecVideoConvertor {
                             error = true;
                         }
 
+                        if (feeder != null) {
+                            feeder.finish();
+                        }
                         extractor.unselectTrack(videoIndex);
                         if (decoder != null) {
                             decoder.stop();
@@ -981,7 +998,7 @@ public class MediaCodecVideoConvertor {
     }
 
     private MediaCodec createEncoderForMimeType() throws IOException {
-        MediaCodec encoder = null;//MediaCodec.createEncoderByType(outputMimeType);
+        MediaCodec encoder = null;
         if (outputMimeType.equals("video/hevc") && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             String encoderName = SharedConfig.findGoodHevcEncoder();
             if (encoderName != null) {
@@ -993,28 +1010,6 @@ public class MediaCodecVideoConvertor {
             }
             encoder = MediaCodec.createEncoderByType(outputMimeType);
         }
-//        if (encoder != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && "c2.qti.avc.encoder".equals(encoder.getName())) {
-//            FileLog.d("searching another encoder to replace c2.qti.avc.encoder");
-//            MediaCodecInfo[] infos = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
-//            for (MediaCodecInfo codecInfo : infos) {
-//                if (codecInfo != null && codecInfo.isEncoder() && !"c2.qti.avc.encoder".equals(codecInfo.getName())) {
-//                    String[] types = codecInfo.getSupportedTypes();
-//                    boolean found = false;
-//                    for (int i = 0; i < types.length; ++i) {
-//                        if (types[i] != null && types[i].startsWith(outputMimeType)) {
-//                            found = true;
-//                            break;
-//                        }
-//                    }
-//                    if (found) {
-//                        FileLog.d("blacklisting c2.qti.avc.encoder, replacing it with " + codecInfo.getName());
-//                        encoder.release();
-//                        encoder = MediaCodec.createByCodecName(codecInfo.getName());
-//                        break;
-//                    }
-//                }
-//            }
-//        }
         if (encoder == null && outputMimeType.equals("video/hevc")) {
             outputMimeType = "video/avc";
             encoder = MediaCodec.createEncoderByType(outputMimeType);
@@ -1049,6 +1044,111 @@ public class MediaCodecVideoConvertor {
         return encoder.getName().equals("c2.mtk.avc.encoder");
     }
 
+    private class DecoderFeeder extends Thread {
+        private final MediaExtractor extractor;
+        private final MediaCodec decoder;
+        private final int videoIndex;
+        private final int audioIndex;
+        private final Muxer muxer;
+        private final int audioTrackIndex;
+        private final long startTime;
+        private final long endTime;
+        private final float durationS;
+        private ByteBuffer audioBuffer;
+        private int maxBufferSize;
+        volatile boolean stopFeeding;
+        volatile Throwable error;
+
+        DecoderFeeder(MediaExtractor extractor, MediaCodec decoder, int videoIndex, int audioIndex, Muxer muxer, int audioTrackIndex, long startTime, long endTime, float durationS, ByteBuffer audioBuffer, int maxBufferSize) {
+            super("DecoderFeeder");
+            this.extractor = extractor;
+            this.decoder = decoder;
+            this.videoIndex = videoIndex;
+            this.audioIndex = audioIndex;
+            this.muxer = muxer;
+            this.audioTrackIndex = audioTrackIndex;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.durationS = durationS;
+            this.audioBuffer = audioBuffer;
+            this.maxBufferSize = maxBufferSize;
+        }
+
+        @Override
+        public void run() {
+            MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+            long currentPts = 0;
+            try {
+                while (!stopFeeding && (callback == null || !callback.checkConversionCanceled())) {
+                    int index = extractor.getSampleTrackIndex();
+                    if (index == videoIndex) {
+                        int inputBufIndex = decoder.dequeueInputBuffer(MEDIACODEC_TIMEOUT_DEFAULT);
+                        if (inputBufIndex < 0) {
+                            continue;
+                        }
+                        ByteBuffer inputBuf = decoder.getInputBuffer(inputBufIndex);
+                        int chunkSize = extractor.readSampleData(inputBuf, 0);
+                        if (chunkSize < 0) {
+                            decoder.queueInputBuffer(inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                            break;
+                        }
+                        decoder.queueInputBuffer(inputBufIndex, 0, chunkSize, extractor.getSampleTime(), 0);
+                        extractor.advance();
+                    } else if (audioIndex != -1 && index == audioIndex) {
+                        if (Build.VERSION.SDK_INT >= 28) {
+                            long size = extractor.getSampleSize();
+                            if (size > maxBufferSize) {
+                                maxBufferSize = (int) (size + 1024);
+                                audioBuffer = ByteBuffer.allocateDirect(maxBufferSize);
+                            }
+                        }
+                        info.size = extractor.readSampleData(audioBuffer, 0);
+                        if (info.size < 0) {
+                            break;
+                        }
+                        info.presentationTimeUs = extractor.getSampleTime();
+                        extractor.advance();
+                        if (info.size > 0 && (endTime < 0 || info.presentationTimeUs < endTime)) {
+                            info.offset = 0;
+                            info.flags = extractor.getSampleFlags();
+                            synchronized (muxer) {
+                                long availableSize = muxer.writeSampleData(audioTrackIndex, audioBuffer, info, false);
+                                if (availableSize != 0 && callback != null) {
+                                    if (info.presentationTimeUs - startTime > currentPts) {
+                                        currentPts = info.presentationTimeUs - startTime;
+                                    }
+                                    callback.didWriteData(availableSize, (currentPts / 1000f) / durationS);
+                                }
+                            }
+                        }
+                    } else if (index == -1) {
+                        while (!stopFeeding) {
+                            int inputBufIndex = decoder.dequeueInputBuffer(MEDIACODEC_TIMEOUT_DEFAULT);
+                            if (inputBufIndex >= 0) {
+                                decoder.queueInputBuffer(inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                                break;
+                            }
+                        }
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
+
+        void finish() {
+            stopFeeding = true;
+            try {
+                join();
+            } catch (InterruptedException e) {
+                FileLog.e(e);
+            }
+        }
+    }
+
     public static class Muxer {
 
         public final MP4Builder mp4Builder;
@@ -1074,7 +1174,7 @@ public class MediaCodecVideoConvertor {
             return 0;
         }
 
-        public long writeSampleData(int trackIndex, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo, boolean writeLength) throws Exception {
+        public synchronized long writeSampleData(int trackIndex, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo, boolean writeLength) throws Exception {
             if (mediaMuxer != null) {
                 if (!started) {
                     mediaMuxer.start();
@@ -1137,7 +1237,7 @@ public class MediaCodecVideoConvertor {
             try {
                 maxBufferSize = trackFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE);
             } catch (Exception e) {
-                FileLog.e(e); //s20 ultra exception
+                FileLog.e(e);
             }
 
             if (start > 0) {
@@ -1157,7 +1257,7 @@ public class MediaCodecVideoConvertor {
                 try {
                     maxBufferSize = Math.max(trackFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE), maxBufferSize);
                 } catch (Exception e) {
-                    FileLog.e(e); //s20 ultra exception
+                    FileLog.e(e);
                 }
                 if (start > 0) {
                     extractor.seekTo(start, MediaExtractor.SEEK_TO_PREVIOUS_SYNC);
@@ -1349,7 +1449,6 @@ public class MediaCodecVideoConvertor {
             shaderCode = AndroidUtilities.readRes(R.raw.hdr2sdr_pq);
         }
 
-        // TODO(@dkaraush): use minlum/maxlum
         return shaderCode + "\n" +
                 "varying vec2 vTextureCoord;\n" +
                 "const float offsetX = " + offsetXStr + ";\n" +
@@ -1377,13 +1476,11 @@ public class MediaCodecVideoConvertor {
     }
 
     private static String glslFloat(float value) {
-        // Avoid locale-dependent formatting (comma decimal separator) and scientific notation,
-        // which some GLSL ES compilers reject.
         boolean negative = value < 0;
         if (negative) {
             value = -value;
         }
-        long scaled = Math.round(value * 1000000f); // 6 decimal places
+        long scaled = Math.round(value * 1000000f);
         long intPart = scaled / 1000000L;
         long fracPart = scaled % 1000000L;
 
@@ -1509,6 +1606,42 @@ public class MediaCodecVideoConvertor {
         public ConversionCanceledException() {
             super("canceled conversion");
         }
+    }
+
+    private static void setEncoderOperatingRate(MediaFormat format) {
+        if (Build.VERSION.SDK_INT < 25) {
+            return;
+        }
+        format.setInteger(MediaFormat.KEY_PRIORITY, 1);
+        if (Build.VERSION.SDK_INT == 26) {
+            format.setInteger(MediaFormat.KEY_OPERATING_RATE, 30);
+        } else if (Build.VERSION.SDK_INT >= 31 && Build.VERSION.SDK_INT <= 34 && isSocModel("SM8550", "SM7450", "SM6450", "SC9863A", "T612", "T606", "T603")) {
+            format.setInteger(MediaFormat.KEY_OPERATING_RATE, 1000);
+        } else {
+            format.setInteger(MediaFormat.KEY_OPERATING_RATE, Integer.MAX_VALUE);
+        }
+    }
+
+    private static void setDecoderOperatingRate(MediaFormat format) {
+        if (Build.VERSION.SDK_INT < 25) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 31 && isSocModel("s5e8835", "SA8155P")) {
+            format.setInteger(MediaFormat.KEY_PRIORITY, 1);
+        }
+        format.setInteger(MediaFormat.KEY_OPERATING_RATE, 10000);
+    }
+
+    private static boolean isSocModel(String... models) {
+        if (Build.VERSION.SDK_INT < 31) {
+            return false;
+        }
+        for (String model : models) {
+            if (model.equals(Build.SOC_MODEL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NonNull

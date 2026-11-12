@@ -16,12 +16,17 @@ import kotlinx.coroutines.SupervisorJob
 import org.telegram.messenger.ApplicationLoader
 import com.th3nekit.finegram.preferences.boolean
 import com.th3nekit.finegram.preferences.int
+import com.th3nekit.finegram.preferences.string
 
 object FinegramPrivacyConfig: CoroutineScope by CoroutineScope(
     context = SupervisorJob() + Dispatchers.Default
 ) {
 
     private val sharedPreferences: SharedPreferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE)
+
+    var peekOnline by sharedPreferences.boolean("FG_PeekOnline", false)
+    var peekOnlineAutoRefresh by sharedPreferences.boolean("FG_PeekOnlineAutoRefresh", false)
+    var botWidgets by sharedPreferences.boolean("FG_BotWidgets", false)
 
     var ghostMode by sharedPreferences.boolean("FG_GhostMode", false)
 
@@ -59,6 +64,9 @@ object FinegramPrivacyConfig: CoroutineScope by CoroutineScope(
     var allowScreenshots by sharedPreferences.boolean("FG_AllowScreenshots", false)
 
     var dimDeleted by sharedPreferences.boolean("FG_DimDeleted", false)
+    var customDeletedMark by sharedPreferences.boolean("FG_CustomDeletedMark", false)
+    var deletedMarkText by sharedPreferences.string("FG_DeletedMarkText", "")
+    var deletedMarkColor by sharedPreferences.int("FG_DeletedMarkColor", 0)
 
     var pseudoForward by sharedPreferences.boolean("FG_PseudoForward", false)
 

@@ -166,10 +166,6 @@ public class QuickShareSelectorOverlayLayout extends View {
             }
         }
 
-        /*if (!MessagesController.getInstance(currentAccount).dialogsForward.isEmpty()) {
-            TLRPC.Dialog dialog = MessagesController.getInstance(currentAccount).dialogsForward.get(0);
-            dialogs.add(dialog.id);
-        }*/
         ArrayList<Long> archivedDialogs = new ArrayList<>();
         ArrayList<TLRPC.Dialog> allDialogs = MessagesController.getInstance(currentAccount).getAllDialogs();
         for (int a = 0; a < allDialogs.size(); a++) {

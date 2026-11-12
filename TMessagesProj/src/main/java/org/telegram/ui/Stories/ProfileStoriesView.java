@@ -177,7 +177,7 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
         titleDrawable.setTextSize(dp(18));
         titleDrawable.setAnimationProperties(.4f, 0, 320, CubicBezierInterpolator.EASE_OUT_QUINT);
         titleDrawable.setTypeface(AndroidUtilities.bold());
-        titleDrawable.setTextColor(Color.WHITE/*Theme.getColor(Theme.key_actionBarDefaultTitle, resourcesProvider)*/);
+        titleDrawable.setTextColor(Color.WHITE                                                                      );
         titleDrawable.setEllipsizeByGradient(true);
         titleDrawable.setCallback(this);
 
@@ -324,7 +324,6 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
             }
         }
 
-        // update all existing circles (update and remove)
         for (int i = 0; i < circles.size(); ++i) {
             StoryCircle circle = circles.get(i);
 
@@ -340,7 +339,6 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
             }
 
             if (index == -1) {
-                // delete circle
                 circle.scale = 0f;
             } else {
                 circle.index = index;
@@ -351,7 +349,6 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
             }
         }
 
-        // add new
         for (int i = 0; i < storiesToShow.size(); ++i) {
             TL_stories.StoryItem storyItem = storiesToShow.get(i);
 
@@ -736,7 +733,6 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
 
                 float r = dp(28) / 2f * scale;
                 float cx = left + r + ix;
-//                float cx = expandRight - w + r + ix;
                 ix += dp(18) * scale;
 
                 maxX = Math.max(maxX, cx + r);
@@ -968,13 +964,13 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
             if (d1 && d2) {
                 angle = Math.max(angle1, angle2);
                 drawArc(canvas, B.borderRect, angle, 360 - angle * 2, false, paint);
-            } else if (d1) { // d1 && !d2
+            } else if (d1) {
                 drawArc(canvas, B.borderRect, 180 + angle2, 180 - (angle1 + angle2), false, paint);
                 drawArc(canvas, B.borderRect, angle1, 180 - angle2 - angle1, false, paint);
-            } else if (d2) { // !d1 && d2
+            } else if (d2) {
                 drawArc(canvas, B.borderRect, 180 + angle1, 180 - (angle2 + angle1), false, paint);
                 drawArc(canvas, B.borderRect, angle2, 180 - angle2 - angle1, false, paint);
-            } else { // !d1 && !d2
+            } else {
                 angle = Math.max(angle1, angle2);
                 drawArc(canvas, B.borderRect, 180 + angle, 360 - angle * 2, false, paint);
             }
@@ -1058,7 +1054,7 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
             circles.get(i).imageReceiver.onAttachedToWindow();
         }
 
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.storiesUpdated);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.storiesUpdated);
     }
 
     @Override
@@ -1122,7 +1118,7 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
                     try {
                         float scale = bounds.width() / aRect.width();
                         float bcx = bounds.centerX() - (aRect.centerX() - bRect.centerX()) * (scale + 2f * (1f - alpha));
-                        float bcy = bounds.centerY(); // bounds.centerX() - (aRect.centerY() - bRect.centerY()) * scale;
+                        float bcy = bounds.centerY();
                         float w2 = bRect.width() / 2f * scale, h2 = bRect.height() / 2f * scale;
                         nextCircle.cachedRect.set(bcx - w2, bcy - h2, bcx + w2, bcy + h2);
                     } catch (Exception ignore) {}

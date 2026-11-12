@@ -10,17 +10,13 @@ import java.util.HashMap;
 public abstract class CacheFetcher<Args, R> {
 
     protected void getRemote(int currentAccount, Args arguments, long hash, Utilities.Callback4<Boolean, R, Long, Boolean> onResult) {
-        // Implement this function
     }
 
-    // Not specifying getLocal and setLocal would mean that data is cached only in RAM
     protected void getLocal(int currentAccount, Args arguments, Utilities.Callback2<Long, R> onResult) {
-        // Implement this function
         onResult.run(0L, null);
     }
 
     protected void setLocal(int currentAccount, Args arguments, R data, long hash) {
-        // Implement this function
     }
 
     public CacheFetcher() {

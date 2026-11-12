@@ -157,8 +157,6 @@ public class ReferenceMap<K, T> {
   }
 
   public final @Nullable Iterator<T> combinedIterator () {
-    // Note: when the same object is registered with multiple keys,
-    // it will be returned via iterator.next() the same amount of times as occurrences in the map
     synchronized (map) {
       if (map.isEmpty()) {
         return null;
@@ -171,9 +169,6 @@ public class ReferenceMap<K, T> {
     }
   }
 
-  /**
-   * Requires prior synchronization on ReferenceMap instance
-   */
   public final @Nullable Set<K> keySetUnchecked () {
     return map.isEmpty() ? null : map.keySet();
   }

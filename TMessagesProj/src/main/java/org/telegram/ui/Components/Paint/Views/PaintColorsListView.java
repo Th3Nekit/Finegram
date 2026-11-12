@@ -190,7 +190,6 @@ public class PaintColorsListView extends RecyclerListView {
 
         public void setSelected(boolean selected, boolean animate) {
             if (animate) {
-                // TODO: Animate
             } else {
                 selectProgress = selected ? 1f : 0f;
                 invalidate();

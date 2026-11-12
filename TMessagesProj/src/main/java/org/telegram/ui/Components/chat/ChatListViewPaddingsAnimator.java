@@ -20,7 +20,7 @@ public class ChatListViewPaddingsAnimator {
         int paddingTopTarget,
         float paddingBottomAnimated, boolean allowScrollCompensation
     ) {
-        final int additionalHeight = 0; //(int) Math.ceil(Math.abs(translationY));
+        final int additionalHeight = 0;
 
         if (additionalHeight == 0 && currentAdditionalHeight != 0) {
             currentAdditionalHeight = 0;
@@ -30,13 +30,12 @@ public class ChatListViewPaddingsAnimator {
             recyclerView.requestLayout();
         }
 
-        final int paddingTop = paddingTopTarget; // + currentAdditionalHeight;
-        final int paddingBottom = (int) paddingBottomAnimated; // paddingBottomTarget;
+        final int paddingTop = paddingTopTarget;
+        final int paddingBottom = (int) paddingBottomAnimated;
 
         final int paddingTopOld = recyclerView.getPaddingTop();
         final int paddingBottomOld = recyclerView.getPaddingBottom();
 
-        //recyclerView.setTranslationY(translationY);
         if (paddingTopOld != paddingTop || paddingBottomOld != paddingBottom) {
             final int dy = paddingTopOld - paddingTop;
 

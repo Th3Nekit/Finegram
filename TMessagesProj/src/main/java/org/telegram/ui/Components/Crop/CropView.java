@@ -478,7 +478,6 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
 
     public void show() {
         updateCropTransform();
-        //imageView.setVisibility(VISIBLE);
         areaView.setDimVisibility(true);
         areaView.setFrameVisibility(true, true);
         areaView.invalidate();
@@ -1285,15 +1284,6 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
         if (state == null) {
             return;
         }
-        /*if (areaView.getLockAspectRatio() > 0) {
-            areaView.setLockedAspectRatio(0);
-
-            if (listener != null) {
-                listener.onAspectLock(false);
-            }
-
-            return;
-        }*/
 
         if (hasAspectRatioDialog) {
             return;

@@ -105,7 +105,7 @@ public class NativeInstance {
         onRemoteMediaStateUpdatedListener = listener;
     }
 
-    private void onStateUpdated(int state/*, boolean */) {
+    private void onStateUpdated(int state              ) {
         if (onStateUpdatedListener != null) {
             onStateUpdatedListener.onStateUpdated(state, false);
         }
@@ -129,7 +129,6 @@ public class NativeInstance {
         }
     }
 
-    //group calls
     private void onNetworkStateUpdated(boolean connected, boolean inTransition) {
         if (onStateUpdatedListener != null) {
             AndroidUtilities.runOnUIThread(() -> onStateUpdatedListener.onStateUpdated(connected ? 1 : 0, inTransition));

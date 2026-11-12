@@ -52,7 +52,7 @@ public class GroupCallMessage {
 
     private int flags;
     private static final int FLAG_IS_OUT = 1;
-    private static final int FLAG_SEND_DELAYED = 1 << 1; // The server response has not been received for more than a few seconds.
+    private static final int FLAG_SEND_DELAYED = 1 << 1;
     private static final int FLAG_SEND_ERROR = 1 << 2;
     private static final int FLAG_SEND_CONFIRMED = 1 << 3;
 

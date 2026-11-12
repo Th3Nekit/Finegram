@@ -13,18 +13,9 @@ package org.webrtc;
 import android.view.SurfaceHolder;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Display the video stream on a Surface.
- * renderFrame() is asynchronous to avoid blocking the calling thread.
- * This class is thread safe and handles access from potentially three different threads:
- * Interaction from the main app in init, release and setMirror.
- * Interaction from C++ rtc::VideoSinkInterface in renderFrame.
- * Interaction from SurfaceHolder lifecycle in surfaceCreated, surfaceChanged, and surfaceDestroyed.
- */
 public class SurfaceEglRenderer extends EglRenderer implements SurfaceHolder.Callback {
   private static final String TAG = "SurfaceEglRenderer";
 
-  // Callback for reporting renderer events. Read-only after initialization so no lock required.
   private RendererCommon.RendererEvents rendererEvents;
 
   private final Object layoutLock = new Object();
@@ -34,19 +25,10 @@ public class SurfaceEglRenderer extends EglRenderer implements SurfaceHolder.Cal
   private int rotatedFrameHeight;
   private int frameRotation;
 
-  /**
-   * In order to render something, you must first call init().
-   */
   public SurfaceEglRenderer(String name) {
     super(name);
   }
 
-  /**
-   * Initialize this class, sharing resources with `sharedContext`. The custom `drawer` will be used
-   * for drawing frames on the EGLSurface. This class is responsible for calling release() on
-   * `drawer`. It is allowed to call init() to reinitialize the renderer after a previous
-   * init()/release() cycle.
-   */
   public void init(final EglBase.Context sharedContext,
       RendererCommon.RendererEvents rendererEvents, final int[] configAttributes,
       RendererCommon.GlDrawer drawer) {
@@ -64,15 +46,9 @@ public class SurfaceEglRenderer extends EglRenderer implements SurfaceHolder.Cal
   @Override
   public void init(final EglBase.Context sharedContext, final int[] configAttributes,
       RendererCommon.GlDrawer drawer) {
-    init(sharedContext, null /* rendererEvents */, configAttributes, drawer);
+    init(sharedContext, null                     , configAttributes, drawer);
   }
 
-  /**
-   * Limit render framerate.
-   *
-   * @param fps Limit render framerate to this value, or use Float.POSITIVE_INFINITY to disable fps
-   *            reduction.
-   */
   @Override
   public void setFpsReduction(float fps) {
     synchronized (layoutLock) {
@@ -97,14 +73,12 @@ public class SurfaceEglRenderer extends EglRenderer implements SurfaceHolder.Cal
     super.pauseVideo();
   }
 
-  // VideoSink interface.
   @Override
   public void onFrame(VideoFrame frame) {
     updateFrameDimensionsAndReportEvents(frame);
     super.onFrame(frame);
   }
 
-  // SurfaceHolder.Callback interface.
   @Override
   public void surfaceCreated(final SurfaceHolder holder) {
     ThreadUtils.checkIsOnMainThread();
@@ -125,7 +99,6 @@ public class SurfaceEglRenderer extends EglRenderer implements SurfaceHolder.Cal
     logD("surfaceChanged: format: " + format + " size: " + width + "x" + height);
   }
 
-  // Update frame dimensions and report any changes to `rendererEvents`.
   private void updateFrameDimensionsAndReportEvents(VideoFrame frame) {
     synchronized (layoutLock) {
       if (isRenderingPaused) {

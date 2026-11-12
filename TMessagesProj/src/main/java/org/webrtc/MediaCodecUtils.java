@@ -18,13 +18,10 @@ import androidx.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Container class for static constants and helpers used with MediaCodec. */
-// We are forced to use the old API because we want to support API level < 21.
 @SuppressWarnings("deprecation")
 class MediaCodecUtils {
   private static final String TAG = "MediaCodecUtils";
 
-  // Prefixes for supported hardware encoder/decoder component names.
   static final String EXYNOS_PREFIX = "OMX.Exynos.";
   static final String INTEL_PREFIX = "OMX.Intel.";
   static final String NVIDIA_PREFIX = "OMX.Nvidia.";
@@ -32,14 +29,11 @@ class MediaCodecUtils {
   static final String[] SOFTWARE_IMPLEMENTATION_PREFIXES = {
       "OMX.google.", "OMX.SEC.", "c2.android"};
 
-  // NV12 color format supported by QCOM codec, but not declared in MediaCodec -
-  // see /hardware/qcom/media/mm-core/inc/OMX_QCOMExtns.h
   static final int COLOR_QCOM_FORMATYVU420PackedSemiPlanar32m4ka = 0x7FA30C01;
   static final int COLOR_QCOM_FORMATYVU420PackedSemiPlanar16m4ka = 0x7FA30C02;
   static final int COLOR_QCOM_FORMATYVU420PackedSemiPlanar64x32Tile2m8ka = 0x7FA30C03;
   static final int COLOR_QCOM_FORMATYUV420PackedSemiPlanar32m = 0x7FA30C04;
 
-  // Color formats supported by hardware decoder - in order of preference.
   static final int[] DECODER_COLOR_FORMATS = new int[] {CodecCapabilities.COLOR_FormatYUV420Planar,
       CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
       CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
@@ -48,14 +42,12 @@ class MediaCodecUtils {
       MediaCodecUtils.COLOR_QCOM_FORMATYVU420PackedSemiPlanar64x32Tile2m8ka,
       MediaCodecUtils.COLOR_QCOM_FORMATYUV420PackedSemiPlanar32m};
 
-  // Color formats supported by hardware encoder - in order of preference.
   static final int[] ENCODER_COLOR_FORMATS = {
       MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
       MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
       MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
       MediaCodecUtils.COLOR_QCOM_FORMATYUV420PackedSemiPlanar32m};
 
-  // Color formats supported by texture mode encoding - in order of preference.
   static final int[] TEXTURE_COLOR_FORMATS =
       new int[] {MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface};
 
@@ -125,6 +117,5 @@ class MediaCodecUtils {
   }
 
   private MediaCodecUtils() {
-    // This class should not be instantiated.
   }
 }

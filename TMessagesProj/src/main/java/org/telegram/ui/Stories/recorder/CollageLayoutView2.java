@@ -97,7 +97,6 @@ public class CollageLayoutView2 extends FrameLayout implements ItemOptions.Scrim
         if (attached) {
             firstPartView.imageReceiver.onAttachedToWindow();
         }
-//        addView(firstPartView);
         parts.add(firstPartView);
         currentPart = firstPartView;
         nextPart = null;
@@ -201,13 +200,11 @@ public class CollageLayoutView2 extends FrameLayout implements ItemOptions.Scrim
             rect.offset(0, w - rect.left);
         } else {
             if (l && !r) {
-//                rect.offset(-rect.width(), 0);
             }
             if (r && !l) {
                 rect.offset(+rect.width(), 0);
             }
             if (t && !b) {
-//                rect.offset(0, -rect.height());
             }
             if (b && !t) {
                 rect.offset(0, +rect.height());
@@ -490,7 +487,7 @@ public class CollageLayoutView2 extends FrameLayout implements ItemOptions.Scrim
             gradientMatrix.postTranslate(rect.left + lerp(-1.4f*(float)Math.sqrt(gradientWidth*gradientWidth+gradientWidth*gradientWidth), (float)Math.sqrt(rect.width()*rect.width()+rect.height()*rect.height()), 1.0f - highlight), 0);
             gradientMatrix.postRotate(-25);
             gradient.setLocalMatrix(gradientMatrix);
-            final float alpha = 1.0f; // (float) Math.pow(4 * highlight * (1 - highlight), 0.05f);
+            final float alpha = 1.0f;
             highlightPaint.setAlpha((int) (0xFF * alpha));
             highlightPath.rewind();
             radii[0] = radii[1] = part.part.x == 0 && part.part.y == 0 ? dp(8) : 0;
@@ -1313,7 +1310,6 @@ public class CollageLayoutView2 extends FrameLayout implements ItemOptions.Scrim
 
     private boolean restorePositionOnPlaying = true;
     public void forceNotRestorePosition() {
-//        restorePositionOnPlaying = false;
     }
 
     private long lastPausedPosition;

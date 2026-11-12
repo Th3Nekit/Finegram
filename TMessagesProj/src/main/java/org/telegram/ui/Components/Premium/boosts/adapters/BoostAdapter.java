@@ -17,6 +17,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_stars;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ShadowSectionCell;
 import org.telegram.ui.Components.ListView.AdapterWithDiffUtils;
 import org.telegram.ui.Components.Premium.boosts.BoostRepository;
@@ -115,8 +116,8 @@ public class BoostAdapter extends AdapterWithDiffUtils {
                 chatCell.setCounter(value, getParticipantsCount(chatCell.getChat()));
             }
         }
-        notifyItemChanged(8); //update main channel
-        notifyItemRangeChanged(items.size() - 12, 12); //updates all prices
+        notifyItemChanged(8);
+        notifyItemRangeChanged(items.size() - 12, 12);
     }
 
     public void notifyAllVisibleTextDividers() {
@@ -151,56 +152,6 @@ public class BoostAdapter extends AdapterWithDiffUtils {
         return recyclerListView.getAdapter();
     }
 
-//    @Override
-//    public void notifyItemChanged(int position) {
-//        realAdapter().notifyItemChanged(position + 1);
-//    }
-//
-//    @Override
-//    public void notifyItemChanged(int position, @Nullable Object payload) {
-//        realAdapter().notifyItemChanged(position + 1, payload);
-//    }
-//
-//    @Override
-//    public void notifyItemInserted(int position) {
-//        realAdapter().notifyItemInserted(position + 1);
-//    }
-//
-//    @Override
-//    public void notifyItemMoved(int fromPosition, int toPosition) {
-//        realAdapter().notifyItemMoved(fromPosition + 1, toPosition);
-//    }
-//
-//    @Override
-//    public void notifyItemRangeChanged(int positionStart, int itemCount) {
-//        realAdapter().notifyItemRangeChanged(positionStart + 1, itemCount);
-//    }
-//
-//    @Override
-//    public void notifyItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-//        realAdapter().notifyItemRangeChanged(positionStart + 1, itemCount, payload);
-//    }
-//
-//    @Override
-//    public void notifyItemRangeInserted(int positionStart, int itemCount) {
-//        realAdapter().notifyItemRangeInserted(positionStart + 1, itemCount);
-//    }
-//
-//    @Override
-//    public void notifyItemRangeRemoved(int positionStart, int itemCount) {
-//        realAdapter().notifyItemRangeRemoved(positionStart + 1, itemCount);
-//    }
-//
-//    @Override
-//    public void notifyItemRemoved(int position) {
-//        realAdapter().notifyItemRemoved(position + 1);
-//    }
-//
-//    @SuppressLint("NotifyDataSetChanged")
-//    @Override
-//    public void notifyDataSetChanged() {
-//        realAdapter().notifyDataSetChanged();
-//    }
 
     @Override
     public boolean isEnabled(RecyclerView.ViewHolder holder) {
@@ -244,6 +195,7 @@ public class BoostAdapter extends AdapterWithDiffUtils {
                 break;
             case HOLDER_TYPE_SIMPLE_DIVIDER:
                 view = new ShadowSectionCell(context, 12, Theme.getColor(Theme.key_windowBackgroundGray, resourcesProvider));
+                ThemeBind.backgroundColor(view, Theme.key_windowBackgroundGray, resourcesProvider);
                 break;
             case HOLDER_TYPE_TEXT_DIVIDER:
                 view = new TextInfoCell(context, resourcesProvider);
@@ -261,11 +213,11 @@ public class BoostAdapter extends AdapterWithDiffUtils {
                 break;
             case HOLDER_TYPE_SUBTITLE:
                 view = new org.telegram.ui.Cells.HeaderCell(context, Theme.key_windowBackgroundWhiteBlueHeader, 21, 15, 3, false, resourcesProvider);
-                view.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
+                ThemeBind.backgroundColor(view, Theme.key_dialogBackground, resourcesProvider);
                 break;
             case HOLDER_TYPE_SUBTITLE_WITH_COUNTER:
                 view = new SubtitleWithCounterCell(context, resourcesProvider);
-                view.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
+                ThemeBind.backgroundColor(view, Theme.key_dialogBackground, resourcesProvider);
                 break;
             case HOLDER_TYPE_CHAT:
                 view = new ChatCell(context, resourcesProvider);

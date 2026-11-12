@@ -394,8 +394,6 @@ public class Input {
     }
 
     private float lerpAngle(float angleA, float angleB, float t) {
-//        double da = (angleB - angleA) % (Math.PI * 2);
-//        return (float) (angleA + (2 * da % (Math.PI * 2) - da) * t);
         return (float) Math.atan2((1-t)*Math.sin(angleA) + t*Math.sin(angleB), (1-t)*Math.cos(angleA) + t*Math.cos(angleB));
     }
 

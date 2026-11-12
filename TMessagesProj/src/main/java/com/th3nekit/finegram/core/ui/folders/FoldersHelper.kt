@@ -92,9 +92,9 @@ object FoldersHelper {
         iBlur3PositionMainTabs: RectF,
         iBlur3Positions: ArrayList<RectF>,
         scrollableViewNoiseSuppressor: DownscaleScrollableNoiseSuppressor
-    ) {
-        val fragmentView = dialogsActivity.fragmentView ?: return
-        val actionBar = dialogsActivity.actionBar ?: return
+    ): Boolean {
+        val fragmentView = dialogsActivity.fragmentView ?: return false
+        val actionBar = dialogsActivity.actionBar ?: return false
         val filterTabsView = dialogsActivity.filterTabsView
 
         val width = fragmentView.measuredWidth
@@ -121,7 +121,7 @@ object FoldersHelper {
         }
 
         scrollableViewNoiseSuppressor.setupRenderNodes(iBlur3Positions, 2)
-        scrollableViewNoiseSuppressor.invalidateResultRenderNodes(iBlur3Capture, width, height)
+        return scrollableViewNoiseSuppressor.invalidateResultRenderNodes(iBlur3Capture, width, height)
     }
 
 }

@@ -1,23 +1,9 @@
-/*
- *  Telegram-Android browser extension for Mini Apps
- *
- *  # Gestures
- *  This script captures whether touch event is consumed by a website, to otherwise apply
- *  down or right gesture. Use `event.preventDefault()` at `touchstart` to prevent those gestures.
- *  It is recommended to do `event.preventDefault()` when dragging or swiping is expected to be
- *  handled by a website.
- *
- *  Since some websites don't do that, the script also captures `style` and `class` changes to
- *  hierarchy of a touch element, and does equivalent of `preventDefault` if those changes happen
- *  while `touchstart` or `touchmove` events.
- */
 
 if (!window.__tg__webview_set) {
     window.__tg__webview_set = true;
     (function () {
         const DEBUG = $DEBUG$;
 
-        // Touch gestures hacks
         let prevented = false;
         let awaitingResponse = false;
         let touchElement = null;
@@ -103,7 +89,7 @@ if (!window.__tg__webview_set) {
                 .map(r => r.target)
                 .filter(e => !!e && e != document.body && e != document.documentElement)
                 .find(e => isParentOf(touchElement, e));
-            if (isTouchElement) { // && (whiletouchstart || whiletouchmove)) {
+            if (isTouchElement) {
                 if (DEBUG) {
                     console.log('tgbrowser mutation detected', mutationList);
                 }

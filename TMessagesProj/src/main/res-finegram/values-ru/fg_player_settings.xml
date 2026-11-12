@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Player_Preview_Full">Плеер</string>
+    <string name="FG_Player_Preview_Mini">Мини</string>
+    <string name="FG_Player_Preview_Profile">Профиль</string>
+    <string name="FG_Player_Preview_Play">Воспроизвести предпросмотр</string>
+    <string name="FG_Player_Preview_Pause">Приостановить предпросмотр</string>
+    <string name="FG_Player_MiniCover">Показывать обложку</string>
+    <string name="FG_Player_MiniCover_Desc">Без обложки остаётся больше места для названия трека.</string>
+    <string name="FG_Player_MiniNext">Кнопка следующего трека</string>
+    <string name="FG_Player_MiniNext_Desc">Показывается, если для неё достаточно места.</string>
+    <string name="FG_Plugins_SettingsFailed">Не удалось загрузить настройки. Попробуйте ещё раз.</string>
+</resources>

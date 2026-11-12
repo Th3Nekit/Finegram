@@ -200,7 +200,6 @@ public class ThanosEffect extends TextureView {
 
     public void scroll(int dx, int dy) {
         if (drawThread != null && drawThread.running) {
-//            post(() -> drawThread.scroll(dx, dy));
         }
     }
 
@@ -579,9 +578,6 @@ public class ThanosEffect extends TextureView {
 
             GLES31.glViewport(0, 0, width, height);
             GLES31.glDisable(GLES31.GL_BLEND);
-//            GLES31.glEnable(GLES31.GL_BLEND);
-//            GLES31.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-//            GLES31.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
             GLES31.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
             GLES31.glUseProgram(drawProgram);
@@ -711,16 +707,6 @@ public class ThanosEffect extends TextureView {
                     }
                 }
             } else {
-//                for (int i = 0; i < pendingAnimations.size(); ++i) {
-//                    Animation a = pendingAnimations.get(i);
-//                    if (a.views.contains(view)) {
-//                        if (a.doneCallback != null) {
-//                            ensureRunOnUIThread(a.doneCallback);
-//                            a.doneCallback = null;
-//                        }
-//                        break;
-//                    }
-//                }
                 handler.sendMessage(handler.obtainMessage(DO_CANCEL_ANIMATION, view));
             }
         }
@@ -829,7 +815,6 @@ public class ThanosEffect extends TextureView {
                 doneCallback = whenDone;
                 longevity = 4f;
                 time = -.1f;
-//                longevity = 1.5f * Utilities.clamp(viewWidth / (float) AndroidUtilities.displaySize.x, .6f, 0.2f);
                 this.bitmap = bitmap;
             }
 
@@ -858,7 +843,6 @@ public class ThanosEffect extends TextureView {
                         }
                     }
                 };
-//                longevity = 1.6f * .6f;
 
                 for (int i = 0; i < views.size(); ++i) {
                     if (views.get(i) instanceof ChatMessageCell) {
@@ -1090,7 +1074,6 @@ public class ThanosEffect extends TextureView {
             private void drawChildElement(View chatListView, ChatActivity chatActivity, Canvas canvas, float listTop, ChatMessageCell cell, int type, float x, float y) {
                 canvas.save();
                 float alpha = cell.shouldDrawAlphaLayer() ? cell.getAlpha() : 1f;
-//                canvas.clipRect(chatListView.getLeft() - x, listTop - y, chatListView.getRight() - x, chatListView.getY() + chatListView.getMeasuredHeight() - (chatActivity == null ? 0 : chatActivity.blurredViewBottomOffset) - y);
                 canvas.translate(x, y);
                 cell.setInvalidatesParent(true);
                 if (type == 0) {
@@ -1172,7 +1155,6 @@ public class ThanosEffect extends TextureView {
                 };
                 longevity *= durationMultipier;
                 timeScale /= 1f + (durationMultipier - 1f) / 3f;
-//                longevity = 1.5f * Utilities.clamp(viewWidth / (float) AndroidUtilities.displaySize.x, .6f, 0.2f);
 
                 bitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
                 final Canvas canvas = new Canvas(bitmap);
@@ -1270,22 +1252,22 @@ public class ThanosEffect extends TextureView {
                 GLES31.glUniform1i(textureHandle, 0);
 
                 GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, buffer[currentBuffer]);
-                GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 28, 0); // Initial UV (vec2)
+                GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 28, 0);
                 GLES31.glEnableVertexAttribArray(0);
-                GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 28, 8); // Position (vec2)
+                GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 28, 8);
                 GLES31.glEnableVertexAttribArray(1);
-                GLES31.glVertexAttribPointer(2, 2, GLES31.GL_FLOAT, false, 28, 16); // Velocity (vec2)
+                GLES31.glVertexAttribPointer(2, 2, GLES31.GL_FLOAT, false, 28, 16);
                 GLES31.glEnableVertexAttribArray(2);
-                GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 28, 24); // Time (float)
+                GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 28, 24);
                 GLES31.glEnableVertexAttribArray(3);
                 GLES31.glBindBufferBase(GLES31.GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer[1 - currentBuffer]);
-                GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 28, 0); // Initial UV (vec2)
+                GLES31.glVertexAttribPointer(0, 2, GLES31.GL_FLOAT, false, 28, 0);
                 GLES31.glEnableVertexAttribArray(0);
-                GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 28, 8); // Position (vec2)
+                GLES31.glVertexAttribPointer(1, 2, GLES31.GL_FLOAT, false, 28, 8);
                 GLES31.glEnableVertexAttribArray(1);
-                GLES31.glVertexAttribPointer(2, 2, GLES31.GL_FLOAT, false, 28, 16); // Velocity (vec2)
+                GLES31.glVertexAttribPointer(2, 2, GLES31.GL_FLOAT, false, 28, 16);
                 GLES31.glEnableVertexAttribArray(2);
-                GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 28, 24); // Time (float)
+                GLES31.glVertexAttribPointer(3, 1, GLES31.GL_FLOAT, false, 28, 24);
                 GLES31.glEnableVertexAttribArray(3);
 
                 GLES31.glBeginTransformFeedback(GLES31.GL_POINTS);

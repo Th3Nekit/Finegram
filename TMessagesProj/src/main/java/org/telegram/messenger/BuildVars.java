@@ -44,7 +44,6 @@ public class BuildVars {
     public static int APP_ID = 4;
     public static String APP_HASH = "014b35b6184100b085b0d0572f9b5103";
 
-    // SafetyNet key for Google Identity SDK, set it to empty to disable
     public static String SAFETYNET_KEY = "";
     public static String PLAYSTORE_APP_URL = "https://play.google.com/store/apps/details?id=org.telegram.messenger";
     public static String HUAWEI_STORE_URL = "https://appgallery.huawei.com/app/C101184875";
@@ -52,11 +51,11 @@ public class BuildVars {
 
     public static String HUAWEI_APP_ID = "106911607";
 
-    // You can use this flag to disable Google Play Billing (If you're making fork and want it to be in Google Play)
     public static boolean IS_BILLING_UNAVAILABLE = FinegramCoreConfig.isPlayStoreBuild();
 
-    // works only on official app ids, disable on your forks
     public static boolean SUPPORTS_PASSKEYS = Build.VERSION.SDK_INT >= 34;
+
+    public static boolean SUPPORTS_FPNV = true;
 
     static {
         APP_ID = Extra.INSTANCE.getAppID();

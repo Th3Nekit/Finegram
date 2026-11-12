@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">Ukrainian</string>
     <string name="LanguageCode">uk</string>
     <string name="ContinueOnThisLanguage">Продовжити українською</string>
-    <!--signin view-->
+    
     <string name="YourPhone">Ваш номер</string>
     <string name="StartText">Перевірте код країни і введіть\nсвій номер телефону.</string>
     <string name="Country">Країна</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">Якщо ви не одержали коду в SMS або виклику, перевірте **налаштування мобільної мережі** та номер телефону:\n\n**%1$s**\n\nЯкщо це не допоможе, вам залишиться спробувати інший номер телефону або звʼязатися з підтримкою Telegram. Натисніть **Допомога**, щоб надіслати нам технічну інформацію і ми могли зʼясувати проблему.</string>
     <string name="DidNotGetTheCodeHelpButton">Допомога</string>
     <string name="DidNotGetTheCodeEditNumberButton">Змінити номер</string>
-    <!--code enter view-->
+    
     <string name="YourCode">Підтвердження номера</string>
     <string name="SentSmsCode">Ми надіслали SMS із кодом активації на ваш телефон **%1$s**.</string>
     <string name="SentAppCode">Ми надіслали код до **Telegram** на іншому вашому пристрої.</string>
@@ -70,7 +70,7 @@
     <string name="RequestMissedCall">Отримати код у виклику</string>
     <string name="LoginAccessibilityCountryCode">Код країни</string>
     <string name="SignInWithGoogle">Увійти через Google</string>
-    <!--signup view-->
+    
     <string name="YourName">Ваше імʼя</string>
     <string name="RegisterText2">Вкажіть своє імʼя та додайте фото для профілю.</string>
     <string name="FirstName">Імʼя (обовʼязково)</string>
@@ -79,7 +79,7 @@
     <string name="LastNameSmall">Прізвище</string>
     <string name="CancelRegistration">Скасувати реєстрацію</string>
     <string name="RegistrationProfileInfo">Інформація про профіль</string>
-    <!--widgets-->
+    
     <string name="EditWidget">Редагувати віджет</string>
     <string name="EditWidgetContactsInfo">Цей віджет показує ярлики для швидкого доступу до вибраних чатів.\n\nЯкщо нічого не вибрано, відображаються останні активні контакти.</string>
     <string name="EditWidgetChatsInfo">Цей віджет показує останні повідомлення з вибраних чатів.\n\nЯкщо нічого не вибрано, відображаються останні активні чати.</string>
@@ -92,7 +92,7 @@
     <string name="WidgetChats">Чати</string>
     <string name="WidgetShortcuts">Ярлики</string>
     <string name="WidgetLoggedOff">Акаунт не авторизований.</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">Двоетапна перевірка</string>
     <string name="TwoStepVerificationTitle">Двоетапна перевірка</string>
     <string name="TwoStepVerificationPasswordSet">Пароль встановлено!</string>
@@ -221,7 +221,7 @@
     <string name="CheckYourNewEmail">Перевірте свою нову е-пошту</string>
     <string name="CheckYourNewEmailSubtitle">Введіть код, який ми щойно надіслали на вашу нову е-пошту %1$s.</string>
     <string name="LoginOrSingInWithGoogle">або</string>
-    <!--Intro view-->
+    
     <string name="Page1Title">Telegram</string>
     <string name="Page2Title">Швидкий</string>
     <string name="Page3Title">Безплатний</string>
@@ -235,7 +235,7 @@
     <string name="Page5Message">**Telegram** не обмежує вас\nу розмірі чатів і медіа.</string>
     <string name="Page6Message">**Telegram** надає вам доступ до\nповідомлень з безлічі пристроїв.</string>
     <string name="StartMessaging">Почати спілкування</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">dd MMM yyyy</string>
     <string name="formatterGiveawayCard">dd MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">dd MMMM</string>

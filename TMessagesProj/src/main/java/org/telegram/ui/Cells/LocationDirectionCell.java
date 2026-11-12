@@ -1,5 +1,6 @@
 package org.telegram.ui.Cells;
 
+import org.telegram.messenger.FileLog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -16,13 +17,14 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.BadWayToMakeButtonRound;
 import org.telegram.ui.Components.ColoredImageSpan;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.ScaleStateListAnimator;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class LocationDirectionCell extends FrameLayout {
+public class LocationDirectionCell extends FrameLayout implements Theme.Colorable {
 
     private final Theme.ResourcesProvider resourcesProvider;
     public TextView buttonTextView, buttonTextView2;
@@ -92,7 +94,7 @@ public class LocationDirectionCell extends FrameLayout {
         buttonTextView.setPadding(AndroidUtilities.dp(34), 0, AndroidUtilities.dp(34), 0);
         buttonTextView.setGravity(Gravity.CENTER);
         buttonTextView.setBackground(Theme.AdaptiveRipple.filledRect(getThemedColor(Theme.key_featuredStickers_addButton), 8));
-        buttonTextView.setTextColor(getThemedColor(Theme.key_featuredStickers_buttonText));
+        ThemeBind.textColor(buttonTextView, Theme.key_featuredStickers_buttonText, resourcesProvider);
         buttonTextView.setTextSize(14);
         spannableStringBuilder = new SpannableStringBuilder();
         spannableStringBuilder.append("..").setSpan(new ColoredImageSpan(ContextCompat.getDrawable(context, R.drawable.filled_directions)), 0, 1, 0);
@@ -145,5 +147,31 @@ public class LocationDirectionCell extends FrameLayout {
 
     private int getThemedColor(int key) {
         return Theme.getColor(key, resourcesProvider);
+    }
+
+    private int lastButtonColor;
+    private boolean lastButtonColorDark;
+
+    @Override
+    public void updateColors() {
+        try {
+            final int color = getThemedColor(Theme.key_featuredStickers_addButton);
+            if (buttonTextView != null && (color != lastButtonColor || lastButtonColorDark != Theme.isCurrentThemeDark())) {
+                lastButtonColorDark = Theme.isCurrentThemeDark(); // the ripple shade depends on dark / light
+                lastButtonColor = color;
+                // recolor in place (content + adaptive ripple) instead of a new drawable per frame
+                Theme.setSelectorDrawableColor(buttonTextView.getBackground(), color, false);
+                Theme.setSelectorDrawableColor(buttonTextView.getBackground(), Theme.AdaptiveRipple.calcRippleColor(color), true);
+                buttonTextView.invalidate();
+                if (buttonTextView2 != null) {
+                    Theme.setSelectorDrawableColor(buttonTextView2.getBackground(), color, false);
+                    Theme.setSelectorDrawableColor(buttonTextView2.getBackground(), Theme.AdaptiveRipple.calcRippleColor(color), true);
+                    buttonTextView2.invalidate();
+                }
+            }
+            invalidate();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

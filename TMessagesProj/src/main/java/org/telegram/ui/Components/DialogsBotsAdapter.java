@@ -311,30 +311,6 @@ public class DialogsBotsAdapter extends UniversalAdapter {
                     }
                 }
 
-//                searchRecommendedChannels.clear();
-//                String q = this.query.toLowerCase(), qT = AndroidUtilities.translitSafe(q);
-//                MessagesController.ChannelRecommendations recommendations = MessagesController.getInstance(currentAccount).getCachedChannelRecommendations(0);
-//                if (recommendations != null && !recommendations.chats.isEmpty()) {
-//                    for (TLRPC.Chat chat : recommendations.chats) {
-//                        if (chat == null)
-//                            continue;
-//                        if (!ChatObject.isChannelAndNotMegaGroup(chat))
-//                            continue;
-//                        TLRPC.Chat localChat = MessagesController.getInstance(currentAccount).getChat(chat.id);
-//                        if (!(ChatObject.isNotInChat(chat) && (localChat == null || ChatObject.isNotInChat(localChat))))
-//                            continue;
-//                        String t = chat.title.toLowerCase(), tT = AndroidUtilities.translitSafe(t);
-//                        if (
-//                                t.startsWith(q) || t.contains(" " + q) ||
-//                                        tT.startsWith(qT) || tT.contains(" " + qT)
-//                        ) {
-//                            if (chatIds.contains(chat.id))
-//                                continue;
-//                            chatIds.add(chat.id);
-//                            searchRecommendedChannels.add(chat);
-//                        }
-//                    }
-//                }
 
                 searchGlobal.clear();
                 if (response != null) {

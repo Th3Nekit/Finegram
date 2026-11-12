@@ -20,10 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.webrtc.JniCommon;
 import org.webrtc.Logging;
 
-/**
- * AudioDeviceModule implemented using android.media.AudioRecord as input and
- * android.media.AudioTrack as output.
- */
 public class JavaAudioDeviceModule implements AudioDeviceModule {
   private static final String TAG = "JavaAudioDeviceModule";
 
@@ -66,11 +62,6 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
       return this;
     }
 
-    /**
-     * Call this method if the default handling of querying the native sample rate shall be
-     * overridden. Can be useful on some devices where the available Android APIs are known to
-     * return invalid results.
-     */
     public Builder setSampleRate(int sampleRate) {
       Logging.d(TAG, "Input/Output sample rate overridden to: " + sampleRate);
       this.inputSampleRate = sampleRate;
@@ -78,88 +69,53 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
       return this;
     }
 
-    /**
-     * Call this method to specifically override input sample rate.
-     */
     public Builder setInputSampleRate(int inputSampleRate) {
       Logging.d(TAG, "Input sample rate overridden to: " + inputSampleRate);
       this.inputSampleRate = inputSampleRate;
       return this;
     }
 
-    /**
-     * Call this method to specifically override output sample rate.
-     */
     public Builder setOutputSampleRate(int outputSampleRate) {
       Logging.d(TAG, "Output sample rate overridden to: " + outputSampleRate);
       this.outputSampleRate = outputSampleRate;
       return this;
     }
 
-    /**
-     * Call this to change the audio source. The argument should be one of the values from
-     * android.media.MediaRecorder.AudioSource. The default is AudioSource.VOICE_COMMUNICATION.
-     */
     public Builder setAudioSource(int audioSource) {
       this.audioSource = audioSource;
       return this;
     }
 
-    /**
-     * Call this to change the audio format. The argument should be one of the values from
-     * android.media.AudioFormat ENCODING_PCM_8BIT, ENCODING_PCM_16BIT or ENCODING_PCM_FLOAT.
-     * Default audio data format is PCM 16 bit per sample.
-     * Guaranteed to be supported by all devices.
-     */
     public Builder setAudioFormat(int audioFormat) {
       this.audioFormat = audioFormat;
       return this;
     }
 
-    /**
-     * Set a callback to retrieve errors from the AudioTrack.
-     */
     public Builder setAudioTrackErrorCallback(AudioTrackErrorCallback audioTrackErrorCallback) {
       this.audioTrackErrorCallback = audioTrackErrorCallback;
       return this;
     }
 
-    /**
-     * Set a callback to retrieve errors from the AudioRecord.
-     */
     public Builder setAudioRecordErrorCallback(AudioRecordErrorCallback audioRecordErrorCallback) {
       this.audioRecordErrorCallback = audioRecordErrorCallback;
       return this;
     }
 
-    /**
-     * Set a callback to listen to the raw audio input from the AudioRecord.
-     */
     public Builder setSamplesReadyCallback(SamplesReadyCallback samplesReadyCallback) {
       this.samplesReadyCallback = samplesReadyCallback;
       return this;
     }
 
-    /**
-     * Set a callback to retrieve information from the AudioTrack on when audio starts and stop.
-     */
     public Builder setAudioTrackStateCallback(AudioTrackStateCallback audioTrackStateCallback) {
       this.audioTrackStateCallback = audioTrackStateCallback;
       return this;
     }
 
-    /**
-     * Set a callback to retrieve information from the AudioRecord on when audio starts and stops.
-     */
     public Builder setAudioRecordStateCallback(AudioRecordStateCallback audioRecordStateCallback) {
       this.audioRecordStateCallback = audioRecordStateCallback;
       return this;
     }
 
-    /**
-     * Control if the built-in HW noise suppressor should be used or not. The default is on if it is
-     * supported. It is possible to query support by calling isBuiltInNoiseSuppressorSupported().
-     */
     public Builder setUseHardwareNoiseSuppressor(boolean useHardwareNoiseSuppressor) {
       if (useHardwareNoiseSuppressor && !isBuiltInNoiseSuppressorSupported()) {
         Logging.e(TAG, "HW NS not supported");
@@ -169,11 +125,6 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
       return this;
     }
 
-    /**
-     * Control if the built-in HW acoustic echo canceler should be used or not. The default is on if
-     * it is supported. It is possible to query support by calling
-     * isBuiltInAcousticEchoCancelerSupported().
-     */
     public Builder setUseHardwareAcousticEchoCanceler(boolean useHardwareAcousticEchoCanceler) {
       if (useHardwareAcousticEchoCanceler && !isBuiltInAcousticEchoCancelerSupported()) {
         Logging.e(TAG, "HW AEC not supported");
@@ -183,48 +134,31 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
       return this;
     }
 
-    /**
-     * Control if stereo input should be used or not. The default is mono.
-     */
     public Builder setUseStereoInput(boolean useStereoInput) {
       this.useStereoInput = useStereoInput;
       return this;
     }
 
-    /**
-     * Control if stereo output should be used or not. The default is mono.
-     */
     public Builder setUseStereoOutput(boolean useStereoOutput) {
       this.useStereoOutput = useStereoOutput;
       return this;
     }
 
-    /**
-     * Control if the low-latency mode should be used. The default is disabled.
-     */
     public Builder setUseLowLatency(boolean useLowLatency) {
       this.useLowLatency = useLowLatency;
       return this;
     }
 
-    /**
-     * Set custom {@link AudioAttributes} to use.
-     */
     public Builder setAudioAttributes(AudioAttributes audioAttributes) {
       this.audioAttributes = audioAttributes;
       return this;
     }
 
-    /** Disables the volume logger on the audio output track. */
     public Builder setEnableVolumeLogger(boolean enableVolumeLogger) {
       this.enableVolumeLogger = enableVolumeLogger;
       return this;
     }
 
-    /**
-     * Construct an AudioDeviceModule based on the supplied arguments. The caller takes ownership
-     * and is responsible for calling release().
-     */
     public JavaAudioDeviceModule createAudioDeviceModule() {
       Logging.d(TAG, "createAudioDeviceModule");
       if (useHardwareNoiseSuppressor) {
@@ -243,8 +177,6 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
         }
         Logging.d(TAG, "HW AEC will not be used.");
       }
-      // Low-latency mode was introduced in API version 26, see
-      // https://developer.android.com/reference/android/media/AudioTrack#PERFORMANCE_MODE_LOW_LATENCY
       final int MIN_LOW_LATENCY_SDK_VERSION = 26;
       if (useLowLatency && Build.VERSION.SDK_INT >= MIN_LOW_LATENCY_SDK_VERSION) {
         Logging.d(TAG, "Low latency mode will be used.");
@@ -264,8 +196,6 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
     }
   }
 
-  /* AudioRecord */
-  // Audio recording error handler functions.
   public enum AudioRecordStartErrorCode {
     AUDIO_RECORD_START_EXCEPTION,
     AUDIO_RECORD_START_STATE_MISMATCH,
@@ -277,21 +207,14 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
     void onWebRtcAudioRecordError(String errorMessage);
   }
 
-  /** Called when audio recording starts and stops. */
   public static interface AudioRecordStateCallback {
     void onWebRtcAudioRecordStart();
     void onWebRtcAudioRecordStop();
   }
 
-  /**
-   * Contains audio sample information.
-   */
   public static class AudioSamples {
-    /** See {@link AudioRecord#getAudioFormat()} */
     private final int audioFormat;
-    /** See {@link AudioRecord#getChannelCount()} */
     private final int channelCount;
-    /** See {@link AudioRecord#getSampleRate()} */
     private final int sampleRate;
 
     private final byte[] data;
@@ -320,13 +243,10 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
     }
   }
 
-  /** Called when new audio samples are ready. This should only be set for debug purposes */
   public static interface SamplesReadyCallback {
     void onWebRtcAudioRecordSamplesReady(AudioSamples samples);
   }
 
-  /* AudioTrack */
-  // Audio playout/track error handler functions.
   public enum AudioTrackStartErrorCode {
     AUDIO_TRACK_START_EXCEPTION,
     AUDIO_TRACK_START_STATE_MISMATCH,
@@ -338,24 +258,15 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
     void onWebRtcAudioTrackError(String errorMessage);
   }
 
-  /** Called when audio playout starts and stops. */
   public static interface AudioTrackStateCallback {
     void onWebRtcAudioTrackStart();
     void onWebRtcAudioTrackStop();
   }
 
-  /**
-   * Returns true if the device supports built-in HW AEC, and the UUID is approved (some UUIDs can
-   * be excluded).
-   */
   public static boolean isBuiltInAcousticEchoCancelerSupported() {
     return WebRtcAudioEffects.isAcousticEchoCancelerSupported();
   }
 
-  /**
-   * Returns true if the device supports built-in HW NS, and the UUID is approved (some UUIDs can be
-   * excluded).
-   */
   public static boolean isBuiltInNoiseSuppressorSupported() {
     return WebRtcAudioEffects.isNoiseSuppressorSupported();
   }
@@ -424,12 +335,6 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
     return audioInput.setNoiseSuppressorEnabled(enabled);
   }
 
-  /**
-   * Start to prefer a specific {@link AudioDeviceInfo} device for recording. Typically this should
-   * only be used if a client gives an explicit option for choosing a physical device to record
-   * from. Otherwise the best-matching device for other parameters will be used. Calling after
-   * recording is started may cause a temporary interruption if the audio routing changes.
-   */
   @RequiresApi(Build.VERSION_CODES.M)
   public void setPreferredInputDevice(AudioDeviceInfo preferredInputDevice) {
     Logging.d(TAG, "setPreferredInputDevice: " + preferredInputDevice);

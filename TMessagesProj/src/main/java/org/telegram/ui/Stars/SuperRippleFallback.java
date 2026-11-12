@@ -22,7 +22,6 @@ import org.telegram.ui.Components.CubicBezierInterpolator;
 
 import java.util.ArrayList;
 
-// for Android that doesn't support AGSL
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class SuperRippleFallback extends ISuperRipple {
 
@@ -62,10 +61,6 @@ public class SuperRippleFallback extends ISuperRipple {
     public SuperRippleFallback(View view) {
         super(view);
 
-//        radii[0] = radii[1] = // top left
-//        radii[2] = radii[3] = // top right
-//        radii[4] = radii[5] = // bottom right
-//        radii[6] = radii[7] = // bottom left
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             final WindowInsets insets = view.getRootWindowInsets();

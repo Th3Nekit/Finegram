@@ -24,38 +24,13 @@ import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A {@link Canvas} decorator that records every drawing/state call into an ordered list of
- * {@link Command} objects and can replay the first <em>N</em> of them onto any other Canvas.
- *
- * <p>Use {@link #logCommands()} to dump the full recorded command list to logcat via
- * {@code Log.i(TAG, ...)}.
- *
- * <p>Deep-copy policy
- * <ul>
- *   <li>{@link Paint}   – copied via {@code new Paint(src)}</li>
- *   <li>{@link Matrix}  – copied via {@code new Matrix(src)}</li>
- *   <li>{@link Bitmap}  – copied via {@code src.copy(src.getConfig(), false)}</li>
- *   <li>{@link Path}    – copied via {@code new Path(src)}</li>
- *   <li>{@link Rect}, {@link RectF} – copied via copy-constructors</li>
- *   <li>{@link float[]}, {@link int[]} – copied via {@code Arrays.copyOf}</li>
- *   <li>Immutable / opaque objects ({@code Shader}, {@code DrawFilter}, {@code String},
- *       primitives, enums) – stored by reference (no copy needed).</li>
- * </ul>
- *
- * <p>Replay closes every unclosed {@code save / saveLayer / saveLayerAlpha} automatically.
- */
 @SuppressWarnings({"deprecation", "unused"})
 public class DebugRecordingCanvas extends Canvas {
 
     private static final String TAG = "DebugRecordingCanvas";
 
-    /** Coordinates exceeding this absolute value are flagged as suspicious. */
     private static final float COORD_WARN_THRESHOLD = 20_000f;
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Helpers
-    // ──────────────────────────────────────────────────────────────────────────
 
     private static String paintInfo(@Nullable Paint p) {
         if (p == null) return "paint=null";
@@ -92,11 +67,9 @@ public class DebugRecordingCanvas extends Canvas {
         return "rect(" + r.left + "," + r.top + "," + r.right + "," + r.bottom + ")";
     }
 
-    /** Returns a warning prefix if any coordinate exceeds the threshold, empty string otherwise. */
     private static String coordWarn(float... coords) {
         for (float c : coords) {
             if (Math.abs(c) > COORD_WARN_THRESHOLD) {
-                // return "⚠ COORD_OUT_OF_RANGE ";
             }
         }
         return "";
@@ -107,12 +80,10 @@ public class DebugRecordingCanvas extends Canvas {
             return "⚠ PATH_IS_EMPTY ";
         }
         if (!path.isConvex()) {
-            //    return "⚠ PATH_IS_NON_CONVEX ";
         }
         return "";
     }
 
-    /** Returns a warning if paint alpha is <= 0 or if a shadow layer is set. */
     private static String paintWarn(@Nullable Paint p) {
         if (p == null) return "";
         StringBuilder warn = new StringBuilder();
@@ -127,11 +98,6 @@ public class DebugRecordingCanvas extends Canvas {
         return warn.toString();
     }
 
-    /**
-     * Validates a command at record time and logs a warning immediately if something
-     * looks wrong. The warning is also a breakpoint-friendly site: put a breakpoint
-     * on the {@code Log.w} line inside this method to catch bad draws as they happen.
-     */
     private void validate(@NonNull Command cmd) {
         String desc = cmd.toString();
         if (desc.contains("⚠")) {
@@ -139,26 +105,16 @@ public class DebugRecordingCanvas extends Canvas {
         }
     }
 
-    /**
-     * Records a command: validates it first (logging any warning immediately),
-     * then appends it to the list.
-     */
     private void record(@NonNull Command cmd) {
         validate(cmd);
         mCommands.add(cmd);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Command sealed hierarchy
-    // ──────────────────────────────────────────────────────────────────────────
 
-    /** Base class for all recorded commands. */
     public abstract static class Command {
-        /** Replay this command onto {@code target}. */
         public abstract void replay(@NonNull Canvas target);
     }
 
-    // ── State commands ────────────────────────────────────────────────────────
 
     public static final class SaveCmd extends Command {
         @Override public void replay(@NonNull Canvas c) { c.save(); }
@@ -217,7 +173,6 @@ public class DebugRecordingCanvas extends Canvas {
         @Override public String toString() { return "restoreToCount(" + count + ")"; }
     }
 
-    // ── Transform commands ────────────────────────────────────────────────────
 
     public static final class TranslateCmd extends Command {
         final float dx, dy;
@@ -263,7 +218,6 @@ public class DebugRecordingCanvas extends Canvas {
         @Override public String toString() { return "setMatrix(" + matrixInfo(matrix) + ")"; }
     }
 
-    // ── Clip commands ─────────────────────────────────────────────────────────
 
     public static final class ClipRectCmd extends Command {
         final RectF     rect;
@@ -309,39 +263,19 @@ public class DebugRecordingCanvas extends Canvas {
         }
     }
 
-    // ── quickReject commands ──────────────────────────────────────────────────
 
-    /**
-     * Records a {@code quickReject} call.
-     *
-     * <p>quickReject is a pure query (no canvas state is mutated), so replay simply
-     * re-issues the call on the target canvas and discards the boolean result.
-     * The recorded result from the original call is stored for inspection via
-     * {@link #wasRejected()}.
-     *
-     * <p>Deprecated {@link Canvas.EdgeType} overloads (API &lt; 30) are recorded with
-     * {@code edgeType != null}; modern overloads set {@code edgeType = null}.
-     */
     public static final class QuickRejectCmd extends Command {
 
-        /** Discriminates which overload was originally called. */
         public enum Kind { RECT_F, RECT_F_EDGE, COORDS, COORDS_EDGE, PATH, PATH_EDGE }
 
         final Kind             kind;
-        // RECT_F / RECT_F_EDGE
         final RectF            rectF;
-        // COORDS / COORDS_EDGE
         final float            left, top, right, bottom;
-        // PATH / PATH_EDGE
         final Path             path;
-        // deprecated EdgeType variants (stored as String to avoid hard dep on the enum)
         @Nullable final String edgeType;
-        // result captured at record time
         final boolean          rejected;
 
-        // ── constructors ──────────────────────────────────────────────────────
 
-        /** Modern: quickReject(RectF) */
         QuickRejectCmd(@NonNull RectF r, boolean rejected) {
             kind = Kind.RECT_F;
             rectF = new RectF(r);
@@ -350,7 +284,6 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        /** Deprecated: quickReject(RectF, EdgeType) */
         QuickRejectCmd(@NonNull RectF r, @NonNull Canvas.EdgeType et, boolean rejected) {
             kind = Kind.RECT_F_EDGE;
             rectF = new RectF(r);
@@ -359,7 +292,6 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        /** Modern: quickReject(float, float, float, float) */
         QuickRejectCmd(float l, float t, float r, float b, boolean rejected) {
             kind = Kind.COORDS;
             rectF = null; path = null; edgeType = null;
@@ -367,7 +299,6 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        /** Deprecated: quickReject(float, float, float, float, EdgeType) */
         QuickRejectCmd(float l, float t, float r, float b,
                        @NonNull Canvas.EdgeType et, boolean rejected) {
             kind = Kind.COORDS_EDGE;
@@ -376,7 +307,6 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        /** Modern: quickReject(Path) */
         QuickRejectCmd(@NonNull Path p, boolean rejected) {
             kind = Kind.PATH;
             path = new Path(p);
@@ -385,7 +315,6 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        /** Deprecated: quickReject(Path, EdgeType) */
         QuickRejectCmd(@NonNull Path p, @NonNull Canvas.EdgeType et, boolean rejected) {
             kind = Kind.PATH_EDGE;
             path = new Path(p);
@@ -394,17 +323,13 @@ public class DebugRecordingCanvas extends Canvas {
             this.rejected = rejected;
         }
 
-        // ── accessors ─────────────────────────────────────────────────────────
 
-        /** Returns the boolean value returned by the original quickReject call. */
         public boolean wasRejected() { return rejected; }
 
-        // ── replay ────────────────────────────────────────────────────────────
 
         @Override
         @SuppressWarnings("deprecation")
         public void replay(@NonNull Canvas c) {
-            // quickReject is a query — result is intentionally discarded during replay.
             switch (kind) {
                 case RECT_F:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -433,7 +358,6 @@ public class DebugRecordingCanvas extends Canvas {
             }
         }
 
-        // ── toString ──────────────────────────────────────────────────────────
 
         @Override
         public String toString() {
@@ -458,7 +382,6 @@ public class DebugRecordingCanvas extends Canvas {
         }
     }
 
-    // ── Filter ────────────────────────────────────────────────────────────────
 
     public static final class SetDrawFilterCmd extends Command {
         final DrawFilter filter;
@@ -467,7 +390,6 @@ public class DebugRecordingCanvas extends Canvas {
         @Override public String toString() { return "setDrawFilter(" + filter + ")"; }
     }
 
-    // ── Draw commands ─────────────────────────────────────────────────────────
 
     public static final class DrawColorCmd extends Command {
         final int color;
@@ -997,7 +919,6 @@ public class DebugRecordingCanvas extends Canvas {
         final Paint     paint;
 
         private static NinePatch copyPatch(@NonNull NinePatch patch) {
-            // NinePatch is backed by an immutable bitmap+chunk — share by reference.
             return patch;
         }
 
@@ -1051,22 +972,13 @@ public class DebugRecordingCanvas extends Canvas {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Fields
-    // ──────────────────────────────────────────────────────────────────────────
 
     private final List<Command> mCommands = new ArrayList<>();
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Constructors
-    // ──────────────────────────────────────────────────────────────────────────
 
     public DebugRecordingCanvas(@NonNull Bitmap bitmap) { super(bitmap); }
     public DebugRecordingCanvas() { super(); }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Public API
-    // ──────────────────────────────────────────────────────────────────────────
 
     @NonNull
     public List<Command> getCommands() {
@@ -1077,11 +989,6 @@ public class DebugRecordingCanvas extends Canvas {
 
     public int getCommandCount() { return mCommands.size(); }
 
-    /**
-     * Dumps all recorded commands to logcat at INFO level.
-     * Commands with warnings (suspicious coordinates, zero alpha, etc.)
-     * are additionally emitted at WARN level so they stand out in the log.
-     */
     public void logCommands() {
         Log.i(TAG, "=== DebugRecordingCanvas: " + mCommands.size() + " command(s) ===");
         for (int i = 0; i < mCommands.size(); i++) {
@@ -1095,10 +1002,6 @@ public class DebugRecordingCanvas extends Canvas {
         Log.i(TAG, "=== end ===");
     }
 
-    /**
-     * Replays the first {@code n} recorded commands onto {@code target}.
-     * Any unclosed save/saveLayer/saveLayerAlpha are closed automatically.
-     */
     public void replayCommands(@NonNull Canvas target, int n) {
         int limit = Math.min(n, mCommands.size());
         int saveDepthBefore = target.getSaveCount();
@@ -1115,9 +1018,6 @@ public class DebugRecordingCanvas extends Canvas {
         replayCommands(target, mCommands.size());
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – State
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public int save() {
@@ -1127,13 +1027,11 @@ public class DebugRecordingCanvas extends Canvas {
 
     @Override
     public int saveLayer(@Nullable RectF bounds, @Nullable Paint paint) {
-        // not recorded — delegates internally to another saveLayer overload, would duplicate
         return super.saveLayer(bounds, paint);
     }
 
     @Override
     public int saveLayer(@Nullable RectF bounds, @Nullable Paint paint, int saveFlags) {
-        // not recorded — see above
         return super.saveLayer(bounds, paint, saveFlags);
     }
 
@@ -1146,25 +1044,21 @@ public class DebugRecordingCanvas extends Canvas {
 
     @Override
     public int saveLayer(float left, float top, float right, float bottom, @Nullable Paint paint) {
-        // not recorded — see above
         return super.saveLayer(left, top, right, bottom, paint);
     }
 
     @Override
     public int saveLayerAlpha(@Nullable RectF bounds, int alpha) {
-        // not recorded — see above
         return super.saveLayerAlpha(bounds, alpha);
     }
 
     @Override
     public int saveLayerAlpha(@Nullable RectF bounds, int alpha, int saveFlags) {
-        // not recorded — see above
         return super.saveLayerAlpha(bounds, alpha, saveFlags);
     }
 
     @Override
     public int saveLayerAlpha(float left, float top, float right, float bottom, int alpha) {
-        // not recorded — see above
         return super.saveLayerAlpha(left, top, right, bottom, alpha);
     }
 
@@ -1186,9 +1080,6 @@ public class DebugRecordingCanvas extends Canvas {
         super.restoreToCount(saveCount);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – Transforms
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public void translate(float dx, float dy) {
@@ -1226,9 +1117,6 @@ public class DebugRecordingCanvas extends Canvas {
         super.setMatrix(matrix);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – Clip
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public boolean clipRect(@NonNull RectF rect) {
@@ -1287,14 +1175,7 @@ public class DebugRecordingCanvas extends Canvas {
         return super.clipPath(path, op);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – quickReject
-    // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Modern: quickReject(RectF)
-     * Available on all API levels. Records the call and the result.
-     */
     @Override
     public boolean quickReject(@NonNull RectF rect) {
         boolean result = super.quickReject(rect);
@@ -1302,11 +1183,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    /**
-     * Deprecated (API < 30): quickReject(RectF, EdgeType)
-     * EdgeType.AA / EdgeType.BW hint the rasteriser about anti-aliasing.
-     * Recorded with edgeType for full fidelity.
-     */
     @Override
     @SuppressWarnings("deprecation")
     public boolean quickReject(@NonNull RectF rect, @NonNull Canvas.EdgeType type) {
@@ -1315,9 +1191,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    /**
-     * Modern: quickReject(float, float, float, float)
-     */
     @Override
     public boolean quickReject(float left, float top, float right, float bottom) {
         boolean result = super.quickReject(left, top, right, bottom);
@@ -1325,9 +1198,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    /**
-     * Deprecated (API < 30): quickReject(float, float, float, float, EdgeType)
-     */
     @Override
     @SuppressWarnings("deprecation")
     public boolean quickReject(float left, float top, float right, float bottom,
@@ -1337,9 +1207,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    /**
-     * Modern: quickReject(Path)
-     */
     @Override
     public boolean quickReject(@NonNull Path path) {
         boolean result = super.quickReject(path);
@@ -1347,9 +1214,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    /**
-     * Deprecated (API < 30): quickReject(Path, EdgeType)
-     */
     @Override
     @SuppressWarnings("deprecation")
     public boolean quickReject(@NonNull Path path, @NonNull Canvas.EdgeType type) {
@@ -1358,9 +1222,6 @@ public class DebugRecordingCanvas extends Canvas {
         return result;
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – Filter
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public void setDrawFilter(@Nullable DrawFilter filter) {
@@ -1368,9 +1229,6 @@ public class DebugRecordingCanvas extends Canvas {
         super.setDrawFilter(filter);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Canvas overrides – Draw
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public void drawColor(int color) {

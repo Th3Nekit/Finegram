@@ -37,7 +37,6 @@ public interface IMessageCell {
     float getDeltaBottom();
     float getDeltaRight();
 
-    // View
     float getX();
     float getY();
     float getScaleX();

@@ -36,10 +36,6 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.OrientationController;
 import org.telegram.ui.ProfileActivity;
 
-/**
- * The QR code of a user or a chat (args "user_id" / "chat_id"): the iOS "share QR" screen with "Remove message fee".
- * The own QR also keeps the theme and the free codes on the server, see {@link QrShareServer}.
- */
 public class QrShareActivity extends BaseFragment {
 
     private long userId, chatId;
@@ -54,14 +50,12 @@ public class QrShareActivity extends BaseFragment {
 
     public QrShareActivity(Bundle args) {
         super(args);
-        hasOwnBackground = true; // the scene paints everything; outside the reveal circle the profile must show through
+        hasOwnBackground = true;
     }
 
-    /** boolean: the gifts, the emoji and the blur show during the open already (high-end devices only). */
     public static final String ARG_IMMEDIATE = "immediate";
     private boolean immediateOnOpen;
 
-    /** The own QR. */
     public static QrShareActivity self(int account) {
         final Bundle args = new Bundle();
         args.putLong("user_id", org.telegram.messenger.UserConfig.getInstance(account).getClientUserId());
@@ -87,11 +81,9 @@ public class QrShareActivity extends BaseFragment {
 
     @Override
     public View createView(Context context) {
-        // the palette of the last time; a refreshed one is used from the next opening
         final QrBackdrops backdrops = QrBackdrops.get(currentAccount);
         Backdrops.apply(backdrops.getList());
         final java.util.List<TLRPC.TL_shareThemeBackdropOption> shownPalette = backdrops.getList();
-        // a changed palette (or the first one ever) is applied at once
         backdrops.load(() -> {
             final java.util.List<TLRPC.TL_shareThemeBackdropOption> list = backdrops.getList();
             if (list == null || list == shownPalette || view == null || isFinished) return;
@@ -146,8 +138,6 @@ public class QrShareActivity extends BaseFragment {
                 shapeB = shapeBottom;
                 shapeR = radius;
                 if (emojiView != null) {
-                    // the glass bounds in keyboard coordinates, for the fades and the scrollbar (the keyboard's own
-                    // dispatchDraw does not run when only the grid redraws)
                     final float glassBottom = Math.min(emojiView.getHeight(), shapeB - (emojiView.getTop() + emojiView.getTranslationY()));
                     emojiGlassBottom = pickOverlay != null ? pickOverlay.gridCutY(glassBottom) : glassBottom;
                     if (pickOverlay != null) pickOverlay.setGlassRight(shapeRr - pickOverlay.getLeft());
@@ -174,22 +164,18 @@ public class QrShareActivity extends BaseFragment {
 
             @Override
             public void onSceneLight(boolean l) {
-                // system bars stay white on every backdrop here (also on Gold / Silver / Yellow)
                 light = false;
                 applyWhiteBars();
             }
         });
         frame.addView(view, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-        // the open's first state from the very first frame: no frame of the fully open screen before the transition
-        // starts (it was drawn opaque, the open's fade then compiled every draw a second time)
         view.setImmediateOnOpen(immediateOnOpen);
         view.setRevealOpening(true);
         if (opened) {
-            // rebuilt in place after the open (the passcode's unlock, a theme change): no transition comes to reveal it
             view.setReveal(1f);
             frame.postDelayed(preloadEmojiRunnable, QrShareView.ITEMS_APPEAR_MS);
         } else if (AndroidUtilities.isTablet()) {
-            view.setRevealStatic(); // the system's transition moves it (see onCustomTransitionAnimation)
+            view.setRevealStatic();
         } else {
             view.setReveal(0f);
         }
@@ -200,7 +186,6 @@ public class QrShareActivity extends BaseFragment {
         return frame;
     }
 
-    /** Shares the QR as an image: the backdrop with its pattern and the card with the code that is shown now. */
     public void performShare() {
         if (view != null) {
             shareLink(view.getCurrentLink());
@@ -208,7 +193,6 @@ public class QrShareActivity extends BaseFragment {
     }
 
     private void shareLink(@Nullable String link) {
-        // no code yet (a contact token on its way): nothing to share
         if (getParentActivity() == null || view == null || view.getCurrentLink() == null) {
             return;
         }
@@ -220,7 +204,6 @@ public class QrShareActivity extends BaseFragment {
             intent.putExtra(Intent.EXTRA_STREAM, uri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } else if (!TextUtils.isEmpty(link)) {
-            // no image (not laid out yet): the link as text
             intent.setType("text/plain");
             intent.putExtra(Intent.EXTRA_TEXT, link);
         } else {
@@ -233,12 +216,10 @@ public class QrShareActivity extends BaseFragment {
         }
     }
 
-    /** The stock Premium screen. */
     private void openPremium() {
         presentFragment(new org.telegram.ui.PremiumPreviewFragment("qr_emoji"));
     }
 
-    /** "Browse Gifts" of the empty gifts layer: the gift store for oneself (collectibles are bought from there). */
     private void openGiftStore() {
         if (getParentActivity() == null) return;
         final org.telegram.ui.Gifts.GiftSheet sheet = new org.telegram.ui.Gifts.GiftSheet(getParentActivity(), currentAccount, getUserConfig().getClientUserId(), null);
@@ -246,12 +227,9 @@ public class QrShareActivity extends BaseFragment {
         sheet.show();
     }
 
-    /* Download */
 
-    /** Waits for the storage permission (Android 6–10), then saves. */
     private boolean saveAfterPermission;
 
-    /** The QR as an image (the same one as shared) to the gallery: Pictures/Telegram before Android 10, MediaStore after. */
     private void saveToGallery() {
         final android.app.Activity activity = getParentActivity();
         if (activity == null || view == null || view.getCurrentLink() == null) {
@@ -268,7 +246,6 @@ public class QrShareActivity extends BaseFragment {
             return;
         }
         Utilities.globalQueue.postRunnable(() -> {
-            // the external cache: MediaController.saveFile does not take files from the app's internal storage
             final java.io.File file = new java.io.File(AndroidUtilities.getCacheDir(), "qr_code_" + System.currentTimeMillis() + ".png");
             boolean written = false;
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(file)) {
@@ -290,7 +267,6 @@ public class QrShareActivity extends BaseFragment {
         });
     }
 
-    /* Scan */
 
     private void onScanClick() {
         if (getParentActivity() == null) {
@@ -305,7 +281,6 @@ public class QrShareActivity extends BaseFragment {
 
     private @Nullable QrScanOverlay scanOverlay;
 
-    /** The scanner grows out of the scan button over the whole screen, like the story camera. */
     private void openScanner() {
         if (scanOverlay != null || view == null || frame == null || getParentActivity() == null) {
             return;
@@ -314,7 +289,6 @@ public class QrShareActivity extends BaseFragment {
         view.getScanRect(from);
         view.getCloseRect(close);
         if (from.isEmpty()) {
-            // not laid out yet: the scanner grows from the middle
             from.set(frame.getWidth() / 2f - AndroidUtilities.dp(20), frame.getHeight() / 2f - AndroidUtilities.dp(20), frame.getWidth() / 2f + AndroidUtilities.dp(20), frame.getHeight() / 2f + AndroidUtilities.dp(20));
         }
         view.setScanHidden(true);
@@ -331,7 +305,7 @@ public class QrShareActivity extends BaseFragment {
                 removeScanner(overlay);
             }
         });
-        scanOverlay.setButtonLabel(getString(R.string.QrScanQr)); // the "Scan QR" pill
+        scanOverlay.setButtonLabel(getString(R.string.QrScanQr));
         final QrScanOverlay overlay = scanOverlay;
         overlay.setOnGallery(() -> {
             if (!QrScanOverlay.checkGalleryPermission(getParentActivity())) {
@@ -359,7 +333,6 @@ public class QrShareActivity extends BaseFragment {
         }
     }
 
-    /** The camera sheet from any screen: a scanned link to a username opens that profile. */
     public static void openCameraScanActivity(BaseFragment fragment) {
         CameraScanActivity.showAsSheet(fragment, false, CameraScanActivity.TYPE_QR, scanDelegate(fragment));
     }
@@ -398,7 +371,6 @@ public class QrShareActivity extends BaseFragment {
     @Override
     public void onRequestPermissionsResultFragment(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == org.telegram.ui.BasePermissionsActivity.REQUEST_CODE_EXTERNAL_STORAGE) {
-            // a refusal is explained by LaunchActivity
             final boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
             if (saveAfterPermission && granted) {
                 saveAfterPermission = false;
@@ -425,14 +397,12 @@ public class QrShareActivity extends BaseFragment {
                     }
                 })
                 .setNegativeButton(getString(R.string.ContactsPermissionAlertNotNow), null)
-                .setTopAnimation(R.raw.permission_request_camera, 72, false, Theme.getColor(Theme.key_dialogTopBackground))
+                .setTopAnimation(R.raw.permission_request_camera, 72, false, Theme.getColor(Theme.key_dialogTopBackground)).setTopBackgroundColorKey(Theme.key_dialogTopBackground, null)
                 .show();
         }
     }
 
-    /* Orientation */
 
-    /** The screen asks for portrait; whether it can be applied is up to the controller. */
     private void lockPortrait() {
         final OrientationController orientation = OrientationController.of(getParentActivity());
         if (orientation != null && portraitRequest == null) {
@@ -447,11 +417,10 @@ public class QrShareActivity extends BaseFragment {
         }
     }
 
-    /** Lays the keyboard out once at the final sheet frame (no reflow during the morph; reused on reopen). */
     private void layoutEmojiFinal() {
         if (emojiView == null || view == null || view.getWidth() == 0) return;
         final int top = (int) view.panelFinalTop();
-        final int h = Math.max(1, (int) (view.panelFinalBottom() - top)); // down to the glass edge (the 10dp fade ends on it)
+        final int h = Math.max(1, (int) (view.panelFinalBottom() - top));
         final int lm = (int) view.panelFinalLeft(), rm = (int) (frame.getWidth() - view.panelFinalRight());
         final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) emojiView.getLayoutParams();
         if (lp.height != h || lp.leftMargin != lm || lp.rightMargin != rm) {
@@ -462,15 +431,9 @@ public class QrShareActivity extends BaseFragment {
         }
     }
 
-    /** Creates the keyboard early (invisible), so its first pages are measured and loaded before the sheet ever opens. */
     private static final long OPEN_MS = 860;
-    /** The open has finished: a later createView (the views rebuilt in place) shows the screen as it is. */
     private boolean opened;
 
-    /**
-     * The views are dropped to be rebuilt by createView (LaunchActivity does it after the passcode's unlock, and on a
-     * theme or language change): the old screen's view, panels, scanner and server go with them.
-     */
     @Override
     public void clearViews() {
         if (frame != null) frame.removeCallbacks(preloadEmojiRunnable);
@@ -495,7 +458,6 @@ public class QrShareActivity extends BaseFragment {
     private final Runnable preloadEmojiRunnable = this::preloadEmoji;
 
     private void preloadEmoji() {
-        // the delayed preload may come after the screen is closed: the keyboard needs the activity
         if (emojiView != null || view == null || isFinished || getParentActivity() == null) return;
         placeEmojiPanel(true, view.panelFinalTop(), 0f);
         emojiView.setVisibility(View.INVISIBLE);
@@ -510,7 +472,6 @@ public class QrShareActivity extends BaseFragment {
     private final android.graphics.Paint topFadePaint = new android.graphics.Paint();
     private final android.graphics.Matrix topFadeM = new android.graphics.Matrix();
 
-    /** smoothstep stops 1 → 0 (inverted = 0 → 1) for the DST_IN fades */
     private static android.graphics.LinearGradient smoothFade(boolean in) {
         final int n = 9;
         final int[] cols = new int[n];
@@ -524,39 +485,23 @@ public class QrShareActivity extends BaseFragment {
         return new android.graphics.LinearGradient(0, 0, 0, 1, cols, pos, android.graphics.Shader.TileMode.CLAMP);
     }
 
-    /**
-     * Runs inside the grid's own layer (grid coordinates), after its cells: the grid scrolls on under the packs island
-     * and dissolves toward the top (0 at the island's top → 1 at 12dp below it), dissolves over 10dp at the glass
-     * bottom, and the picks island's own shape is cut out (its glass shows the sheet under it).
-     */
     private void gridFades(android.graphics.Canvas c, androidx.recyclerview.widget.RecyclerView grid, View strip) {
-        if (grid.isVerticalScrollBarEnabled()) grid.setVerticalScrollBarEnabled(false); // only our own thin scrollbar
+        if (grid.isVerticalScrollBarEnabled()) grid.setVerticalScrollBarEnabled(false);
         if (!nativeBarsOff && emojiView != null) {
             nativeBarsOff = true;
             disableNativeScrollbars(emojiView);
         }
         if (emojiView == null || Float.isNaN(emojiGlassBottom)) return;
-        // the cascade by rows in the sheet's direction, carried by scale (each cell 0.5 → 1 with a small overshoot,
-        // alpha within the first 35%); opening: bottom row first; closing: top row first, scale → 0.6, alpha at the end.
-        // Scale per cell (Cell.cascadeScale), alpha as a soft row band in this layer (no per-cell layers).
         final float cp = view != null ? view.cascadeProgress() : 1f;
         final boolean opening = view != null && view.sheetOpening();
-        // opening: no row cascade — the content sits at its final layout, revealed by the growing sheet, with one
-        // uniform scale 0.75 → 1 timed from the open tap (420 ms, ease-out cubic; pivot at the visible glass bottom)
-        // and a fade on the sheet's own progress; if the opening flag drops before the morph lands, the scale holds
-        // and only completes with it, so nothing pops
         final float mp = view != null ? view.sheetProgress() : 1f;
         final float me = 1f - (1f - mp) * (1f - mp) * (1f - mp);
         final float rt = opening ? view.revealTime() : -1f;
         final float gs = rt >= 0f ? 0.75f + 0.25f * (1f - (1f - rt) * (1f - rt) * (1f - rt)) : mp >= 0.999f ? 1f : Math.max(grid.getScaleX(), 0.75f + 0.25f * me);
         final float ga = opening ? Math.min(1f, mp / 0.55f) : 1f;
-        if (rt >= 0f && rt < 1f) view.invalidate(); // keep frames coming until the timed grow lands
-        // the grid itself too: its scale is set from here, in its own draw — without frames of its own it kept the last
-        // one short of 1 (the grid and the picks island's cut then stayed smaller than the island)
+        if (rt >= 0f && rt < 1f) view.invalidate();
         if (gs < 1f) grid.postInvalidateOnAnimation();
         if (grid.getScaleX() != gs) {
-            // pivot on the VISIBLE glass bottom (not the grid's own bottom, which sits lower under the picks island's
-            // padding): with the grid's bottom the bottom rows were pulled below the glass at 0.75 and "filled in" last
             float topInKb = 0f;
             for (View v = grid; v != null && v != emojiView && v.getParent() instanceof View; v = (View) v.getParent())
                 topInKb += v.getTop();
@@ -569,8 +514,6 @@ public class QrShareActivity extends BaseFragment {
         if (grid.getAlpha() != ga) grid.setAlpha(ga);
         grid.getLocationOnScreen(gridLoc);
         emojiView.getLocationOnScreen(emojiLoc);
-        // the grid's (scaled) origin in keyboard coordinates; everything drawn here is in the grid's own units, so a
-        // keyboard length is divided by the scale (the grid is scaled during the open, the masks are not)
         final float oy = gridLoc[1] - emojiLoc[1];
         final float gk = grid.getScaleY() > 0.01f ? grid.getScaleY() : 1f;
         final float w = grid.getWidth();
@@ -583,13 +526,11 @@ public class QrShareActivity extends BaseFragment {
             topFadePaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN));
             islandCutPaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_OUT));
         }
-        // top: under the packs island
         if (strip != null) {
             strip.getLocationOnScreen(gridLoc);
-            final float stKb = gridLoc[1] - emojiLoc[1]; // the strip's top in keyboard coordinates
+            final float stKb = gridLoc[1] - emojiLoc[1];
             final float st = (stKb - oy) / gk, sb = st + (strip.getHeight() + org.telegram.messenger.AndroidUtilities.dp(12)) / gk;
             if (pickOverlay != null) pickOverlay.setTopClip(stKb + strip.getHeight() - stripInsetBottom);
-            // the island's own shape is cut: its glass shows the sheet's glass instead (see stripUnder)
             final float sx0 = stripLoc0X(strip, grid) / grid.getScaleX();
             stripCut.set(sx0 + stripRimOut / gk, st + stripInsetTop / gk, sx0 + (strip.getWidth() - stripRimOut) / gk, st + (strip.getHeight() - stripInsetBottom) / gk);
             islandCutPaint.setAlpha(255);
@@ -597,9 +538,8 @@ public class QrShareActivity extends BaseFragment {
             topFadeM.setScale(1f, sb - st);
             topFadeM.postTranslate(0, st);
             topFade.setLocalMatrix(topFadeM);
-            c.drawRect(0, Math.min(st, -oy / gk), w, sb, topFadePaint); // above st the shader clamps to 0: cleared
+            c.drawRect(0, Math.min(st, -oy / gk), w, sb, topFadePaint);
         }
-        // bottom: 10dp at the glass edge, nothing below
         final int fh = org.telegram.messenger.AndroidUtilities.dp(10);
         final float ft = (emojiGlassBottom - oy - fh) / gk;
         topFadeM.setScale(1f, fh / gk);
@@ -642,13 +582,11 @@ public class QrShareActivity extends BaseFragment {
                 revealShader = new android.graphics.LinearGradient(0, 0, 0, 1, 0x00000000, 0xFF000000, android.graphics.Shader.TileMode.CLAMP);
             final float band = rowH;
             if (cp >= 0f) {
-                // alpha front = where a row's alpha is half there: (t − 0.175·220) / stagger rows above the bottom
                 final float stagger = Math.min(45f, 250f / rows), t = cp * 470f;
                 final float f = visBottom - Math.max(-1f, (t - 0.175f * 220f) / stagger) * rowH;
                 topFadeM.setScale(1f, band);
                 topFadeM.postTranslate(0, f - band / 2f);
             } else {
-                // closing: alpha goes at 70–100% of a row's 90 ms
                 final float stagger = Math.min(25f, 60f / Math.max(1f, rows - 1f)), t = -cp * 150f;
                 final float f = visTop + Math.max(-1f, (t - 0.85f * 90f) / stagger) * rowH;
                 topFadeM.setScale(1f, band);
@@ -662,8 +600,6 @@ public class QrShareActivity extends BaseFragment {
             grid.invalidate();
         }
         if (pickOverlay != null && pickOverlay.islandCut(islandCutRect, islandCutRA)) {
-            // the island (overlay coordinates) → the screen → the grid's own coordinates: the grid may be scaled (the
-            // open's grow), its screen origin then moves and its units shrink; the island is not scaled
             pickOverlay.getLocationOnScreen(cutOverlayLoc);
             grid.getLocationOnScreen(cutGridLoc);
             final float gsx = grid.getScaleX() > 0.01f ? grid.getScaleX() : 1f, gsy = grid.getScaleY() > 0.01f ? grid.getScaleY() : 1f;
@@ -695,13 +631,12 @@ public class QrShareActivity extends BaseFragment {
                 @Override
                 public void onEmojiPicked(long documentId, @Nullable TLRPC.Document document) {
                     if (view == null) return;
-                    // without Premium only the presets apply; any other custom emoji: the Premium toast, nothing applied
                     if (!getUserConfig().isPremium() && (emojiView == null || !emojiView.isPreset(documentId))) {
                         view.showPremiumEmojiToast();
                         return;
                     }
                     view.pickCustomEmoji(documentId, document);
-                    if (emojiView != null) emojiView.addRecent(documentId); // whatever styles the QR goes to Recent
+                    if (emojiView != null) emojiView.addRecent(documentId);
                 }
 
                 @Override
@@ -711,7 +646,6 @@ public class QrShareActivity extends BaseFragment {
             }) {
                 @Override
                 public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
-                    // the fee menu open over the card: the keyboard below doesn't react; a tap here just closes the menu
                     if (view != null && view.feeMenuOpen()) {
                         if (ev.getActionMasked() == android.view.MotionEvent.ACTION_UP) view.closeFeeMenu();
                         return true;
@@ -719,7 +653,6 @@ public class QrShareActivity extends BaseFragment {
                     return super.dispatchTouchEvent(ev);
                 }
 
-                // the fades are applied by the grid itself (its own layer, see gridFades): here only the glass bounds
                 @Override
                 protected void dispatchDraw(android.graphics.Canvas canvas) {
                     final float glassBottom = Math.min(getHeight(), shapeB - (getTop() + getTranslationY()));
@@ -731,7 +664,6 @@ public class QrShareActivity extends BaseFragment {
             emojiView.setOutlineProvider(new android.view.ViewOutlineProvider() {
                 @Override
                 public void getOutline(View v, android.graphics.Outline outline) {
-                    // the (morphing) sheet shape in the view's own coordinates: all four corners round
                     final float vt = v.getTop() + v.getTranslationY(), vl = v.getLeft() + v.getTranslationX();
                     outline.setRoundRect(Math.round(shapeL - vl), Math.round(shapeT - vt), Math.round(shapeRr - vl), Math.round(shapeB - vt), shapeR);
                 }
@@ -760,7 +692,7 @@ public class QrShareActivity extends BaseFragment {
             view.setOnPicksChanged(() -> {
                 if (pickOverlay != null) pickOverlay.invalidate();
                 updateGridBottomPad();
-            }); // the island reacts on the first pick too
+            });
             pickOverlay.setOutlineProvider(emojiView.getOutlineProvider());
             pickOverlay.setClipToOutline(true);
             frame.addView(emojiView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, android.view.Gravity.TOP));
@@ -785,7 +717,6 @@ public class QrShareActivity extends BaseFragment {
         pickOverlay.invalidateOutline();
         pickOverlay.invalidate();
         if (pickOverlay.getVisibility() != View.VISIBLE) pickOverlay.setVisibility(View.VISIBLE);
-        // the packs island's colour follows the backdrop: drawn again when it changes (also while the panel was hidden)
         final int stripColor = view.islandFlatColor() ^ view.islandTint();
         if (emojiView.getTranslationY() != top || stripColor != stripColorDrawn) {
             emojiView.setTranslationY(top);
@@ -794,33 +725,28 @@ public class QrShareActivity extends BaseFragment {
         }
         emojiView.invalidateOutline();
         emojiView.setAlpha(alpha);
-        emojiView.setHeaderColor(view.sectionHeaderColor()); // cached per backdrop; follows the scene as it changes
+        emojiView.setHeaderColor(view.sectionHeaderColor());
         if (emojiView.getVisibility() != View.VISIBLE) {
-            emojiView.refreshRecent(); // emoji applied since the last open show up in Recent now (not while it is open)
+            emojiView.refreshRecent();
             emojiView.setVisibility(View.VISIBLE);
         }
-        if (!tabsStyled) styleEmojiTabs(); // once the grid has its first cells
+        if (!tabsStyled) styleEmojiTabs();
     }
 
     @Override
     public void onTransitionAnimationEnd(boolean isOpen, boolean backward) {
         super.onTransitionAnimationEnd(isOpen, backward);
         if (isOpen) opened = true;
-        if (isOpen && view != null) view.setReveal(1f); // opened without the custom transition: shown as it is
+        if (isOpen && view != null) view.setReveal(1f);
         if (isOpen && !backward && frame != null) {
-            // building the keyboard blocks the main thread ~280 ms (34 skipped frames): only after the open, the QR intro
-            // (its clock starts with the open's first frame and may outlast it) and the items' pop-in
             final long introLeft = QrCodeLayer.introPlays() ? Math.max(0, Math.round(RimTune.v[RimTune.INTRO_MS]) - OPEN_MS) : 0;
             frame.removeCallbacks(preloadEmojiRunnable);
             frame.postDelayed(preloadEmojiRunnable, introLeft + QrShareView.ITEMS_APPEAR_MS);
         }
     }
 
-    /** A full-height layer slides up over the (dimmed) profile; closing slides it back down. */
     @Override
     public android.animation.AnimatorSet onCustomTransitionAnimation(boolean isOpen, Runnable callback) {
-        // tablets: the screen is not full-screen there (a dialog-like layer), the slide-up looks abrupt; the default
-        // transition instead
         if (view == null || AndroidUtilities.isTablet()) return null;
         view.setRevealOpening(isOpen);
         view.setReveal(isOpen ? 0f : 1f);
@@ -828,8 +754,8 @@ public class QrShareActivity extends BaseFragment {
         va.addUpdateListener(a -> view.setReveal((float) a.getAnimatedValue()));
         final android.animation.AnimatorSet set = new android.animation.AnimatorSet();
         set.playTogether(va);
-        set.setDuration(isOpen ? OPEN_MS : 200); // open: the spring settles by ~0.6 s; close: 200 ms ease-in
-        set.setInterpolator(new android.view.animation.LinearInterpolator()); // the view eases it
+        set.setDuration(isOpen ? OPEN_MS : 200);
+        set.setInterpolator(new android.view.animation.LinearInterpolator());
         set.addListener(new android.animation.AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(android.animation.Animator animation) {
@@ -845,15 +771,11 @@ public class QrShareActivity extends BaseFragment {
         return set;
     }
 
-    // the screens' switch defers the notifications (no list updates mid-animation); the heavy operations (lottie and
-    // video frames) are stopped too, except with ARG_IMMEDIATE on high-end devices: there the pattern's emoji and models
-    // play through the open (a stop reaches every ImageReceiver below its layer: its animation neither runs nor starts
-    // until the end)
     private int transitionLock = -1, transitionGlobalLock = -1, transitionLockAccount = -1;
 
     private void lockTransition() {
         unlockTransition();
-        final boolean stopHeavy = !immediateOnOpen; // otherwise nothing of the pattern plays during the open
+        final boolean stopHeavy = !immediateOnOpen;
         transitionLockAccount = currentAccount;
         transitionLock = org.telegram.messenger.NotificationCenter.getInstance(currentAccount).setAnimationInProgress(-1, null, stopHeavy);
         transitionGlobalLock = org.telegram.messenger.NotificationCenter.getGlobalInstance().setAnimationInProgress(-1, null, stopHeavy);
@@ -871,16 +793,9 @@ public class QrShareActivity extends BaseFragment {
     private int stripRimOut, stripInsetTop, stripInsetBottom;
     private float stripTy;
 
-    /**
-     * The packs island is part of the unfold: it rides on the sheet's top edge (no fixed screen position) and grows IN
-     * PARALLEL with the sheet's morph on open (scale 0.85 → 1 about its centre on the same progress, opacity in its
-     * first 35%); it goes FIRST on close (90 ms, → 0.85).
-     */
     private void stepStrip(View strip, float cp) {
         if (strip == null || view == null) return;
-        // ride with the sheet: the glass top now vs. its final top
         stripTy = shapeT - (view.panelFinalTop() - org.telegram.messenger.AndroidUtilities.dp(8));
-        // its glass samples the backdrop at its screen position: recorded again whenever it moves or scales
         if (strip.getTranslationY() != stripTy) {
             strip.setTranslationY(stripTy);
             strip.invalidate();
@@ -888,7 +803,6 @@ public class QrShareActivity extends BaseFragment {
         float sc = 1f, al = 1f;
         if (cp < 1f) {
             if (cp >= 0f) {
-                // opening: cp is the sheet's own progress here — the island grows in parallel with the morph
                 final float u = Math.max(0f, Math.min(1f, cp));
                 sc = 0.85f + 0.15f * (1f - (1f - u) * (1f - u) * (1f - u));
                 al = Math.min(1f, u / 0.35f);
@@ -906,14 +820,11 @@ public class QrShareActivity extends BaseFragment {
             strip.invalidate();
         }
         if (strip.getAlpha() != al) strip.setAlpha(al);
-        // this runs from the grid's draw: keep that drawing until the island has fully landed (else it could stay at
-        // ~0.9 alpha — a darker island — until the first scroll redrew the grid)
         if ((sc != 1f || al != 1f) && emojiGrid != null) emojiGrid.postInvalidateOnAnimation();
     }
 
     private boolean nativeBarsOff;
 
-    /** Every scrolling view inside the keyboard: no native scrollbars (the overlay draws the one thin bar). */
     private static void disableNativeScrollbars(View v) {
         v.setVerticalScrollBarEnabled(false);
         v.setHorizontalScrollBarEnabled(false);
@@ -928,17 +839,12 @@ public class QrShareActivity extends BaseFragment {
     private final android.graphics.RectF stripCut = new android.graphics.RectF();
     private final int[] stripLoc = new int[2], gridLoc2 = new int[2], qrLoc2 = new int[2];
 
-    /** strip left in grid coordinates */
     private float stripLoc0X(View strip, View grid) {
         strip.getLocationOnScreen(stripLoc);
         grid.getLocationOnScreen(gridLoc2);
         return stripLoc[0] - gridLoc2[0];
     }
 
-    /**
-     * Under the packs island (strip canvas, visible bounds): the sheet's glass, clipped to the island. The grid is not
-     * replayed blurred under it: at the downsampled size the emoji turned into smudges.
-     */
     private void stripUnder(android.graphics.Canvas cv, View strip, float l, float t, float r, float b) {
         if (emojiGrid == null || view == null) return;
         stripCut.set(l + stripRimOut, t + stripInsetTop, r - stripRimOut, b - stripInsetBottom);
@@ -948,15 +854,12 @@ public class QrShareActivity extends BaseFragment {
         cv.clipPath(stripClip);
         strip.getLocationOnScreen(stripLoc);
         view.getLocationOnScreen(qrLoc2);
-        // the strip's own scale (the open / close of the island): a point x of this canvas is on screen at
-        // loc + scale·(x − l), so the backdrop is drawn unscaled from the strip's screen position
         final float sc = Math.max(0.01f, strip.getScaleX());
         cv.translate(l, t);
         cv.scale(1f / sc, 1f / sc);
         stripGlassRect.set((stripCut.left - l) * sc, (stripCut.top - t) * sc, (stripCut.right - l) * sc, (stripCut.bottom - t) * sc);
-        view.drawSheetGlass(cv, stripLoc[0] - qrLoc2[0], stripLoc[1] - qrLoc2[1], stripGlassRect); // the sheet's own glass (not the darker raw blur)
+        view.drawSheetGlass(cv, stripLoc[0] - qrLoc2[0], stripLoc[1] - qrLoc2[1], stripGlassRect);
         cv.restore();
-        // same as the picks island: the backdrop-hue tint over the glass (then the drawable's 20% white)
         if (stripTintPaint == null) stripTintPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
         stripTintPaint.setColor(view.islandTint());
         cv.drawRoundRect(stripCut, stripCut.height() / 2f, stripCut.height() / 2f, stripTintPaint);
@@ -968,7 +871,6 @@ public class QrShareActivity extends BaseFragment {
     private final RimPainter stripRim = new RimPainter();
     private final android.graphics.RectF stripRect = new android.graphics.RectF();
 
-    /** Bottom padding: room for the picks island (66dp + its 10dp fade) only while it shows; otherwise just the fade. */
     private void updateGridBottomPad() {
         final androidx.recyclerview.widget.RecyclerView grid = emojiGrid;
         if (grid == null || view == null) return;
@@ -977,7 +879,6 @@ public class QrShareActivity extends BaseFragment {
             grid.setPadding(grid.getPaddingLeft(), grid.getPaddingTop(), grid.getPaddingRight(), padBottom);
     }
 
-    /** The pack/category strip becomes a rounded glass pill inside the sheet. */
     private boolean tabsStyled;
 
     private void styleEmojiTabs() {
@@ -985,29 +886,23 @@ public class QrShareActivity extends BaseFragment {
         if (emojiView == null) return;
         final QrEmojiPanel.Tabs strip = emojiView.getTabs();
         final android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setColor(0x33FFFFFF); // the picks island's recipe: the backdrop-hue tint (drawn under, see stripUnder) + 20% white
+        bg.setColor(0x33FFFFFF);
         bg.setCornerRadius(org.telegram.messenger.AndroidUtilities.dp(20));
-        // the glass keeps its earlier visible size/margins (it used to sit a rim-width inside the view bounds), but is
-        // 3 px taller: 1 px up, 2 px down (≈ +1 dp on this 3.0-density phone)
         final int rimOut = (int) Math.ceil(org.telegram.messenger.AndroidUtilities.dpf2(RimTune.g[RimTune.BIG][RimTune.D_W] + Math.max(0f, -RimTune.g[RimTune.BIG][RimTune.INSET])));
-        // 4 px taller than before (2 up, 2 down) and the side margins 2–3 px smaller, so the gap to the sheet's
-        // edge is the same on the top and the sides: insets 4 px top/sides, 3 px bottom (view 36 dp → pill 101 px)
         stripRimOut = Math.max(0, rimOut - 3);
         stripInsetTop = Math.max(0, rimOut - 3);
         stripInsetBottom = Math.max(0, rimOut - 4);
         strip.underDraw = (cv, l, t, r, b2) -> stripUnder(cv, strip, l, t, r, b2);
-        // the picks island's rim (Dark out, Big group), so both islands read as one family
         strip.overDraw = (cv, l, t, r, b2) -> {
             stripRect.set(l + stripRimOut, t + stripInsetTop, r - stripRimOut, b2 - stripInsetBottom);
             stripRim.draw(cv, stripRect, stripRect.height() / 2f, RimTune.BIG, 1f);
         };
         final int pl = strip.getPaddingLeft(), pt = strip.getPaddingTop(), pr = strip.getPaddingRight(), pb = strip.getPaddingBottom();
         strip.setBackground(new android.graphics.drawable.InsetDrawable(bg, stripRimOut, stripInsetTop, stripRimOut, stripInsetBottom));
-        strip.setPadding(pl, pt, pr, pb); // an InsetDrawable reports its inset as padding: keep the layout as it was
+        strip.setPadding(pl, pt, pr, pb);
         strip.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override
             public void getOutline(View v, android.graphics.Outline o) {
-                // clip everything (icons, active circle, ripples) to the visible glass pill, AA
                 final int h = v.getHeight() - stripInsetTop - stripInsetBottom;
                 o.setRoundRect(stripRimOut, stripInsetTop, v.getWidth() - stripRimOut, v.getHeight() - stripInsetBottom, h / 2f);
             }
@@ -1016,8 +911,7 @@ public class QrShareActivity extends BaseFragment {
         if (strip.getLayoutParams() instanceof android.view.ViewGroup.MarginLayoutParams) {
             final android.view.ViewGroup.MarginLayoutParams mlp = (android.view.ViewGroup.MarginLayoutParams) strip.getLayoutParams();
             final int m = org.telegram.messenger.AndroidUtilities.dp(10);
-            // the keyboard itself starts 8dp below the glass top: topMargin 0 puts the pill 8dp from the glass edge
-            final int tm = org.telegram.messenger.AndroidUtilities.dp(2); // the keyboard starts 8dp below the glass: 10dp in total
+            final int tm = org.telegram.messenger.AndroidUtilities.dp(2);
             if (mlp.leftMargin != m || mlp.rightMargin != m || mlp.topMargin != tm) {
                 mlp.leftMargin = m;
                 mlp.rightMargin = m;
@@ -1025,19 +919,17 @@ public class QrShareActivity extends BaseFragment {
                 strip.setLayoutParams(mlp);
             }
         }
-        // the grid starts below the island (36 + 8 top + 6 gap) and scrolls up under the glass; the island stays put
         final QrEmojiPanel.Grid grid = emojiView.getGrid();
         {
             tabsStyled = true;
             grid.afterChildrenDraw = cv -> gridFades(cv, grid, strip);
             grid.beforeChildrenDraw = cv -> {
                 pickOverlay.drawUnder(cv, grid);
-                if (!view.pickedKeys().isEmpty()) pickOverlay.invalidate(); // badges and borders follow the grid
+                if (!view.pickedKeys().isEmpty()) pickOverlay.invalidate();
             };
-            pickOverlay.attachGrid(grid); // our own thin white scrollbar instead of the system one
+            pickOverlay.attachGrid(grid);
             final int padTop = org.telegram.messenger.AndroidUtilities.dp(2 + 36 + 6);
             emojiGrid = grid;
-            // right: a gutter for the scrollbar (3dp bar, 3dp from the glass edge) so it never covers a cell
             final int padRight = grid.getPaddingRight() + org.telegram.messenger.AndroidUtilities.dp(5);
             grid.setPadding(grid.getPaddingLeft(), padTop, padRight, grid.getPaddingBottom());
             updateGridBottomPad();
@@ -1048,14 +940,13 @@ public class QrShareActivity extends BaseFragment {
                     if (strip.getTranslationY() != stripTy) {
                         strip.setTranslationY(stripTy);
                         strip.invalidate();
-                    } // the keyboard would slide it away; keep it on the sheet
+                    }
                 }
             });
         }
         strip.bringToFront();
     }
 
-    /** No Telegram swipe-back here: horizontal drags rotate / move the backdrop. Back button and close still work. */
     @Override
     public boolean isSwipeBackEnabled(android.view.MotionEvent event) {
         return false;
@@ -1069,7 +960,6 @@ public class QrShareActivity extends BaseFragment {
     @Override
     public void onPause() {
         super.onPause();
-        // the camera does not stay on in the background
         if (scanOverlay != null) {
             scanOverlay.destroy();
             removeScanner(scanOverlay);
@@ -1077,7 +967,6 @@ public class QrShareActivity extends BaseFragment {
         restoreBars();
     }
 
-    /** White status + navigation bar controls, transparent, no contrast scrim. */
     private void applyWhiteBars() {
         final android.app.Activity a = getParentActivity();
         if (a == null) return;
@@ -1111,23 +1000,19 @@ public class QrShareActivity extends BaseFragment {
 
     @Override
     public boolean isSupportEdgeToEdge() {
-        return true; // the scene runs under the system bars, like on iOS
+        return true;
     }
 
     @Override
     public boolean drawEdgeNavigationBar() {
-        return false; // no scrim over the scene
+        return false;
     }
 
     @Override
     public boolean isLightStatusBar() {
-        return false; // white status bar icons on every backdrop
+        return false;
     }
 
-    /**
-     * LaunchActivity.checkSystemBarColors derives the nav-bar icon colour from this (light grey → dark icons): a dark
-     * value keeps the gesture handle / buttons white for the whole screen (layers, keyboard, toasts, light backdrops).
-     */
     @Override
     public int getNavigationBarColor() {
         return 0xFF000000;
@@ -1149,7 +1034,7 @@ public class QrShareActivity extends BaseFragment {
     @Override
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
-        unlockTransition(); // a transition cut short
+        unlockTransition();
         unlockPortrait();
         if (frame != null) frame.removeCallbacks(preloadEmojiRunnable);
         if (scanOverlay != null) {

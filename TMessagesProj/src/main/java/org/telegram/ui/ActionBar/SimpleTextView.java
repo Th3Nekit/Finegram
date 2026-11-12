@@ -275,7 +275,6 @@ public class SimpleTextView extends View implements Drawable.Callback {
             ellipsizeLeft = forceEllipsizeByGradientLeft;
         } else {
             ellipsizeLeft = false;
-//            ellipsizeLeft = getAlignment() == Layout.Alignment.ALIGN_NORMAL && LocaleController.isRTL || getAlignment() == Layout.Alignment.ALIGN_OPPOSITE && !LocaleController.isRTL;
         }
         if ((fadeEllpsizePaint == null || fadeEllpsizePaintWidth != dp(ellipsizeByGradientWidthDp) || ellipsizeByGradientLeft != ellipsizeLeft) && ellipsizeByGradient) {
             if (fadeEllpsizePaint == null) {
@@ -465,10 +464,6 @@ public class SimpleTextView extends View implements Drawable.Callback {
                     } else {
                         string = TextUtils.ellipsize(text, textPaint, width, TextUtils.TruncateAt.END);
                     }
-                    /*if (layout != null && TextUtils.equals(layout.getText(), string)) {
-                        calcOffset(width);
-                        return false;
-                    }*/
                     layout = new StaticLayout(string, 0, string.length(), textPaint, scrollNonFitText || ellipsizeByGradient ? dp(2000) : width + dp(8), getAlignment(), 1.0f, 0.0f, false);
                 }
 
@@ -522,7 +517,6 @@ public class SimpleTextView extends View implements Drawable.Callback {
             finalHeight = getPaddingTop() + textHeight + getPaddingBottom();
         }
         if (widthWrapContent) {
-//            textWidth = (int) Math.ceil(layout.getLineWidth(0));
             width = Math.min(width, getPaddingLeft() + textWidth + getPaddingRight() + minusWidth + (leftDrawableOutside && leftDrawable != null ? leftDrawable.getIntrinsicWidth() + drawablePadding : 0) + (rightDrawableOutside && rightDrawable != null ? rightDrawable.getIntrinsicWidth() + drawablePadding : 0) + (rightDrawableOutside && rightDrawable2 != null ? rightDrawable2.getIntrinsicWidth() + drawablePadding : 0));
             width = Math.max(width, 0);
         }
@@ -1211,7 +1205,6 @@ public class SimpleTextView extends View implements Drawable.Callback {
 
     private void clipOutSpoilers(Canvas canvas) {
         if (spoilers.isEmpty()) {
-            // nothing to clip
             return;
         }
         path.rewind();
@@ -1314,7 +1307,6 @@ public class SimpleTextView extends View implements Drawable.Callback {
         leftDrawableOutside = outside;
     }
 
-    // right drawable is ellipsized with text
     public void setRightDrawableInside(boolean inside) {
         rightDrawableInside = inside;
     }

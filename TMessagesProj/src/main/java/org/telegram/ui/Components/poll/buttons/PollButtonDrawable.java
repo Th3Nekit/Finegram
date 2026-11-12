@@ -130,11 +130,21 @@ public class PollButtonDrawable extends Drawable implements DownloadController.F
             imageReceiver.clearImage();
         }
 
-        radialProgress.setColors(
-            isVideo ? 0 : Theme.getColor(Theme.key_chat_mediaLoaderPhoto),
-            isVideo ? 0 : Theme.getColor(Theme.key_chat_mediaLoaderPhotoSelected),
-            Theme.getColor(Theme.key_chat_mediaLoaderPhotoIcon),
-            Theme.getColor(Theme.key_chat_mediaLoaderPhotoIconSelected));
+        if (isVideo) {
+            radialProgress.setColors(
+                0,
+                0,
+                Theme.getColor(Theme.key_chat_mediaLoaderPhotoIcon),
+                Theme.getColor(Theme.key_chat_mediaLoaderPhotoIconSelected));
+        } else {
+            // keys: read on every draw, follow theme changes
+            radialProgress.setColors(
+                Theme.getColor(Theme.key_chat_mediaLoaderPhoto),
+                Theme.getColor(Theme.key_chat_mediaLoaderPhotoSelected),
+                Theme.getColor(Theme.key_chat_mediaLoaderPhotoIcon),
+                Theme.getColor(Theme.key_chat_mediaLoaderPhotoIconSelected));
+            radialProgress.setColorKeys(Theme.key_chat_mediaLoaderPhoto, Theme.key_chat_mediaLoaderPhotoSelected, Theme.key_chat_mediaLoaderPhotoIcon, Theme.key_chat_mediaLoaderPhotoIconSelected);
+        }
 
         if (!TextUtils.equals(attachFileNameOld, attachFileName)) {
             if (!TextUtils.isEmpty(attachFileNameOld)) {
@@ -165,7 +175,7 @@ public class PollButtonDrawable extends Drawable implements DownloadController.F
                 "36_36",
                 ImageLocation.getForObject(currentPhotoObjectThumb, photoObject),
                 "36_36_b",
-                null, // currentPhotoObjectThumbStripped
+                null,
                 currentPhotoObjectObject != null ? currentPhotoObjectObject.size : 0,
                 null,
                 parentObject,
@@ -223,7 +233,7 @@ public class PollButtonDrawable extends Drawable implements DownloadController.F
                     "36_36",
                     ImageLocation.getForObject(currentPhotoObjectThumb, document),
                     "36_36_b",
-                    null, // currentPhotoObjectThumbStripped
+                    null,
                     currentPhotoObjectObject != null ? currentPhotoObjectObject.size : 0,
                     null,
                     parentObject,

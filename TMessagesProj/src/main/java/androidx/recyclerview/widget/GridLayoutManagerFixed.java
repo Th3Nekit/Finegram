@@ -18,12 +18,6 @@ import org.telegram.ui.Cells.ChatMessageCell;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * A {@link RecyclerView.LayoutManager} implementations that lays out items in a grid.
- * <p>
- * By default, each item occupies 1 span. You can change it by providing a custom
- * {@link SpanSizeLookup} instance via {@link #setSpanSizeLookup(SpanSizeLookup)}.
- */
 public class GridLayoutManagerFixed extends GridLayoutManager {
 
     private ArrayList<View> additionalViews = new ArrayList<>(4);
@@ -56,7 +50,6 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
         if (scrollingOffset < 0) {
             return;
         }
-        // ignore padding, ViewGroup may not clip children.
         final int childCount = getChildCount();
         if (mShouldReverseLayout) {
             for (int i = childCount - 1; i >= 0; i--) {
@@ -64,7 +57,6 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
                 final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
                 if (child.getBottom() + params.bottomMargin > scrollingOffset
                         || child.getTop() + child.getHeight() > scrollingOffset) {
-                    // stop here
                     recycleChildren(recycler, childCount - 1, i);
                     return;
                 }
@@ -75,7 +67,6 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
                 final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
                 if (child.getBottom() + params.bottomMargin > scrollingOffset
                         || child.getTop() + child.getHeight() > scrollingOffset) {
-                    // stop here
                     recycleChildren(recycler, 0, i);
                     return;
                 }
@@ -220,8 +211,6 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
                 }
             }
 
-            // Views that did not measure the maxSize has to be re-measured
-            // We will stop doing this once we introduce Gravity in the GLM layout params
             for (int i = 0; i < count; i++) {
                 final View view = mSet[i];
                 if (mOrientationHelper.getDecoratedMeasurement(view) != maxSize) {

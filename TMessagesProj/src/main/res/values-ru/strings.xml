@@ -7,7 +7,7 @@
     <string name="LanguageNameInEnglish">Russian</string>
     <string name="LanguageCode">ru</string>
     <string name="ContinueOnThisLanguage">Продолжить на русском</string>
-    <!--signin view-->
+    
     <string name="YourPhone">Ваш телефон</string>
     <string name="StartText">Проверьте код страны и введите свой номер телефона.</string>
     <string name="Country">Страна</string>
@@ -30,7 +30,7 @@
     <string name="DidNotGetTheCodeInfo">Если Вы не получили звонок или SMS с кодом, проверьте настройки сотовой связи и указанный Вами номер:\n\n**%1$s**\n\nЕсли это не помогло, Вы можете указать другой номер телефона или связаться с командой поддержки Telegram. Чтобы сообщить нам о проблеме и отправить техническую информацию для диагностики, нажмите **Помощь**.</string>
     <string name="DidNotGetTheCodeHelpButton">Помощь</string>
     <string name="DidNotGetTheCodeEditNumberButton">Другой номер</string>
-    <!--code enter view-->
+    
     <string name="YourCode">Проверка телефона</string>
     <string name="SentSmsCode">Мы отправили SMS с кодом проверки на Ваш телефон **%1$s**.</string>
     <string name="SentAppCode">Мы отправили код в приложение **Telegram** на другом Вашем устройстве.</string>
@@ -70,7 +70,7 @@
     <string name="RequestMissedCall">Получить звонок с кодом</string>
     <string name="LoginAccessibilityCountryCode">Код страны</string>
     <string name="SignInWithGoogle">Войти через аккаунт Google</string>
-    <!--signup view-->
+    
     <string name="YourName">Ваше имя</string>
     <string name="RegisterText2">Пожалуйста, добавьте имя и фотографию.</string>
     <string name="FirstName">Имя (обязательно)</string>
@@ -79,7 +79,7 @@
     <string name="LastNameSmall">Фамилия</string>
     <string name="CancelRegistration">Отмена регистрации</string>
     <string name="RegistrationProfileInfo">Информация о себе</string>
-    <!--password view-->
+    
     <string name="TwoStepVerification">Облачный пароль</string>
     <string name="TwoStepVerificationTitle">Облачный пароль</string>
     <string name="TwoStepVerificationPasswordSet">Пароль установлен</string>
@@ -208,7 +208,7 @@
     <string name="CheckYourNewEmail">Проверьте новую почту</string>
     <string name="CheckYourNewEmailSubtitle">Введите код, который пришёл на указанный Вами адрес %1$s.</string>
     <string name="LoginOrSingInWithGoogle">или</string>
-    <!--Intro view-->
+    
     <string name="Page1Title">Telegram</string>
     <string name="Page2Title">Быстрый</string>
     <string name="Page3Title">Бесплатный</string>
@@ -222,7 +222,7 @@
     <string name="Page5Message">**Telegram** не ограничивает размер\n Ваших медиафайлов и чатов.</string>
     <string name="Page6Message">В **Telegram** можно переписываться с любого количества устройств.</string>
     <string name="StartMessaging">Начать общение</string>
-    <!--date formatters-->
+    
     <string name="formatterBoostExpired">dd MMM yyyy</string>
     <string name="formatterGiveawayCard">dd MMM yyyy</string>
     <string name="formatterGiveawayMonthDay">dd MMMM</string>

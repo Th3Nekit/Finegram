@@ -451,7 +451,6 @@ public class BlurringShader {
                 node.setPosition(0, 0, parent.getWidth(), parent.getHeight());
                 Canvas renderNodeCanvas = node.beginRecording();
                 renderNodeCanvas.drawColor(bgColor);
-//                renderNodeCanvas.translate(dp(32), dp(32));
                 renderNodeCanvas.drawRenderNode(parent);
                 node.endRecording();
                 this.blurRenderNode = node;
@@ -689,8 +688,7 @@ public class BlurringShader {
                 } catch (Exception e) {}
                 Utilities.stackBlurBitmap(resultBitmap, 6);
                 if (padding > 0) {
-                    // clear borders
-                    canvas.drawRect(0, 0, width + padding, padding, clearPaint); // top
+                    canvas.drawRect(0, 0, width + padding, padding, clearPaint);
                     canvas.drawRect(0, padding, padding, padding + height, clearPaint);
                     canvas.drawRect(padding + width, padding, padding + width + padding, padding + height, clearPaint);
                     canvas.drawRect(0, padding + height, padding + width + padding, padding + height + padding, clearPaint);
@@ -784,7 +782,6 @@ public class BlurringShader {
                 oldPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
                 AndroidUtilities.adjustBrightnessColorMatrix(colorMatrix, +.4f);
                 AndroidUtilities.adjustSaturationColorMatrix(colorMatrix, +.3f);
-//                AndroidUtilities.multiplyBrightnessColorMatrix(colorMatrix, 1.4f);
                 xfer = true;
             } else if (type == BLUR_TYPE_CAPTION) {
                 AndroidUtilities.adjustSaturationColorMatrix(colorMatrix, +.35f);
@@ -812,7 +809,6 @@ public class BlurringShader {
                 AndroidUtilities.adjustBrightnessColorMatrix(colorMatrix, +.4f);
                 AndroidUtilities.adjustSaturationColorMatrix(colorMatrix, +.45f);
                 xfer = true;
-//                AndroidUtilities.multiplyBrightnessColorMatrix(colorMatrix, 1.4f);
             } else if (type == BLUR_TYPE_ACTION_BACKGROUND) {
                 colorMatrix.setSaturation(1.6f);
                 AndroidUtilities.multiplyBrightnessColorMatrix(colorMatrix, wasDark ? .97f : .92f);
@@ -868,7 +864,6 @@ public class BlurringShader {
                     node.setPosition(0, 0, parentNode.getWidth(), parentNode.getHeight());
                     Canvas renderNodeCanvas = node.beginRecording();
                     renderNodeCanvas.drawColor(getBackgroundColor());
-//                    renderNodeCanvas.translate(dp(32), dp(32));
                     renderNodeCanvas.drawRenderNode(parentNode);
                     node.endRecording();
                 }
@@ -890,7 +885,6 @@ public class BlurringShader {
                                 }
                                 canvas.clipPath(clipPath);
                             }
-//                            canvas.translate(-dp(32), -dp(32));
                             canvas.drawRenderNode(node);
                             canvas.restore();
                         }
@@ -1144,7 +1138,6 @@ public class BlurringShader {
                                 clipPath.rewind();
                                 clipPath.addRoundRect(AndroidUtilities.rectTmp, r, r, Path.Direction.CW);
                                 canvas.clipPath(clipPath);
-//                                canvas.translate(Math.max(0, -customOffsetX - offsetX / 2.0f), Math.max(0, -customOffsetY - offsetY / 2.0f));
                                 drawRect(canvas, 0, 0, 1, false);
                                 canvas.restore();
                             } else {
@@ -1168,7 +1161,6 @@ public class BlurringShader {
                                     clipPath.rewind();
                                     clipPath.addRoundRect(AndroidUtilities.rectTmp, r, r, Path.Direction.CW);
                                     canvas.clipPath(clipPath);
-//                                    canvas.translate(-customOffsetX - offsetX, -customOffsetY - offsetY);
                                     drawRect(canvas, 0, 0, 1, false);
                                     canvas.restore();
                                 } else {
@@ -1178,7 +1170,6 @@ public class BlurringShader {
                                 if (manager != null && manager.hasRenderNode()) {
                                     canvas.save();
                                     canvas.clipRect(bounds);
-//                                    canvas.translate(-customOffsetX - offsetX, -customOffsetY - offsetY);
                                     drawRect(canvas, 0, 0, 1, false);
                                     canvas.restore();
                                 } else {

@@ -166,16 +166,6 @@ public class PaidReactionButton extends View {
 
             final float cx = reactionBounds.centerX();
             final float cy = reactionBounds.top - dp(1);
-//            canvas.save();
-//            float t = counterAlpha.set(counterShown);
-//            canvas.translate(0, counterShown ? dp(60) * (1f - t) : -dp(30) * (1f - t));
-//            final float counterScale = AndroidUtilities.lerp(counterShown ? 1.8f : 1.3f, 1f, t);
-//            canvas.scale(counterScale, counterScale, cx, cy);
-//            counter.setAlpha((int) (0xFF * t));
-//            counter.setShadowLayer(dp(12), 0, dp(3.5f), Theme.multAlpha(0xAA000000, t));
-//            counter.setBounds(cx - dp(100), reactionBounds.top - dp(24 + 24), cx + dp(100), reactionBounds.top - dp(24));
-//            counter.draw(canvas);
-//            canvas.restore();
 
             canvas.save();
             canvas.translate(cx, cy);
@@ -285,7 +275,6 @@ public class PaidReactionButton extends View {
                     imageReceiver.onAttachedToWindow();
                 }
 
-//                backgroundPaint.setColor(getTierOption(totalStars, TIER_COLOR1));
                 backgroundPaint.setColor(0xFFEEAC0D);
 
                 final SpannableStringBuilder sb = new SpannableStringBuilder("⭐️");

@@ -38,7 +38,7 @@ import org.telegram.ui.Components.Easings;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
-import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceColor;
+import org.telegram.utils.glass.source.GlassSourceColor;
 
 import java.util.Objects;
 
@@ -54,8 +54,8 @@ public class FoldersPreviewCell extends FrameLayout {
     private final TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint outlinePaint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final BlurredBackgroundSourceColor selectorSource = new BlurredBackgroundSourceColor();
-    private final BlurredBackgroundDrawable glassSelector = selectorSource.createDrawable();
+    private final GlassSourceColor selectorSource = new GlassSourceColor();
+    private final BlurredBackgroundDrawable glassSelector = new BlurredBackgroundDrawable(selectorSource);
 
     private final Path frameClip = new Path();
     private final Path tabPath = new Path();

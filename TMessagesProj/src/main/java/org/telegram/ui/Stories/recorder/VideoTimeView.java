@@ -62,12 +62,6 @@ public class VideoTimeView extends View {
         if (s < 10)
             str.append('0');
         str.append(s);
-//        str.append('.');
-//        if (ms < 100)
-//            str.append("00");
-//        else if (ms < 10)
-//            str.append('0');
-//        str.append(ms);
         if (!TextUtils.equals(str, textDrawable.getText())) {
             textDrawable.cancelAnimation();
             textDrawable.setText(str, animated && !LocaleController.isRTL);

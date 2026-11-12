@@ -45,7 +45,6 @@ final class GramWalletDns {
         if (records == null || records.length() != 1) return null;
         final JSONObject record = records.getJSONObject(0);
         if (!domain.equals(record.optString("domain"))) return null;
-        // Only the wallet record is a payment destination, never the NFT or its owner.
         final String address = record.optString("dns_wallet", "");
         return WalletEngine2.isValidAddress(address) ? address : null;
     }

@@ -94,7 +94,6 @@ public class EditTextOutline extends EditTextBoldCursor {
         if (mFrameColor == 0 && frameColor != 0) {
             setPadding(dp(7 + 12), dp(7), dp(7 + 12), dp(7));
             setCursorColor(0xffffffff);
-//            setCursorColor(0xff000000);
         } else if (mFrameColor != 0 && frameColor == 0) {
             setPadding(dp(7), dp(7), dp(7), dp(7));
             setCursorColor(0xffffffff);

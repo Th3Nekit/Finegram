@@ -70,8 +70,10 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.ActionBar.ThemeColors;
 import org.telegram.ui.ActionBar.ThemeDescription;
+import java.util.HashSet;
 import org.telegram.ui.Cells.TextColorThemeCell;
 import org.telegram.ui.LaunchActivity;
 
@@ -80,6 +82,70 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ThemeEditorView {
+
+    private static ArrayList<ThemeDescription> collectEditorDescriptions(BaseFragment fragment) {
+        final ArrayList<ThemeDescription> result = new ArrayList<>();
+        final HashSet<Integer> seen = new HashSet<>();
+        ArrayList<ThemeDescription> legacy = null;
+        try {
+            legacy = fragment != null ? fragment.getThemeDescriptions() : null;
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        if (legacy != null) {
+            for (int i = 0; i < legacy.size(); ++i) {
+                final ThemeDescription description = legacy.get(i);
+                if (description != null) {
+                    result.add(description);
+                    seen.add(description.getCurrentKey());
+                }
+            }
+        }
+        final HashSet<Integer> keySet = ThemeBind.collectColorKeys();
+        if (fragment != null) {
+            try {
+                fragment.addThemeColorKeys(keySet);
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+        final ArrayList<Integer> keys = new ArrayList<>(keySet);
+        java.util.Collections.sort(keys, (a, b) -> String.valueOf(ThemeColors.getStringName(a)).compareTo(String.valueOf(ThemeColors.getStringName(b))));
+        for (int i = 0; i < keys.size(); ++i) {
+            final int key = keys.get(i);
+            if (key >= 0 && key < Theme.colorsCount && seen.add(key)) {
+                result.add(new ThemeDescription(null, 0, null, null, null, null, key));
+            }
+        }
+        return result;
+    }
+
+    private boolean themeColorsRefreshPosted;
+    private final Runnable refreshEditedThemeColors = new Runnable() {
+        @Override
+        public void run() {
+            themeColorsRefreshPosted = false;
+            try {
+                Theme.applyCommonTheme();
+                Theme.applyDialogsTheme();
+                Theme.applyProfileTheme();
+                Theme.applyChatTheme(false, false);
+                ThemeBind.updateAll();
+                if (LaunchActivity.instance != null) {
+                    LaunchActivity.instance.notifyThemeColorsChanged();
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+    };
+
+    private void onThemeColorEdited() {
+        if (!themeColorsRefreshPosted) {
+            themeColorsRefreshPosted = true;
+            AndroidUtilities.runOnUIThread(refreshEditedThemeColors);
+        }
+    }
 
     private FrameLayout windowView;
     private Activity parentActivity;
@@ -345,7 +411,7 @@ public class ThemeEditorView {
                     colorEditText[a].setCursorWidth(1.5f);
                     colorEditText[a].setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
                     colorEditText[a].setBackground(null);
-                    colorEditText[a].setLineColors(Theme.getColor(Theme.key_dialogInputField), Theme.getColor(Theme.key_dialogInputFieldActivated), Theme.getColor(Theme.key_text_RedBold));
+                    ThemeBind.lineColors(colorEditText[a], Theme.key_dialogInputField, Theme.key_dialogInputFieldActivated, Theme.key_text_RedBold);
                     colorEditText[a].setMaxLines(1);
                     colorEditText[a].setTag(a);
                     colorEditText[a].setGravity(Gravity.CENTER);
@@ -405,6 +471,7 @@ public class ThemeEditorView {
                             for (int a = 0; a < currentThemeDesription.size(); a++) {
                                 currentThemeDesription.get(a).setColor(getColor(), false);
                             }
+                            onThemeColorEdited();
 
                             ignoreTextChange = false;
                         }
@@ -483,7 +550,6 @@ public class ThemeEditorView {
             protected void onSizeChanged(int width, int height, int oldw, int oldh) {
                 colorWheelRadius = Math.max(1, width / 2 - paramValueSliderWidth * 2 - AndroidUtilities.dp(20));
                 colorWheelBitmap = createColorWheelBitmap(colorWheelRadius * 2, colorWheelRadius * 2);
-                //linearLayout.setTranslationY(colorWheelRadius * 2 + AndroidUtilities.dp(20));
                 colorGradient = null;
                 alphaGradient = null;
             }
@@ -585,6 +651,7 @@ public class ThemeEditorView {
                                 }
                                 currentThemeDesription.get(a).setColor(color, false);
                             }
+                            onThemeColorEdited();
                             int red = Color.red(color);
                             int green = Color.green(color);
                             int blue = Color.blue(color);
@@ -684,7 +751,6 @@ public class ThemeEditorView {
                         int previousPadding = listView.getPaddingTop();
                         listView.setPadding(0, padding, 0, AndroidUtilities.dp(48));
                         if (colorPicker.getVisibility() == VISIBLE) {
-                            //previousScrollPosition += previousPadding;
                             setScrollOffsetY(listView.getPaddingTop());
                             previousScrollPosition = 0;
                         }
@@ -896,6 +962,7 @@ public class ThemeEditorView {
                 for (int a = 0; a < currentThemeDesription.size(); a++) {
                     currentThemeDesription.get(a).setPreviousColor();
                 }
+                onThemeColorEdited();
                 setColorPickerVisible(false);
             });
 
@@ -916,6 +983,7 @@ public class ThemeEditorView {
                 for (int a = 0; a < currentThemeDesription.size(); a++) {
                     currentThemeDesription.get(a).setDefaultColor();
                 }
+                onThemeColorEdited();
                 setColorPickerVisible(false);
             });
 
@@ -1443,8 +1511,8 @@ public class ThemeEditorView {
                                     fragment = null;
                                 }
                                 if (fragment != null) {
-                                    ArrayList<ThemeDescription> items = fragment.getThemeDescriptions();
-                                    if (items != null) {
+                                    ArrayList<ThemeDescription> items = collectEditorDescriptions(fragment);
+                                    if (!items.isEmpty()) {
                                         editorAlert = new EditorAlert(parentActivity, items);
                                         editorAlert.setOnDismissListener(dialog -> {
 
@@ -1602,7 +1670,6 @@ public class ThemeEditorView {
             animatorSet.start();
             hidden = true;
         } catch (Exception e) {
-            //don't promt
         }
     }
 
@@ -1616,7 +1683,6 @@ public class ThemeEditorView {
             hidden = false;
             showWithAnimation();
         } catch (Exception e) {
-            //don't promt
         }
     }
 
@@ -1624,7 +1690,6 @@ public class ThemeEditorView {
         try {
             windowManager.removeView(windowView);
         } catch (Exception e) {
-            //don't promt
         }
         parentActivity = null;
     }

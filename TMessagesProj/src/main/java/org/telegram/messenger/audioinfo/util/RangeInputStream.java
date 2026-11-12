@@ -18,10 +18,6 @@ package org.telegram.messenger.audioinfo.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Input stream filter that keeps track of the current read position
- * and has a read length limit.
- */
 public class RangeInputStream extends PositionInputStream {
 	private final long endPosition;
 	

@@ -41,11 +41,15 @@ import com.th3nekit.finegram.plugins.FGPluginUpdates;
 import com.th3nekit.finegram.plugins.FGPluginsController;
 import com.th3nekit.finegram.preferences.cells.FGPluginCustomCell;
 import com.th3nekit.finegram.preferences.cells.FGPluginHeaderCell;
+import com.th3nekit.finegram.preferences.cells.FGPluginSettingCell;
 import com.th3nekit.finegram.preferences.helpers.SettingsHelper;
 
 public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
 
     private static final int DELETE_ROW = 2;
+    private static final int RETRY_ROW = 3;
+    private boolean pluginBusy;
+    private final Runnable pendingSettingsReload = this::reloadPluginSettings;
     private static final int SETTINGS_ROW_BASE = 100;
 
     private interface PluginView {
@@ -131,8 +135,15 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         this.screen = screen;
         this.nestedTitle = title;
         this.settings = items;
+        this.settingsReady = true;
         this.parentScreen = parentScreen;
         this.parentIndex = parentIndex;
+    }
+
+    @Override
+    public void onFragmentDestroy() {
+        forgetSettings();
+        super.onFragmentDestroy();
     }
 
     public String getPluginId() {
@@ -204,7 +215,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             actions.add(new FGPluginHeaderCell.Action(
                     plugin.enabled() ? R.drawable.msg_block : R.drawable.msg_select,
                     getString(plugin.enabled() ? R.string.FG_Plugins_Disable : R.string.FG_Plugins_Enable),
-                    !plugin.enabled(), this::togglePlugin));
+                    true, this::togglePlugin));
             final String update = FGPluginUpdates.knownUpdate(plugin.id());
             if (!update.isEmpty()) {
                 actions.add(new FGPluginHeaderCell.Action(R.drawable.msg_download,
@@ -214,10 +225,11 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
                     getString(R.string.FG_Plugins_Share), false, () -> FGPluginShare.share(this, plugin.id())));
             actions.add(new FGPluginHeaderCell.Action(R.drawable.msg_log,
                     getString(R.string.FG_Plugins_LogShort), false, this::showLog));
-            header.set(plugin.id(), plugin.name(), plugin.icon(), description, subtitle(),
+            header.set(plugin.id(), plugin.name(), plugin.icon(), description, plugin.version(), plugin.author(),
                     getString(failed ? R.string.FG_Plugins_BadgeCrash
                             : plugin.enabled() ? R.string.FG_Plugins_StateOn : R.string.FG_Plugins_StateOff),
                     failed, plugin.enabled(), actions);
+            header.setActionsEnabled(!pluginBusy);
             items.add(UItem.asCustom(header));
             items.add(UItem.asShadow(null));
 
@@ -229,7 +241,15 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             }
         }
 
-        for (int i = 0; i < settings.length(); i++) {
+        if (plugin.enabled() && plugin.hasSettings() && !settingsReady) {
+            items.add(UItem.asCenterShadow(getString(R.string.Loading)));
+        }
+        if (settingsFailed) {
+            items.add(UItem.asShadow(getString(R.string.FG_Plugins_SettingsFailed)));
+            items.add(UItem.asButton(RETRY_ROW, R.drawable.msg_retry, getString(R.string.Retry)));
+        }
+
+        for (int i = 0; !settingsFailed && i < settings.length(); i++) {
             JSONObject item = settings.optJSONObject(i);
             if (item == null) {
                 continue;
@@ -243,7 +263,12 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             }
             UItem row = buildRow(item, SETTINGS_ROW_BASE + i);
             if (row != null) {
+                row.enabled = row.enabled && item.optBoolean("enabled", true) && plugin.enabled() && !pluginBusy && settingsReady;
                 items.add(row);
+                if ("slider".equals(optText(item, "kind", ""))) {
+                    String description = optText(item, "subtext", "");
+                    if (!description.isEmpty()) items.add(UItem.asShadow(description));
+                }
             }
         }
 
@@ -251,9 +276,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             return;
         }
 
-        if (plugin.enabled() && plugin.hasSettings() && settingsReady && settings.length() == 0) {
-            items.add(UItem.asCenterShadow(getString(settingsFailed
-                    ? R.string.ErrorOccurred : R.string.FG_Plugins_NoSettings)));
+        if (plugin.enabled() && plugin.hasSettings() && settingsReady && !settingsFailed && settings.length() == 0) {
+            items.add(UItem.asCenterShadow(getString(R.string.FG_Plugins_NoSettings)));
         }
 
         items.add(UItem.asShadow(null));
@@ -261,44 +285,44 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
 
             items.add(UItem.asShadow(getString(R.string.FG_Plugins_Bundled_Hint)));
         } else {
-            items.add(UItem.asButton(DELETE_ROW, R.drawable.msg_delete, getString(R.string.Delete)).red());
+            items.add(UItem.asButton(DELETE_ROW, R.drawable.msg_delete, getString(R.string.Delete)).red().setEnabled(!pluginBusy));
         }
-    }
-
-    private String subtitle() {
-        String version = plugin.version();
-        String author = plugin.author();
-        if (version.isEmpty()) {
-            return author;
-        }
-        return author.isEmpty() ? version : version + " · " + author;
-    }
-
-    private UItem rowWithValue(int id, CharSequence text, String value) {
-        if (value == null || value.isEmpty()) {
-            return UItem.asButton(id, text);
-        }
-        boolean bothLong = text != null && text.length() > 14 && value.length() > 14;
-        if (value.length() > 28 || bothLong) {
-            return SettingsHelper.asTextDetail(id, 0, text, value);
-        }
-        return UItem.asButton(id, text, value);
     }
 
     private void changeSetting(int index, Object value) {
+        if (applySetting(index, value)) reloadPluginSettings();
+    }
+
+    private void changeSetting(int index, Object value, JSONObject setting, long generation, int fromScreen) {
+        if (isCurrentSetting(index, setting, generation, fromScreen)) changeSetting(index, value);
+    }
+
+    private boolean isCurrentSetting(int index, JSONObject setting, long generation, int fromScreen) {
+        return !isFinished && !pluginBusy && plugin.enabled() && settingsReady
+                && generation == settingsGeneration && fromScreen == screen
+                && setting != null && settings.optJSONObject(index) == setting && setting.optBoolean("enabled", true);
+    }
+
+    private void changeSliderSetting(int index, int value) {
+        if (!applySetting(index, value)) return;
+        AndroidUtilities.cancelRunOnUIThread(pendingSettingsReload);
+        AndroidUtilities.runOnUIThread(pendingSettingsReload, 200);
+    }
+
+    private boolean applySetting(int index, Object value) {
+        JSONObject item = settings.optJSONObject(index);
+        if (!isCurrentSetting(index, item, settingsGeneration, screen)) return false;
         final String title = titleOf(index);
         FGPluginsController.INSTANCE.settingsChanged(plugin.id(), index, value, screen, title);
-        JSONObject item = settings.optJSONObject(index);
-        if (item != null) {
-            try {
-                item.put("value", value);
-            } catch (Exception ignored) {
-            }
+        try {
+            item.put("value", value);
+        } catch (Exception ignored) {
         }
-        reloadPluginSettings();
+        return true;
     }
 
     private void clickSetting(int index, View view) {
+        if (isFinished || pluginBusy || !plugin.enabled() || !settingsReady) return;
         final String title = titleOf(index);
         FGPluginsController.INSTANCE.settingsClick(plugin.id(), index, screen, view, title);
         reloadPluginSettings();
@@ -343,7 +367,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
                 if (next != null) {
                     settings = next;
                 } else {
-                    BulletinFactory.of(this).createErrorBulletin(getString(R.string.ErrorOccurred)).show();
+                    settings = new JSONArray();
                 }
                 updateRows(false);
             });
@@ -351,6 +375,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
     }
 
     private void forgetSettings() {
+        AndroidUtilities.cancelRunOnUIThread(pendingSettingsReload);
         settingsGeneration++;
         subScreenRequest++;
         settingsReady = false;
@@ -365,6 +390,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         forgetSettings();
         if (nestedTitle != null) {
             reloadNestedScreen();
+            updateRows(false);
             return;
         }
         updateRows(true);
@@ -375,6 +401,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             updateRows(true);
             return;
         }
+        if (settingsRequested) return;
+        settingsRequested = true;
         final int fromScreen = parentScreen;
         final int fromIndex = parentIndex;
         final long generation = settingsGeneration;
@@ -390,13 +418,14 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
                 if (isFinished || generation != settingsGeneration || !plugin.enabled()) {
                     return;
                 }
+                settingsRequested = false;
                 JSONArray next = parseScreen(answer);
                 settingsReady = true;
                 settingsFailed = next == null;
                 if (next != null) {
                     settings = next;
                 } else {
-                    BulletinFactory.of(this).createErrorBulletin(getString(R.string.ErrorOccurred)).show();
+                    settings = new JSONArray();
                 }
                 updateRows(true);
             });
@@ -455,36 +484,38 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             case "divider":
                 return UItem.asShadow(text.isEmpty() ? null : text);
             case "switch":
-
-                return SettingsHelper.asSwitchCG(id, text, subtext)
-                        .setChecked(item.optBoolean("value", item.optBoolean("default", false)));
+                return FGPluginSettingCell.Factory.of(id, text, null, subtext, iconOf(optText(item, "icon", null)),
+                        item.optBoolean("value", item.optBoolean("default", false)))
+                        .setEnabled(item.optBoolean("enabled", true));
             case "selector": {
                 JSONArray values = item.optJSONArray("items");
                 int selected = item.optInt("value", item.optInt("default", 0));
                 String current = values != null && selected >= 0 && selected < values.length()
                         ? values.optString(selected, "")
                         : "";
-                return rowWithValue(id, text, current);
+                return FGPluginSettingCell.Factory.of(id, text, current, subtext, iconOf(optText(item, "icon", null)), null)
+                        .setEnabled(item.optBoolean("enabled", true));
             }
             case "slider": {
                 int min = item.optInt("minimum", 0);
                 int max = Math.max(min + 1, item.optInt("maximum", 100));
                 int value = Math.min(max, Math.max(min, item.optInt("value", item.optInt("default", min))));
                 final int index = id - SETTINGS_ROW_BASE;
-                return UItem.asIntSlideView(0, min, value, max,
+                final long generation = settingsGeneration;
+                final int fromScreen = screen;
+                UItem slider = UItem.asIntSlideView(0, min, value, max,
 
                         number -> String.valueOf(number),
                         number -> {
-                            changeSetting(index, number);
-                            try {
-                                item.put("value", number);
-                            } catch (Exception ignored) {
-                            }
+                            if (isCurrentSetting(index, item, generation, fromScreen)) changeSliderSetting(index, number);
                         });
+                slider.id = id;
+                return slider;
             }
             case "edittext":
             case "input":
-                return rowWithValue(id, text, item.optString("value", item.optString("default", "")));
+                return FGPluginSettingCell.Factory.of(id, text, item.optString("value", item.optString("default", "")),
+                        subtext, iconOf(optText(item, "icon", null)), null).setEnabled(item.optBoolean("enabled", true));
             case "custom": {
 
                 final int index = id - SETTINGS_ROW_BASE;
@@ -500,14 +531,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             default: {
 
                 int icon = iconOf(optText(item, "icon", null));
-                UItem row;
-                if (icon != 0) {
-                    row = subtext == null
-                            ? UItem.asButton(id, icon, text)
-                            : UItem.asButton(id, icon, text, subtext);
-                } else {
-                    row = subtext == null ? UItem.asButton(id, text) : UItem.asButton(id, text, subtext);
-                }
+                UItem row = FGPluginSettingCell.Factory.of(id, text, null, subtext, icon, null)
+                        .setEnabled(item.optBoolean("enabled", true));
                 if (item.optBoolean("red", false)) {
                     row.red();
                 } else if (item.optBoolean("accent", false)) {
@@ -520,6 +545,11 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
+        if (pluginBusy || !item.enabled) return;
+        if (item.id == RETRY_ROW) {
+            reloadPluginSettings();
+            return;
+        }
         if (item.id == DELETE_ROW) {
             confirmDelete();
             return;
@@ -536,11 +566,13 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
     }
 
     private void onSettingClick(int index, JSONObject setting, View view) {
+        if (isFinished || pluginBusy || !plugin.enabled() || !settingsReady || !setting.optBoolean("enabled", true)) return;
         String kind = optText(setting, "kind", "text");
         switch (kind) {
             case "switch": {
                 boolean value = !setting.optBoolean("value", setting.optBoolean("default", false));
-                SettingsHelper.updateCheckState(view, value);
+                if (view instanceof FGPluginSettingCell) ((FGPluginSettingCell) view).setChecked(value);
+                else SettingsHelper.updateCheckState(view, value);
                 changeSetting(index, value);
                 try {
                     setting.put("value", value);
@@ -567,12 +599,13 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
 
     @Override
     protected boolean onLongClick(UItem item, View view, int position, float x, float y) {
+        if (isFinished || pluginBusy || !item.enabled || !plugin.enabled() || !settingsReady) return false;
         int index = item.id - SETTINGS_ROW_BASE;
         if (index < 0 || index >= settings.length()) {
             return false;
         }
         JSONObject setting = settings.optJSONObject(index);
-        if (setting == null || !setting.optBoolean("long_clickable", false)) {
+        if (setting == null || !setting.optBoolean("enabled", true) || !setting.optBoolean("long_clickable", false)) {
             return false;
         }
         FGPluginsController.INSTANCE.settingsLongClick(plugin.id(), index, screen, view);
@@ -629,11 +662,16 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
     }
 
     private void updatePlugin() {
+        if (pluginBusy || isFinished) return;
+        pluginBusy = true;
+        if (header != null) header.setActionsEnabled(false);
         for (FGPluginsController.Plugin candidate : FGPluginsController.INSTANCE.installed()) {
             if (!candidate.getId().equals(plugin.id())) {
                 continue;
             }
             FGPluginUpdates.update(candidate, ok -> {
+                pluginBusy = false;
+                if (isFinished) return kotlin.Unit.INSTANCE;
                 forgetSettings();
                 updateRows(true);
                 BulletinFactory.of(this).createSimpleBulletin(ok ? R.raw.contact_check : R.raw.error,
@@ -642,14 +680,22 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
             });
             return;
         }
+        pluginBusy = false;
+        if (header != null) header.setActionsEnabled(true);
     }
 
     private void togglePlugin() {
+        if (pluginBusy || isFinished) return;
+        pluginBusy = true;
+        if (header != null) header.setActionsEnabled(false);
         if (plugin.enabled()) {
             forgetSettings();
             FGPluginsController.INSTANCE.getQueue().postRunnable(() -> {
                 plugin.disable();
-                AndroidUtilities.runOnUIThread(() -> updateRows(false));
+                AndroidUtilities.runOnUIThread(() -> {
+                    pluginBusy = false;
+                    if (!isFinished) updateRows(false);
+                });
             });
             return;
         }
@@ -658,6 +704,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         FGPluginsController.INSTANCE.getQueue().postRunnable(() -> {
             boolean started = plugin.enable();
             AndroidUtilities.runOnUIThread(() -> {
+                pluginBusy = false;
+                if (isFinished) return;
                 if (!started) {
                     if (plugin instanceof PythonPluginView) {
                         com.th3nekit.finegram.plugins.FGPluginSecurity.reviewOrFail(this,
@@ -752,6 +800,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         if (getParentActivity() == null) {
             return;
         }
+        final long generation = settingsGeneration;
+        final int fromScreen = screen;
         JSONArray values = setting.optJSONArray("items");
         if (values == null || values.length() == 0) {
             return;
@@ -763,7 +813,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), getResourceProvider());
         builder.setTitle(optText(setting, "text", ""));
         builder.setItems(titles, (dialog, which) -> {
-            changeSetting(index, which);
+            changeSetting(index, which, setting, generation, fromScreen);
         });
         builder.setNegativeButton(getString(R.string.Cancel), null);
         showDialog(builder.create());
@@ -773,6 +823,8 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         if (getParentActivity() == null) {
             return;
         }
+        final long generation = settingsGeneration;
+        final int fromScreen = screen;
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), getResourceProvider());
         builder.setTitle(optText(setting, "text", ""));
 
@@ -807,7 +859,7 @@ public class PluginDetailsPreferencesEntry extends BaseCGPreferencesEntry {
         builder.setView(wrapper);
 
         builder.setPositiveButton(getString(R.string.Save), (dialog, which) -> {
-            changeSetting(index, editText.getText().toString());
+            changeSetting(index, editText.getText().toString(), setting, generation, fromScreen);
         });
         builder.setNegativeButton(getString(R.string.Cancel), null);
         showDialog(builder.create());

@@ -864,7 +864,6 @@ public class MotionBackgroundDrawable extends Drawable {
 
 
 
-    /* Pattern And Gift Merge */
 
     private final BitmapChangeTracker patternChangeTracker = new BitmapChangeTracker();
     private final BitmapChangeTracker giftChangeTracker = new BitmapChangeTracker();
@@ -911,7 +910,7 @@ public class MotionBackgroundDrawable extends Drawable {
 
         if (patternWithGiftPaint == null) {
             patternWithGiftPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-            patternWithGiftPaint.setAlpha(204); // 80%
+            patternWithGiftPaint.setAlpha(204);
         }
 
         drawGiftPatterns(patternWithGiftCanvas, patternWithGiftPaint, giftPosition);
@@ -941,7 +940,6 @@ public class MotionBackgroundDrawable extends Drawable {
 
 
 
-    /* Legacy Utils */
 
     private final BitmapChangeTracker patternWithGiftChangeTracker = new BitmapChangeTracker();
     private Bitmap patternAlphaInverted;

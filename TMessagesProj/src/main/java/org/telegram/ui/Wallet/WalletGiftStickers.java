@@ -50,9 +50,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
-/**
- * Android View port of GramWalletCards2's StickerBoard. All positions are in the card plane or overlay.
- */
 final class WalletGiftStickers extends View {
     private static final int GRID = 0, FLIGHT = 1, CARD = 2, DRAG = 3, HOME = 4, TRASH = 5;
     private static final float SHARE = .231f;
@@ -62,29 +59,14 @@ final class WalletGiftStickers extends View {
     private static final long PICKUP_MS = 170;
 
     interface Host {
-        /**
-         * A gift started moving from the grid: show the card (scroll back to it, or float it over the list).
-         */
         void bringCard();
 
-        /**
-         * A menu action is about to put something onto the card: show it for a while.
-         */
         void showCardFor(long holdMs);
 
-        /**
-         * Whether the card is on screen now.
-         */
         boolean isCardShown();
 
-        /**
-         * A drag ended: a floated card may go away again.
-         */
         void onDragFinished();
 
-        /**
-         * The stickers took over a touch the views below had already seen.
-         */
         void cancelChildTouches();
     }
 
@@ -939,7 +921,6 @@ final class WalletGiftStickers extends View {
     }
 
     private float[] fitting(Sticker self, float aimX, float aimY, boolean spread) {
-        // Hand placement preserves the exact position and size, including overlaps.
         if (!spread) {
             self.perched = false;
             return new float[]{aimX, aimY, self.user.target};
@@ -1085,7 +1066,6 @@ final class WalletGiftStickers extends View {
         s.homeAngle = s.rotation.value;
         s.homeDuration = releaseVelocityY > dp(650) ? .32f : .44f;
         releaseVelocityY = 0;
-        // The flight owns the cell's scale from here: its release animation would fight the dip below.
         WalletGiftCell cell = cell(s);
         if (cell != null) {
             cell.animate().cancel();
@@ -1309,7 +1289,7 @@ final class WalletGiftStickers extends View {
 
     private void sendCard() {
         if (!dirty) return;
-        if (syncRequestId != 0) return; // resent from the response
+        if (syncRequestId != 0) return;
         if (!disposed && (ownsTouch || !geometry())) {
             AndroidUtilities.runOnUIThread(sendCard, 1000);
             return;
@@ -1664,7 +1644,6 @@ final class WalletGiftStickers extends View {
         sheenMatrix.postRotate(-24);
         sheenMatrix.postTranslate(-width * .25f + shift * width * .45f, 0);
         sheen.setLocalMatrix(sheenMatrix);
-        // Balance and holder stay above this layer (see attach) and get a shadow instead of clipping stickers.
         final ArrayList<RectF> obstacles = card.getStickerObstacles();
         final RectF balanceText = obstacles.get(0), holderText = obstacles.get(1), numberMask = obstacles.get(2), qrMask = obstacles.get(3), usdText = obstacles.get(4), diamondIcon = obstacles.get(5);
         float balanceShadow = 0, holderShadow = 0, diamondFallback = 0, numberShadow = 0;
@@ -1720,7 +1699,6 @@ final class WalletGiftStickers extends View {
         card.setStickerTextShadow(balanceShadow, holderShadow, diamondFallback, numberShadow);
     }
 
-    /** How much of text is covered by art, eased so a partial overlap already gives the full shadow. */
     private static float coverage(RectF art, RectF text) {
         float w = Math.min(art.right, text.right) - Math.max(art.left, text.left);
         float h = Math.min(art.bottom, text.bottom) - Math.max(art.top, text.top);
@@ -2219,7 +2197,6 @@ final class WalletGiftStickers extends View {
         if (width <= 0) return;
         float p = fadeReveal ? reveal * reveal * (3 - 2 * reveal) : 1 - (float) Math.pow(1 - reveal, 4);
         float radius = fadeReveal || p >= 1 ? -1 : width * 1.2f * p;
-        // The old symbols leave where the reveal circle has passed, so they don't linger under the new ones.
         if (oldStyle != null && p < 1) drawPattern(canvas, oldStyle, fadeReveal ? 1 - p : 1, radius, true);
         if (shownStyle != null) drawPattern(canvas, shownStyle, fadeReveal ? p : 1, radius, false);
     }

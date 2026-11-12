@@ -73,6 +73,7 @@ import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.AdjustPanLayoutHelper;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CheckBox2;
@@ -187,7 +188,6 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
         listView.setFastScrollEnabled(RecyclerListView.FastScroll.DATE_TYPE);
         listView.setFastScrollVisible(true);
         listView.getFastScroll().setAlpha(0f);
-//        listView.getFastScroll().usePadding = false;
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
@@ -401,7 +401,7 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
 
         searchEmptyView = new StickerEmptyView(context, flickerLoadingView, StickerEmptyView.STICKER_TYPE_ALBUM, resourcesProvider);
         searchEmptyView.title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-        searchEmptyView.title.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+        ThemeBind.textColor(searchEmptyView.title, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
         searchEmptyView.title.setTypeface(null);
         searchEmptyView.title.setText(getString(R.string.SearchImagesType));
         keyboardNotifier = new KeyboardNotifier(this, h -> searchEmptyView.animate().translationY(-h / 2f + dp(80)).setDuration(AdjustPanLayoutHelper.keyboardDuration).setInterpolator(AdjustPanLayoutHelper.keyboardInterpolator).start());
@@ -536,7 +536,7 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
 
             buttonsLayout = new LinearLayout(context);
             buttonsLayout.setOrientation(LinearLayout.VERTICAL);
-            buttonsLayout.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
+            ThemeBind.backgroundColor(buttonsLayout, Theme.key_dialogBackground, resourcesProvider);
             buttonsLayout.setPadding(dp(10), dp(10), dp(10), dp(AndroidUtilities.navigationBarHeight > 0 ? 0 : 10) + AndroidUtilities.navigationBarHeight);
             addView(buttonsLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 0, 0, 0, 0));
             buttonsLayout.setAlpha(0.0f);
@@ -574,7 +574,7 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
             selectButton = new ImageView(context);
             selectButton.setScaleType(ImageView.ScaleType.CENTER);
             selectButton.setImageResource(R.drawable.floating_check);
-            selectButton.setBackground(Theme.createCircleDrawable(dp(56), Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider)));
+            ThemeBind.fillBackground(selectButton, Theme.createCircleDrawable(dp(56), Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider)), ThemeBind.of(Theme.key_featuredStickers_addButton), resourcesProvider);
             ScaleStateListAnimator.apply(selectButton, 0.1f, 1.5f);
             addView(selectButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, 14, 14));
             selectButton.setOnClickListener(v -> selectMultiple(false));
@@ -1322,27 +1322,6 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
             } else if (photoEntry.isVideo && !photoEntry.isLivePhoto()) {
                 return MediaStore.Video.Thumbnails.getThumbnail(getContext().getContentResolver(), photoEntry.imageId, MediaStore.Video.Thumbnails.MINI_KIND, options);
             } else {
-//                Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, photoEntry.imageId);
-//
-//                Bitmap bitmap = null;
-//                InputStream is = null;
-//                try {
-//                    is = getContext().getContentResolver().openInputStream(uri);
-//                    bitmap = BitmapFactory.decodeStream(is, null, options);
-//                } catch (Exception e) {
-//                    FileLog.e(e, false);
-//                } finally {
-//                    if (is != null) {
-//                        try {
-//                            is.close();
-//                        } catch (Exception e2) {}
-//                    }
-//                }
-//                if (bitmap == null && options != null && !options.inJustDecodeBounds) {
-//                    return BitmapFactory.decodeFile(photoEntry.path, options);
-//                } else {
-//                    return bitmap;
-//                }
                 return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), photoEntry.imageId, MediaStore.Video.Thumbnails.MINI_KIND, options);
             }
         }
@@ -1709,10 +1688,8 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
             final int totalItemsHeight = rowsCount * itemHeight;
             final int viewHeight = AndroidUtilities.displaySize.y - listView.getPaddingTop() - listView.getPaddingBottom();
             final int top = AndroidUtilities.lerp(0, Math.max(0, totalItemsHeight - viewHeight), progress);
-//            final int bottom = AndroidUtilities.lerp(viewHeight, totalItemsHeight, progress);
             final float topRow = top / (float) totalItemsHeight * rowsCount;
             final int topRowInt = Math.round(topRow);
-//            final int bottomRow = Math.round(bottom / (float) totalItemsHeight * rowsCount);
 
             position[0] = 2 + Math.max(0, topRowInt * layoutManager.getSpanCount());
             position[1] = listView.getPaddingTop() + (int) ((topRow - topRowInt) * itemHeight);
@@ -1759,8 +1736,8 @@ public class GalleryListView extends FrameLayout implements NotificationCenter.N
 
     @Override
     protected void onAttachedToWindow() {
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.albumsDidLoad);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.storiesDraftsUpdated);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.albumsDidLoad);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.storiesDraftsUpdated);
         super.onAttachedToWindow();
     }
 

@@ -157,7 +157,6 @@ public class HttpGetFileTask extends AsyncTask<String, Void, File> {
                 return isCancelled() ? null : file;
             } catch (Exception e) {
                 if (e instanceof ProtocolException) {
-                    // unexpected end of stream, lets try again!
                     FileLog.d("got unexpected end of stream, lets try to resume");
                     continue;
                 }

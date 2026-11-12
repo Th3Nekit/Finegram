@@ -30,14 +30,9 @@ public class BlockRow {
     public boolean quoteFirst;
     public boolean quoteLast;
 
-    // Hint context, set during RichEditorListView rebuild and read by RichTextCell.getHint():
-    // firstBlock — this row is the first block of the whole editor (heading1 → "Title" hint);
-    // singleParagraph — the editor contains exactly one paragraph block ("Type something..." hint).
     public boolean firstBlock;
     public boolean singleParagraph;
 
-    // Details and table titles start in an auto-bold mode. This lives on the row rather than the
-    // recycled editor cell so explicitly removing bold keeps the mode disabled for this title.
     public boolean titleAutoBold;
     public boolean titleAutoBoldInitialized;
 

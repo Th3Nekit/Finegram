@@ -110,7 +110,6 @@ public class QuickRepliesController {
     private boolean loading;
     private boolean loaded;
     public void load() {
-//        if (!UserConfig.getInstance(currentAccount).isPremium()) return;
         load(true, null);
     }
     private void load(boolean cache) {
@@ -553,7 +552,6 @@ public class QuickRepliesController {
                 }
             }
         });
-        // TODO
     }
 
     public boolean processUpdate(TLRPC.Update update, String quick_reply_shortcut, int quick_reply_shortcut_id) {

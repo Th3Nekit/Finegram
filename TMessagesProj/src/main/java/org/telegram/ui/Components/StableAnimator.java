@@ -4,9 +4,6 @@ import android.animation.TimeAnimator;
 
 import org.telegram.messenger.AndroidUtilities;
 
-/**
- * Good for animations with a jank at the beginning.
- */
 public class StableAnimator extends TimeAnimator {
     private int times = 0;
     private int totalTimes = 0;

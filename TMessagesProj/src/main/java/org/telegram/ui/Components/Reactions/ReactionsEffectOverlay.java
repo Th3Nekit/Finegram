@@ -168,8 +168,8 @@ public class ReactionsEffectOverlay {
 
                         AvatarParticle avatarParticle = new AvatarParticle();
                         avatarParticle.imageReceiver = imageReceiver;
-                        avatarParticle.fromX = 0.5f;// + Math.abs(random.nextInt() % 100) / 100f * 0.2f;
-                        avatarParticle.fromY = 0.5f;// + Math.abs(random.nextInt() % 100) / 100f * 0.2f;
+                        avatarParticle.fromX = 0.5f;
+                        avatarParticle.fromY = 0.5f;
                         avatarParticle.jumpY = 0.3f + Math.abs(random.nextInt() % 100) / 100f * 0.1f;
                         avatarParticle.randomScale = 0.8f + Math.abs(random.nextInt() % 100) / 100f * 0.4f;
                         avatarParticle.randomRotation = 60 * Math.abs(random.nextInt() % 100) / 100f;
@@ -442,7 +442,6 @@ public class ReactionsEffectOverlay {
                 if (animationType == LONG_ANIMATION && isStories) {
                     emojiImageView.setAlpha(1f - animateOutProgress);
                 }
-                //emojiImageView.setAlpha(animateOutProgress < 0.5f ? 1f - (animateOutProgress / 0.5f) : 0f);
                 container.setTranslationX(x);
                 container.setTranslationY(y);
 
@@ -718,7 +717,6 @@ public class ReactionsEffectOverlay {
             ((FrameLayout.LayoutParams) container.getLayoutParams()).topMargin = -topOffset;
             ((FrameLayout.LayoutParams) container.getLayoutParams()).leftMargin = -leftOffset;
 
-            //if (availableReaction != null) {
                 windowView.addView(effectImageView);
                 effectImageView.getLayoutParams().width = size;
                 effectImageView.getLayoutParams().height = size;
@@ -727,7 +725,6 @@ public class ReactionsEffectOverlay {
                 effectImageView.getLayoutParams().height = size;
                 ((FrameLayout.LayoutParams) effectImageView.getLayoutParams()).topMargin = -topOffset;
                 ((FrameLayout.LayoutParams) effectImageView.getLayoutParams()).leftMargin = -leftOffset;
-           // }
 
             container.setPivotX(leftOffset);
             container.setPivotY(topOffset);

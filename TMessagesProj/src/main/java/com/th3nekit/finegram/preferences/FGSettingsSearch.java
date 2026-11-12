@@ -64,6 +64,7 @@ public final class FGSettingsSearch {
             new Screen(MessageFiltersPreferencesEntry::new),
             new Screen(CameraPreferencesEntry::new),
             new Screen(PrivacyPreferencesEntry::new),
+            new Screen(com.th3nekit.finegram.preferences.anonymity.SavedMessagesPreferencesEntry::new),
             new Screen(GeminiPreferencesEntry::new),
             new Screen(FoldersPreferencesEntry::new),
             new Screen(MainTabsPreferencesEntry::new),

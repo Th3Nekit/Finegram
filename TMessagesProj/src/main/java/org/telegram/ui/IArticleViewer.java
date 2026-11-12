@@ -31,8 +31,8 @@ public abstract class IArticleViewer {
     public abstract Theme.ResourcesProvider getResourcesProvider();
     public abstract ArticleViewer.Resources getResources();
 
-    public int padx() { return 18 /* dp */; }
-    public int pady() { return 8 /* dp */; }
+    public int padx() { return 18         ; }
+    public int pady() { return 8         ; }
 
     public abstract TextSelectionHelper.ArticleTextSelectionHelper getTextSelectionHelper(View view);
 

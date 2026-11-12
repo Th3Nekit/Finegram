@@ -2,6 +2,7 @@ package org.telegram.ui.web;
 
 import static org.telegram.messenger.LocaleController.getString;
 
+import org.telegram.messenger.FileLog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,6 +23,7 @@ import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.EditTextBoldCursor;
 import org.telegram.ui.Components.FlickerLoadingView;
 import org.telegram.ui.Components.LayoutHelper;
@@ -81,13 +83,13 @@ public class HistoryFragment extends UniversalFragment {
     public View createView(Context context) {
         fragmentView = super.createView(context);
 
-        actionBar.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
+        ThemeBind.backgroundColor(actionBar, Theme.key_windowBackgroundWhite, getResourceProvider());
         actionBar.setActionModeColor(Theme.getColor(Theme.key_windowBackgroundWhite));
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
-        actionBar.setTitleColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
-        actionBar.setItemsBackgroundColor(getThemedColor(Theme.key_actionBarActionModeDefaultSelector), false);
-        actionBar.setItemsColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText), false);
-        actionBar.setItemsColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText), true);
+        ThemeBind.actionBarTitleColor(actionBar, Theme.key_windowBackgroundWhiteBlackText, getResourceProvider());
+        ThemeBind.actionBarItemsBackgroundColor(actionBar, Theme.key_actionBarActionModeDefaultSelector, getResourceProvider(), false);
+        ThemeBind.actionBarItemsColor(actionBar, Theme.key_windowBackgroundWhiteBlackText, getResourceProvider(), false);
+        ThemeBind.actionBarItemsColor(actionBar, Theme.key_windowBackgroundWhiteBlackText, getResourceProvider(), true);
         actionBar.setCastShadows(true);
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
@@ -196,9 +198,9 @@ public class HistoryFragment extends UniversalFragment {
         searchItem.setSearchFieldHint(getString(R.string.Search));
         searchItem.setContentDescription(getString(R.string.Search));
         EditTextBoldCursor editText = searchItem.getSearchField();
-        editText.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
-        editText.setHintTextColor(getThemedColor(Theme.key_player_time));
-        editText.setCursorColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(editText, Theme.key_windowBackgroundWhiteBlackText, getResourceProvider());
+        ThemeBind.hintTextColor(editText, Theme.key_player_time, getResourceProvider());
+        ThemeBind.cursorColor(editText, Theme.key_windowBackgroundWhiteBlackText, getResourceProvider());
 
         emptyView = new StickerEmptyView(context, null, StickerEmptyView.STICKER_TYPE_SEARCH);
         emptyView.title.setText(getString(TextUtils.isEmpty(query) ? R.string.WebNoHistory : R.string.WebNoSearchedHistory));
@@ -290,29 +292,10 @@ public class HistoryFragment extends UniversalFragment {
     }
 
     public void clickSelect(UItem item, View view) {
-//        AddressBarList.BookmarkView cell = (AddressBarList.BookmarkView) view;
-//        MessageObject msg = (MessageObject) item.object2;
-//        if (isSelected(msg)) {
-//            setSelected(msg, false);
-//            cell.setChecked(false);
-//        } else {
-//            setSelected(msg, true);
-//            cell.setChecked(true);
-//        }
-//        selectedCount.setNumber(selected.size(), true);
-//        if (selected.isEmpty()) {
-//            actionBar.hideActionMode();
-//        } else {
-//            actionBar.showActionMode();
-//        }
     }
 
     @Override
     protected boolean onLongClick(UItem item, View view, int position, float x, float y) {
-//        if (item.instanceOf(AddressBarList.BookmarkView.Factory.class)) {
-//            clickSelect(item, view);
-//            return true;
-//        }
         return false;
     }
 
@@ -338,4 +321,26 @@ public class HistoryFragment extends UniversalFragment {
         }
     }
 
+
+    @Override
+    public void onThemeColorsChanged() {
+        try {
+            super.onThemeColorsChanged();
+            if (actionBar != null) {
+                actionBar.setActionModeColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        try {
+            if (selectedCount != null) {
+                selectedCount.setTextColor(getThemedColor(Theme.key_actionBarActionModeDefaultIcon));
+            }
+            if (searchItem != null && searchItem.getSearchField() != null) {
+                searchItem.getSearchField().setCursorColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
 }

@@ -10,9 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Wraps a native webrtc::VideoEncoder.
- */
 public abstract class WrappedNativeVideoEncoder implements VideoEncoder {
   @Override public abstract long createNativeVideoEncoder();
   @Override public abstract boolean isHardwareEncoder();

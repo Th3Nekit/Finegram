@@ -41,7 +41,6 @@ public class ChromecastMedia {
             .build();
     }
 
-    /* */
 
     public static class Builder {
         private final String mimeType;

@@ -123,7 +123,6 @@ public class LoadingSpan extends ReplacementSpan {
             );
         }
         if (colorsFromPaint && paint != null) {
-            // TextView sets its paint color only in onDraw, so the color seen in getSize (during measure) may be stale
             setColorsFromPaint(paint);
         }
         drawable.setAlpha((int) ((paint == null ? 0xFF : paint.getAlpha()) * alpha));

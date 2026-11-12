@@ -49,6 +49,8 @@ public class DialogCellTags {
 
         Text text;
         int color;
+        private boolean hasColorKey;
+        private int colorKey;
         int width;
         private int textHeight;
 
@@ -61,7 +63,9 @@ public class DialogCellTags {
             tag.width = dp(2 * padDp) + (int) tag.text.getCurrentWidth();
             tag.textHeight = (int) tag.text.getHeight();
 
-            tag.color = Theme.getColor(Theme.key_avatar_nameInMessageBlue);
+            tag.colorKey = Theme.key_avatar_nameInMessageBlue;
+            tag.hasColorKey = true;
+            tag.color = Theme.getColor(tag.colorKey);
 
             return tag;
         }
@@ -80,12 +84,17 @@ public class DialogCellTags {
             tag.width = dp(2 * padDp) + (int) tag.text.getCurrentWidth();
             tag.textHeight = (int) tag.text.getHeight();
 
-            tag.color = Theme.getColor(Theme.keys_avatar_nameInMessage[filter.color % Theme.keys_avatar_nameInMessage.length]);
+            tag.colorKey = Theme.keys_avatar_nameInMessage[filter.color % Theme.keys_avatar_nameInMessage.length];
+            tag.hasColorKey = true;
+            tag.color = Theme.getColor(tag.colorKey);
 
             return tag;
         }
 
         public void draw(Canvas canvas) {
+            if (hasColorKey) {
+                color = Theme.getColor(colorKey);
+            }
             Theme.dialogs_tagPaint.setColor(Theme.multAlpha(color, Theme.isCurrentThemeDark() ? .20f : .10f));
 
             AndroidUtilities.rectTmp.set(0, 0, width, dp(heightDp));
@@ -129,7 +138,6 @@ public class DialogCellTags {
 
         boolean changed = false;
 
-        // remove existing tags
         for (int i = 0; i < tags.size(); ++i) {
             Tag tag = tags.get(i);
             MessagesController.DialogFilter filter = null;
@@ -150,7 +158,6 @@ public class DialogCellTags {
             }
         }
 
-        // add new tags
         for (int i = 0; i < filters.size(); ++i) {
             MessagesController.DialogFilter filter = filters.get(i);
             Tag tag = null;
@@ -180,19 +187,11 @@ public class DialogCellTags {
 
     }
 
-//    private final static Paint ellipsizePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//    private final static LinearGradient ellipsizeGradient;
-//    private final static Matrix ellipsizeMatrix = new Matrix();
-//    static {
-//        ellipsizePaint.setShader(ellipsizeGradient = new LinearGradient(0, 0, dp(12), 0, new int[]{0, 0xffffffff}, new float[]{0f, 1f}, Shader.TileMode.CLAMP));
-//        ellipsizePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
-//    }
 
     public void draw(Canvas canvas, int width) {
         canvas.clipRect(0, 0, width, dp(Tag.heightDp));
         AndroidUtilities.rectTmp.set(0, 0, width, dp(Tag.heightDp));
         canvas.saveLayerAlpha(AndroidUtilities.rectTmp, 0xFF, Canvas.ALL_SAVE_FLAG);
-//        canvas.save();
         if (LocaleController.isRTL) {
             canvas.translate(width, 0);
         }
@@ -225,19 +224,6 @@ public class DialogCellTags {
                 canvas.translate(moreTags.width + dp(4), 0);
             }
         }
-//        canvas.restore();
-//        canvas.save();
-//        ellipsizeMatrix.reset();
-//        if (LocaleController.isRTL) {
-//            ellipsizeMatrix.postTranslate(0, 0);
-//            ellipsizeMatrix.postScale(-1, 1f);
-//            ellipsizeMatrix.postTranslate(dp(12), 0);
-//        } else {
-//            ellipsizeMatrix.postTranslate(width - dp(12), 0);
-//        }
-//        ellipsizeGradient.setLocalMatrix(ellipsizeMatrix);
-//        canvas.drawRect(0, 0, width, dp(Tag.heightDp), ellipsizePaint);
-//        canvas.restore();
         canvas.restore();
     }
 

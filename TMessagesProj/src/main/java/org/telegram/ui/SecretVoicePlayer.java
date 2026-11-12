@@ -58,6 +58,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.AudioVisualizerDrawable;
@@ -499,7 +500,6 @@ public class SecretVoicePlayer extends Dialog {
                 @Override
                 public void drawBlurredPhotoParticles(Canvas canvas) {
                     final float s = AndroidUtilities.lerp(1, 1.5f, openProgress2);
-//                    canvas.scale(s, s, rect.centerX(), rect.centerY());
                     super.drawBlurredPhotoParticles(canvas);
                 }
 
@@ -763,7 +763,7 @@ public class SecretVoicePlayer extends Dialog {
             backDialog.show();
             TextView button = (TextView) backDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
             if (button != null) {
-                button.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+                ThemeBind.textColor(button, Theme.key_text_RedBold);
             }
             return;
         }
@@ -807,17 +807,11 @@ public class SecretVoicePlayer extends Dialog {
         if (this.closeAction != null) {
             if (cell != null) {
                 cell.makeVisibleAfterChange = true;
-//                AndroidUtilities.runOnUIThread(() -> {
-//                    cell.makeVisibleAfterChange = false;
-//                    cell.setVisibility(View.VISIBLE);
-//                    cell.invalidate();
-//                }, ChatListItemAnimator.DEFAULT_DURATION);
             }
 
             AndroidUtilities.runOnUIThread(this.closeAction);
             this.closeAction = null;
 
-//            myCell.setOverrideInvalidate(() -> {});
             thanosEffect = new ThanosEffect(context, null);
             windowView.addView(thanosEffect, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL));
             thanosEffect.animate(myCell, 1.5f, super::dismiss);

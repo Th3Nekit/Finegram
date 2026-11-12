@@ -38,9 +38,8 @@ public class NV21Buffer implements VideoFrame.Buffer {
 
   @Override
   public VideoFrame.I420Buffer toI420() {
-    // Cropping converts the frame to I420. Just crop and scale to the whole image.
-    return (VideoFrame.I420Buffer) cropAndScale(0 /* cropX */, 0 /* cropY */, width /* cropWidth */,
-        height /* cropHeight */, width /* scaleWidth */, height /* scaleHeight */);
+    return (VideoFrame.I420Buffer) cropAndScale(0            , 0            , width                ,
+        height                 , width                 , height                  );
   }
 
   @Override

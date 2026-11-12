@@ -294,10 +294,7 @@ public class EarListener implements SensorEventListener {
     }
 
     private boolean disableWakeLockWhenNotUsed() {
-        // Pixel devices cap phone fps to 60 when wake lock is held
-        // Samsung devices do much worse proximity detection when wake lock is not held
 
-        // Solution: enable wake lock only when accelerometer detects raising, except for Samsung
         return !Build.MANUFACTURER.equalsIgnoreCase("samsung");
     }
 

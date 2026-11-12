@@ -23,11 +23,7 @@ import android.os.Build;
 import android.view.Surface;
 import androidx.annotation.Nullable;
 
-/**
- * Holds EGL state and utility methods for handling an EGL14 EGLContext, an EGLDisplay,
- * and an EGLSurface.
- */
-@SuppressWarnings("ReferenceEquality") // We want to compare to EGL14 constants.
+@SuppressWarnings("ReferenceEquality")
 @TargetApi(18)
 class EglBase14Impl implements EglBase14 {
   private static final String TAG = "EglBase14Impl";
@@ -39,8 +35,6 @@ class EglBase14Impl implements EglBase14 {
   private EGLSurface eglSurface = EGL14.EGL_NO_SURFACE;
   private EGLSurface eglSurfaceBackground = EGL14.EGL_NO_SURFACE;
 
-  // EGL 1.4 is supported from API 17. But EGLExt that is used for setting presentation
-  // time stamp on a surface is supported from 18 so we require 18.
   public static boolean isEGL14Supported() {
     Logging.d(TAG,
         "SDK version: " + CURRENT_SDK_VERSION
@@ -69,8 +63,6 @@ class EglBase14Impl implements EglBase14 {
     }
   }
 
-  // Create a new context with the specified config type, sharing data with sharedContext.
-  // |sharedContext| may be null.
   public EglBase14Impl(EGLContext sharedContext, int[] configAttributes) {
     eglDisplay = getEglDisplay();
     eglConfig = getEglConfig(eglDisplay, configAttributes);
@@ -79,26 +71,22 @@ class EglBase14Impl implements EglBase14 {
     eglContext = createEglContext(sharedContext, eglDisplay, eglConfig, openGlesVersion);
   }
 
-  // Create EGLSurface from the Android Surface.
   @Override
   public void createSurface(Surface surface) {
     createSurfaceInternal(surface, false);
   }
 
-  // Create EGLSurface from the Android Surface.
   @Override
   public void createBackgroundSurface(SurfaceTexture surface) {
     createSurfaceInternal(surface, true);
   }
 
 
-  // Create EGLSurface from the Android SurfaceTexture.
   @Override
   public void createSurface(SurfaceTexture surfaceTexture) {
     createSurfaceInternal(surfaceTexture, false);
   }
 
-  // Create EGLSurface from either Surface or SurfaceTexture.
   private void createSurfaceInternal(Object surface, boolean background) {
     if (!(surface instanceof Surface) && !(surface instanceof SurfaceTexture)) {
       throw new IllegalStateException("Input must be either a Surface or SurfaceTexture");
@@ -241,7 +229,6 @@ class EglBase14Impl implements EglBase14 {
     return eglSurfaceBackground != EGL14.EGL_NO_SURFACE;
   }
 
-  // Detach the current EGL context, so that it can be made current on another thread.
   @Override
   public void detachCurrent() {
     synchronized (EglBase.lock) {
@@ -273,14 +260,11 @@ class EglBase14Impl implements EglBase14 {
       throw new RuntimeException("No EGLSurface - can't swap buffers");
     }
     synchronized (EglBase.lock) {
-      // See
-      // https://android.googlesource.com/platform/frameworks/native/+/tools_r22.2/opengl/specs/EGL_ANDROID_presentation_time.txt
       EGLExt.eglPresentationTimeANDROID(eglDisplay, surface, timeStampNs);
       EGL14.eglSwapBuffers(eglDisplay, surface);
     }
   }
 
-  // Return an EGLDisplay, or die trying.
   private static EGLDisplay getEglDisplay() {
     EGLDisplay eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
     if (eglDisplay == EGL14.EGL_NO_DISPLAY) {
@@ -295,7 +279,6 @@ class EglBase14Impl implements EglBase14 {
     return eglDisplay;
   }
 
-  // Return an EGLConfig, or die trying.
   private static EGLConfig getEglConfig(EGLDisplay eglDisplay, int[] configAttributes) {
     EGLConfig[] configs = new EGLConfig[1];
     int[] numConfigs = new int[1];
@@ -314,7 +297,6 @@ class EglBase14Impl implements EglBase14 {
     return eglConfig;
   }
 
-  // Return an EGLConfig, or die trying.
   private static EGLContext createEglContext(@Nullable EGLContext sharedContext,
       EGLDisplay eglDisplay, EGLConfig eglConfig, int openGlesVersion) {
     if (sharedContext != null && sharedContext == EGL14.EGL_NO_CONTEXT) {

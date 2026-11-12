@@ -15,7 +15,7 @@
   <a href="#лицензия">Лицензия</a>
 </p>
 
-Finegram — клиент Telegram для Android на основе [Cherrygram](https://github.com/arsLan4k1390/Cherrygram) и [Telegram for Android](https://github.com/DrKLO/Telegram). База — Telegram 13.1.1.
+Finegram — клиент Telegram для Android на основе [Cherrygram](https://github.com/arsLan4k1390/Cherrygram) и [Telegram for Android](https://github.com/DrKLO/Telegram). База — Telegram 13.2.1.
 
 ## Скачать
 

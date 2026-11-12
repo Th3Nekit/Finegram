@@ -27,8 +27,8 @@ public class RichEditorHistory {
     }
 
     public static final class FocusState {
-        public final long rowId;     // -1 if nothing focused
-        public final int childIndex; // table anchor index, -1 if not a table cell
+        public final long rowId;
+        public final int childIndex;
         public final int selStart;
         public final int selEnd;
 
@@ -119,9 +119,6 @@ public class RichEditorHistory {
         commit();
     }
 
-    /** Re-establishes the baseline as the current content and clears undo/redo. Call after loading
-     *  initial content so the first undo returns to that content instead of the empty state captured
-     *  at construction. */
     public void resetBaseline() {
         AndroidUtilities.cancelRunOnUIThread(commitRunnable);
         undoStack.clear();
@@ -212,7 +209,7 @@ public class RichEditorHistory {
                     && sameMedias(old.medias, row.medias)
                     && old.quoteIds.equals(row.quoteIds)
                     && Arrays.equals(old.blockData, data)) {
-                states[i] = old; // share — unchanged row
+                states[i] = old;
             } else {
                 states[i] = new RowState(row.id, data, row.level, row.num, row.checkbox, row.checked, row.detailsEnd, row.media,
                     row.medias != null ? new ArrayList<>(row.medias) : null, new ArrayList<>(row.quoteIds));
@@ -225,7 +222,7 @@ public class RichEditorHistory {
         if (a == null || b == null) return false;
         if (a.rows.length != b.rows.length) return false;
         for (int i = 0; i < a.rows.length; i++) {
-            if (a.rows[i] != b.rows[i]) return false; // capture() shares unchanged RowState by ref
+            if (a.rows[i] != b.rows[i]) return false;
         }
         return true;
     }

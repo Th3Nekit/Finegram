@@ -55,29 +55,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
 
-/**
- * Address-scoped, versioned collection of public-key/recovery-phrase pairs (min SDK 21).
- *
- * Each record has a separate keystore alias. AES-GCM authenticates the address, owner, public
- * key and protection mode. API 21/22 use an RSA keystore key to wrap a random AES key; they do
- * not support fingerprint protection. No new software key is stored in plaintext.
- *
- * Protected AES keys use a 30-second OS authentication window. API 30+ accepts strong
- * biometrics or device credentials; API 23-29 may require device credentials after the
- * fingerprint prompt. Authentication success alone is never treated as proof a key works.
- * Removing/resetting the screen lock can still permanently invalidate protected keys.
- *
- * Writes are serialized across instances. A candidate is synced to a private staging file,
- * reopened, parsed and decrypted using fresh key lookups/ciphers, then atomically renamed
- * over the committed file. Failed verification leaves the old collection untouched. Staging
- * files are never listed as wallets. Data lives in noBackupFilesDir because keystore keys
- * cannot be restored with an Android backup. Legacy single-phrase prefs are read and migrated
- * on the next successful init/protection change; a committed file takes precedence over them.
- *
- * Async callbacks run once on the main thread, outside storage exception handlers. Wipes are
- * synchronous and invalidate outstanding operations for the address. This class assumes the
- * app's main process is the only writer. See docs/gram-wallet-storage.md for limitations/tests.
- */
 public class GramWalletStorage {
     public static final String STORAGE_BROKEN = "STORAGE_BROKEN";
     private static final String PREF = "gramwallet_";
@@ -85,12 +62,10 @@ public class GramWalletStorage {
     private static final int MAX_FILE_BYTES = 4 * 1024 * 1024;
     private static final Object LOCK = new Object();
     private static final Map<String, Long> EPOCHS = new HashMap<>();
-    // Also prevents competing wallet biometric prompts from replacing each other's callbacks.
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> new Thread(r, "GramWalletStorage"));
 
     private static final CopyOnWriteArrayList<WeakReference<Runnable>> changeListeners = new CopyOnWriteArrayList<>();
 
-    /** The caller must retain the listener strongly for as long as it needs updates. */
     public static synchronized void addChangeListener(Runnable listener) {
         boolean found = false;
         for (WeakReference<Runnable> reference : changeListeners) {
@@ -109,7 +84,6 @@ public class GramWalletStorage {
     }
 
     private static void notifyChanged() {
-        // Always enqueue: listeners must run outside the storage transaction/LOCK.
         AndroidUtilities.runOnUIThread(() -> {
             for (WeakReference<Runnable> reference : changeListeners) {
                 Runnable listener = reference.get();
@@ -168,14 +142,8 @@ public class GramWalletStorage {
         }
     }
 
-    /** The void setter/wipe APIs report failures here; their previous committed state survives. */
     public Exception getLastError() { return lastError; }
 
-    /**
-     * Adds/replaces only this public key. Null error means the persisted candidate decrypted
-     * byte-for-byte correctly. Crypto, serialization and IO failures return STORAGE_BROKEN.
-     * Invalid input, a different owner, cancellation and unavailable auth have distinct errors.
-     */
     public void init(long userId, byte[] publicKey, SecretPhrase input, Utilities.Callback<String> whenDone) {
         final SecretPhrase secretPhrase = input == null ? null : input.copy();
         final String key = publicKey == null ? "" : hex(publicKey);
@@ -191,7 +159,6 @@ public class GramWalletStorage {
                 synchronized (LOCK) { checkEpoch(epoch); next = load(); }
                 if (!next.records.isEmpty() && next.userId != userId) throw new StorageException("USER_MISMATCH");
                 next.userId = userId;
-                // Migrating the legacy record is part of the same transaction as the new pair.
                 migrate(next, key, verify, created, epoch);
                 next.records.put(key, encrypt(next, key, secretPhrase, created, epoch));
                 verify.put(key, secretPhrase);
@@ -214,7 +181,6 @@ public class GramWalletStorage {
         });
     }
 
-    /** The callback borrows the phrase; it is wiped as soon as the callback returns. */
     public void getSecretPhrase(byte[] publicKey, Utilities.Callback<SecretPhrase> whenDone) {
         getSecretPhrase(publicKey, whenDone, true);
     }
@@ -233,7 +199,6 @@ public class GramWalletStorage {
                     synchronized (LOCK) {
                         checkEpoch(epoch);
                         if (markUsage) {
-                            // A usage-write failure must not discard an otherwise readable phrase.
                             try {
                                 wallet.lastUsage = now();
                                 if (!file.exists()) {
@@ -262,7 +227,6 @@ public class GramWalletStorage {
         setProtectedByFingerprint(protect, null);
     }
 
-    /** Optional completion overload for settings UIs; same error contract as init. */
     public void setProtectedByFingerprint(boolean protect, Utilities.Callback<String> whenDone) {
         final long epoch = epoch();
         WORKER.execute(() -> {
@@ -276,7 +240,6 @@ public class GramWalletStorage {
                 if (next.locked != protect || next.records.isEmpty()) {
                     if (protect && !deviceHasFingerprint(context)) throw new StorageException("AUTH_UNAVAILABLE");
                     if (!next.records.isEmpty()) {
-                        // Even disabling an unexpired key requires explicit confirmation.
                         authenticate(false, epoch);
                         for (String key : next.records.keySet()) plain.put(key, decryptAuthenticated(next, key, epoch));
                     }
@@ -314,7 +277,6 @@ public class GramWalletStorage {
                 while (keys.hasNext()) if (!keys.next().equals(keep)) keys.remove();
                 next.legacy = false;
                 for (JSONObject record : next.records.values()) next.legacy |= record.optBoolean("legacy", false);
-                // Retain legacy prefs/alias only if the surviving record still needs them.
                 persist(next, new LinkedHashMap<>());
                 cleanup(next);
             } catch (Exception e) { failed(e); }
@@ -439,7 +401,6 @@ public class GramWalletStorage {
                 .toString().getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Called under LOCK. No authentication UI/retry is allowed during read-back verification. */
     private void persist(Wallet next, Map<String, SecretPhrase> verify) throws Exception {
         File directory = file.getParentFile();
         if (!directory.isDirectory() && !directory.mkdirs()) throw new IOException("wallet directory");
@@ -463,7 +424,6 @@ public class GramWalletStorage {
                     if (!MessageDigest.isEqual(expected, actual)) throw new IOException("wallet decryption mismatch");
                 } finally { Arrays.fill(expected, (byte) 0); if (actual != null) Arrays.fill(actual, (byte) 0); }
             }
-            // Same directory/filesystem; rename publishes the verified bytes atomically.
             Os.rename(staging.getAbsolutePath(), file.getAbsolutePath());
             notifyChanged();
         } finally {
@@ -473,8 +433,6 @@ public class GramWalletStorage {
 
     private void migrate(Wallet wallet, String replacingKey, Map<String, SecretPhrase> verify, ArrayList<String> created, long epoch) throws Exception {
         for (String key : new ArrayList<>(wallet.records.keySet())) {
-            // A caller supplying this phrase can repair a lost legacy key without decrypting
-            // the obsolete ciphertext first. Other public keys must remain recoverable.
             if (key.equals(replacingKey)) continue;
             if (!wallet.records.get(key).optBoolean("legacy", false)) continue;
             SecretPhrase phrase = decryptAuthenticated(wallet, key, epoch);
@@ -486,7 +444,7 @@ public class GramWalletStorage {
 
     private JSONObject encrypt(Wallet wallet, String publicKey, SecretPhrase phrase, ArrayList<String> created, long epoch) throws Exception {
         String alias = aliasPrefix + UUID.randomUUID();
-        created.add(alias); // also clean up a partially generated key
+        created.add(alias);
         JSONObject record = new JSONObject().put("alias", alias);
         if (Build.VERSION.SDK_INT >= 23) {
             KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
@@ -583,7 +541,6 @@ public class GramWalletStorage {
         return cipher.doFinal(decode(record.getString("ciphertext")));
     }
 
-    /** Read never generates/replaces an absent or invalidated key. Reopen the keystore each time. */
     private SecretKey recordKey(JSONObject record) throws Exception {
         String alias = record.getString("alias");
         if (!alias.startsWith(aliasPrefix)) throw new IOException("key alias outside wallet");
@@ -621,11 +578,8 @@ public class GramWalletStorage {
         return false;
     }
 
-    /** Delete only unreferenced keys AFTER publishing, so failed writes cannot destroy old data. */
     private void cleanup(Wallet committed) {
         try {
-            // Never retire the previous keys until the directory entry for the replacement
-            // is durable. If a filesystem refuses fsync, retain the old keys for recovery.
             FileDescriptor directory = Os.open(file.getParent(), OsConstants.O_RDONLY, 0);
             try { Os.fsync(directory); } finally { Os.close(directory); }
             KeyStore store = keyStore();
@@ -635,7 +589,6 @@ public class GramWalletStorage {
                 if (alias.startsWith(aliasPrefix) && !references(committed, alias)) store.deleteEntry(alias);
             }
             if (!committed.legacy) {
-                // Tombstone/new data already wins even if removing old prefs fails.
                 if (!legacyPrefs().edit().clear().commit()) throw new IOException("legacy cleanup");
                 store.deleteEntry("gramwallet_free_" + address);
                 store.deleteEntry("gramwallet_lock_" + address);

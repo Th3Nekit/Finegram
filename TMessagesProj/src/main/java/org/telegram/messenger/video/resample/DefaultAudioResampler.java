@@ -4,10 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.nio.ShortBuffer;
 
-/**
- * An {@link AudioResampler} that delegates to appropriate classes
- * based on input and output size.
- */
 public class DefaultAudioResampler implements AudioResampler {
 
     @Override

@@ -89,6 +89,27 @@ public class ProfileGooeyView extends FrameLayout {
         return notchInfo != null;
     }
 
+    public float getHiddenAvatarSizeDp() {
+        if (notchInfo != null && notchInfo.isLikelyCircle) {
+            return 0.5f * notchInfo.bounds.width() / AndroidUtilities.density;
+        }
+        return 24f;
+    }
+
+    public float getHiddenAvatarCenterY(float fallback) {
+        if (notchInfo != null && notchInfo.isLikelyCircle) {
+            return notchInfo.bounds.centerY();
+        }
+        return fallback;
+    }
+
+    public void setHideProgress(float progress) {
+        setPullProgress(progress);
+        setBlurIntensity(Math.min((MathUtils.clamp(progress, 0.2f, 0.7f) - 0.2f) / 0.5f, 0.75f));
+        setGooeyEnabled(progress > 0 && progress < 1);
+        setVisibility(progress >= 1.0f ? View.GONE : View.VISIBLE);
+    }
+
     public void setIntensity(float intensity) {
         this.intensity = intensity;
         impl.setIntensity(intensity);
@@ -190,7 +211,6 @@ public class ProfileGooeyView extends FrameLayout {
             final int alpha = (int) ((1f - v) * 0xFF);
             final float optimizedOffsetX = (getWidth() - optimizedW) / 2f;
 
-            // Offset everything for black bar
             canvas.save();
             canvas.translate(0, -dp(BLACK_KING_BAR));
 
@@ -225,10 +245,8 @@ public class ProfileGooeyView extends FrameLayout {
                 bitmapCanvas.restore();
 
 
-                // Blur buffer
                 Utilities.stackBlurBitmap(bitmap, (int) (intensity * 2 / scaleConst));
 
-                // Filter alpha + fade, then draw
                 canvas.save();
                 canvas.translate(optimizedOffsetX, 0);
                 canvas.saveLayer(0, 0, bitmapOrigW, bitmapOrigH, null);
@@ -239,7 +257,6 @@ public class ProfileGooeyView extends FrameLayout {
                 canvas.restore();
             }
 
-            // Fade, draw blurred
             if (alpha != 0) {
                 if (alpha != 255) {
                     canvas.saveLayerAlpha(optimizedOffsetX, 0, optimizedOffsetX + optimizedW, optimizedH, alpha);
@@ -339,7 +356,6 @@ public class ProfileGooeyView extends FrameLayout {
 
 
 
-            // Record everything into buffer
             c = node.beginRecording();
             c.translate(-left, -top);
             final int imageAlphaNoClamp = (int) ((1f - ilerp(pullProgress, 0.5f, 1.0f)) * 255);
@@ -347,14 +363,12 @@ public class ProfileGooeyView extends FrameLayout {
             drawer.draw(c);
             node.endRecording();
 
-            // Blur only buffer
             float blurScaleFactor = factorMult / 4f + 1f + blurIntensity * 0.5f * factorMult + (factorMult - 1f) * 2f;
             c = blurNode.beginRecording();
             c.scale(1f / blurScaleFactor, 1f / blurScaleFactor, 0, 0);
             c.drawRenderNode(node);
             blurNode.endRecording();
 
-            // Blur + filter buffer
             float gooScaleFactor = 2f + factorMult;
             c = effectNode.beginRecording();
             c.scale(1f / gooScaleFactor, 1f / gooScaleFactor, 0, 0);
@@ -431,7 +445,6 @@ public class ProfileGooeyView extends FrameLayout {
             }
             effectNotchNode.endRecording();
 
-            // Offset everything for black bar
             canvas.save();
             canvas.translate(left, top - dp(BLACK_KING_BAR));
 
@@ -439,14 +452,12 @@ public class ProfileGooeyView extends FrameLayout {
                 canvas.clipRect(0, notchInfo.bounds.top, width, height);
             }
 
-            // Filter alpha + fade, then draw
             canvas.saveLayer(wholeOptimized, filter);
             canvas.scale(gooScaleFactor, gooScaleFactor);
             canvas.drawRenderNode(effectNotchNode);
             canvas.drawRenderNode(effectNode);
             canvas.restore();
 
-            // Fade, draw blurred
             final int blurImageAlpha = MathUtils.clamp(imageAlphaNoClamp * 3 / 4, 0, 255);
             if (blurImageAlpha < 255) {
                 canvas.saveLayer(wholeOptimized, null);

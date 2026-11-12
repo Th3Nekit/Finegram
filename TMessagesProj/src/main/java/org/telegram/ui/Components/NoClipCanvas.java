@@ -29,43 +29,36 @@ public class NoClipCanvas extends Canvas {
 
     @Override
     public boolean clipRect(float left, float top, float right, float bottom) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(@NonNull RectF rect) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(@NonNull Rect rect) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(int left, int top, int right, int bottom) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(@NonNull Rect rect, @NonNull Region.Op op) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(@NonNull RectF rect, @NonNull Region.Op op) {
-        // nop
         return false;
     }
 
     @Override
     public boolean clipRect(float left, float top, float right, float bottom, @NonNull Region.Op op) {
-        // nop
         return false;
     }
 

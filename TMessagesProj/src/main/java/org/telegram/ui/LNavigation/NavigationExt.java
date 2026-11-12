@@ -6,7 +6,6 @@ import org.telegram.ui.ActionBar.INavigationLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-//common use cases with navigation
 public class NavigationExt {
 
     public static boolean backToFragment(BaseFragment fragment, FragmentConsumer consumer) {

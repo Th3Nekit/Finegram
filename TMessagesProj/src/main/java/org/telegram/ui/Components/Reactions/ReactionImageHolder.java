@@ -66,8 +66,6 @@ public class ReactionImageHolder {
             if (defaultReaction != null) {
                 SvgHelper.SvgDrawable svgThumb = DocumentObject.getSvgThumb(defaultReaction.select_animation, Theme.key_windowBackgroundWhiteGrayIcon, 0.2f);
                 imageReceiver.setImage(ImageLocation.getForDocument(defaultReaction.select_animation), filter, null, null, svgThumb, 0, "tgs", currentReaction, 0);
-//                imageReceiver.setAllowStartAnimation(false);
-//                imageReceiver.setAutoRepeatCount(1);
             }
         } else {
             int type = AnimatedEmojiDrawable.CACHE_TYPE_MESSAGES_LARGE;

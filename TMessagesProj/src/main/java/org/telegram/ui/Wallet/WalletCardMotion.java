@@ -14,7 +14,6 @@ import android.view.WindowManager;
 
 import java.util.WeakHashMap;
 
-/** Shared, relative device tilt, active only while transfer cards are being drawn. */
 final class WalletCardMotion implements SensorEventListener {
     private static WalletCardMotion instance;
     private final SensorManager manager;
@@ -83,7 +82,6 @@ final class WalletCardMotion implements SensorEventListener {
         else if (rotation == Surface.ROTATION_270) { axisX = SensorManager.AXIS_MINUS_Y; axisY = SensorManager.AXIS_X; }
         SensorManager.remapCoordinateSystem(matrix, axisX, axisY, remapped);
         SensorManager.getOrientation(remapped, orientation);
-        // an unnormalized vector at ±90° pitch puts asin() out of range: NaN would stick in x/y and blank the card
         if (Float.isNaN(orientation[1]) || Float.isNaN(orientation[2])) return;
         if (!calibrated) {
             basePitch = orientation[1]; baseRoll = orientation[2]; calibrated = true;

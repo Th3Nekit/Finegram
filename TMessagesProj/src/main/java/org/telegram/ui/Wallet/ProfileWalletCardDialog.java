@@ -49,7 +49,7 @@ import org.telegram.ui.Components.ScrimOptions;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundColorProviderThemed;
-import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceBitmap;
+import org.telegram.utils.glass.source.GlassSourceBitmap;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 import org.telegram.ui.Components.chat.ViewPositionWatcher;
 import org.telegram.ui.GradientClip;
@@ -59,7 +59,6 @@ import org.telegram.ui.Stories.recorder.HintView2;
 
 import java.math.BigDecimal;
 
-/** A read-only view of the card published on a user's profile. */
 public class ProfileWalletCardDialog extends Dialog {
     private final BaseFragment fragment;
     private final ProfileBalanceView anchor;
@@ -76,7 +75,7 @@ public class ProfileWalletCardDialog extends Dialog {
     private final TextView publicNote;
     private final Paint blurPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final RectF blurBounds = new RectF();
-    private final BlurredBackgroundSourceBitmap buttonBlur = new BlurredBackgroundSourceBitmap();
+    private final GlassSourceBitmap buttonBlur = new GlassSourceBitmap();
     private final BlurredBackgroundDrawableViewFactory buttonBlurFactory;
     private Bitmap blurBitmap;
     private Insets insets = Insets.NONE;
@@ -160,7 +159,6 @@ public class ProfileWalletCardDialog extends Dialog {
             @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
                 if (child == card && clipTop > 0) {
-                    // The mask affects only the transformed card, not a full-screen render target.
                     cardLayerBounds.set(0, 0, card.getWidth(), card.getHeight());
                     card.getMatrix().mapRect(cardLayerBounds);
                     cardLayerBounds.offset(card.getLeft(), card.getTop());
@@ -183,7 +181,6 @@ public class ProfileWalletCardDialog extends Dialog {
             }
 
         };
-        // Its own view: fading is a RenderNode alpha change, the bitmap draw is recorded once.
         blurView = new View(getContext()) {
             @Override
             protected void onDraw(Canvas canvas) {
@@ -288,7 +285,6 @@ public class ProfileWalletCardDialog extends Dialog {
         root.addView(publicNote, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL));
     }
 
-    /** Picks black or white note text by the brightness of the blur under it. */
     private void updateNoteColor() {
         boolean dark = Theme.isCurrentThemeDark();
         if (blurBitmap != null && !blurBitmap.isRecycled() && root.getWidth() > 0 && root.getHeight() > 0) {
@@ -299,7 +295,6 @@ public class ProfileWalletCardDialog extends Dialog {
         publicNote.setTextColor(Theme.multAlpha(dark ? Color.WHITE : Color.BLACK, .41f));
     }
 
-    /** Extra top space taken by the public balance note above the card. */
     private int noteHeight() {
         return publicNote.getVisibility() == View.VISIBLE ? dp(12) + publicNote.getMeasuredHeight() : 0;
     }
@@ -313,12 +308,9 @@ public class ProfileWalletCardDialog extends Dialog {
     }
 
     private void updateProgress() {
-        // Phase 1: the card, standing vertically, slides down out of the balance button (clipped at the button).
-        // Phase 2: it moves to its place, scales up and rotates back to horizontal.
         final float slide = CubicBezierInterpolator.EASE_OUT.getInterpolation(clamp01(progress / .4f));
         final float settleT = clamp01((progress - .3f) / .7f);
         final float settle = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(settleT);
-        // Opening overshoots a bit on move, scale and rotation; closing just eases back.
         final float bounce = springy ? spring(settleT) : settle;
         final float w = card.getWidth(), h = card.getHeight();
         final float startScale = Math.max(.2f, Math.min(1f, source.width() / Math.max(1, h)));
@@ -332,8 +324,6 @@ public class ProfileWalletCardDialog extends Dialog {
         final float centerY = AndroidUtilities.lerp(startCenterY, endCenterY, bounce);
         final float rotation = -90 * (1 - bounce);
         final float cos = (float) Math.cos(Math.toRadians(rotation)), sin = (float) Math.sin(Math.toRadians(rotation));
-        // Pivot the tilt on the balance slot, so the part still near it stays small and the part already out
-        // grows toward the viewer. The pivot drifts back to the card center as it settles.
         final float slotDx = startCenterX - centerX, slotDy = clipY - centerY;
         final float slotPivotX = w / 2f + (cos * slotDx + sin * slotDy) / scale;
         final float slotPivotY = h / 2f + (-sin * slotDx + cos * slotDy) / scale;
@@ -349,7 +339,6 @@ public class ProfileWalletCardDialog extends Dialog {
         card.setTranslationX(centerX - card.getLeft() - pivotX + scale * (cos * fromCenterX - sin * fromCenterY));
         card.setTranslationY(centerY - card.getTop() - pivotY + scale * (sin * fromCenterX + cos * fromCenterY));
         card.setAlpha(progress > 0 ? 1 : 0);
-        // Live tilt only after the open finishes: a perspective face mid-flight costs extra GPU work.
         card.setUseGyroscope(gyroscope * settle);
         clipTop = Math.max(0, clipY * (1 - settle));
         anchor.setEjectProgress(slide);
@@ -364,7 +353,6 @@ public class ProfileWalletCardDialog extends Dialog {
         root.invalidate();
     }
 
-    /** Underdamped spring step response, settled by t = 1. */
     private static float spring(float t) {
         final float damping = .75f, omega = 10f;
         final float omegaD = omega * (float) Math.sqrt(1 - damping * damping);
@@ -402,7 +390,6 @@ public class ProfileWalletCardDialog extends Dialog {
     @Override
     public void show() {
         if (!AndroidUtilities.isSafeToShow(getContext())) return;
-        // Capture before attaching this window, so the card never enters its own blur.
         ScrimOptions.makeGlobalBlurBitmaps((background, button) -> {
             if (closed || dismissing) {
                 background.recycle();
@@ -466,7 +453,6 @@ public class ProfileWalletCardDialog extends Dialog {
     public void dismiss() {
         if (closed || dismissing) return;
         dismissing = true;
-        // Freeze the ramp; the closing animation fades the current tilt out with settle.
         if (gyroscopeAnimator != null) gyroscopeAnimator.cancel();
         sendPill.setEnabled(false);
         if (!root.isAttachedToWindow() || progress == 0) finishDismiss();
@@ -481,7 +467,6 @@ public class ProfileWalletCardDialog extends Dialog {
         super.dismiss();
         stickers.dispose();
         buttonBlur.setBitmap(null);
-        // Drop references after the window is detached; RenderThread may still hold the last frame.
         blurBitmap = null;
         if (afterDismiss != null && fragment.getParentActivity() != null) {
             Runnable action = afterDismiss;

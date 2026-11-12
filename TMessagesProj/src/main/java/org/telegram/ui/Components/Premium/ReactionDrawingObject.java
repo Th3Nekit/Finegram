@@ -40,13 +40,6 @@ public class ReactionDrawingObject extends CarouselView.DrawingObject {
             imageReceiver.setLayerNum(Integer.MAX_VALUE);
 
             SvgHelper.SvgDrawable svgThumb = DocumentObject.getSvgThumb(reaction.activate_animation, Theme.key_windowBackgroundGray, 0.5f);
-//            imageReceiver.setImage(ImageLocation.getForDocument(reaction.appear_animation), "60_60_nolimit", null, null, svgThumb, 0, "tgs", reaction, 0);
-//            imageReceiver.setAutoRepeat(0);
-//            if (imageReceiver.getLottieAnimation() != null) {
-//                imageReceiver.getLottieAnimation().setCurrentFrame(0, false);
-//            }
-//            imageReceiver.startAnimation();
-//
 
             actionReceiver.setParentView(parentView);
             actionReceiver.onAttachedToWindow();
@@ -99,7 +92,6 @@ public class ReactionDrawingObject extends CarouselView.DrawingObject {
         if (actionReceiver.getLottieAnimation() != null && actionReceiver.getLottieAnimation().hasBitmap()) {
             actionReceiver.draw(canvas);
             if (actionReceiver.getLottieAnimation() != null && actionReceiver.getLottieAnimation().isLastFrame()) {
-               // selected = false;
             } else if (selected && actionReceiver.getLottieAnimation() != null && !actionReceiver.getLottieAnimation().isRunning()) {
                 actionReceiver.getLottieAnimation().start();
             }

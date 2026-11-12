@@ -10,9 +10,7 @@
 
 package org.webrtc;
 
-/** Java wrapper for a C++ MediaSourceInterface. */
 public class MediaSource {
-  /** Tracks MediaSourceInterface.SourceState */
   public enum State {
     INITIALIZING,
     LIVE,
@@ -44,16 +42,11 @@ public class MediaSource {
     nativeSource = 0;
   }
 
-  /** Returns a pointer to webrtc::MediaSourceInterface. */
   protected long getNativeMediaSource() {
     checkMediaSourceExists();
     return nativeSource;
   }
 
-  /**
-   * Runs code in {@code runnable} holding a reference to the media source. If the object has
-   * already been released, does nothing.
-   */
   void runWithReference(Runnable runnable) {
     if (refCountDelegate.safeRetain()) {
       try {

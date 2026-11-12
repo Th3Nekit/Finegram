@@ -236,7 +236,6 @@ public class GiftAuctionController extends BaseController {
             invoice.message = params.message;
             invoice.hide_name = params.hideName;
         } else if (!hasBid) {
-            // default params
             invoice.peer = new TLRPC.TL_inputPeerSelf();
             invoice.hide_name = false;
         }
@@ -372,7 +371,6 @@ public class GiftAuctionController extends BaseController {
 
 
 
-    /* * */
 
     @UiThread
     public void processUpdate(TL_update.TL_updateStarGiftAuctionState update) {
@@ -518,7 +516,6 @@ public class GiftAuctionController extends BaseController {
 
 
 
-    /* * */
 
     private final ReferenceList<OnActiveAuctionsUpdateListeners> onActiveAuctionsUpdateListeners = new ReferenceList<>(false);
 
@@ -539,7 +536,6 @@ public class GiftAuctionController extends BaseController {
 
 
 
-    /* Callbacks */
 
     public interface OnAuctionUpdateListener {
         void onUpdate(Auction auction);
@@ -686,7 +682,6 @@ public class GiftAuctionController extends BaseController {
 
 
 
-        /* * */
 
         private int getVersion() {
             if (isFinished()) {
@@ -756,7 +751,6 @@ public class GiftAuctionController extends BaseController {
     }
 
 
-    /* Instances */
 
     private GiftAuctionController(int num) {
         super(num);

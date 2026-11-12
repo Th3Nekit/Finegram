@@ -1,39 +1,9 @@
-/*
- *  Telegram-Android browser extension
- *
- *  # Gestures
- *  This script captures whether touch event is consumed by a website, to otherwise apply
- *  down or right gesture. Use `event.preventDefault()` at `touchstart` to prevent those gestures.
- *  It is recommended to do `event.preventDefault()` when dragging or swiping is expected to be
- *  handled by a website.
- *
- *  You can also globally disable swipes for X and/or Y with <meta> tags:
- *   - <meta name="tg:swipes:x" content="none">
- *   - <meta name="tg:swipes:y" content="allow">
- *  Please, use these <meta> tags as the last resort, as it disables convenient back and close
- *  gestures, degrading user experience.
- *
- *  Since some websites don't do that, the script also captures `style` and `class` changes to
- *  hierarchy of a touch element, and does equivalent of `preventDefault` if those changes happen
- *  while `touchstart` or `touchmove` events.
- *
- *  === feature is hidden under debug button ===
- *  # Action Bar and Navigation Bar colors
- *  Top action bar and bottom navigation bar colors are defined with:
- *    - <meta name="tg:theme-accent" content="#FFFFFF" /> — action bar, usually an accent color
- *    - <meta name="theme-color" content="#FFFFFF" /> — action bar, usually an accent color
- *    - <meta name="tg:theme-background" content="#FFFFFF" /> — navigation bar
- *    - <meta name="theme-background-color" content="#FFFFFF" /> — navigation bar
- *    - <body> `background-color` css style — fallback
- *  `media` attribute on <meta> is also supported, feel free to use `prefers-color-scheme`
- */
 
 if (!window.__tg__webview_set) {
     window.__tg__webview_set = true;
     (function () {
         const DEBUG = $DEBUG$;
 
-        // Touch gestures hacks
         const isImageViewer = () => {
             if (!document.body.children || document.body.children.length != 1) return false;
             const img = document.querySelector('body > img');
@@ -135,7 +105,7 @@ if (!window.__tg__webview_set) {
                 .map(r => r.target)
                 .filter(e => !!e && e != document.body && e != document.documentElement)
                 .find(e => isParentOf(touchElement, e));
-            if (isTouchElement) { // && (whiletouchstart || whiletouchmove)) {
+            if (isTouchElement) {
                 if (DEBUG) {
                     console.log('tgbrowser mutation detected', mutationList);
                 }
@@ -143,7 +113,6 @@ if (!window.__tg__webview_set) {
             }
         }).observe(document, { attributes: true, childList: true, subtree: true });
 
-        // Retrieving colors
         const __tg__backgroundColor = () => {
             try {
                 return window.getComputedStyle(document.body, null).getPropertyValue('background-color');
@@ -230,7 +199,7 @@ setTimeout(function () {
         if (site_name) {
             window.TelegramWebviewProxy.postEvent('siteName', site_name);
         } else {
-            window.TelegramWebviewProxy.postEvent('siteNameEmpty');
+            window.TelegramWebviewProxy.postEvent('siteNameEmpty', '');
         }
     }
     if (window.__tg__listenColors) {

@@ -6,7 +6,6 @@ import androidx.core.graphics.ColorUtils;
 
 import org.telegram.messenger.Utilities;
 
-// https://gist.github.com/dkaraush/65d19d61396f5f3cd8ba7d1b4b3c9432
 public class OKLCH {
 
     public static final double[] XYZtoLMS_M = new double[] {
@@ -125,7 +124,6 @@ public class OKLCH {
         );
     }
 
-    // takes hue from `hueColor` color and applies to `baseColor`
     public static int adapt(int baseColor, int hueColor) {
         double[] hueoklch = rgb2oklch(rgb(hueColor));
         double[] oklch = rgb2oklch(rgb(baseColor));

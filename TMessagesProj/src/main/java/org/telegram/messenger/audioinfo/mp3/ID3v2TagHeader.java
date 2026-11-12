@@ -24,10 +24,10 @@ import java.io.InputStream;
 public class ID3v2TagHeader {
 	private int version = 0;
 	private int revision = 0;
-	private int headerSize = 0; // size of header, including extended header (with attachments)
-	private int totalTagSize = 0; // everything, i.e. inluding tag header, extended header, footer & padding
-	private int paddingSize = 0; // size of zero padding after frames
-	private int footerSize = 0; // size of footer (version 4 only)
+	private int headerSize = 0;
+	private int totalTagSize = 0;
+	private int paddingSize = 0;
+	private int footerSize = 0;
 	private boolean unsynchronization;
 	private boolean compression;
 
@@ -40,90 +40,46 @@ public class ID3v2TagHeader {
 
 		ID3v2DataInput data = new ID3v2DataInput(input);
 		
-		/*
-		 * Identifier: "ID3"
-		 */
 		String id = new String(data.readFully(3), "ISO-8859-1");
 		if (!"ID3".equals(id)) {
 			throw new ID3v2Exception("Invalid ID3 identifier: " + id);
 		}
 		
-		/*
-		 * Version: $02, $03 or $04
-		 */
 		version = data.readByte();
 		if (version != 2 && version != 3 && version != 4) {
 			throw new ID3v2Exception("Unsupported ID3v2 version: " + version);
 		}
 		
-		/*
-		 * Revision: $xx
-		 */
 		revision = data.readByte();
 		
-		/*
-		 * Flags (evaluated below)
-		 */
 		byte flags = data.readByte();
 		
-		/*
-		 * Size: 4 * %0xxxxxxx (sync-save integer)
-		 */
 		totalTagSize = 10 + data.readSyncsafeInt();
 		
-		/*
-		 * Evaluate flags
-		 */
-		if (version == 2) { // %(unsynchronisation)(compression)000000
+		if (version == 2) {
 			unsynchronization = (flags & 0x80) != 0;
 			compression = (flags & 0x40) != 0;
-		} else { // %(unsynchronisation)(extendedHeader)(experimentalIndicator)(version == 3 ? 0 : footerPresent)0000
+		} else {
 			unsynchronization = (flags & 0x80) != 0;
 			
-			/*
-			 * Extended Header
-			 */
 			if ((flags & 0x40) != 0) {
 				if (version == 3) {
-					/*
-					 * Extended header size: $xx xx xx xx (6 or 10 if CRC data present)
-					 * In version 3, the size excludes itself.
-					 */
 					int extendedHeaderSize = data.readInt();
 					
-					/*
-					 * Extended Flags: $xx xx (skip)
-					 */
-					data.readByte(); // flags...
-					data.readByte(); // more flags...
+					data.readByte();
+					data.readByte();
 					
-					/*
-					 * Size of padding: $xx xx xx xx
-					 */
 					paddingSize = data.readInt();
 					
-					/*
-					 * consume the rest
-					 */
 					data.skipFully(extendedHeaderSize - 6);
 				} else {
-					/*
-					 * Extended header size: 4 * %0xxxxxxx (sync-save integer)
-					 * In version 4, the size includes itself.
-					 */
 					int extendedHeaderSize = data.readSyncsafeInt();
 					
-					/*
-					 * consume the rest
-					 */
 					data.skipFully(extendedHeaderSize - 4);
 				}
 			}
 			
-			/*
-			 * Footer Present
-			 */
-			if (version >= 4 && (flags & 0x10) != 0) { // footer present
+			if (version >= 4 && (flags & 0x10) != 0) {
 				footerSize = 10;
 				totalTagSize += 10;
 			}

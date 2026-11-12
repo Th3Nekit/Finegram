@@ -94,7 +94,6 @@ public class PaintTextOptionsView extends FrameLayout implements NotificationCen
         plusView.setPadding(AndroidUtilities.dp(2), AndroidUtilities.dp(2), AndroidUtilities.dp(2), AndroidUtilities.dp(2));
         addView(plusView, LayoutHelper.createFrame(28, 28, Gravity.CENTER_VERTICAL, 0, 0, 16, 0));
 
-//        addView(new Space(context), LayoutHelper.createLinear(0, 0, 1f));
 
         typefaceCell = new TypefaceCell(context);
         typefaceCell.setCurrent(true);
@@ -351,7 +350,7 @@ public class PaintTextOptionsView extends FrameLayout implements NotificationCen
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.customTypefacesLoaded);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.customTypefacesLoaded);
     }
 
     @Override

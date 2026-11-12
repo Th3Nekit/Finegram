@@ -22,73 +22,42 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Records, previews, trims and incrementally exposes a Telegram-compatible Ogg/Opus voice file.
- *
- * <p>All public methods must be called on the main thread. UI callbacks are delivered on the
- * main thread. Output callbacks are serialized on a dedicated background thread. Audio focus,
- * playback interruption and Bluetooth routing belong to the host and must be configured before
- * {@link #start()}.</p>
- */
 public final class AudioRecordingSession {
 
-    /** High-level lifecycle state of the recording session. */
     public enum State {
-        /** The session has been configured but has not started. */
         IDLE,
-        /** Native Opus and AudioRecord resources are being prepared. */
         STARTING,
-        /** Microphone samples are being recorded. */
         RECORDING,
-        /** The active segment is being finalized. */
         PAUSING,
-        /** The finalized recording is available for playback and trimming. */
         PREVIEWING,
-        /** Capture is restarting after the retained range was selected. */
         RESUMING,
-        /** The final Ogg file or trimmed replacement is being completed. */
         FINISHING,
-        /** The final output is ready. */
         COMPLETED,
-        /** An unrecoverable capture, encoding, playback or file error ended the session. */
         ERROR,
-        /** Resources were released and unfinished output was cancelled. */
         RELEASED
     }
 
-    /** Reason why a previously announced output generation must no longer be uploaded. */
     public enum OutputInvalidationReason {
-        /** Pause, resume or trimming replaced the encoded stream with a new generation. */
         REBUILT,
-        /** The user cancelled the recording. */
         CANCELLED,
-        /** An unrecoverable error invalidated the output. */
         ERROR
     }
 
-    /** Selects optional processing applied to captured PCM before waveform and Opus encoding. */
     public enum NoiseSuppression {
-        /** Records microphone PCM without software noise suppression. */
         DISABLED,
-        /** Applies the bundled RNNoise model to 48 kHz mono PCM. */
         RNNOISE
     }
 
-    /** Receives lifecycle, waveform and playback events used by the host UI. */
     public interface Listener {
-        /** Called whenever the immutable public state snapshot changes. */
         default void onStateChanged(@NonNull StateInfo stateInfo) {
         }
 
-        /** Called at most about thirty times per second while microphone capture is active. */
         default void onRecordingProgress(long durationMs, double amplitude) {
         }
 
-        /** Called when the configured maximum duration has been reached. */
         default void onMaximumDurationReached() {
         }
 
-        /** Called after a playable paused snapshot and its waveform are ready. */
         default void onPreviewReady(
                 long durationMs,
                 long trimStartMs,
@@ -97,34 +66,26 @@ public final class AudioRecordingSession {
         ) {
         }
 
-        /** Called when recorded-audio playback starts or pauses. */
         default void onPreviewPlaybackChanged(boolean playing) {
         }
 
-        /** Called at most about thirty times per second while preview playback is active. */
         default void onPreviewProgress(long positionMs, long durationMs) {
         }
 
-        /** Called instead of completion when the retained recording is shorter than the limit. */
         default void onRecordingTooShort(long durationMs) {
         }
 
-        /** Called after the final output generation has been completed. */
         default void onCompleted(@NonNull Result result) {
         }
 
-        /** Called after an unrecoverable capture, encoding, playback or file error. */
         default void onError(@NonNull Exception error) {
         }
     }
 
-    /** Receives stable ranges of the growing Ogg output. */
     public interface OutputListener {
-        /** Called before ranges from a new output generation are announced. */
         default void onOutputStarted(long outputId, @NonNull File file) {
         }
 
-        /** Called when the specified immutable file range is ready to be read and uploaded. */
         default void onBytesAvailable(
                 long outputId,
                 @NonNull File file,
@@ -133,14 +94,12 @@ public final class AudioRecordingSession {
         ) {
         }
 
-        /** Called when all ranges from an output generation have become obsolete. */
         default void onOutputInvalidated(
                 long outputId,
                 @NonNull OutputInvalidationReason reason
         ) {
         }
 
-        /** Called after all finalized bytes of the retained recording have been written. */
         default void onOutputCompleted(
                 long outputId,
                 @NonNull File file,
@@ -149,21 +108,16 @@ public final class AudioRecordingSession {
         ) {
         }
 
-        /** Called when an output generation cannot be written. */
         default void onOutputError(long outputId, @NonNull Exception error) {
         }
     }
 
-    /** Receives diagnostic messages without coupling the recorder to Telegram FileLog. */
     public interface Logger {
-        /** Writes a normal diagnostic message. */
         void log(@NonNull String message);
 
-        /** Writes a diagnostic error and its cause. */
         void error(@NonNull String message, @NonNull Throwable error);
     }
 
-    /** Builds an immutable audio recording session configuration. */
     public static final class Builder {
         private final Context context;
         private File outputDirectory;
@@ -175,30 +129,25 @@ public final class AudioRecordingSession {
         private OutputListener outputListener;
         private Logger logger = NO_OP_LOGGER;
 
-        /** Creates a builder. The recorder stores only the application context when available. */
         public Builder(@NonNull Context context) {
             this.context = context;
         }
 
-        /** Sets the directory used for output generations and temporary trim files. */
         public @NonNull Builder setOutputDirectory(@NonNull File directory) {
             outputDirectory = directory;
             return this;
         }
 
-        /** Sets the minimum duration accepted by {@link #finish()}. */
         public @NonNull Builder setMinimumDurationMs(long durationMs) {
             minimumDurationMs = durationMs;
             return this;
         }
 
-        /** Sets the maximum duration, or zero to disable the automatic limit. */
         public @NonNull Builder setMaximumDurationMs(long durationMs) {
             maximumDurationMs = durationMs;
             return this;
         }
 
-        /** Sets software noise suppression applied before Opus encoding. */
         public @NonNull Builder setNoiseSuppression(@NonNull NoiseSuppression value) {
             if (value == null) {
                 throw new IllegalArgumentException("Noise suppression mode is required");
@@ -207,34 +156,26 @@ public final class AudioRecordingSession {
             return this;
         }
 
-        /**
-         * Enables the built-in preview player. Hosts that play the preview file with their own
-         * player disable it to avoid preparing an unused decoder on every pause.
-         */
         public @NonNull Builder setPreviewPlaybackEnabled(boolean enabled) {
             previewPlaybackEnabled = enabled;
             return this;
         }
 
-        /** Sets the required listener receiving main-thread session events. */
         public @NonNull Builder setListener(@NonNull Listener value) {
             listener = value;
             return this;
         }
 
-        /** Sets the required listener receiving serialized growing-file events. */
         public @NonNull Builder setOutputListener(@NonNull OutputListener value) {
             outputListener = value;
             return this;
         }
 
-        /** Sets the optional diagnostic logger. */
         public @NonNull Builder setLogger(@Nullable Logger value) {
             logger = value == null ? NO_OP_LOGGER : value;
             return this;
         }
 
-        /** Validates the required options and creates the session. */
         public @NonNull AudioRecordingSession build() {
             if (minimumDurationMs < 0L) {
                 throw new IllegalStateException("Minimum duration cannot be negative");
@@ -255,7 +196,6 @@ public final class AudioRecordingSession {
         }
     }
 
-    /** Immutable state used to drive recording and preview controls. */
     public static final class StateInfo {
         private final State state;
         private final long recordedDurationMs;
@@ -286,69 +226,56 @@ public final class AudioRecordingSession {
             this.previewPlaying = previewPlaying;
         }
 
-        /** Returns the high-level lifecycle state. */
         public @NonNull State getState() {
             return state;
         }
 
-        /** Returns the exact duration derived from captured PCM sample count. */
         public long getRecordedDurationMs() {
             return recordedDurationMs;
         }
 
-        /** Returns the elapsed-realtime origin of the active capture segment. */
         public long getRecordingStartedAtRealtimeMs() {
             return recordingStartedAtRealtimeMs;
         }
 
-        /** Returns the minimum duration accepted by finish. */
         public long getMinimumDurationMs() {
             return minimumDurationMs;
         }
 
-        /** Returns the hard duration limit, or zero when no limit is configured. */
         public long getMaximumDurationMs() {
             return maximumDurationMs;
         }
 
-        /** Returns the selected preview range start. */
         public long getTrimStartMs() {
             return trimStartMs;
         }
 
-        /** Returns the selected preview range end. */
         public long getTrimEndMs() {
             return trimEndMs;
         }
 
-        /** Returns whether recorded-audio preview is playing. */
         public boolean isPreviewPlaying() {
             return previewPlaying;
         }
 
-        /** Returns whether microphone capture can be paused now. */
         public boolean canPauseRecording() {
             return state == State.RECORDING;
         }
 
-        /** Returns whether another capture segment can be started. */
         public boolean canResumeRecording() {
             return state == State.PREVIEWING
                     && (maximumDurationMs == 0L || trimEndMs - trimStartMs < maximumDurationMs);
         }
 
-        /** Returns whether playback and trimming controls are available. */
         public boolean canControlPreview() {
             return state == State.PREVIEWING;
         }
 
-        /** Returns whether the current recording can be finalized. */
         public boolean canFinish() {
             return state == State.RECORDING || state == State.PREVIEWING;
         }
     }
 
-    /** Immutable description of the completed Telegram voice file. */
     public static final class Result {
         private final long outputId;
         private final File file;
@@ -362,32 +289,26 @@ public final class AudioRecordingSession {
             this.waveform = waveform == null ? null : waveform.clone();
         }
 
-        /** Returns the final output generation identifier. */
         public long getOutputId() {
             return outputId;
         }
 
-        /** Returns the finalized Ogg/Opus file. */
         public @NonNull File getFile() {
             return file;
         }
 
-        /** Returns the retained audio duration derived from PCM samples. */
         public long getDurationMs() {
             return durationMs;
         }
 
-        /** Returns Telegram's packed five-bit waveform, or null when extraction failed. */
         public @Nullable byte[] getWaveform() {
             return waveform == null ? null : waveform.clone();
         }
 
-        /** Returns the fixed capture sample rate. */
         public int getSampleRate() {
             return AudioCapture.SAMPLE_RATE;
         }
 
-        /** Returns the output MIME type. */
         public @NonNull String getMimeType() {
             return MIME_TYPE;
         }
@@ -494,7 +415,6 @@ public final class AudioRecordingSession {
                 + ", maximumDurationMs=" + maximumDurationMs);
     }
 
-    /** Starts microphone capture after the host has configured audio focus and routing. */
     @MainThread
     public boolean start() {
         requireMainThread();
@@ -507,7 +427,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Finalizes the active segment and enters recorded-audio preview. */
     @MainThread
     public boolean pauseRecording() {
         requireMainThread();
@@ -519,7 +438,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Applies the selected trim range and continues microphone capture. */
     @MainThread
     public boolean resumeRecording() {
         requireMainThread();
@@ -534,7 +452,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Updates the selected range used by preview, resume and finish. */
     @MainThread
     public boolean setTrimRange(long startMs, long endMs) {
         requireMainThread();
@@ -551,7 +468,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Starts or resumes playback inside the selected trim range. */
     @MainThread
     public boolean playPreview() {
         requireMainThread();
@@ -563,7 +479,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Pauses recorded-audio playback without leaving preview state. */
     @MainThread
     public boolean pausePreview() {
         requireMainThread();
@@ -574,7 +489,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Seeks recorded-audio playback inside the selected trim range. */
     @MainThread
     public boolean seekPreview(long positionMs) {
         requireMainThread();
@@ -585,7 +499,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Sets preview playback volume in the inclusive range from zero to one. */
     @MainThread
     public boolean setPreviewVolume(float volume) {
         requireMainThread();
@@ -594,7 +507,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Finalizes the active or selected recording. */
     @MainThread
     public boolean finish() {
         requireMainThread();
@@ -615,11 +527,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /**
-     * Transfers ownership of the untrimmed preview file to the host without dispatching
-     * {@link Listener#onCompleted(Result)}. This is intended for hosts that already exposed the
-     * preview file through their existing UI and are about to send that exact file themselves.
-     */
     @MainThread
     public @Nullable Result detachPreviewOutput() {
         requireMainThread();
@@ -654,7 +561,6 @@ public final class AudioRecordingSession {
         return result;
     }
 
-    /** Cancels unfinished output, invalidates upload data and deletes temporary files. */
     @MainThread
     public boolean cancel() {
         requireMainThread();
@@ -673,7 +579,6 @@ public final class AudioRecordingSession {
         return true;
     }
 
-    /** Releases preview and capture resources. Unfinished recordings are cancelled. */
     @MainThread
     public void release() {
         requireMainThread();
@@ -688,14 +593,12 @@ public final class AudioRecordingSession {
         logSummary("released");
     }
 
-    /** Returns the latest immutable state snapshot. */
     @MainThread
     public @NonNull StateInfo getStateInfo() {
         requireMainThread();
         return createStateInfo();
     }
 
-    /** Returns the current finalized preview file, or null before the first pause. */
     @MainThread
     public @Nullable File getPreviewFile() {
         requireMainThread();
@@ -703,14 +606,12 @@ public final class AudioRecordingSession {
         return state == State.PREVIEWING && generation != null ? generation.file : null;
     }
 
-    /** Returns the completed result, or null before successful completion. */
     @MainThread
     public @Nullable Result getResult() {
         requireMainThread();
         return result;
     }
 
-    /** Returns the exact duration derived from retained and actively captured PCM samples. */
     @MainThread
     public long getRecordedDurationMs() {
         requireMainThread();
@@ -814,7 +715,6 @@ public final class AudioRecordingSession {
         if (token != captureToken) return;
         capture = null;
         if (state == State.RELEASED || state == State.ERROR) {
-            // The session already ended; the capture only reports how it shut down.
             diagnostics.error("capture error after session end", error);
             cleanupUnfinishedFiles();
             shutdownExecutors();
@@ -883,7 +783,6 @@ public final class AudioRecordingSession {
         createOutputGeneration();
         diagnostics.log("resume prefix selected: source=" + previous.file.getName()
                 + ", trim=" + selectedStartMs + ".." + selectedEndMs);
-        // The encoder re-encodes the selected range itself while the microphone already records.
         startCapture(previous.file, selectedStartMs, wholeSource ? -1L : selectedEndMs);
     }
 
@@ -1105,7 +1004,6 @@ public final class AudioRecordingSession {
         if (cleanupStarted) return;
         cleanupStarted = true;
         File retainedResult = result == null ? null : result.file;
-        // Runs after any file task in flight, so files that task creates are removed as well.
         Runnable deletion = () -> deleteTemporaryFiles(retainedResult);
         try {
             fileExecutor.execute(deletion);
@@ -1129,7 +1027,6 @@ public final class AudioRecordingSession {
     }
 
     private void removeScheduledCallbacks() {
-        // Capture callbacks stay queued: they are filtered by token and finish the cleanup.
         mainHandler.removeCallbacks(maximumDurationRunnable);
         mainHandler.removeCallbacks(previewProgressRunnable);
     }

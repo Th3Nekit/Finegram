@@ -16,10 +16,14 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -55,6 +59,7 @@ import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.LayoutHelper;
@@ -68,7 +73,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.th3nekit.finegram.core.ui.MD3ListAdapter;
 
-public class AboutLinkCell extends FrameLayout {
+public class AboutLinkCell extends FrameLayout implements Theme.Colorable {
 
     private StaticLayout textLayout;
     private String oldText;
@@ -123,7 +128,7 @@ public class AboutLinkCell extends FrameLayout {
 
         valueTextView = new TextView(context);
         valueTextView.setVisibility(GONE);
-        valueTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
+        ThemeBind.textColor(valueTextView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         valueTextView.setLines(1);
         valueTextView.setMaxLines(1);
@@ -135,7 +140,7 @@ public class AboutLinkCell extends FrameLayout {
 
         bottomShadow = new FrameLayout(context);
         Drawable shadowDrawable = context.getResources().getDrawable(R.drawable.gradient_bottom).mutate();
-        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider), PorterDuff.Mode.SRC_ATOP));
+        ThemeBind.drawableColorFilter(this, shadowDrawable, Theme.key_windowBackgroundWhite, resourcesProvider, PorterDuff.Mode.SRC_ATOP);
         bottomShadow.setBackground(shadowDrawable);
         addView(bottomShadow, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, MD3ListAdapter.shouldUseCustomColors() ? 0 : 12, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 16, 0, 16, 0));
 
@@ -166,7 +171,7 @@ public class AboutLinkCell extends FrameLayout {
                 super.onDraw(canvas);
             }
         };
-        showMoreTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText, resourcesProvider));
+        ThemeBind.textColor(showMoreTextView, Theme.key_windowBackgroundWhiteBlueText, resourcesProvider);
         showMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         showMoreTextView.setLines(1);
         showMoreTextView.setMaxLines(1);
@@ -197,8 +202,21 @@ public class AboutLinkCell extends FrameLayout {
         return color;
     }
 
+    private int lastRippleColor;
+
+    @Override
     public void updateColors() {
         Theme.profile_aboutTextPaint.linkColor = processColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
+        try {
+            final int rippleColor = Theme.getColor(Theme.key_listSelector, resourcesProvider);
+            if (rippleBackground != null && rippleColor != lastRippleColor) {
+                lastRippleColor = rippleColor;
+                Theme.setSelectorDrawableColor(rippleBackground, rippleColor, true);
+            }
+            backgroundPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider));
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     @Override
@@ -210,7 +228,6 @@ public class AboutLinkCell extends FrameLayout {
             x >= showMoreTextBackgroundView.getLeft() && x <= showMoreTextBackgroundView.getRight() &&
             y >= showMoreTextBackgroundView.getTop() && y <= showMoreTextBackgroundView.getBottom()
         ) {
-//            event.offsetLocation(showMoreTextBackgroundView.getLeft(), showMoreTextBackgroundView.getTop());
             return false;
         }
 
@@ -256,6 +273,66 @@ public class AboutLinkCell extends FrameLayout {
     }
 
     private Paint backgroundPaint = new Paint();
+
+    private boolean maskFade;
+    private Paint fadeRightPaint;
+    private Paint fadeBottomPaint;
+    private final Matrix fadeMatrix = new Matrix();
+
+    public void setMaskFade(boolean maskFade) {
+        if (this.maskFade != maskFade) {
+            this.maskFade = maskFade;
+            invalidate();
+        }
+    }
+
+    private Paint createFadePaint(boolean horizontal) {
+        final Paint paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+        paint.setShader(new LinearGradient(0, 0, horizontal ? 1 : 0, horizontal ? 0 : 1, 0x00000000, 0xFF000000, Shader.TileMode.CLAMP));
+        return paint;
+    }
+
+    private void drawMaskedFade(Canvas canvas) {
+        final int layer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
+        drawText(canvas);
+        final float moreAlpha = showMoreTextBackgroundView.getAlpha();
+        if (moreAlpha > 0) {
+            if (fadeRightPaint == null) {
+                fadeRightPaint = createFadePaint(true);
+            }
+            final float left = showMoreTextBackgroundView.getLeft();
+            final float fade = Math.max(1, showMoreTextView.getLeft() + showMoreTextBackgroundView.getPaddingLeft() * .5f);
+            fadeMatrix.setScale(fade, 1);
+            fadeMatrix.postTranslate(left, 0);
+            fadeRightPaint.getShader().setLocalMatrix(fadeMatrix);
+            fadeRightPaint.setAlpha((int) (0xFF * moreAlpha));
+            canvas.drawRect(left, showMoreTextBackgroundView.getTop(), getWidth(), showMoreTextBackgroundView.getBottom(), fadeRightPaint);
+        }
+        final float shadowAlpha = bottomShadow.getAlpha();
+        if (shadowAlpha > 0 && bottomShadow.getHeight() > 0) {
+            if (fadeBottomPaint == null) {
+                fadeBottomPaint = createFadePaint(false);
+            }
+            fadeMatrix.setScale(1, bottomShadow.getHeight());
+            fadeMatrix.postTranslate(0, bottomShadow.getTop());
+            fadeBottomPaint.getShader().setLocalMatrix(fadeMatrix);
+            fadeBottomPaint.setAlpha((int) (0xFF * shadowAlpha));
+            canvas.drawRect(0, bottomShadow.getTop(), getWidth(), getHeight(), fadeBottomPaint);
+        }
+        canvas.restoreToCount(layer);
+        if (moreAlpha > 0) {
+            final int c = canvas.save();
+            canvas.translate(showMoreTextBackgroundView.getLeft() + showMoreTextView.getLeft(), showMoreTextBackgroundView.getTop() + showMoreTextView.getTop());
+            if (moreAlpha < 1) {
+                canvas.saveLayerAlpha(0, 0, showMoreTextView.getWidth(), showMoreTextView.getHeight(), (int) (0xFF * moreAlpha));
+            }
+            showMoreTextView.draw(canvas);
+            canvas.restoreToCount(c);
+        }
+        container.draw(canvas);
+    }
+
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
@@ -263,10 +340,15 @@ public class AboutLinkCell extends FrameLayout {
         View parent = (View) getParent();
         float alpha = parent == null ? 1f : (float) Math.pow(parent.getAlpha(), 2f);
 
+        if (maskFade && shouldExpand) {
+            drawMaskedFade(canvas);
+            return;
+        }
+
         drawText(canvas);
 
         float viewAlpha = showMoreTextBackgroundView.getAlpha();
-        if (viewAlpha > 0) {
+        if (viewAlpha > 0 && shouldExpand) {
             canvas.save();
             canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), (int) (viewAlpha * 255), Canvas.ALL_SAVE_FLAG);
             showMoreBackgroundDrawable.setAlpha((int) (alpha * 255));
@@ -275,7 +357,7 @@ public class AboutLinkCell extends FrameLayout {
             canvas.restore();
         }
         viewAlpha = bottomShadow.getAlpha();
-        if (viewAlpha > 0) {
+        if (viewAlpha > 0 && shouldExpand) {
             canvas.save();
             canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), (int) (viewAlpha * 255), Canvas.ALL_SAVE_FLAG);
             canvas.translate(bottomShadow.getLeft(), bottomShadow.getTop());
@@ -548,7 +630,7 @@ public class AboutLinkCell extends FrameLayout {
     }
 
     private static final int COLLAPSED_HEIGHT = dp(8 + 20 * 3 + 8);
-    private static final int MAX_OPEN_HEIGHT = COLLAPSED_HEIGHT;// + AndroidUtilities.dp(20);
+    private static final int MAX_OPEN_HEIGHT = COLLAPSED_HEIGHT;
 
     public class SpringInterpolator {
         public float tension;
@@ -573,11 +655,11 @@ public class AboutLinkCell extends FrameLayout {
 
         private void step(float delta) {
             final float acceleration = (
-                -tension * 0.000001f * (position - 1f) + // spring force
-                -friction * 0.001f * velocity // damping force
-            ) / mass; // pt/ms^2
+                -tension * 0.000001f * (position - 1f) +
+                -friction * 0.001f * velocity
+            ) / mass;
 
-            velocity = velocity + acceleration * delta; // pt/ms
+            velocity = velocity + acceleration * delta;
             position = position + velocity * delta;
         }
     }
@@ -604,7 +686,6 @@ public class AboutLinkCell extends FrameLayout {
             float fromHeight = AndroidUtilities.lerp(collapsedHeight, fullHeight, fromValue);
             float toHeight = AndroidUtilities.lerp(collapsedHeight, fullHeight, toValue);
             float dHeight = Math.abs(toHeight - fromHeight);
-//            float speedMultiplier = Math.min(Math.max(dHeight / AndroidUtilities.dp(76), 0.5f), 2f);
 
             collapseAnimator = ValueAnimator.ofFloat(0, 1);
             final float duration = Math.abs(fromValue - toValue) * 1250 * 2f;
@@ -707,7 +788,7 @@ public class AboutLinkCell extends FrameLayout {
         }
         if (stringBuilder != null && (maxWidth != lastMaxWidth || force)) {
             textLayout = makeTextLayout(stringBuilder, maxWidth);
-            shouldExpand = textLayout.getLineCount() >= 4; // && valueTextView.getVisibility() != View.VISIBLE;
+            shouldExpand = textLayout.getLineCount() >= 4;
 
             if (textLayout.getLineCount() >= 3 && shouldExpand) {
                 int end = Math.max(textLayout.getLineStart(2), textLayout.getLineEnd(2));
@@ -775,9 +856,6 @@ public class AboutLinkCell extends FrameLayout {
         return height;
     }
     private boolean shouldExpand = false;
-//    private boolean shouldCollapse() {
-//        return textLayout != null && textLayout.getLineCount() > 4/* && valueTextView.getVisibility() != View.VISIBLE*/;
-//    }
 
     public boolean onClick() {
         if (shouldExpand && expandT <= 0) {

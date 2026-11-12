@@ -52,7 +52,7 @@ public class PhotoViewerPollAttachButtons extends LinearLayout {
         tv.setTextColor(Color.WHITE);
         button.addView(tv, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
-        ScaleStateListAnimator.apply(button); //, 0.02f, 1.2f);
+        ScaleStateListAnimator.apply(button);
         return button;
     }
 

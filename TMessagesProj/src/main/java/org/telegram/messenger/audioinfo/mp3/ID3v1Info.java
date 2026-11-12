@@ -50,9 +50,6 @@ public class ID3v1Info extends AudioInfo {
                 genre = id3v1Genre.getDescription();
             }
 			
-			/*
-			 * ID3v1.1
-			 */
             if (bytes[125] == 0 && bytes[126] != 0) {
                 version = "1.1";
                 track = (short) (bytes[126] & 0xFF);

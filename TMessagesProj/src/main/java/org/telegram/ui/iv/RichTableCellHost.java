@@ -113,7 +113,6 @@ public class RichTableCellHost extends FrameLayout {
         if (cell.align_right) textGravity = Gravity.TOP | Gravity.RIGHT;
         else if (cell.align_center) textGravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
         editText.setGravity(textGravity);
-        // Highlighting applies a real bold span so the user can remove bold from any range.
         editText.setTypeface(null);
     }
 }

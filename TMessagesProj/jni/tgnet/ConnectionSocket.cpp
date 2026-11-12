@@ -293,7 +293,6 @@ void ConnectionSocket::onEvent(uint32_t events) {
                 buffer->rewind();
                 readCount = recv(socketFd, buffer->bytes(), READ_BUFFER_SIZE, 0);
                 int err = errno;
-//                if (LOGS_ENABLED) DEBUG_D("connection(%p) recv resulted with %d, errno=%d", this, readCount, err);
                 if (readCount < 0) {
                     if (err == EAGAIN) {
                         break;
@@ -495,9 +494,6 @@ void ConnectionSocket::onEvent(uint32_t events) {
                 } else if (readCount == 0) {
                     break;
                 }
-//                if (readCount != READ_BUFFER_SIZE) {
-//                    break;
-//                }
             }
         }
     }

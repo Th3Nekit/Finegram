@@ -113,27 +113,44 @@ public class PopupSwipeBackLayout extends FrameLayout {
         overlayPaint.setColor(Color.BLACK);
     }
 
-    /**
-     * Sets if swipeback action should be disallowed
-     *
-     * @param swipeBackDisallowed If swipe should be disallowed
-     */
     public void setSwipeBackDisallowed(boolean swipeBackDisallowed) {
         isSwipeBackDisallowed = swipeBackDisallowed;
     }
 
-    /**
-     * add new swipeback listener
-     *
-     * @param onSwipeBackProgressListener New progress listener
-     */
     public void addOnSwipeBackProgressListener(OnSwipeBackProgressListener onSwipeBackProgressListener) {
         onSwipeBackProgressListeners.add(onSwipeBackProgressListener);
+    }
+
+    /**
+     * On glass (a menu bubble) the pages have no background: the main page fades out and the nested one fades
+     * in instead of covering it with the menu's color.
+     */
+    private boolean foregroundOnGlass;
+
+    public void setForegroundOnGlass(boolean onGlass) {
+        if (foregroundOnGlass != onGlass) {
+            foregroundOnGlass = onGlass;
+            invalidate();
+        }
     }
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         int i = indexOfChild(child);
+        if (foregroundOnGlass) {
+            // the main page is gone by the middle of the slide, so the two never read over each other
+            final float alpha = i == 0 ? 1f - Math.min(1f, transitionProgress * 2f) : Math.max(0f, transitionProgress * 2f - 1f);
+            if (alpha <= 0) {
+                return false;
+            }
+            if (alpha >= 1) {
+                return super.drawChild(canvas, child, drawingTime);
+            }
+            final int s = canvas.saveLayerAlpha(child.getX(), child.getY(), child.getX() + child.getWidth(), child.getY() + child.getHeight(), (int) (0xFF * alpha));
+            final boolean b = super.drawChild(canvas, child, drawingTime);
+            canvas.restoreToCount(s);
+            return b;
+        }
         int s = canvas.save();
         if (!MessageMenuHelper.getInstance(UserConfig.selectedAccount).allowNewMessageMenu() && i != 0) {
             if (foregroundColor == 0) {
@@ -244,7 +261,6 @@ public class PopupSwipeBackLayout extends FrameLayout {
         }
         int act = ev.getActionMasked();
         if (mRect != null && !mRect.contains(ev.getX(), ev.getY()) && act == MotionEvent.ACTION_DOWN) {
-//            return false;
         }
 
         if (act == MotionEvent.ACTION_DOWN && !mRect.contains(ev.getX(), ev.getY())) {
@@ -272,12 +288,6 @@ public class PopupSwipeBackLayout extends FrameLayout {
         invalidateTransforms();
     }
 
-    /**
-     * Processes touch event and return true if processed
-     *
-     * @param ev Event to process
-     * @return If event is processed
-     */
     private boolean processTouchEvent(MotionEvent ev) {
         int act = ev.getAction() & MotionEvent.ACTION_MASK;
         if (isAnimationInProgress)
@@ -301,12 +311,6 @@ public class PopupSwipeBackLayout extends FrameLayout {
         return isProcessingSwipe;
     }
 
-    /**
-     * Animates transition value
-     *
-     * @param f        End value
-     * @param flingVal Fling value(If from fling, zero otherwise)
-     */
     private void animateToState(float f, float flingVal) {
         final long duration = (long) (DURATION * Math.max(0.5f, Math.abs(transitionProgress - f) - Math.min(0.2f, flingVal)));
         ValueAnimator val = ValueAnimator.ofFloat(transitionProgress, f).setDuration(duration);
@@ -354,17 +358,11 @@ public class PopupSwipeBackLayout extends FrameLayout {
         onForegroundOpen = listener;
     }
 
-    /**
-     * Clears touch flags
-     */
     private void clearFlags() {
         isProcessingSwipe = false;
         isSwipeDisallowed = false;
     }
 
-    /**
-     * Opens up foreground
-     */
     public void openForeground(int viewIndex) {
         if (isAnimationInProgress) {
             return;
@@ -478,11 +476,6 @@ public class PopupSwipeBackLayout extends FrameLayout {
         this.onHeightUpdateListener = onHeightUpdateListener;
     }
 
-    /**
-     * @param e Motion event to check
-     * @param v View to check
-     * @return If we should ignore view
-     */
     private boolean isDisallowedView(MotionEvent e, View v) {
         v.getHitRect(hitRect);
         if (hitRect.contains((int) e.getX(), (int) e.getY()) && (v.canScrollHorizontally(-1) || v instanceof ActionBarMenuSlider))
@@ -497,9 +490,6 @@ public class PopupSwipeBackLayout extends FrameLayout {
         return false;
     }
 
-    /**
-     * Invalidates view transforms
-     */
     private void invalidateVisibility() {
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);

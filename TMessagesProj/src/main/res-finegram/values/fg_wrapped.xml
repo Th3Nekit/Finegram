@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Wrapped_ChatScope">Based on %1$d available chats. Bots, channels and secret chats excluded.</string>
+    <string name="FG_Wrapped_PartialScope">Some data is unavailable. Checked %1$d chats; numbers may be incomplete.</string>
+    <string name="FG_Wrapped_SampleScope">Patterns from a sample of %1$s sent messages</string>
+    <string name="FG_Wrapped_MediaScope">Media counted in your %1$d most active chats</string>
+    <string name="FG_Wrapped_CallScope">Completed calls in the available call history</string>
+    <string name="FG_Wrapped_SampleChars">%1$s characters in the sampled messages</string>
+    <string name="FG_Wrapped_Unavailable">Could not collect enough data. Try reopening your recap later.</string>
+    <string name="FG_Wrapped_ActivityTitle">Days with something to say</string>
+    <string name="FG_Wrapped_ActivityDays">days with messages in the sample</string>
+    <string name="FG_Wrapped_LongestSample">Longest message in the sample: %1$s characters</string>
+    <string name="FG_Wrapped_ExportError">Could not prepare the image. Please try again.</string>
+    <string name="FG_Wrapped_LimitedScope">Based on %1$d recently active available chats; some chats are outside this recap.</string>
+    <string name="FG_Wrapped_Incomplete">Some data is unavailable</string>
+    <string name="FG_Wrapped_SummaryScope">Messages: %1$d available chats · media: top %2$d.\nPatterns: sample of %3$s sent messages.</string>
+    <string name="FG_Wrapped_NoMessagesObserved">No messages found in the available chats for this period.</string>
+    <string name="FG_Wrapped_BestChatMonth">Your chat of the month</string>
+    <string name="FG_Wrapped_BestChatYear">Your chat of the year</string>
+    <string name="FG_Wrapped_CallMostTime">Most time talking with %1$s</string>
+    <string name="FG_Wrapped_W_Seconds">second|seconds|seconds</string>
+</resources>

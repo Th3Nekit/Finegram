@@ -28,7 +28,7 @@ import org.telegram.ui.Components.poll.PollAttachedMedia;
 public class PollAttachedMediaLocation extends PollAttachedMedia {
     public final TLRPC.MessageMedia media;
 
-    public PollAttachedMediaLocation(TLRPC.MessageMedia location) {         // venue or geo
+    public PollAttachedMediaLocation(TLRPC.MessageMedia location) {
         this.media = location;
         imageReceiver.setRoundRadius(dp(7));
         setupImageReceiver(imageReceiver);

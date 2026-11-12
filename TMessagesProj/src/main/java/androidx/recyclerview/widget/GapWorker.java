@@ -54,16 +54,8 @@ final class GapWorker implements Runnable {
         }
     }
 
-    /**
-     * Temporary storage for prefetch Tasks that execute in {@link #prefetch(long)}. Task objects
-     * are pooled in the ArrayList, and never removed to avoid allocations, but always cleared
-     * in between calls.
-     */
     private ArrayList<Task> mTasks = new ArrayList<>();
 
-    /**
-     * Prefetch information associated with a specific RecyclerView.
-     */
     @SuppressLint("VisibleForTests")
     static class LayoutPrefetchRegistryImpl
             implements RecyclerView.LayoutManager.LayoutPrefetchRegistry {
@@ -89,13 +81,10 @@ final class GapWorker implements Runnable {
                     && layout != null
                     && layout.isItemPrefetchEnabled()) {
                 if (nested) {
-                    // nested prefetch, only if no adapter updates pending. Note: we don't query
-                    // view.hasPendingAdapterUpdates(), as first layout may not have occurred
                     if (!view.mAdapterHelper.hasPendingUpdates()) {
                         layout.collectInitialPrefetchPositions(view.mAdapter.getItemCount(), this);
                     }
                 } else {
-                    // momentum based prefetch, only if we trust current child/adapter state
                     if (!view.hasPendingAdapterUpdates()) {
                         layout.collectAdjacentPrefetchPositions(mPrefetchDx, mPrefetchDy,
                                 view.mState, this);
@@ -120,7 +109,6 @@ final class GapWorker implements Runnable {
                 throw new IllegalArgumentException("Pixel distance must be non-negative");
             }
 
-            // allocate or expand array as needed, doubling when needed
             final int storagePosition = mCount * 2;
             if (mPrefetchArray == null) {
                 mPrefetchArray = new int[4];
@@ -131,7 +119,6 @@ final class GapWorker implements Runnable {
                 System.arraycopy(oldArray, 0, mPrefetchArray, 0, oldArray.length);
             }
 
-            // add position
             mPrefetchArray[storagePosition] = layoutPosition;
             mPrefetchArray[storagePosition + 1] = pixelDistance;
 
@@ -148,9 +135,6 @@ final class GapWorker implements Runnable {
             return false;
         }
 
-        /**
-         * Called when prefetch indices are no longer valid for cache prioritization.
-         */
         void clearPrefetchPositions() {
             if (mPrefetchArray != null) {
                 Arrays.fill(mPrefetchArray, -1);
@@ -173,9 +157,6 @@ final class GapWorker implements Runnable {
         }
     }
 
-    /**
-     * Schedule a prefetch immediately after the current traversal.
-     */
     void postFromTraversal(RecyclerView recyclerView, int prefetchDx, int prefetchDy) {
         if (recyclerView.isAttachedToWindow()) {
             if (RecyclerView.DEBUG && !mRecyclerViews.contains(recyclerView)) {
@@ -193,21 +174,17 @@ final class GapWorker implements Runnable {
     static Comparator<Task> sTaskComparator = new Comparator<Task>() {
         @Override
         public int compare(Task lhs, Task rhs) {
-            // first, prioritize non-cleared tasks
             if ((lhs.view == null) != (rhs.view == null)) {
                 return lhs.view == null ? 1 : -1;
             }
 
-            // then prioritize immediate
             if (lhs.immediate != rhs.immediate) {
                 return lhs.immediate ? -1 : 1;
             }
 
-            // then prioritize _highest_ view velocity
             int deltaViewVelocity = rhs.viewVelocity - lhs.viewVelocity;
             if (deltaViewVelocity != 0) return deltaViewVelocity;
 
-            // then prioritize _lowest_ distance to item
             int deltaDistanceToItem = lhs.distanceToItem - rhs.distanceToItem;
             if (deltaDistanceToItem != 0) return deltaDistanceToItem;
 
@@ -216,7 +193,6 @@ final class GapWorker implements Runnable {
     };
 
     private void buildTaskList() {
-        // Update PrefetchRegistry in each view
         final int viewCount = mRecyclerViews.size();
         int totalTaskCount = 0;
         for (int i = 0; i < viewCount; i++) {
@@ -227,13 +203,11 @@ final class GapWorker implements Runnable {
             }
         }
 
-        // Populate task list from prefetch data...
         mTasks.ensureCapacity(totalTaskCount);
         int totalTaskIndex = 0;
         for (int i = 0; i < viewCount; i++) {
             RecyclerView view = mRecyclerViews.get(i);
             if (view.getWindowVisibility() != View.VISIBLE) {
-                // Invisible view, don't bother prefetching
                 continue;
             }
 
@@ -260,7 +234,6 @@ final class GapWorker implements Runnable {
             }
         }
 
-        // ... and priority sort
         Collections.sort(mTasks, sTaskComparator);
     }
 
@@ -269,7 +242,6 @@ final class GapWorker implements Runnable {
         for (int i = 0; i < childCount; i++) {
             View attachedView = view.mChildHelper.getUnfilteredChildAt(i);
             RecyclerView.ViewHolder holder = RecyclerView.getChildViewHolderInt(attachedView);
-            // Note: can use mPosition here because adapter doesn't have pending updates
             if (holder.mPosition == position && !holder.isInvalid()) {
                 return true;
             }
@@ -281,7 +253,6 @@ final class GapWorker implements Runnable {
     private RecyclerView.ViewHolder prefetchPositionWithDeadline(RecyclerView view,
             int position, long deadlineNs) {
         if (isPrefetchPositionAttached(view, position)) {
-            // don't attempt to prefetch attached views
             return null;
         }
 
@@ -294,14 +265,8 @@ final class GapWorker implements Runnable {
 
             if (holder != null) {
                 if (holder.isBound() && !holder.isInvalid()) {
-                    // Only give the view a chance to go into the cache if binding succeeded
-                    // Note that we must use public method, since item may need cleanup
                     recycler.recycleView(holder.itemView);
                 } else {
-                    // Didn't bind, so we can't cache the view, but it will stay in the pool until
-                    // next prefetch/traversal. If a View fails to bind, it means we didn't have
-                    // enough time prior to the deadline (and won't for other instances of this
-                    // type, during this GapWorker prefetch pass).
                     recycler.addViewHolderToRecycledViewPool(holder, false);
                 }
             }
@@ -327,12 +292,9 @@ final class GapWorker implements Runnable {
 
         if (innerView.mDataSetHasChangedAfterLayout
                 && innerView.mChildHelper.getUnfilteredChildCount() != 0) {
-            // RecyclerView has new data, but old attached views. Clear everything, so that
-            // we can prefetch without partially stale data.
             innerView.removeAndRecycleViews();
         }
 
-        // do nested prefetch!
         final LayoutPrefetchRegistryImpl innerPrefetchRegistry = innerView.mPrefetchRegistry;
         innerPrefetchRegistry.collectPrefetchPositionsFromView(innerView, true);
 
@@ -341,8 +303,6 @@ final class GapWorker implements Runnable {
                 TraceCompat.beginSection(RecyclerView.TRACE_NESTED_PREFETCH_TAG);
                 innerView.mState.prepareForNestedPrefetch(innerView.mAdapter);
                 for (int i = 0; i < innerPrefetchRegistry.mCount * 2; i += 2) {
-                    // Note that we ignore immediate flag for inner items because
-                    // we have lower confidence they're needed next frame.
                     final int innerPosition = innerPrefetchRegistry.mPrefetchArray[i];
                     prefetchPositionWithDeadline(innerView, innerPosition, deadlineNs);
                 }
@@ -368,7 +328,7 @@ final class GapWorker implements Runnable {
         for (int i = 0; i < mTasks.size(); i++) {
             final Task task = mTasks.get(i);
             if (task.view == null) {
-                break; // done with populated tasks
+                break;
             }
             flushTaskWithDeadline(task, deadlineNs);
             task.clear();
@@ -386,12 +346,9 @@ final class GapWorker implements Runnable {
             TraceCompat.beginSection(RecyclerView.TRACE_PREFETCH_TAG);
 
             if (mRecyclerViews.isEmpty()) {
-                // abort - no work to do
                 return;
             }
 
-            // Query most recent vsync so we can predict next one. Note that drawing time not yet
-            // valid in animation/input callbacks, so query it here to be safe.
             final int size = mRecyclerViews.size();
             long latestFrameVsyncMs = 0;
             for (int i = 0; i < size; i++) {
@@ -402,7 +359,6 @@ final class GapWorker implements Runnable {
             }
 
             if (latestFrameVsyncMs == 0) {
-                // abort - either no views visible, or couldn't get last vsync for estimating next
                 return;
             }
 
@@ -410,7 +366,6 @@ final class GapWorker implements Runnable {
 
             prefetch(nextFrameNs);
 
-            // TODO: consider rescheduling self, if there's more work to do
         } finally {
             mPostTimeNs = 0;
             TraceCompat.endSection();

@@ -10,8 +10,4 @@
 
 package org.webrtc;
 
-/**
- * Empty class for use in libjingle_peerconnection_java because all targets require at least one
- * Java file.
- */
 class Empty {}

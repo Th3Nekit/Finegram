@@ -12,13 +12,9 @@ package org.webrtc;
 
 import androidx.annotation.Nullable;
 
-/**
- * Java wrapper of native AndroidVideoTrackSource.
- */
 public class VideoSource extends MediaSource {
-  /** Simple aspect ratio clas for use in constraining output format. */
   public static class AspectRatio {
-    public static final AspectRatio UNDEFINED = new AspectRatio(/* width= */ 0, /* height= */ 0);
+    public static final AspectRatio UNDEFINED = new AspectRatio(             0,               0);
 
     public final int width;
     public final int height;
@@ -48,7 +44,7 @@ public class VideoSource extends MediaSource {
 
     @Override
     public void onCapturerStopped() {
-      nativeAndroidVideoTrackSource.setState(/* isLive= */ false);
+      nativeAndroidVideoTrackSource.setState(              false);
       synchronized (videoProcessorLock) {
         isCapturerRunning = false;
         if (videoProcessor != null) {
@@ -81,32 +77,20 @@ public class VideoSource extends MediaSource {
     this.nativeAndroidVideoTrackSource = new NativeAndroidVideoTrackSource(nativeSource);
   }
 
-  /**
-   * Calling this function will cause frames to be scaled down to the requested resolution. Also,
-   * frames will be cropped to match the requested aspect ratio, and frames will be dropped to match
-   * the requested fps. The requested aspect ratio is orientation agnostic and will be adjusted to
-   * maintain the input orientation, so it doesn't matter if e.g. 1280x720 or 720x1280 is requested.
-   */
   public void adaptOutputFormat(int width, int height, int fps) {
     final int maxSide = Math.max(width, height);
     final int minSide = Math.min(width, height);
     adaptOutputFormat(maxSide, minSide, minSide, maxSide, fps);
   }
 
-  /**
-   * Same as above, but allows setting two different target resolutions depending on incoming
-   * frame orientation. This gives more fine-grained control and can e.g. be used to force landscape
-   * video to be cropped to portrait video.
-   */
   public void adaptOutputFormat(
       int landscapeWidth, int landscapeHeight, int portraitWidth, int portraitHeight, int fps) {
     adaptOutputFormat(new AspectRatio(landscapeWidth, landscapeHeight),
-        /* maxLandscapePixelCount= */ landscapeWidth * landscapeHeight,
+                                      landscapeWidth * landscapeHeight,
         new AspectRatio(portraitWidth, portraitHeight),
-        /* maxPortraitPixelCount= */ portraitWidth * portraitHeight, fps);
+                                     portraitWidth * portraitHeight, fps);
   }
 
-  /** Same as above, with even more control as each constraint is optional. */
   public void adaptOutputFormat(AspectRatio targetLandscapeAspectRatio,
       @Nullable Integer maxLandscapePixelCount, AspectRatio targetPortraitAspectRatio,
       @Nullable Integer maxPortraitPixelCount, @Nullable Integer maxFps) {
@@ -118,17 +102,10 @@ public class VideoSource extends MediaSource {
     nativeAndroidVideoTrackSource.setIsScreencast(isScreencast);
   }
 
-  /**
-   * Hook for injecting a custom video processor before frames are passed onto WebRTC. The frames
-   * will be cropped and scaled depending on CPU and network conditions before they are passed to
-   * the video processor. Frames will be delivered to the video processor on the same thread they
-   * are passed to this object. The video processor is allowed to deliver the processed frames
-   * back on any thread.
-   */
   public void setVideoProcessor(@Nullable VideoProcessor newVideoProcessor) {
     synchronized (videoProcessorLock) {
       if (videoProcessor != null) {
-        videoProcessor.setSink(/* sink= */ null);
+        videoProcessor.setSink(            null);
         if (isCapturerRunning) {
           videoProcessor.onCapturerStopped();
         }
@@ -139,7 +116,7 @@ public class VideoSource extends MediaSource {
             (frame)
                 -> runWithReference(() -> nativeAndroidVideoTrackSource.onFrameCaptured(frame)));
         if (isCapturerRunning) {
-          newVideoProcessor.onCapturerStarted(/* success= */ true);
+          newVideoProcessor.onCapturerStarted(               true);
         }
       }
     }
@@ -149,14 +126,13 @@ public class VideoSource extends MediaSource {
     return capturerObserver;
   }
 
-  /** Returns a pointer to webrtc::VideoTrackSourceInterface. */
   long getNativeVideoTrackSource() {
     return getNativeMediaSource();
   }
 
   @Override
   public void dispose() {
-    setVideoProcessor(/* newVideoProcessor= */ null);
+    setVideoProcessor(                         null);
     super.dispose();
   }
 }

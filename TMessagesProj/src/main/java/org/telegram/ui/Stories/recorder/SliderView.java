@@ -245,8 +245,6 @@ public class SliderView extends View {
 
         if (currentType == TYPE_WARMTH || currentType == TYPE_WARMTH_CG) {
             final int warmthColor = FlashViews.getColor(value);
-//            text.setTextColor(warmthColor);
-//            text2.setTextColor(warmthColor);
             whitePaint.setColor(warmthColor);
         } else if (currentType == TYPE_EXPOSURE_CG) {
             final int warmthColor = getColorForExposure(value);
@@ -274,7 +272,6 @@ public class SliderView extends View {
             w = fixWidth;
             h = dp(48);
         } else if (currentType == TYPE_VOLUME) {
-            // TODO: fix this nonsense
             w = (int) Math.min(textPaint.measureText(LocaleController.getString(R.string.StoryAudioRemove)) + dp(88), MeasureSpec.getSize(widthMeasureSpec));
             h = dp(48);
         } else if (currentType == TYPE_EXPOSURE_CG) {

@@ -44,7 +44,7 @@ public class StoryPositionView {
             textDrawable.setText(spannableStringBuilder, false);
         }
         canvas.save();
-        float top = headerView.getY() + headerView.titleView.getTop() + textDrawable.getHeight() / 2f - 1;// + //(headerView.titleView.getMeasuredHeight() - textDrawable.getHeight()) / 2f + AndroidUtilities.dp(1);
+        float top = headerView.getY() + headerView.titleView.getTop() + textDrawable.getHeight() / 2f - 1;
         int rightPadding = (int) textDrawable.getCurrentWidth();
         headerView.titleView.setRightPadding(rightPadding);
         float left = AndroidUtilities.dp(4) + headerView.getLeft() + headerView.titleView.getLeft() + headerView.titleView.getTextWidth() + headerView.titleView.getRightDrawableWidth();
@@ -55,11 +55,7 @@ public class StoryPositionView {
         float verticalPadding = AndroidUtilities.dp(2);
 
         AndroidUtilities.rectTmp.set(-horizontalPadding, -verticalPadding, textDrawable.getCurrentWidth() + horizontalPadding, textDrawable.getHeight() + verticalPadding);
-       // float r = AndroidUtilities.rectTmp.height() / 2f;
-       // canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, backgroundPaint);
 
-       // canvas.clipRect(AndroidUtilities.rectTmp);
-        //canvas.translate(0, textDrawable.getHeight() / 2f - AndroidUtilities.dpf2(0.5f));
         textDrawable.setAlpha((int) (160 * alpha));
         textDrawable.draw(canvas);
 

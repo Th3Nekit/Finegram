@@ -369,7 +369,6 @@ public class VideoPlayerSeekBar {
             loopBack = 0;
         }
 
-        // background
         rect.right = horizontalPadding + AndroidUtilities.lerp(width - thumbWidth / 2f, parentView.getWidth() - horizontalPadding * 2f, transitionProgress);
         setPaintColor(selected ? backgroundSelectedColor : backgroundColor, 1f - transitionProgress);
         drawProgressBar(canvas, rect, paint);
@@ -383,7 +382,6 @@ public class VideoPlayerSeekBar {
             }
         }
 
-        // buffered
         if (animateResetBuffering) {
             if (animateFromBufferedProgress > 0) {
                 rect.right = horizontalPadding + AndroidUtilities.lerp(thumbWidth / 2f + animateFromBufferedProgress * (width - thumbWidth), parentView.getWidth() - horizontalPadding * 2f, transitionProgress);
@@ -434,7 +432,6 @@ public class VideoPlayerSeekBar {
             rect.right = horizontalPadding + AndroidUtilities.lerp(thumbWidth / 2f + (width - thumbWidth), parentView.getWidth() - horizontalPadding * 2f, transitionProgress);
             rect.left = AndroidUtilities.lerp(wasLeft, rect.right, 1f - loopBack);
             if (transitionProgress > 0f && rect.width() > 0) {
-                // progress stroke
                 strokePaint.setAlpha((int) (transitionProgress * 255 * 0.2f));
                 drawProgressBar(canvas, rect, strokePaint);
             }
@@ -448,17 +445,14 @@ public class VideoPlayerSeekBar {
             canvas.drawCircle(wasRight, rect.centerY(), circleRadius * loopBack, paint);
         }
 
-        // progress
         rect.right = horizontalPadding + AndroidUtilities.lerp(thumbWidth / 2f + (pressed ? draggingThumbX : currentThumbX), (parentView.getWidth() - horizontalPadding * 2f) * getProgress(), transitionProgress);
         if (transitionProgress > 0f && rect.width() > 0) {
-            // progress stroke
             strokePaint.setAlpha((int) (transitionProgress * 255 * 0.2f));
             drawProgressBar(canvas, rect, strokePaint);
         }
         setPaintColor(ColorUtils.blendARGB(progressColor, smallLineColor, transitionProgress), 1f);
         drawProgressBar(canvas, rect, paint);
 
-        // circle
         setPaintColor(ColorUtils.blendARGB(circleColor, getProgress() == 0 ? Color.TRANSPARENT : smallLineColor, transitionProgress), 1f - transitionProgress);
         canvas.drawCircle(rect.right, rect.centerY(), circleRadius * (1f - loopBack), paint);
 

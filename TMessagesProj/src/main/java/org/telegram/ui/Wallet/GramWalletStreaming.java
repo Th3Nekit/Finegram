@@ -24,7 +24,6 @@ import org.telegram.tgnet.tl.TL_toncenter;
 import java.util.List;
 import java.util.Map;
 
-/** Main wallet and optional additional transactions. Lifecycle and callbacks run on the UI thread. */
 public class GramWalletStreaming {
 
     private static final long PING_INTERVAL_MS = 15_000;
@@ -95,7 +94,6 @@ public class GramWalletStreaming {
         this.subscriber = subscriber;
     }
 
-    /** True while started, including while connecting or waiting to retry. */
     public boolean isRunning() {
         return running;
     }
@@ -158,7 +156,6 @@ public class GramWalletStreaming {
         final long connectingAt = SystemClock.elapsedRealtime();
         log("opening websocket; attempt=" + attempt);
         try {
-            // Preserve the server-issued URL, including its authentication parameters.
             socket = new WebSocketFactory().setConnectionTimeout(10_000).createSocket(url);
             socket.addListener(new WebSocketAdapter() {
                 @Override
@@ -176,7 +173,6 @@ public class GramWalletStreaming {
 
                 @Override
                 public void onTextMessage(WebSocket ws, String text) {
-                    // Capture the complete payload before parsing, stale-event checks or address filtering.
                     FileLog.d("[gram-wallet-streaming] account=" + currentAccount
                         + " generation=" + attempt + " receive <- " + text);
                     final JSONObject event;
@@ -214,7 +210,6 @@ public class GramWalletStreaming {
             AndroidUtilities.runOnUIThread(timeout, TIMEOUT_MS);
             socket.connectAsynchronously();
         } catch (Exception e) {
-            // Exception messages can include the authenticated URL. Do not log them.
             retry("could not open websocket: " + e.getClass().getSimpleName());
         }
     }
@@ -275,7 +270,6 @@ public class GramWalletStreaming {
             return;
         }
         String type = event.optString("type");
-        // Never expose another account's balance, including events queued before removal.
         if ("account_state_change".equals(type)
                 && !GramWallet.addressEquals(address, event.optString("account"))) return;
         if ("transactions".equals(type) || "account_state_change".equals(type)
@@ -328,7 +322,7 @@ public class GramWalletStreaming {
 
     private void disconnect() {
         log("disconnecting; socket=" + (socket != null) + ", subscribed=" + subscribed + ", URL request=" + requestId);
-        ++generation; // Ignore queued events from the previous socket or URL request.
+        ++generation;
         subscribed = false;
         AndroidUtilities.cancelRunOnUIThread(reconnect);
         AndroidUtilities.cancelRunOnUIThread(expire);

@@ -53,7 +53,6 @@ public class ProfileBalanceView extends ProfilePillView {
         invalidate();
     }
 
-    /** Pushes the content up out of the pill, as if the wallet card is being ejected from it. */
     public void setEjectProgress(float progress) {
         if (ejectProgress == progress) return;
         ejectProgress = progress;
@@ -65,7 +64,6 @@ public class ProfileBalanceView extends ProfilePillView {
         label.ellipsize(-1);
         amount.ellipsize(-1);
         final float available = Math.max(0, maxWidth - dp(16 + 4 + 13 + 2 + 8));
-        // Prefer the numeric balance when a translation or a large amount needs more room.
         label.ellipsize(Math.max(0, available - amount.getWidth()));
         amount.ellipsize(Math.max(0, available - label.getWidth()));
         return label.getWidth() + dp(4 + 13 + 2 + 8) + amount.getWidth();

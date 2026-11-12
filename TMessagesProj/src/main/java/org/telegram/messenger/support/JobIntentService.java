@@ -56,10 +56,6 @@ public abstract class JobIntentService extends Service {
     static final Object sLock = new Object();
     static final HashMap<ComponentName, WorkEnqueuer> sClassWorkEnqueuer = new HashMap<>();
 
-    /**
-     * Base class for the target service we can deliver work to and the implementation of
-     * how to deliver that work.
-     */
     abstract static class WorkEnqueuer {
         final ComponentName mComponentName;
 
@@ -92,17 +88,11 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Get rid of lint warnings about API levels.
-     */
     interface CompatJobEngine {
         IBinder compatGetBinder();
         GenericWorkItem dequeueWork();
     }
 
-    /**
-     * An implementation of WorkEnqueuer that works for pre-O (raw Service-based).
-     */
     static final class CompatWorkEnqueuer extends WorkEnqueuer {
         private final Context mContext;
         private final PowerManager.WakeLock mLaunchWakeLock;
@@ -113,9 +103,6 @@ public abstract class JobIntentService extends Service {
         CompatWorkEnqueuer(Context context, ComponentName cn) {
             super(context, cn);
             mContext = context.getApplicationContext();
-            // Make wake locks.  We need two, because the launch wake lock wants to have
-            // a timeout, and the system does not do the right thing if you mix timeout and
-            // non timeout (or even changing the timeout duration) in one wake lock.
             PowerManager pm = ((PowerManager) context.getSystemService(Context.POWER_SERVICE));
             mLaunchWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                     cn.getClassName() + ":launch");
@@ -135,11 +122,6 @@ public abstract class JobIntentService extends Service {
                     if (!mLaunchingService) {
                         mLaunchingService = true;
                         if (!mServiceProcessing) {
-                            // If the service is not already holding the wake lock for
-                            // itself, acquire it now to keep the system running until
-                            // we get this work dispatched.  We use a timeout here to
-                            // protect against whatever problem may cause it to not get
-                            // the work.
                             mLaunchWakeLock.acquire(60 * 1000);
                         }
                     }
@@ -150,8 +132,6 @@ public abstract class JobIntentService extends Service {
         @Override
         public void serviceStartReceived() {
             synchronized (this) {
-                // Once we have started processing work, we can count whatever last
-                // enqueueWork() that happened as handled.
                 mLaunchingService = false;
             }
         }
@@ -159,11 +139,8 @@ public abstract class JobIntentService extends Service {
         @Override
         public void serviceProcessingStarted() {
             synchronized (this) {
-                // We hold the wake lock as long as the service is processing commands.
                 if (!mServiceProcessing) {
                     mServiceProcessing = true;
-                    // Keep the device awake, but only for at most 10 minutes at a time
-                    // (Similar to JobScheduler.)
                     try {
                         mRunWakeLock.acquire(2 * 60 * 1000L);
                         mLaunchWakeLock.release();
@@ -179,8 +156,6 @@ public abstract class JobIntentService extends Service {
         public void serviceProcessingFinished() {
             synchronized (this) {
                 if (mServiceProcessing) {
-                    // If we are transitioning back to a wakelock with a timeout, do the same
-                    // as if we had enqueued work without the service running.
                     if (mLaunchingService) {
                         mLaunchWakeLock.acquire(60 * 1000);
                     }
@@ -191,9 +166,6 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Implementation of a JobServiceEngine for interaction with JobIntentService.
-     */
     @RequiresApi(26)
     static final class JobServiceEngineImpl extends JobServiceEngine
             implements CompatJobEngine {
@@ -241,7 +213,6 @@ public abstract class JobIntentService extends Service {
         public boolean onStartJob(JobParameters params) {
             if (DEBUG) Log.d(TAG, "onStartJob: " + params);
             mParams = params;
-            // We can now start dequeuing work!
             mService.ensureProcessorRunningLocked(false);
             return true;
         }
@@ -251,16 +222,11 @@ public abstract class JobIntentService extends Service {
             if (DEBUG) Log.d(TAG, "onStartJob: " + params);
             boolean result = mService.doStopCurrentWork();
             synchronized (mLock) {
-                // Once we return, the job is stopped, so its JobParameters are no
-                // longer valid and we should not be doing anything with them.
                 mParams = null;
             }
             return result;
         }
 
-        /**
-         * Dequeue some work.
-         */
         @Override
         public GenericWorkItem dequeueWork() {
             JobWorkItem work = null;
@@ -304,18 +270,11 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Abstract definition of an item of work that is being dispatched.
-     */
     interface GenericWorkItem {
         Intent getIntent();
         void complete();
     }
 
-    /**
-     * An implementation of GenericWorkItem that dispatches work for pre-O platforms: intents
-     * received through a raw service's onStartCommand.
-     */
     final class CompatWorkItem implements GenericWorkItem {
         final Intent mIntent;
         final int mStartId;
@@ -337,9 +296,6 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * This is a task to dequeue and process work in the background.
-     */
     final class CommandProcessor extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
@@ -374,9 +330,6 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Default empty constructor.
-     */
     public JobIntentService() {
         if (Build.VERSION.SDK_INT >= 26) {
             mCompatQueue = null;
@@ -399,10 +352,6 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Processes start commands when running as a pre-O service, enqueueing them to be
-     * later dispatched in {@link #onHandleWork(Intent)}.
-     */
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         if (mCompatQueue != null) {
@@ -420,10 +369,6 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Returns the IBinder for the {@link android.app.job.JobServiceEngine} when
-     * running as a JobService on O and later platforms.
-     */
     @Override
     public IBinder onBind(@NonNull Intent intent) {
         if (mJobImpl != null) {
@@ -446,36 +391,11 @@ public abstract class JobIntentService extends Service {
         }
     }
 
-    /**
-     * Call this to enqueue work for your subclass of {@link androidx.core.app.JobIntentService}.  This will
-     * either directly start the service (when running on pre-O platforms) or enqueue work
-     * for it as a job (when running on O and later).  In either case, a wake lock will be
-     * held for you to ensure you continue running.  The work you enqueue will ultimately
-     * appear at {@link #onHandleWork(Intent)}.
-     *
-     * @param context Context this is being called from.
-     * @param cls The concrete class the work should be dispatched to (this is the class that
-     * is published in your manifest).
-     * @param jobId A unique job ID for scheduling; must be the same value for all work
-     * enqueued for the same class.
-     * @param work The Intent of work to enqueue.
-     */
     public static void enqueueWork(@NonNull Context context, @NonNull Class cls, int jobId,
                                    @NonNull Intent work) {
         enqueueWork(context, new ComponentName(context, cls), jobId, work);
     }
 
-    /**
-     * Like {@link #enqueueWork(Context, Class, int, Intent)}, but supplies a ComponentName
-     * for the service to interact with instead of its class.
-     *
-     * @param context Context this is being called from.
-     * @param component The published ComponentName of the class this work should be
-     * dispatched to.
-     * @param jobId A unique job ID for scheduling; must be the same value for all work
-     * enqueued for the same class.
-     * @param work The Intent of work to enqueue.
-     */
     public static void enqueueWork(@NonNull Context context, @NonNull ComponentName component,
                                    int jobId, @NonNull Intent work) {
         if (work == null) {
@@ -505,56 +425,16 @@ public abstract class JobIntentService extends Service {
         return we;
     }
 
-    /**
-     * Called serially for each work dispatched to and processed by the service.  This
-     * method is called on a background thread, so you can do long blocking operations
-     * here.  Upon returning, that work will be considered complete and either the next
-     * pending work dispatched here or the overall service destroyed now that it has
-     * nothing else to do.
-     *
-     * <p>Be aware that when running as a job, you are limited by the maximum job execution
-     * time and any single or total sequential items of work that exceeds that limit will
-     * cause the service to be stopped while in progress and later restarted with the
-     * last unfinished work.  (There is currently no limit on execution duration when
-     * running as a pre-O plain Service.)</p>
-     *
-     * @param intent The intent describing the work to now be processed.
-     */
     protected abstract void onHandleWork(@NonNull Intent intent);
 
-    /**
-     * Control whether code executing in {@link #onHandleWork(Intent)} will be interrupted
-     * if the job is stopped.  By default this is false.  If called and set to true, any
-     * time {@link #onStopCurrentWork()} is called, the class will first call
-     * {@link AsyncTask#cancel(boolean) AsyncTask.cancel(true)} to interrupt the running
-     * task.
-     *
-     * @param interruptIfStopped Set to true to allow the system to interrupt actively
-     * running work.
-     */
     public void setInterruptIfStopped(boolean interruptIfStopped) {
         mInterruptIfStopped = interruptIfStopped;
     }
 
-    /**
-     * Returns true if {@link #onStopCurrentWork()} has been called.  You can use this,
-     * while executing your work, to see if it should be stopped.
-     */
     public boolean isStopped() {
         return mStopped;
     }
 
-    /**
-     * This will be called if the JobScheduler has decided to stop this job.  The job for
-     * this service does not have any constraints specified, so this will only generally happen
-     * if the service exceeds the job's maximum execution time.
-     *
-     * @return True to indicate to the JobManager whether you'd like to reschedule this work,
-     * false to drop this and all following work. Regardless of the value returned, your service
-     * must stop executing or the system will ultimately kill it.  The default implementation
-     * returns true, and that is most likely what you want to return as well (so no work gets
-     * lost).
-     */
     public boolean onStopCurrentWork() {
         return true;
     }
@@ -582,14 +462,6 @@ public abstract class JobIntentService extends Service {
         if (mCompatQueue != null) {
             synchronized (mCompatQueue) {
                 mCurProcessor = null;
-                // The async task has finished, but we may have gotten more work scheduled in the
-                // meantime.  If so, we need to restart the new processor to execute it.  If there
-                // is no more work at this point, either the service is in the process of being
-                // destroyed (because we called stopSelf on the last intent started for it), or
-                // someone has already called startService with a new Intent that will be
-                // arriving shortly.  In either case, we want to just leave the service
-                // waiting -- either to get destroyed, or get a new onStartCommand() callback
-                // which will then kick off a new processor.
                 if (mCompatQueue != null && mCompatQueue.size() > 0) {
                     ensureProcessorRunningLocked(false);
                 } else if (!mDestroyed) {

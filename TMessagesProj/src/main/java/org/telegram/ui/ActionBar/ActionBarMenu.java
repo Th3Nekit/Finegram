@@ -654,7 +654,6 @@ public class ActionBarMenu extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    // Width the search field still occupies while it fades out after closing.
     public int getClosingSearchFieldWidth() {
         int width = 0;
         for (int a = 0, N = getChildCount(); a < N; a++) {

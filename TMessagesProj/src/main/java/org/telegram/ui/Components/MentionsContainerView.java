@@ -258,7 +258,7 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
     private boolean shouldLiftMentions = false;
 
     public void onPanTransitionStart() {
-        shouldLiftMentions = isReversed(); // (getCurrentLayoutManager().getReverseLayout() ? getCurrentLayoutManager().findLastVisibleItemPosition() : getCurrentLayoutManager().findFirstVisibleItemPosition()) > 0;
+        shouldLiftMentions = isReversed();
     }
 
     public void onPanTransitionUpdate(float translationY) {
@@ -534,7 +534,6 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
                     });
                 }
                 listViewTranslationAnimator.addEndListener((animation, canceled, value, velocity) -> {
-//                    `NotificationCenter.`getInstance(account).onAnimationFinish(animationIndex);
                 });
                 listViewTranslationAnimator.start();
             }
@@ -543,7 +542,6 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
             listView.setTranslationY(newTranslationY);
             if (forceZeroHeight) {
                 updateVisibility = View.GONE;
-//                adapter.clear(true);
             }
         }
         if (updateVisibility != null && getVisibility() != updateVisibility) {
@@ -658,7 +656,6 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
                         Paint.FontMetricsInt fontMetrics = null;
                         try {
                             fontMetrics = delegate.getFontMetrics();
-                           // chatActivityEnterView.getEditField().getPaint().getFontMetricsInt();
                         } catch (Exception e) {
                             FileLog.e(e, false);
                         }
@@ -684,7 +681,7 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
                 TLRPC.BotInlineResult result = (TLRPC.BotInlineResult) object;
                 if ((result.type.equals("photo") && (result.photo != null || result.content != null) ||
                         result.type.equals("gif") && (result.document != null || result.content != null) ||
-                        result.type.equals("video") && (result.document != null/* || result.content_url != null*/))) {
+                        result.type.equals("video") && (result.document != null                                  ))) {
                     ArrayList<Object> arrayList = botContextResults = new ArrayList<>(getAdapter().getSearchResultBotContext());
                     PhotoViewer.getInstance().setParentActivity(baseFragment, resourcesProvider);
                     PhotoViewer.getInstance().openPhotoForSelect(arrayList, getAdapter().getItemPosition(position), 3, false, botContextProvider, null);
@@ -737,7 +734,6 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
                     }
                     int visibleItemCount = lastVisibleItem == RecyclerView.NO_POSITION ? 0 : lastVisibleItem;
                     if (visibleItemCount > 0 && lastVisibleItem > adapter.getLastItemCount() - 5) {
-//                        adapter.loadMoreStickers();
                         adapter.searchForContextBotForNextOffset();
                     }
 
@@ -910,7 +906,7 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
     }
 
     @Override

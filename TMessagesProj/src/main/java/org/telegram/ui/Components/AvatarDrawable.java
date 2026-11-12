@@ -41,6 +41,7 @@ import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 
 import java.util.ArrayList;
 
@@ -105,10 +106,6 @@ public class AvatarDrawable extends Drawable {
     public static final int AVATAR_TYPE_SUGGESTION = 27;
     public static final int AVATAR_TYPE_EBLAN = 28;
 
-    /**
-     * Matches {@link org.telegram.ui.Components.AvatarConstructorFragment#defaultColors}
-     * but reordered to preserve color tints.
-     */
     public static final int[][] advancedGradients = new int[][]{
             new int[]{0xFFF64884, 0xFFEF5B41, 0xFFF6A730, 0xFFFF7742},
             new int[]{0xFFF5694E, 0xFFF5772C, 0xFFFFD412, 0xFFFFA743},
@@ -170,13 +167,13 @@ public class AvatarDrawable extends Drawable {
         float[] tempHSV = Theme.getTempHsv(5);
         Color.colorToHSV(color, tempHSV);
         final int hue = (int) tempHSV[0];
-        if (hue >= 345 || hue < 29) return 0; // red
-        if (hue < 67) return 1; // orange
-        if (hue < 140) return 3; // green
-        if (hue < 199) return 4; // cyan
-        if (hue < 234) return 5; // blue
-        if (hue < 301) return 2; // violet
-        return 6; // pink
+        if (hue >= 345 || hue < 29) return 0;
+        if (hue < 67) return 1;
+        if (hue < 140) return 3;
+        if (hue < 199) return 4;
+        if (hue < 234) return 5;
+        if (hue < 301) return 2;
+        return 6;
     }
 
     public static int getColorIndex(long id) {
@@ -335,6 +332,46 @@ public class AvatarDrawable extends Drawable {
             color2 = getThemedColor(Theme.keys_avatar_background2[getColorIndex(4)]);
         }
         needApplyColorAccent = avatarType != AVATAR_TYPE_ARCHIVED && avatarType != AVATAR_TYPE_SAVED && avatarType != AVATAR_TYPE_STORY && avatarType != AVATAR_TYPE_ANONYMOUS && avatarType != AVATAR_TYPE_SUGGESTION && avatarType != AVATAR_TYPE_REPLIES && avatarType != AVATAR_TYPE_OTHER_CHATS;
+        avatarTypeColorsThemed = avatarType == AVATAR_TYPE_REGISTER || avatarType == AVATAR_TYPE_ARCHIVED || avatarType == AVATAR_TYPE_SUGGESTION || avatarType == AVATAR_TYPE_REPLIES || avatarType == AVATAR_TYPE_SAVED || avatarType == AVATAR_TYPE_OTHER_CHATS || avatarType == AVATAR_TYPE_STORY;
+        avatarTypeColor = color;
+        avatarTypeColor2 = color2;
+        avatarTypeColorsGeneration = ThemeBind.generation();
+    }
+
+    // colors picked by id in setInfo: re-read from the theme after a theme change (on draw), while still shown
+    private boolean idColorsThemed;
+    private int idColorIndex, idColor, idColor2, idColorsGeneration;
+
+    private boolean avatarTypeColorsThemed;
+    private int avatarTypeColor, avatarTypeColor2, avatarTypeColorsGeneration;
+
+    // re-reads the theme colors set by setAvatarType after a theme change, unless they were replaced since
+    private void refreshAvatarTypeColors() {
+        try {
+            if (color != avatarTypeColor || color2 != avatarTypeColor2) {
+                avatarTypeColorsThemed = false;
+                return;
+            }
+            final int c, c2;
+            if (avatarType == AVATAR_TYPE_REGISTER) {
+                c = c2 = Theme.getColor(Theme.key_chats_actionBackground);
+            } else if (avatarType == AVATAR_TYPE_ARCHIVED) {
+                c = c2 = getThemedColor(Theme.key_avatar_backgroundArchivedHidden);
+            } else if (avatarType == AVATAR_TYPE_SUGGESTION || avatarType == AVATAR_TYPE_REPLIES || avatarType == AVATAR_TYPE_SAVED || avatarType == AVATAR_TYPE_OTHER_CHATS) {
+                c = getThemedColor(Theme.key_avatar_backgroundSaved);
+                c2 = getThemedColor(Theme.key_avatar_background2Saved);
+            } else if (avatarType == AVATAR_TYPE_STORY) {
+                c = getThemedColor(Theme.key_stories_circle1);
+                c2 = getThemedColor(Theme.key_stories_circle2);
+            } else {
+                avatarTypeColorsThemed = false;
+                return;
+            }
+            color = avatarTypeColor = c;
+            color2 = avatarTypeColor2 = c2;
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     public void setArchivedAvatarHiddenProgress(float progress) {
@@ -451,9 +488,14 @@ public class AvatarDrawable extends Drawable {
             } else {
                 color = getThemedColor(Theme.keys_avatar_background[getColorIndex(id)]);
                 color2 = getThemedColor(Theme.keys_avatar_background2[getColorIndex(id)]);
+                idColorIndex = getColorIndex(id);
+                idColor = color;
+                idColor2 = color2;
+                idColorsThemed = true;
+                idColorsGeneration = ThemeBind.generation();
             }
         }
-        needApplyColorAccent = id == 5; // Tinting manually set blue color
+        needApplyColorAccent = id == 5;
 
 
         avatarType = AVATAR_TYPE_NORMAL;
@@ -570,6 +612,19 @@ public class AvatarDrawable extends Drawable {
             return;
         }
         int size = bounds.width();
+        if (avatarTypeColorsThemed && avatarTypeColorsGeneration != ThemeBind.generation()) {
+            avatarTypeColorsGeneration = ThemeBind.generation();
+            refreshAvatarTypeColors();
+        }
+        if (idColorsThemed && idColorsGeneration != ThemeBind.generation()) {
+            idColorsGeneration = ThemeBind.generation();
+            if (avatarType == AVATAR_TYPE_NORMAL && color == idColor && color2 == idColor2 && idColorIndex >= 0 && idColorIndex < Theme.keys_avatar_background.length) {
+                color = idColor = getThemedColor(Theme.keys_avatar_background[idColorIndex]);
+                color2 = idColor2 = getThemedColor(Theme.keys_avatar_background2[idColorIndex]);
+            } else {
+                idColorsThemed = false; // colors replaced since (peer colors, setColor, avatar type): leave them
+            }
+        }
         namePaint.setColor(ColorUtils.setAlphaComponent(getThemedColor(Theme.key_avatar_text), alpha));
         Paint backgroundPaint = Theme.avatar_backgroundPaint;
         if (hasAdvancedGradient && advancedGradient != null) {

@@ -119,10 +119,8 @@ public class PlayingGameDrawable extends StatusDrawable {
             canvas.drawCircle(centerX, centerY - AndroidUtilities.dp(2), AndroidUtilities.dp(1), paint);
         } else {
             if (isChat) {
-                //y = AndroidUtilities.dp(8.5f) + getBounds().top;
             } else {
                 y += AndroidUtilities.dp(1);
-                //y = AndroidUtilities.dp(9.3f) + getBounds().top;
             }
 
             paint.setColor(Theme.getColor(isDialogScreen ? Theme.key_chats_actionMessage : Theme.key_chat_status, resourcesProvider));

@@ -11,16 +11,13 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.RenderNode;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Layout;
 import android.view.HapticFeedbackConstants;
@@ -45,7 +42,8 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.ChatMessageCell;
-import org.telegram.ui.ProfileActivity;
+import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
+import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -63,16 +61,14 @@ public class ProfileActionsView extends View {
     public boolean isAnimatingCallAction = false;
     public boolean isOpeningLayout = true;
     public float clipHeight = -1;
-    private final Path clipAvatarPath = new Path();
-    private final Path clipPath = new Path();
-    private ProfileActivity.AvatarImageView avatarView;
-    private float renderNodeScale;
-    private float renderNodeTranslateY;
-    private RenderNode renderNode;
+
+    @Nullable
+    private BlurredBackgroundDrawableViewFactory glassFactory;
+    private final ArrayList<BlurredBackgroundDrawable> glass = new ArrayList<>();
+    private int glassUsed;
 
     private int activeCount = 0;
     private final int targetHeight;
-    private boolean ignoreRect = false;
     private float currentHeight = 0;
 
     private OnActionClickListener onActionClickListener = null;
@@ -131,8 +127,8 @@ public class ProfileActionsView extends View {
         paint.setAlpha(40);
 
         xpadding = dpf2(14);
-        ypadding = dpf2(12);
-        top = dpf2(8);
+        ypadding = dpf2(6);
+        top = dpf2(4);
         textPadding = dpf2(4);
 
         this.targetHeight = (int) (targetHeight - ypadding - top);
@@ -142,25 +138,29 @@ public class ProfileActionsView extends View {
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
     }
 
-    public void drawingBlur(boolean drawing) {
-        if (ignoreRect != drawing || renderNode != null) {
-            ignoreRect = drawing;
-            renderNode = null;
-            avatarView = null;
-            invalidate();
-        }
+    public void setGlassFactory(@Nullable BlurredBackgroundDrawableViewFactory factory) {
+        glassFactory = factory;
+        glass.clear();
+        glassUsed = 0;
+        invalidate();
     }
 
-    public void drawingBlur(RenderNode renderNode, ProfileActivity.AvatarImageView avatarView, float scale, float dy) {
-        final boolean changed = ignoreRect || this.renderNode != renderNode || this.avatarView != avatarView
-                || this.renderNodeScale != scale || this.renderNodeTranslateY != dy;
-        this.ignoreRect = false;
-        this.renderNode = renderNode;
-        this.avatarView = avatarView;
-        this.renderNodeScale = scale;
-        this.renderNodeTranslateY = dy;
-        if (changed) {
-            invalidate();
+    private void drawGlass(Canvas canvas, RectF rect, float radius, float alpha) {
+        if (glassUsed == glass.size()) {
+            glass.add(glassFactory.create(this, ProfileButtonsGlass.NO_COLORS).setRadius(radius));
+        }
+        final BlurredBackgroundDrawable drawable = glass.get(glassUsed++);
+        drawable.setBounds((int) rect.left, (int) rect.top, (int) Math.ceil(rect.right), (int) Math.ceil(rect.bottom));
+        drawable.setAlpha((int) (0xFF * alpha));
+        drawable.draw(canvas);
+    }
+
+    private void hideUnusedGlass() {
+        for (int i = glassUsed; i < glass.size(); i++) {
+            final BlurredBackgroundDrawable drawable = glass.get(i);
+            if (!drawable.getBounds().isEmpty()) {
+                drawable.setBounds(0, 0, 0, 0);
+            }
         }
     }
 
@@ -197,7 +197,6 @@ public class ProfileActionsView extends View {
         if (color == 0) return;
         if (!hasColorById) {
             paint.setColor(color);
-//            paint.setAlpha(40);
             return;
         }
         int w = getMeasuredWidth();
@@ -231,6 +230,17 @@ public class ProfileActionsView extends View {
         invalidate();
     }
 
+    private float getCircleSize() {
+        final float gap = dpf2(14);
+        final float fit = (getMeasuredWidth() - xpadding * 2f - gap * Math.max(0, activeCount - 1)) / Math.max(1, activeCount);
+        return Math.max(dpf2(36), Math.min(targetHeight, fit));
+    }
+
+    private float getCircleRowLeft() {
+        final float size = getCircleSize();
+        return (getMeasuredWidth() - size * activeCount - dpf2(14) * Math.max(0, activeCount - 1)) / 2f;
+    }
+
     private float getItemWidth() {
         int w = getMeasuredWidth();
         float betweenPadding = xpadding / 2f;
@@ -239,9 +249,11 @@ public class ProfileActionsView extends View {
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
+        glassUsed = 0;
         if (clipHeight >= 0f) {
             final float bottom = clipHeight - getY();
             if (bottom <= 0) {
+                hideUnusedGlass();
                 return;
             }
             canvas.clipRect(0f, 0f, getMeasuredWidth(), bottom);
@@ -250,17 +262,15 @@ public class ProfileActionsView extends View {
         float height = Math.max(0f, currentHeight - ypadding - top);
 
         if (height <= 0f) {
+            hideUnusedGlass();
             return;
         }
 
-        final float betweenPadding = xpadding / 2f;
-        final float width = getItemWidth();
-        float left = xpadding;
-        float r = getRoundRadius();
-
-        if (renderNode != null) {
-            clipPath.rewind();
-        }
+        final float betweenPadding = dpf2(14);
+        final float width = getCircleSize();
+        float left = getCircleRowLeft();
+        final float circleHeight = Math.min(width, height);
+        float r = circleHeight / 2f;
 
         Action newFirstAction = null, newLastAction = null;
         int c = actions.size();
@@ -269,7 +279,7 @@ public class ProfileActionsView extends View {
             if (action.isDeleted) continue;
 
             if (!action.isDeleting) {
-                action.rect.set(left, top, left + width, top + height);
+                action.rect.set(left, top, left + width, top + circleHeight);
                 left += width + betweenPadding;
 
                 if (newFirstAction == null) {
@@ -279,15 +289,6 @@ public class ProfileActionsView extends View {
             }
 
             action.updatePosition();
-            if (renderNode != null) {
-                AndroidUtilities.rectTmp.set(action.rect);
-                AndroidUtilities.rectTmp.inset(
-                    action.rect.width() / 2.0f * (1.0f - action.getScale()),
-                    action.rect.height() / 2.0f * (1.0f - action.getScale())
-                );
-                AndroidUtilities.rectTmp.inset(-1, -1);
-                clipPath.addRoundRect(AndroidUtilities.rectTmp, r, r, Path.Direction.CCW);
-            }
         }
         firstAction = newFirstAction;
         lastAction = newLastAction;
@@ -295,95 +296,47 @@ public class ProfileActionsView extends View {
         float fraction = Utilities.clamp01(height / targetHeight);
         float alphaFraction1 = Utilities.clamp01((fraction - 0.2f) / 0.8f);
         if (alphaFraction1 <= 0f) {
+            hideUnusedGlass();
             return;
         }
 
-        if (!ignoreRect) {
-            for (int i = 0; i < c; i++) {
-                Action action = actions.get(i);
-                if (!action.isDeleted) {
-                    AndroidUtilities.rectTmp.set(action.rect);
-                    AndroidUtilities.rectTmp.inset(
-                        action.rect.width() / 2.0f * (1.0f - action.getScale()),
-                        action.rect.height() / 2.0f * (1.0f - action.getScale())
-                    );
-                    int wasAlpha = paint.getAlpha();
-                    int newAlpha = (int) (action.getAlpha() * alphaFraction1 * wasAlpha);
-                    paint.setAlpha((int) (newAlpha * (radialGradient != null ? 0.1f : 1f)));
-
-                    if (isButtonColorLight() && parentExpanded < 0.5f) {
-                        paint.setShadowLayer(dpf2(1.5f), 0, 0, Theme.multAlpha(Color.BLACK & 0x20FFFFFF, (newAlpha / 255f * (radialGradient != null ? 0.1f : 1f))));
-                    } else {
-                        paint.setShadowLayer(0, 0, 0, 0);
-                    }
-
-                    canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, paint);
-                    if (radialGradient != null) {
-                        int wasAlpha2 = shaderPaint.getAlpha();
-                        shaderPaint.setAlpha((int) (action.getAlpha() * alphaFraction1 * wasAlpha2));
-                        matrix.setTranslate(AndroidUtilities.rectTmp.left, AndroidUtilities.rectTmp.top);
-                        radialGradient.setLocalMatrix(matrix);
-                        canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, shaderPaint);
-                        shaderPaint.setAlpha(wasAlpha2);
-                    }
-                    paint.setAlpha(wasAlpha);
-                }
+        for (int i = 0; i < c; i++) {
+            Action action = actions.get(i);
+            if (action.isDeleted) {
+                continue;
             }
-        }
+            AndroidUtilities.rectTmp.set(action.rect);
+            AndroidUtilities.rectTmp.inset(
+                action.rect.width() / 2.0f * (1.0f - action.getScale()),
+                action.rect.height() / 2.0f * (1.0f - action.getScale())
+            );
+            if (glassFactory != null) {
+                drawGlass(canvas, AndroidUtilities.rectTmp, r, action.getAlpha() * alphaFraction1);
+                continue;
+            }
+            int wasAlpha = paint.getAlpha();
+            int newAlpha = (int) (action.getAlpha() * alphaFraction1 * wasAlpha);
+            paint.setAlpha((int) (newAlpha * (radialGradient != null ? 0.1f : 1f)));
+            paint.setShadowLayer(0, 0, 0, 0);
 
-        drawRenderNode(canvas);
+            canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, paint);
+            if (radialGradient != null) {
+                int wasAlpha2 = shaderPaint.getAlpha();
+                shaderPaint.setAlpha((int) (action.getAlpha() * alphaFraction1 * wasAlpha2));
+                matrix.setTranslate(AndroidUtilities.rectTmp.left, AndroidUtilities.rectTmp.top);
+                radialGradient.setLocalMatrix(matrix);
+                canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, shaderPaint);
+                shaderPaint.setAlpha(wasAlpha2);
+            }
+            paint.setAlpha(wasAlpha);
+        }
+        hideUnusedGlass();
 
         float alphaFraction2 = Utilities.clamp01((fraction - 0.4f) / 0.6f);
         if (alphaFraction2 > 0f) {
             for (int i = 0; i < c; i++) {
                 drawAction(canvas, actions.get(i), fraction, alphaFraction2);
             }
-        }
-    }
-
-    private void drawRenderNode(Canvas canvas) {
-        if (renderNode == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || !renderNode.hasDisplayList() || !canvas.isHardwareAccelerated()) {
-            return;
-        }
-
-        final View avatarParent;
-        if (avatarView != null) {
-            if (!(avatarView.getParent() instanceof View)) {
-                return;
-            }
-            avatarParent = (View) avatarView.getParent();
-        } else {
-            avatarParent = null;
-        }
-
-        final int saveCount = canvas.save();
-        try {
-            if (avatarParent != null) {
-                View v = avatarParent;
-                float vl = v.getX();
-                float vt = v.getY() - getTranslationY();
-                float vw = v.getWidth() * v.getScaleX();
-                float vh = v.getHeight() * v.getScaleY();
-
-                clipAvatarPath.rewind();
-                clipAvatarPath.addRoundRect(
-                        vl,
-                        vt,
-                        vl + vw,
-                        vt + vh,
-                        avatarView.getRoundRadiusForExpand() * v.getScaleX(),
-                        avatarView.getRoundRadiusForExpand() * v.getScaleY(),
-                        Path.Direction.CCW
-                );
-                canvas.clipPath(clipAvatarPath);
-            }
-
-            canvas.clipPath(clipPath);
-            canvas.translate(0f, renderNodeTranslateY);
-            canvas.scale(renderNodeScale, renderNodeScale);
-            canvas.drawRenderNode(renderNode);
-        } finally {
-            canvas.restoreToCount(saveCount);
         }
     }
 
@@ -407,7 +360,7 @@ public class ProfileActionsView extends View {
 
         action.text.setMaxWidth(action.rect.width() - dp(2));
         action.textScale = action.text.getLineCount() >= 3 ? 0.75f : action.text.getLineCount() >= 2 ? 0.85f : 1.0f;
-        final float drawableTop = Math.max(0, (targetHeight - action.text.getHeight() * action.textScale) / 3f + dpf2(1.33f));
+        final float drawableTop = cy - drawableR;
         action.setBounds(
             (int) (cx - drawableR),
             (int) (drawableTop),
@@ -425,10 +378,7 @@ public class ProfileActionsView extends View {
         }
 
         final boolean isButtonColorLight = isButtonColorLight();
-        float useFilledWhiteIcon = !isButtonColorLight ? 1 : MathUtils.clamp((parentExpanded - 0.75f) / 0.25f, 0, 1);
-        if (isButtonColorLight && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            useFilledWhiteIcon = 0f;
-        }
+        final float useFilledWhiteIcon = !isButtonColorLight ? 1 : MathUtils.clamp((parentExpanded - 0.75f) / 0.25f, 0, 1);
 
         final int textColor = ColorUtils.blendARGB(Color.BLACK, Color.WHITE, useFilledWhiteIcon);
         if (lastColorFilter == null || lastColorFilterColor != textColor) {
@@ -446,11 +396,6 @@ public class ProfileActionsView extends View {
 
         updateBounds(action);
 
-        final float textY = action.bounds.bottom + action.bounds.top - action.text.getHeight() * action.textScale / 2.0f - dp(4.66f);
-        canvas.save();
-        canvas.scale(action.textScale, action.textScale, cx, textY + action.text.getHeight() * action.textScale / 2.0f);
-        action.text.draw(canvas, cx - action.text.getWidth() / 2f, textY, textColor, alpha);
-        canvas.restore();
 
         if (action.iconTranslationY != 0) {
             canvas.translate(0, action.iconTranslationY);
@@ -553,9 +498,6 @@ public class ProfileActionsView extends View {
                     downY = y;
                     downTime = System.currentTimeMillis();
                     hit.bounce.setPressed(true);
-//                    try {
-//                        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
-//                    } catch (Exception ignore) {}
                     break;
                 }
             }
@@ -958,15 +900,15 @@ public class ProfileActionsView extends View {
         float callAnimateFromY = callView.getTop();
         if (isOpen) {
             int c = actions.size();
-            final float betweenPadding = xpadding / 2f;
-            final float width = getItemWidth();
-            float left = xpadding;
+            final float betweenPadding = dpf2(14);
+            final float width = getCircleSize();
+            float left = getCircleRowLeft();
 
             for (int i = 0; i < c; i++) {
                 Action action = actions.get(i);
                 if (action.isDeleted) continue;
                 if (action.key == KEY_CALL) {
-                    callAction.rect.set(left, top, left + width, top + targetHeight);
+                    callAction.rect.set(left, top, left + width, top + Math.min(width, targetHeight));
                     break;
                 }
                 left += width + betweenPadding;

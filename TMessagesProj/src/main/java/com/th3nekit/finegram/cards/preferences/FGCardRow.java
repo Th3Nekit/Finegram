@@ -63,7 +63,7 @@ public class FGCardRow extends FrameLayout {
         LayoutParams textParams = LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
                 Gravity.CENTER_VERTICAL | Gravity.START);
         textParams.setMarginStart(dp(66));
-        textParams.setMarginEnd(dp(62));
+        textParams.setMarginEnd(dp(73));
 
         title = new TextView(context);
         title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
@@ -74,8 +74,8 @@ public class FGCardRow extends FrameLayout {
         switchView = new Switch(context, rp);
         switchView.setColors(Theme.key_switchTrack, Theme.key_switchTrackChecked,
                 Theme.key_windowBackgroundWhite, Theme.key_windowBackgroundWhite);
-        LayoutParams switchParams = LayoutHelper.createFrame(37, 20, Gravity.CENTER_VERTICAL | Gravity.END);
-        switchParams.setMarginEnd(dp(18));
+        LayoutParams switchParams = LayoutHelper.createFrame(39, 40, Gravity.CENTER_VERTICAL | Gravity.END);
+        switchParams.setMarginEnd(dp(22));
         addView(switchView, switchParams);
         switchView.setOnClickListener(v -> {
             boolean next = !active;

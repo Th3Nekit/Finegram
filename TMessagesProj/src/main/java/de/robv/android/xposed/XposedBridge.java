@@ -23,18 +23,10 @@ public final class XposedBridge {
 
 	private static String[] sSupportedFeatures = new String[0];
 
-	/**
-	 * The system class loader which can be used to locate Android framework classes.
-	 * Application classes cannot be retrieved from it.
-	 *
-	 * @see ClassLoader#getSystemClassLoader
-	 */
 	public static final ClassLoader BOOTCLASSLOADER = ClassLoader.getSystemClassLoader();
 
-	/** @hide */
 	public static final String TAG = "Xposed";
 
-	/** @deprecated Use {@link #getXposedVersion()} instead. */
 	@Deprecated
 	public static int XPOSED_BRIDGE_VERSION = 90;
 
@@ -65,9 +57,6 @@ public final class XposedBridge {
 
 	private XposedBridge() {}
 
-	/**
-	 * Returns the currently installed version of the Xposed framework.
-	 */
 	public static int getXposedVersion() {
 		return XPOSED_BRIDGE_VERSION;
 	}
@@ -99,40 +88,18 @@ public final class XposedBridge {
 		sSupportedFeatures = features;
 	}
 
-	/**
-	 * Writes a message to the Xposed error log.
-	 *
-	 * @param text The log message.
-	 */
 	public static synchronized void log(String text) {
 		Log.i(TAG, text);
 	}
 
-	/**
-	 * Logs a stack trace to the Xposed error log.
-	 *
-	 * @param t The Throwable object for the stack trace.
-	 */
 	public static synchronized void log(Throwable t) {
 		Log.e(TAG, Log.getStackTraceString(t));
 	}
 
-	/**
-	 * Deoptimize a method to avoid callee being inlined.
-	 *
-	 * @param method The method to deoptmize. Generally it should be a caller of a method that is inlined.
-	 */
 	public static void deoptimizeMethod(Member method) {
 		ArtHook.deoptimize(method);
 	}
 
-	/**
-	 * Hook any method (or constructor) with the specified callback.
-	 *
-	 * @param hookMethod The method to be hooked.
-	 * @param callback The callback to be executed when the hooked method is called.
-	 * @return An object that can be used to remove the hook.
-	 */
 	public static XC_MethodHook.Unhook hookMethod(Member hookMethod, XC_MethodHook callback) {
 		if (!(hookMethod instanceof Method) && !(hookMethod instanceof Constructor<?>)) {
 			throw new IllegalArgumentException("Only methods and constructors can be hooked: " + hookMethod.toString());
@@ -154,11 +121,6 @@ public final class XposedBridge {
 		return callback.new Unhook(hookMethod);
 	}
 
-	/**
-	 * Removes the callback for a hooked method/constructor.
-	 *
-	 * @deprecated Use {@link XC_MethodHook.Unhook#unhook} instead.
-	 */
 	@Deprecated
 	public static void unhookMethod(Member hookMethod, XC_MethodHook callback) {
 		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
@@ -170,9 +132,6 @@ public final class XposedBridge {
 		callbacks.remove(callback);
 	}
 
-	/**
-	 * Hooks all methods with a certain name that were declared in the specified class.
-	 */
 	@SuppressWarnings("UnusedReturnValue")
 	public static Set<XC_MethodHook.Unhook> hookAllMethods(Class<?> hookClass, String methodName, XC_MethodHook callback) {
 		Set<XC_MethodHook.Unhook> unhooks = new HashSet<>();
@@ -182,9 +141,6 @@ public final class XposedBridge {
 		return unhooks;
 	}
 
-	/**
-	 * Hook all constructors of the specified class.
-	 */
 	@SuppressWarnings("UnusedReturnValue")
 	public static Set<XC_MethodHook.Unhook> hookAllConstructors(Class<?> hookClass, XC_MethodHook callback) {
 		Set<XC_MethodHook.Unhook> unhooks = new HashSet<>();
@@ -193,10 +149,6 @@ public final class XposedBridge {
 		return unhooks;
 	}
 
-	/**
-	 * Basically the same as {@link Method#invoke}, but calls the original method
-	 * as it was before the interception by Xposed.
-	 */
 	public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
 			throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		return hookProvider.invokeOriginal(method, thisObject, args);
@@ -241,14 +193,12 @@ public final class XposedBridge {
 				} catch (Throwable t) {
 					XposedBridge.log(t);
 
-					// reset result (ignoring what the unexpectedly exiting callback did)
 					param.setResult(null);
 					param.returnEarly = false;
 					continue;
 				}
 
 				if (param.returnEarly) {
-					// skip remaining "before" callbacks and corresponding "after" callbacks
 					beforeIdx++;
 					break;
 				}
@@ -291,7 +241,6 @@ public final class XposedBridge {
 				} catch (Throwable t) {
 					XposedBridge.log(t);
 
-					// reset to last result (ignoring what the unexpectedly exiting callback did)
 					if (lastThrowable == null)
 						param.setResult(lastResult);
 					else

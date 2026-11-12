@@ -4,8 +4,6 @@
 #include <map>
 #include <utility>
 
-// Rebuilt from running requests on each scheduling pass, so cancellation,
-// retries and DC migration cannot leak reservations.
 class DownloadRequestBudget {
 public:
     explicit DownloadRequestBudget(bool premium) : limit((premium ? 16u : 2u) * 1024 * 1024) {
@@ -17,7 +15,7 @@ public:
 
     bool acquire(uint32_t dc, bool small, uint32_t bytes) {
         if (bytes == 0) {
-            return true; // Control requests must not wait behind file data.
+            return true;
         }
         auto &current = used[{dc, small}];
         if (bytes > limit || current > limit - bytes) {

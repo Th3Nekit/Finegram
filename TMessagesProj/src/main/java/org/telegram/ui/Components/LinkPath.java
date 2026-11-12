@@ -152,10 +152,8 @@ public class LinkPath extends CornerPath {
             centerX = (right + left) / 2;
             centerY = (y2 + y) / 2;
             if (useRoundRect) {
-//            final CharSequence text = currentLayout.getText();
-//            int startOffset = currentLayout.getOffsetForHorizontal(currentLine, left), endOffset = currentLayout.getOffsetForHorizontal(currentLine, right) + 1;
-                boolean startsWithWhitespace = false; // startOffset >= 0 && startOffset < text.length() && text.charAt(startOffset) == ' ';
-                boolean endsWithWhitespace = false; // endOffset >= 0 && endOffset < text.length() && text.charAt(endOffset) == ' ';
+                boolean startsWithWhitespace = false;
+                boolean endsWithWhitespace = false;
                 superAddRect(left - (startsWithWhitespace ? 0 : getRadius() / 2f), y, right + (endsWithWhitespace ? 0 : getRadius() / 2f), y2, dir);
             } else {
                 superAddRect(left, y, right, y2, dir);

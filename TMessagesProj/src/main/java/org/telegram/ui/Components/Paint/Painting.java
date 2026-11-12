@@ -529,8 +529,6 @@ public class Painting {
 
         int count = 1;
         if (blurManager != null && (brush instanceof Brush.Blurer || brush instanceof Brush.Eraser)) {
-            // - eraser erases both from def. texture and blur texture
-            // - blurer blurs in blur texture and erases anything else in def. texture
             count = 2;
         }
         for (int a = 0; a < count; ++a) {
@@ -694,7 +692,7 @@ public class Painting {
             hasBlur = hadBlur;
         });
 
-        return slice1; // ehm...
+        return slice1;
     }
 
     private void restoreSlice(final Slice slice) {
@@ -1153,7 +1151,7 @@ public class Painting {
     public void onPause(final Runnable completionRunnable) {
         renderView.performInContext(() -> {
             paused = true;
-            PaintingData data = getPaintingData(getBounds(), true, false, false); // TODO: save also blur bitmap?
+            PaintingData data = getPaintingData(getBounds(), true, false, false);
             backupSlice = new Slice(data.data, 0, getBounds(), delegate.requestDispatchQueue());
 
             cleanResources(false);

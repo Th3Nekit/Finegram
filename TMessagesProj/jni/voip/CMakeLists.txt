@@ -114,7 +114,7 @@ target_include_directories(tgcalls_tp PUBLIC
         voip
         tgcalls
         tgcalls/tgcalls
-        boringssl/include
+        third_party/boringssl/include
         voip/webrtc/
         third_party/absl
         third_party/xiph/opus/include
@@ -1504,7 +1504,7 @@ target_include_directories(tgcalls PUBLIC
         voip
         tgcalls
         tgcalls/tgcalls
-        boringssl/include
+        third_party/boringssl/include
         voip/rnnoise/include
         voip/webrtc
         third_party/absl
@@ -1520,7 +1520,7 @@ target_include_directories(tgcalls PUBLIC
         third_party/libsrtp/crypto/include
         third_party/usrsctplib
         third_party
-        ffmpeg/include
+        prebuild/include/${ANDROID_ABI}
         third_party/ffmpeg
         third_party/libvpx
         third_party/dav1d/include
@@ -1693,7 +1693,7 @@ target_include_directories(voipandroid PUBLIC
         tgcalls
         tgcalls/tgcalls
         rlottie/src/lottie
-        boringssl/include
+        third_party/boringssl/include
         voip/webrtc
         third_party/xiph/opus/include
         third_party/xiph/opus/silk

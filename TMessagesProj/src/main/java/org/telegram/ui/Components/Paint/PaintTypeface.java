@@ -108,7 +108,6 @@ public class PaintTypeface {
 
     public boolean supports(String text) {
         if (this.font == null) {
-            // TODO
             return true;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -118,7 +117,6 @@ public class PaintTypeface {
             }
             return paint.hasGlyph(text);
         }
-        // TODO
         return true;
     }
 

@@ -5,14 +5,24 @@ import json
 import os
 import stat
 import struct
+import sys
 import threading
+import time
+import tokenize
 import zipfile
 import zlib
 
-_MAX_FILE = 2 * 1024 * 1024
+_MAX_FILE = 1024 * 1024
 _MAX_TOTAL = 32 * 1024 * 1024
 _MAX_FILES = 512
 _MAX_NODES = 400000
+_MAX_PARSE_BUDGET = 12000
+_MAX_TOKEN_CHARS = 16384
+_MAX_TRAITS = 20000
+_MAX_FINDINGS = 200
+_SWITCH_INTERVAL = 0.0005
+_switch_users = 0
+_switch_saved = None
 _MAX_RATIO = 1000
 _MAX_PATH = 1024
 _approval_path = None
@@ -265,13 +275,60 @@ def _name(node, aliases):
             return base + "." + node.slice.value
     return ""
 
+class AnalysisLimitExceeded(ValueError):
+    pass
+
+def _source_text(data):
+    encoding, _ = tokenize.detect_encoding(io.BytesIO(data).readline)
+    return data.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
+
+def _source_tokens(data):
+    handle = io.StringIO(_source_text(data))
+    lines = 0
+    resume = time.monotonic() + 0.008
+
+    def yield_if_needed():
+        nonlocal resume
+        if time.monotonic() >= resume:
+            time.sleep(0.001)
+            resume = time.monotonic() + 0.008
+
+    def readline():
+        nonlocal lines
+        lines += 1
+        if not lines % 64:
+            yield_if_needed()
+        return handle.readline()
+
+    for index, token in enumerate(tokenize.generate_tokens(readline)):
+        if not index % 256:
+            yield_if_needed()
+        yield token
+
+def _parse_source(data, file):
+    if len(data) > _MAX_FILE:
+        raise AnalysisLimitExceeded("source size")
+    budget = 0
+    for token in _source_tokens(data):
+        text = token.string
+        if len(text) > _MAX_TOKEN_CHARS:
+            raise AnalysisLimitExceeded("token size")
+        budget += 1 + len(text) // 32
+        if token.type == tokenize.STRING and (text[:1].lower() == "f" or text[:2].lower() == "rf"):
+            budget += len(text)
+        if budget > _MAX_PARSE_BUDGET:
+            raise AnalysisLimitExceeded("source complexity")
+    return ast.parse(_source_text(data), filename=file)
+
 def _inspect(data, file):
-    tree = ast.parse(data, filename=file)
+    tree = _parse_source(data, file)
     nodes = []
     for node in ast.walk(tree):
         nodes.append(node)
         if len(nodes) > _MAX_NODES:
             raise ValueError("node count")
+        if not len(nodes) % 2000:
+            time.sleep(0)
     aliases = {}
     assignments = {}
     findings = []
@@ -295,8 +352,11 @@ def _inspect(data, file):
                              or name in _dex_apis or name in _dex_modules):
                     aliases[symbol] = name
 
+    budget = [_MAX_TRAITS]
+
     def traits(node, seen=None, depth=0):
-        if depth > 20:
+        budget[0] -= 1
+        if depth > 20 or budget[0] < 0:
             return {"dynamic"}
         seen = seen or set()
         if isinstance(node, ast.Constant):
@@ -320,12 +380,18 @@ def _inspect(data, file):
             result.update(traits(child, seen, depth + 1))
         return result
 
-    def add(code, node, detail=""):
-        finding = {"code": code, "file": file, "line": node.lineno, "detail": detail}
-        if finding not in findings:
-            findings.append(finding)
+    seen_findings = set()
 
-    for node in nodes:
+    def add(code, node, detail=""):
+        key = (code, node.lineno, detail)
+        if key in seen_findings or len(findings) >= _MAX_FINDINGS:
+            return
+        seen_findings.add(key)
+        findings.append({"code": code, "file": file, "line": node.lineno, "detail": detail})
+
+    for index, node in enumerate(nodes):
+        if not index % 2000:
+            time.sleep(0)
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             modules = [item.name for item in node.names] if isinstance(node, ast.Import) else [node.module or ""]
             for module in modules:
@@ -351,6 +417,20 @@ def _inspect(data, file):
                       "ctypes.cdll.LoadLibrary", "ctypes.pydll.LoadLibrary"}:
             add("native_code", node)
     return findings
+
+def _yield_gil(start):
+    global _switch_users, _switch_saved
+    with _lock:
+        if start:
+            if not _switch_users:
+                _switch_saved = sys.getswitchinterval()
+                sys.setswitchinterval(min(_switch_saved, _SWITCH_INTERVAL))
+            _switch_users += 1
+        else:
+            _switch_users -= 1
+            if not _switch_users and _switch_saved is not None:
+                sys.setswitchinterval(_switch_saved)
+                _switch_saved = None
 
 def scan(path, source=None, check=True):
     digest = hashlib.sha256()
@@ -424,11 +504,15 @@ def scan(path, source=None, check=True):
         if not check:
             status = "skipped"
         elif cached is None:
-            for name, data in sources:
-                try:
-                    findings.extend(_inspect(data, name))
-                except Exception as error:
-                    errors.append({"file": name, "error": type(error).__name__})
+            _yield_gil(True)
+            try:
+                for name, data in sources:
+                    try:
+                        findings.extend(_inspect(data, name))
+                    except Exception as error:
+                        errors.append({"file": name, "error": type(error).__name__})
+            finally:
+                _yield_gil(False)
             if not errors:
                 with _lock:
                     if len(_cache) >= 128:

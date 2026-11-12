@@ -66,7 +66,6 @@ public class CropGestureDetector {
 
             @Override
             public void onScaleEnd(ScaleGestureDetector detector) {
-                // NO-OP
             }
         };
         mDetector = new ScaleGestureDetector(context, mScaleListener);
@@ -160,8 +159,6 @@ public class CropGestureDetector {
                 final float dx = x - mLastTouchX, dy = y - mLastTouchY;
 
                 if (!mIsDragging) {
-                    // Use Pythagoras to see if drag length is larger than
-                    // touch slop
                     mIsDragging = (float) Math.sqrt((dx * dx) + (dy * dy)) >= mTouchSlop;
                 }
 
@@ -178,7 +175,6 @@ public class CropGestureDetector {
             }
 
             case MotionEvent.ACTION_CANCEL: {
-                // Recycle Velocity Tracker
                 if (null != mVelocityTracker) {
                     mVelocityTracker.recycle();
                     mVelocityTracker = null;
@@ -194,15 +190,12 @@ public class CropGestureDetector {
                         mLastTouchX = getActiveX(ev);
                         mLastTouchY = getActiveY(ev);
 
-                        // Compute velocity within the last 1000ms
                         mVelocityTracker.addMovement(ev);
                         mVelocityTracker.computeCurrentVelocity(1000);
 
                         final float vX = mVelocityTracker.getXVelocity(), vY = mVelocityTracker
                                 .getYVelocity();
 
-                        // If the velocity is greater than minVelocity, call
-                        // listener
                         if (Math.max(Math.abs(vX), Math.abs(vY)) >= mMinimumVelocity) {
                             mListener.onFling(mLastTouchX, mLastTouchY, -vX,
                                     -vY);
@@ -212,7 +205,6 @@ public class CropGestureDetector {
                     mIsDragging = false;
                 }
 
-                // Recycle Velocity Tracker
                 if (null != mVelocityTracker) {
                     mVelocityTracker.recycle();
                     mVelocityTracker = null;

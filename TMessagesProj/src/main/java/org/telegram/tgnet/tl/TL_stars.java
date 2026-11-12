@@ -2072,8 +2072,8 @@ public class TL_stars {
         public String store_product;
         public String currency;
         public long amount;
-        public boolean loadingStorePrice; //custom
-        public boolean missingStorePrice; //custom
+        public boolean loadingStorePrice;
+        public boolean missingStorePrice;
 
         public static TL_starsTopupOption TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             final TL_starsTopupOption result = TL_starsTopupOption.constructor != constructor ? null : new TL_starsTopupOption();
@@ -2113,8 +2113,8 @@ public class TL_stars {
         public String store_product;
         public String currency;
         public long amount;
-        public boolean loadingStorePrice; //custom
-        public boolean missingStorePrice; //custom
+        public boolean loadingStorePrice;
+        public boolean missingStorePrice;
 
         public static TL_starsGiftOption TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             final TL_starsGiftOption result = TL_starsGiftOption.constructor != constructor ? null : new TL_starsGiftOption();
@@ -2187,8 +2187,8 @@ public class TL_stars {
         public long amount;
         public ArrayList<TL_starsGiveawayWinnersOption> winners = new ArrayList<>();
 
-        public boolean loadingStorePrice; //custom
-        public boolean missingStorePrice; //custom
+        public boolean loadingStorePrice;
+        public boolean missingStorePrice;
 
         public static TL_starsGiveawayOption TLdeserialize(InputSerializedData stream, int constructor, boolean exception) {
             final TL_starsGiveawayOption result = TL_starsGiveawayOption.constructor != constructor ? null : new TL_starsGiveawayOption();
@@ -2382,8 +2382,8 @@ public class TL_stars {
         public int ads_proceeds_from_date;
         public int ads_proceeds_to_date;
 
-        public TLRPC.Peer sent_by; //custom
-        public TLRPC.Peer received_by; //custom
+        public TLRPC.Peer sent_by;
+        public TLRPC.Peer received_by;
 
         private static StarsTransaction fromConstructor(int constructor) {
             switch (constructor) {

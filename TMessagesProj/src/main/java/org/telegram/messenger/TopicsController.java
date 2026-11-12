@@ -15,6 +15,7 @@ import org.telegram.tgnet.RequestDelegate;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_forum;
+import org.telegram.tgnet.tl.TL_update;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.Forum.ForumUtilities;
@@ -306,6 +307,30 @@ public class TopicsController extends BaseController {
                             getMessagesStorage().updateTopicData(-chatId, newTopic, TOPIC_FLAG_CLOSE);
                             changed = true;
                         }
+                        if (!fromCache && oldTopic.pinned != newTopic.pinned) {
+                            oldTopic.pinned = newTopic.pinned;
+                            changed = true;
+                        }
+                        if (!fromCache) {
+                            int updateFlags = 0;
+                            if (!TextUtils.equals(oldTopic.title, newTopic.title)) {
+                                oldTopic.title = newTopic.title;
+                                updateFlags |= TOPIC_FLAG_TITLE;
+                            }
+                            if (oldTopic.icon_emoji_id != newTopic.icon_emoji_id || oldTopic.icon_color != newTopic.icon_color) {
+                                oldTopic.icon_emoji_id = newTopic.icon_emoji_id;
+                                oldTopic.icon_color = newTopic.icon_color;
+                                updateFlags |= TOPIC_FLAG_ICON;
+                            }
+                            if (oldTopic.hidden != newTopic.hidden) {
+                                oldTopic.hidden = newTopic.hidden;
+                                updateFlags |= TOPIC_FLAG_HIDE;
+                            }
+                            if (updateFlags != 0) {
+                                getMessagesStorage().updateTopicData(-chatId, newTopic, updateFlags);
+                                changed = true;
+                            }
+                        }
                     }
                 }
             }
@@ -583,6 +608,34 @@ public class TopicsController extends BaseController {
         }));
     }
 
+    public int searchTopics(long chatId, String query, Utilities.Callback<ArrayList<TLRPC.TL_forumTopic>> onResult) {
+        final TL_forum.TL_messages_getForumTopics req = new TL_forum.TL_messages_getForumTopics();
+        req.peer = getMessagesController().getInputPeer(-chatId);
+        req.q = query;
+        req.limit = 50;
+        return getConnectionsManager().sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            final ArrayList<TLRPC.TL_forumTopic> result = new ArrayList<>();
+            if (response instanceof TLRPC.TL_messages_forumTopics) {
+                final TLRPC.TL_messages_forumTopics topics = (TLRPC.TL_messages_forumTopics) response;
+                final LongSparseArray<TLRPC.Message> messagesMap = new LongSparseArray<>();
+                for (int i = 0; i < topics.messages.size(); i++) {
+                    messagesMap.put(topics.messages.get(i).id, topics.messages.get(i));
+                }
+                getMessagesController().putUsers(topics.users, false);
+                getMessagesController().putChats(topics.chats, false);
+
+                processTopics(chatId, topics.topics, messagesMap, false, LOAD_TYPE_LOAD_UNKNOWN, -1);
+                getMessagesStorage().saveTopics(-chatId, topicsByChatId.get(chatId), true, true, getConnectionsManager().getCurrentTime());
+                getMessagesStorage().putMessages(topics.messages, false, true, false, 0, false, 0, 0);
+                for (TLRPC.TL_forumTopic topic : topics.topics) {
+                    final TLRPC.TL_forumTopic kept = findTopic(chatId, topic.id);
+                    result.add(kept != null ? kept : topic);
+                }
+            }
+            onResult.run(result);
+        }));
+    }
+
     public void updateMaxReadId(long chatId, long topicId, int readMaxId, int unreadCount, int mentionsUnread) {
         TLRPC.TL_forumTopic topic = findTopic(chatId, topicId);
         if (topic != null && readMaxId >= topic.read_inbox_max_id) {
@@ -699,6 +752,33 @@ public class TopicsController extends BaseController {
     public void onTopicEdited(long dialogId, TLRPC.TL_forumTopic forumTopic) {
         getMessagesStorage().updateTopicData(dialogId, forumTopic, TOPIC_FLAG_ICON + TOPIC_FLAG_TITLE + TOPIC_FLAG_HIDE);
         sortTopics(-dialogId);
+    }
+
+    public void onTopicEditedServerSide(long dialogId, TL_update.TL_updateEditForumTopic update) {
+        final TLRPC.TL_forumTopic forumTopic = new TLRPC.TL_forumTopic();
+        forumTopic.id = update.topic_id;
+        int flags = 0;
+        if ((update.flags & 1) != 0) {
+            forumTopic.title = update.title;
+            flags |= TOPIC_FLAG_TITLE;
+        }
+        if ((update.flags & 2) != 0) {
+            forumTopic.icon_emoji_id = update.icon_emoji_id;
+            flags |= TOPIC_FLAG_ICON;
+        }
+        if ((update.flags & 4) != 0) {
+            forumTopic.closed = update.closed;
+            flags |= TOPIC_FLAG_CLOSE;
+        }
+        if ((update.flags & 8) != 0) {
+            forumTopic.hidden = update.hidden;
+            flags |= TOPIC_FLAG_HIDE;
+        }
+        if (flags == 0) {
+            return;
+        }
+        updateTopicInUi(dialogId, forumTopic, flags);
+        getMessagesStorage().updateTopicData(dialogId, forumTopic, flags);
     }
 
     public void deleteTopics(long chatId, ArrayList<Integer> topicIds) {
@@ -837,11 +917,6 @@ public class TopicsController extends BaseController {
             topic.hidden = req.hidden;
             if (topic.hidden) {
                 topic.closed = true;
-//                topic.pinned = true;
-//                ArrayList<Integer> order = getCurrentPinnedOrder(chatId);
-//                order.remove((Integer) topicId);
-//                order.add(0, topicId);
-//                applyPinnedOrder(chatId, order);
             }
             updateTopicInUi(-chatId, topic, TOPIC_FLAG_PIN | TOPIC_FLAG_HIDE | TOPIC_FLAG_CLOSE);
             getMessagesStorage().updateTopicData(-chatId, topic, TOPIC_FLAG_PIN | TOPIC_FLAG_HIDE | TOPIC_FLAG_CLOSE);
@@ -1007,12 +1082,6 @@ public class TopicsController extends BaseController {
             return offset;
         }
         return new TopicsLoadOffset();
-//        SharedPreferences sharedPreferences = getUserConfig().getPreferences();
-//        TopicsLoadOffset topicsLoadOffset = new TopicsLoadOffset();
-//        topicsLoadOffset.lastMessageId = sharedPreferences.getInt("topics_load_offset_message_id_" + chatId, 0);
-//        topicsLoadOffset.lastMessageDate = sharedPreferences.getInt("topics_load_offset_date_" + chatId, 0);
-//        topicsLoadOffset.lastMessageId = sharedPreferences.getInt("topics_load_offset_topic_id_" + chatId, 0);
-//        return topicsLoadOffset;
     }
 
     public void saveLoadOffset(long chatId, int lastMessageId, int lastMessageDate, long lastTopicId) {
@@ -1021,20 +1090,10 @@ public class TopicsController extends BaseController {
         offset.lastMessageDate = lastMessageDate;
         offset.lastTopicId = lastTopicId;
         offsets.put(chatId, offset);
-//        SharedPreferences.Editor editor = getUserConfig().getPreferences().edit();
-//        editor.putInt("topics_load_offset_message_id_" + chatId, lastMessageId);
-//        editor.putInt("topics_load_offset_date_" + chatId, lastMessageDate);
-//        editor.putInt("topics_load_offset_topic_id_" + chatId, lastTopicId);
-//        editor.apply();
     }
 
     public void clearLoadingOffset(long chatId) {
         offsets.remove(chatId);
-//        SharedPreferences.Editor editor = getUserConfig().getPreferences().edit();
-//        editor.remove("topics_load_offset_message_id_" + chatId);
-//        editor.remove("topics_load_offset_date_" + chatId);
-//        editor.remove("topics_load_offset_topic_id_" + chatId);
-//        editor.apply();
     }
 
     public boolean endIsReached(long chatId) {
@@ -1207,8 +1266,6 @@ public class TopicsController extends BaseController {
                     }
                 }
             }
-            //TODO topics
-            // optimize move to mask update
             for (Long chatId : updatedChats) {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.topicsDidLoaded, chatId, true);
             }

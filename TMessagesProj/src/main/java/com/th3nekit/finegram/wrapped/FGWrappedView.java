@@ -22,6 +22,8 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -71,13 +73,14 @@ public class FGWrappedView extends View {
     private static final float W = 360f;
     private static final float H = 640f;
     private static final long PAGE_MS = 7000;
-    private static final long TRANSITION_MS = 560;
+    private static final long TRANSITION_MS = 320;
 
     private static final int P_INTRO = 0;
     private static final int P_TOTAL = 1;
     private static final int P_TOP = 2;
     private static final int P_BEST = 3;
     private static final int P_CLOCK = 4;
+    private static final int P_ACTIVITY = 5;
     private static final int P_STICKER = 6;
     private static final int P_MEDIA = 7;
     private static final int P_CALLS = 8;
@@ -108,6 +111,7 @@ public class FGWrappedView extends View {
 
     private final Runnable onClose;
     private final int account;
+    private final int period;
     private FGWrappedStats stats;
     private float progress;
     private Runnable cancel;
@@ -122,6 +126,14 @@ public class FGWrappedView extends View {
     private final long born = SystemClock.uptimeMillis();
     private long lastFrame;
     private boolean attached;
+    private boolean clockPaused;
+    private boolean reduceMotion;
+    private boolean exporting;
+    private boolean gestureCancelled;
+    private float contentLeft;
+    private float contentTop;
+    private float contentWidth;
+    private float contentHeight;
     private boolean ghost;
     private final ArrayList<RectF> cutouts = new ArrayList<>();
     private final Path halo = new Path();
@@ -140,6 +152,11 @@ public class FGWrappedView extends View {
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint blobPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shaderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private LinearGradient backgroundGradient;
+    private int backgroundWidth;
+    private int backgroundHeight;
+    private int backgroundColorTop;
+    private int backgroundColorBottom;
     private final TextPaint displayPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint headPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint bodyPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -188,6 +205,7 @@ public class FGWrappedView extends View {
     public FGWrappedView(Context context, int account, int period, Runnable onClose) {
         super(context);
         this.account = account;
+        this.period = period;
         this.onClose = onClose;
         loadFaces();
         displayPaint.setTypeface(displayFace);
@@ -207,19 +225,26 @@ public class FGWrappedView extends View {
             twinkle[i + 3] = seeded.nextFloat() * 6.28f;
         }
         pages.add(P_INTRO);
+        pageStart = SystemClock.uptimeMillis();
+        setFocusable(true);
+    }
+
+    private void collect() {
+        progress = 0f;
         cancel = FGWrappedStats.collect(account, period, new FGWrappedStats.Listener() {
             @Override
             public void onProgress(float value) {
-                progress = value;
+                progress = Math.max(progress, value);
                 invalidate();
             }
 
             @Override
             public void onDone(FGWrappedStats result) {
-                onStats(result);
+                if (attached) {
+                    onStats(result);
+                }
             }
         });
-        pageStart = SystemClock.uptimeMillis();
     }
 
     private static void loadFaces() {
@@ -244,11 +269,13 @@ public class FGWrappedView extends View {
     private void onStats(FGWrappedStats result) {
         stats = result;
         pages.clear();
-        if (result.total <= 0) {
+        if (result.total <= 0 && result.calls <= 0) {
             pages.add(P_EMPTY);
         } else {
             pages.add(P_INTRO);
-            pages.add(P_TOTAL);
+            if (result.total > 0) {
+                pages.add(P_TOTAL);
+            }
             if (result.top.size() >= 2) {
                 pages.add(P_TOP);
             }
@@ -258,13 +285,16 @@ public class FGWrappedView extends View {
             if (result.sampled >= 20) {
                 pages.add(P_CLOCK);
             }
+            if (result.activeDays > 0) {
+                pages.add(P_ACTIVITY);
+            }
             if (result.sticker != null) {
                 pages.add(P_STICKER);
             }
             if (result.voice + result.rounds + result.photos > 0) {
                 pages.add(P_MEDIA);
             }
-            if (result.calls > 0 && result.callSeconds >= 60) {
+            if (result.calls > 0 && result.callSeconds > 0) {
                 pages.add(P_CALLS);
             }
             if (result.word != null) {
@@ -301,20 +331,25 @@ public class FGWrappedView extends View {
             stickerImage.setImage(ImageLocation.getForDocument(document), "360_360", thumbLocation, null, null, 0,
                     animated ? null : "webp", parent, 1);
             stickerImage.setAutoRepeat(1);
-            stickerImage.setAllowStartLottieAnimation(true);
-            stickerImage.setAllowStartAnimation(true);
-            stickerImage.startAnimation();
+            stickerImage.setAllowDecodeSingleFrame(true);
+            stickerImage.setAllowStartLottieAnimation(false);
+            stickerImage.setAllowStartAnimation(false);
         }
         index = 0;
         previousIndex = -1;
         pageStart = now();
         transitionStart = pageStart;
         fired.clear();
+        updatePlayback();
         invalidate();
     }
 
     private ImageReceiver createReceiver() {
         ImageReceiver receiver = new ImageReceiver(this);
+        receiver.setCurrentAccount(account);
+        receiver.setAllowStartAnimation(false);
+        receiver.setAllowStartLottieAnimation(false);
+        receiver.setAllowDecodeSingleFrame(true);
         receiver.setInvalidateAll(true);
         receivers.add(receiver);
         if (attached) {
@@ -326,6 +361,7 @@ public class FGWrappedView extends View {
     @Override
     public WindowInsets onApplyWindowInsets(WindowInsets insets) {
         requestLayout();
+        invalidate();
         return super.onApplyWindowInsets(insets);
     }
 
@@ -384,6 +420,32 @@ public class FGWrappedView extends View {
             buildHalo(cutouts.get(0));
         }
         layoutChrome(width);
+        int left = 0, top = 0, right = 0, bottom = 0;
+        if (Build.VERSION.SDK_INT >= 23) {
+            WindowInsets insets = getRootWindowInsets();
+            if (insets != null) {
+                int[] location = new int[2];
+                getLocationInWindow(location);
+                left = Math.max(0, insets.getStableInsetLeft() - location[0]);
+                top = Math.max(0, insets.getStableInsetTop() - location[1]);
+                right = Math.max(0, insets.getStableInsetRight() - (getRootView().getWidth() - location[0] - width));
+                bottom = Math.max(0, insets.getStableInsetBottom() - (getRootView().getHeight() - location[1] - height));
+                if (Build.VERSION.SDK_INT >= 28 && insets.getDisplayCutout() != null) {
+                    DisplayCutout cutout = insets.getDisplayCutout();
+                    left = Math.max(left, cutout.getSafeInsetLeft() - location[0]);
+                    top = Math.max(top, cutout.getSafeInsetTop() - location[1]);
+                    right = Math.max(right, cutout.getSafeInsetRight() - (getRootView().getWidth() - location[0] - width));
+                    bottom = Math.max(bottom, cutout.getSafeInsetBottom() - (getRootView().getHeight() - location[1] - height));
+                }
+            }
+        }
+        for (RectF cut : cutouts) {
+            top = Math.max(top, (int) Math.ceil(cut.bottom));
+        }
+        contentLeft = left;
+        contentTop = Math.max(top, barY + AndroidUtilities.dp(24));
+        contentWidth = Math.max(1f, width - left - right);
+        contentHeight = Math.max(1f, height - contentTop - bottom - AndroidUtilities.dp(8));
     }
 
     private void buildHalo(RectF cut) {
@@ -563,15 +625,23 @@ public class FGWrappedView extends View {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         attached = true;
+        requestApplyInsets();
+        readMotionSettings();
+        if (stats == null && cancel == null) {
+            collect();
+        }
         for (ImageReceiver receiver : receivers) {
             receiver.onAttachedToWindow();
         }
+        updatePlayback();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         attached = false;
+        holding = false;
+        updatePlayback();
         for (ImageReceiver receiver : receivers) {
             receiver.onDetachedFromWindow();
         }
@@ -581,11 +651,75 @@ public class FGWrappedView extends View {
         }
     }
 
-    private long now() {
-        if (holding) {
-            return pausedAt - pausedTotal;
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (!hasWindowFocus) {
+            holding = false;
+            gestureCancelled = true;
+        } else {
+            readMotionSettings();
         }
-        return SystemClock.uptimeMillis() - pausedTotal;
+        updatePlayback();
+    }
+
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        updatePlayback();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        updatePlayback();
+    }
+
+    private void readMotionSettings() {
+        try {
+            PowerManager power = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+            reduceMotion = Settings.Global.getFloat(getContext().getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+                    || power != null && power.isPowerSaveMode();
+        } catch (Throwable ignored) {
+            reduceMotion = false;
+        }
+    }
+
+    private void updatePlayback() {
+        if (reduceMotion) {
+            particles.clear();
+            rings.clear();
+        }
+        boolean paused = holding || sharing || !attached || !hasWindowFocus() || getWindowVisibility() != VISIBLE || !isShown();
+        long real = SystemClock.uptimeMillis();
+        if (paused != clockPaused) {
+            if (paused) {
+                pausedAt = real;
+            } else {
+                pausedTotal += real - pausedAt;
+            }
+            clockPaused = paused;
+            lastFrame = 0;
+        }
+        if (stickerImage != null) {
+            boolean animate = !paused && !reduceMotion && stats != null && page() == P_STICKER;
+            if (stickerImage.getAllowStartAnimation() != animate) {
+                stickerImage.setAllowStartLottieAnimation(animate);
+                stickerImage.setAllowStartAnimation(animate);
+                if (animate) {
+                    stickerImage.startAnimation();
+                } else {
+                    stickerImage.stopAnimation();
+                }
+            }
+        }
+        if (attached) {
+            invalidate();
+        }
+    }
+
+    private long now() {
+        return (clockPaused ? pausedAt : SystemClock.uptimeMillis()) - pausedTotal;
     }
 
     private int page() {
@@ -609,6 +743,7 @@ public class FGWrappedView extends View {
             invalidate();
             return;
         }
+        readMotionSettings();
         direction = next > index ? 1 : -1;
         previousIndex = index;
         index = next;
@@ -617,8 +752,9 @@ public class FGWrappedView extends View {
         fired.clear();
         particles.clear();
         rings.clear();
+        updatePlayback();
         try {
-            performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+            performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
         } catch (Throwable ignored) {
         }
         invalidate();
@@ -627,23 +763,30 @@ public class FGWrappedView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         long t = now();
-        if (stats != null && page() != P_SUMMARY && page() != P_EMPTY && !holding && t - pageStart >= PAGE_MS) {
+        if (stats != null && page() != P_SUMMARY && page() != P_EMPTY && !clockPaused && t - pageStart >= PAGE_MS) {
             go(1);
             t = now();
         }
         long real = SystemClock.uptimeMillis();
         float dt = lastFrame == 0 ? 0f : Math.min(0.05f, (real - lastFrame) / 1000f);
         lastFrame = real;
-        if (!holding) {
+        if (!clockPaused && !reduceMotion) {
             stepParticles(dt);
         }
         drawFrame(canvas, getWidth(), getHeight(), t, false);
-        invalidate();
+        if (attached && !clockPaused && (stats == null || page() != P_SUMMARY && page() != P_EMPTY || t - pageStart < 3500
+                || !particles.isEmpty() || !rings.isEmpty())) {
+            if (reduceMotion) {
+                postInvalidateDelayed(100);
+            } else {
+                postInvalidateOnAnimation();
+            }
+        }
     }
 
     private void drawFrame(Canvas canvas, int width, int height, long t, boolean export) {
         int current = stats == null ? -1 : page();
-        float transition = export ? 1f : Math.min(1f, (t - transitionStart) / (float) TRANSITION_MS);
+        float transition = export || reduceMotion ? 1f : Math.min(1f, (t - transitionStart) / (float) TRANSITION_MS);
         float eased = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(transition);
         int[] palette = palette(current);
         if (!export && previousIndex >= 0 && transition < 1f) {
@@ -653,11 +796,14 @@ public class FGWrappedView extends View {
                     ColorUtils.blendARGB(from[1], palette[1], eased),
                     ColorUtils.blendARGB(from[2], palette[2], eased)};
         }
-        float seconds = export ? 4f : (t - born) / 1000f;
+        float seconds = export || reduceMotion && stats != null ? 4f : (t - born) / 1000f;
         drawBackground(canvas, width, height, palette, seconds);
-        float scale = Math.min(width / W, height / H);
+        float availableWidth = export ? width : contentWidth;
+        float availableHeight = export ? height : contentHeight;
+        float scale = Math.min(availableWidth / W, availableHeight / H);
         canvas.save();
-        canvas.translate((width - W * scale) / 2f, (height - H * scale) / 2f);
+        canvas.translate((export ? 0 : contentLeft) + (availableWidth - W * scale) / 2f,
+                (export ? 0 : contentTop) + (availableHeight - H * scale) / 2f);
         canvas.scale(scale, scale);
         if (stats == null) {
             drawLoading(canvas, seconds);
@@ -678,7 +824,7 @@ public class FGWrappedView extends View {
             float s = 0.9f + 0.1f * eased;
             canvas.translate(direction * W * 0.38f * (1f - eased), 0);
             canvas.scale(s, s, W / 2f, H / 2f);
-            drawPage(canvas, current, (t - pageStart) / 1000f, eased, false);
+            drawPage(canvas, current, reduceMotion ? 30f : (t - pageStart) / 1000f, eased, false);
             canvas.restore();
             drawParticles(canvas);
         }
@@ -708,6 +854,9 @@ public class FGWrappedView extends View {
             case P_CLOCK:
                 drawClock(canvas, time, alpha);
                 break;
+            case P_ACTIVITY:
+                drawActivity(canvas, time, alpha);
+                break;
             case P_STICKER:
                 drawSticker(canvas, time, alpha);
                 break;
@@ -727,6 +876,21 @@ public class FGWrappedView extends View {
                 drawEmpty(canvas, time, alpha);
                 break;
         }
+        if (page != P_SUMMARY && page != P_INTRO && page != P_EMPTY) {
+            String scope = page == P_CLOCK || page == P_ACTIVITY || page == P_STICKER || page == P_WORD
+                    ? LocaleController.formatString(R.string.FG_Wrapped_SampleScope, number(stats.sampled))
+                    : page == P_MEDIA ? LocaleController.formatString(R.string.FG_Wrapped_MediaScope, stats.mediaChats)
+                    : page == P_CALLS ? LocaleController.getString(R.string.FG_Wrapped_CallScope) : coverage();
+            if (stats.partial && page != P_TOTAL && page != P_TOP && page != P_BEST) {
+                scope = LocaleController.getString(R.string.FG_Wrapped_Incomplete) + "\n" + scope;
+            }
+            text(canvas, scope, bodyPaint, 12, 577, 292, ease(time, 0.5f, 0.5f), alpha * 0.72f);
+        }
+    }
+
+    private String coverage() {
+        return LocaleController.formatString(stats.partial ? R.string.FG_Wrapped_PartialScope
+                : stats.chatsLimited ? R.string.FG_Wrapped_LimitedScope : R.string.FG_Wrapped_ChatScope, stats.checkedChats);
     }
 
     private int[] palette(int page) {
@@ -738,7 +902,15 @@ public class FGWrappedView extends View {
 
     private void drawBackground(Canvas canvas, int width, int height, int[] palette, float s) {
         shaderPaint.setAlpha(255);
-        shaderPaint.setShader(new LinearGradient(0, 0, width * 0.4f, height, palette[0], palette[1], Shader.TileMode.CLAMP));
+        if (backgroundGradient == null || backgroundWidth != width || backgroundHeight != height
+                || backgroundColorTop != palette[0] || backgroundColorBottom != palette[1]) {
+            backgroundGradient = new LinearGradient(0, 0, width * 0.4f, height, palette[0], palette[1], Shader.TileMode.CLAMP);
+            backgroundWidth = width;
+            backgroundHeight = height;
+            backgroundColorTop = palette[0];
+            backgroundColorBottom = palette[1];
+        }
+        shaderPaint.setShader(backgroundGradient);
         canvas.drawRect(0, 0, width, height, shaderPaint);
         shaderPaint.setShader(null);
         float base = Math.max(width, height);
@@ -828,7 +1000,7 @@ public class FGWrappedView extends View {
     }
 
     private boolean once(String key, float time, float at) {
-        if (!ghost && time >= at && !fired.contains(key)) {
+        if (!ghost && !exporting && !reduceMotion && time >= at && !fired.contains(key)) {
             fired.add(key);
             return true;
         }
@@ -871,7 +1043,7 @@ public class FGWrappedView extends View {
         burst(x, y, (int) (40 * scale), 470f * scale, true, spawn * 0.5f);
         shockwave(x, y, 190f * scale);
         try {
-            performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+            performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         } catch (Throwable ignored) {
         }
     }
@@ -1160,7 +1332,8 @@ public class FGWrappedView extends View {
             return UserObject.getUserName((TLRPC.User) peer);
         }
         if (peer instanceof TLRPC.Chat) {
-            return ((TLRPC.Chat) peer).title;
+            String title = ((TLRPC.Chat) peer).title;
+            return title == null ? "" : title;
         }
         return "";
     }
@@ -1198,6 +1371,11 @@ public class FGWrappedView extends View {
         receiver.draw(canvas);
     }
 
+    private SweepGradient loadingSweep;
+    private float loadingSweepX;
+    private float loadingSweepY;
+    private int loadingSweepDeg;
+
     private void drawLoading(Canvas canvas, float time) {
         float cx = W / 2f;
         float cy = H / 2f - 30;
@@ -1206,11 +1384,18 @@ public class FGWrappedView extends View {
         strokePaint.setColor(0x33ffffff);
         canvas.drawCircle(cx, cy, 52, strokePaint);
         strokePaint.setColor(Color.WHITE);
-        strokePaint.setShader(new SweepGradient(cx, cy, new int[]{0x00ffffff, Color.WHITE}, null));
+        int sweep = Math.round(60 + 270 * progress);
+        if (loadingSweep == null || loadingSweepX != cx || loadingSweepY != cy || loadingSweepDeg != sweep) {
+            loadingSweepX = cx;
+            loadingSweepY = cy;
+            loadingSweepDeg = sweep;
+            loadingSweep = new SweepGradient(cx, cy, new int[]{0x00ffffff, 0x00ffffff, Color.WHITE, Color.WHITE}, new float[]{0f, 14f / 360f, (14f + sweep) / 360f, 1f});
+        }
+        strokePaint.setShader(loadingSweep);
         canvas.save();
         canvas.rotate((time * 260f) % 360f, cx, cy);
         rect.set(cx - 52, cy - 52, cx + 52, cy + 52);
-        canvas.drawArc(rect, 0, 60 + 280 * progress, false, strokePaint);
+        canvas.drawArc(rect, 14, sweep, false, strokePaint);
         canvas.restore();
         strokePaint.setShader(null);
         float pulse = 1f + 0.05f * (float) Math.sin(time * 4f);
@@ -1283,15 +1468,13 @@ public class FGWrappedView extends View {
         text(canvas, LocaleController.formatString(R.string.FG_Wrapped_InChats, stats.chats, plural(R.string.FG_Wrapped_W_ChatsIn, stats.chats)),
                 bodyPaint, 18, 352, 300, ease(time, 1.9f, 0.7f), alpha);
         if (stats.sampled > 0 && stats.sampledChars > 0) {
-            long chars = stats.sampledChars * stats.total / Math.max(1, stats.sampled);
-            long pagesCount = Math.max(1, chars / 1800);
             float e = spring(time, 2.6f, 0.8f);
             if (e > 0f) {
                 canvas.save();
                 canvas.translate(0, (1f - e) * 40f);
                 rect.set(40, 420, W - 40, 490);
                 glassCard(canvas, rect, 22, Math.min(1f, e) * alpha);
-                text(canvas, LocaleController.formatString(R.string.FG_Wrapped_Book, number(pagesCount), plural(R.string.FG_Wrapped_W_Pages, pagesCount)),
+                text(canvas, LocaleController.formatString(R.string.FG_Wrapped_SampleChars, number(stats.sampledChars)),
                         bodyPaint, 16, 433, 250, 1f, Math.min(1f, e) * alpha);
                 canvas.restore();
             }
@@ -1339,7 +1522,10 @@ public class FGWrappedView extends View {
 
     private void drawBest(Canvas canvas, float time, float alpha) {
         FGWrappedStats.Person person = stats.top.get(0);
-        stagger(canvas, LocaleController.getString(stats.isYear() ? R.string.FG_Wrapped_BestYear : R.string.FG_Wrapped_BestMonth),
+        int title = person.peer instanceof TLRPC.User
+                ? (stats.isYear() ? R.string.FG_Wrapped_BestYear : R.string.FG_Wrapped_BestMonth)
+                : (stats.isYear() ? R.string.FG_Wrapped_BestChatYear : R.string.FG_Wrapped_BestChatMonth);
+        stagger(canvas, LocaleController.getString(title),
                 headPaint, 24, W / 2f, 105, 320, time, 0.05f, 0.03f, alpha);
         float cx = W / 2f;
         float cy = 265;
@@ -1371,7 +1557,9 @@ public class FGWrappedView extends View {
             burst(cx, cy, 50, 560f, false, 80f);
             shockwave(cx, cy, 170f);
         }
-        stagger(canvas, nameOf(person.peer), displayPaint, 24, W / 2f, 415, 320, time, 1.0f, 0.04f, alpha);
+        displayPaint.setTextSize(24);
+        String name = TextUtils.ellipsize(nameOf(person.peer), displayPaint, 320, TextUtils.TruncateAt.END).toString();
+        stagger(canvas, name, displayPaint, 24, W / 2f, 415, 320, time, 1.0f, 0.04f, alpha);
         float countWidth = odometer(canvas, person.count, displayPaint, 30, W / 2f, 465, 200, time, 1.3f, alpha * ease(time, 1.2f, 0.4f), 0);
         text(canvas, plural(R.string.FG_Wrapped_W_Messages, person.count), bodyPaint, 17, 475, 300, ease(time, 1.8f, 0.6f), alpha);
         String share;
@@ -1528,6 +1716,21 @@ public class FGWrappedView extends View {
                 bodyPaint, 17, 505, 300, ease(time, 2.6f, 0.7f), alpha);
     }
 
+    private void drawActivity(Canvas canvas, float time, float alpha) {
+        stagger(canvas, LocaleController.getString(R.string.FG_Wrapped_ActivityTitle), headPaint, 25, W / 2f, 125, 310,
+                time, 0.05f, 0.03f, alpha);
+        odometer(canvas, stats.activeDays, displayPaint, 76, W / 2f, 290, 310, time, 0.3f, alpha, 0);
+        text(canvas, LocaleController.getString(R.string.FG_Wrapped_ActivityDays), bodyPaint, 19, 310, 290,
+                ease(time, 0.8f, 0.6f), alpha);
+        if (stats.longest > 0) {
+            rect.set(32, 404, W - 32, 508);
+            float appear = ease(time, 1.3f, 0.6f);
+            glassCard(canvas, rect, 24, appear * alpha);
+            text(canvas, LocaleController.formatString(R.string.FG_Wrapped_LongestSample, number(stats.longest)), bodyPaint, 18,
+                    427, 260, appear, alpha);
+        }
+    }
+
     private void drawSticker(Canvas canvas, float time, float alpha) {
         stagger(canvas, LocaleController.getString(R.string.FG_Wrapped_StickerTitle), headPaint, 25, W / 2f, 105, 320, time, 0.05f, 0.03f, alpha);
         float cy = 290;
@@ -1644,6 +1847,19 @@ public class FGWrappedView extends View {
         }
     }
 
+    private int callValue() {
+        if (stats.callSeconds < 60) {
+            return stats.callSeconds;
+        }
+        int minutes = stats.callSeconds / 60;
+        return minutes >= 120 ? minutes / 60 : minutes;
+    }
+
+    private int callUnit() {
+        return stats.callSeconds < 60 ? R.string.FG_Wrapped_W_Seconds
+                : stats.callSeconds >= 7200 ? R.string.FG_Wrapped_W_Hours : R.string.FG_Wrapped_W_Minutes;
+    }
+
     private void drawCalls(Canvas canvas, float time, float alpha) {
         stagger(canvas, LocaleController.getString(R.string.FG_Wrapped_CallsTitle), headPaint, 25, W / 2f, 105, 320, time, 0.05f, 0.03f, alpha);
         float cx = W / 2f;
@@ -1655,16 +1871,8 @@ public class FGWrappedView extends View {
             strokePaint.setColor(ColorUtils.setAlphaComponent(Color.WHITE, (int) (120 * (1f - phase) * alpha * ease(time, 0.2f, 0.6f))));
             canvas.drawCircle(cx, cy, r, strokePaint);
         }
-        int minutes = Math.max(1, stats.callSeconds / 60);
-        long value;
-        String unit;
-        if (minutes >= 120) {
-            value = minutes / 60;
-            unit = plural(R.string.FG_Wrapped_W_Hours, value);
-        } else {
-            value = minutes;
-            unit = plural(R.string.FG_Wrapped_W_Minutes, minutes);
-        }
+        long value = callValue();
+        String unit = plural(callUnit(), value);
         float callsLanded = odometerEnd(value, 0.3f);
         flash(canvas, cx, 260, time, callsLanded, alpha);
         float callsKick = punch(time, callsLanded);
@@ -1684,7 +1892,7 @@ public class FGWrappedView extends View {
             strokePaint.setColor(ColorUtils.setAlphaComponent(Color.WHITE, (int) (200 * a)));
             canvas.drawCircle(cx, 440, 44 * pop, strokePaint);
             avatar(canvas, callAvatar, cx, 440, 80 * pop, a);
-            text(canvas, LocaleController.formatString(R.string.FG_Wrapped_CallsLongest, nameOf(stats.callPeer)), bodyPaint, 16, 495, 300,
+            text(canvas, LocaleController.formatString(R.string.FG_Wrapped_CallMostTime, nameOf(stats.callPeer)), bodyPaint, 16, 495, 300,
                     ease(time, 2.3f, 0.6f), alpha);
         }
     }
@@ -1737,12 +1945,13 @@ public class FGWrappedView extends View {
         strokePaint.setStrokeWidth(4);
         strokePaint.setColor(ColorUtils.setAlphaComponent(Color.WHITE, (int) (200 * Math.min(1f, pop) * alpha)));
         canvas.drawCircle(W / 2f, 240, 46 * pop, strokePaint);
-        text(canvas, LocaleController.getString(R.string.FG_Wrapped_Empty), headPaint, 22, 310, 300, ease(time, 0.3f, 0.8f), alpha);
+        text(canvas, LocaleController.getString(stats.partial ? R.string.FG_Wrapped_Unavailable : R.string.FG_Wrapped_NoMessagesObserved), headPaint, 22, 310, 300, ease(time, 0.3f, 0.8f), alpha);
+        text(canvas, coverage(), bodyPaint, 13, 410, 290, ease(time, 0.6f, 0.8f), alpha * 0.72f);
     }
 
     private void drawSummary(Canvas canvas, float time, float alpha, boolean export) {
         float flip = export ? 1f : spring(time, 0.1f, 1.1f);
-        float cardBottom = export ? 600 : 540;
+        float cardBottom = export ? 600 : 548;
         float cx = W / 2f;
         float cy = (60 + cardBottom) / 2f;
         canvas.save();
@@ -1800,8 +2009,8 @@ public class FGWrappedView extends View {
         if (stats.voice + stats.rounds > 0 && cell < 4) {
             cells[cell++] = new String[]{number(stats.voice + stats.rounds), LocaleController.getString(R.string.FG_Wrapped_VoiceAndRounds)};
         }
-        if (stats.callSeconds >= 60 && cell < 4) {
-            cells[cell++] = new String[]{number(Math.max(1, stats.callSeconds / 60)), plural(R.string.FG_Wrapped_W_Minutes, Math.max(1, stats.callSeconds / 60)) + " " + LocaleController.getString(R.string.FG_Wrapped_InCalls)};
+        if (stats.callSeconds > 0 && cell < 4) {
+            cells[cell++] = new String[]{number(callValue()), plural(callUnit(), callValue()) + " " + LocaleController.getString(R.string.FG_Wrapped_InCalls)};
         }
         if (stats.word != null && cell < 4) {
             cells[cell++] = new String[]{stats.word, LocaleController.getString(R.string.FG_Wrapped_WordTitle)};
@@ -1809,7 +2018,7 @@ public class FGWrappedView extends View {
         float colW = (W - 60) / 2f;
         for (int i = 0; i < cell; i++) {
             float ccx = 30 + colW * (i % 2) + colW / 2f;
-            float top = 318 + (i / 2) * 96;
+            float top = 310 + (i / 2) * 88;
             float pop = export ? 1f : spring(time, 0.9f + i * 0.12f, 0.7f);
             if (pop <= 0f) {
                 continue;
@@ -1831,7 +2040,14 @@ public class FGWrappedView extends View {
             text(canvas, cells[i][1], bodyPaint, 12, top + 50, colW - 28, 1f, ca);
             canvas.restore();
         }
-        brandPill(canvas, cardBottom - 22, a);
+        String scope = LocaleController.formatString(R.string.FG_Wrapped_SummaryScope, stats.checkedChats, stats.mediaChats, number(stats.sampled));
+        if (stats.partial) {
+            scope = LocaleController.getString(R.string.FG_Wrapped_Incomplete) + "\n" + scope;
+        }
+        text(canvas, scope, bodyPaint, 10, export ? 508 : 488, 280, 1f, a * 0.75f);
+        if (export) {
+            brandPill(canvas, cardBottom - 18, a);
+        }
         canvas.restore();
         if (!export) {
             if (once("summary", time, 0.9f)) {
@@ -1858,10 +2074,15 @@ public class FGWrappedView extends View {
     }
 
     private boolean hitSummary(float x, float y, RectF bounds) {
-        float scale = Math.min(getWidth() / W, getHeight() / H);
-        float vx = (x - (getWidth() - W * scale) / 2f) / scale;
-        float vy = (y - (getHeight() - H * scale) / 2f) / scale;
-        return bounds.contains(vx, vy);
+        float scale = Math.min(contentWidth / W, contentHeight / H);
+        if (scale <= 0f || bounds.left >= bounds.right || bounds.top >= bounds.bottom) {
+            return false;
+        }
+        float vx = (x - contentLeft - (contentWidth - W * scale) / 2f) / scale;
+        float vy = (y - contentTop - (contentHeight - H * scale) / 2f) / scale;
+        float halfWidth = Math.max(bounds.right - bounds.left, AndroidUtilities.dp(48) / scale) / 2f;
+        float halfHeight = Math.max(bounds.bottom - bounds.top, AndroidUtilities.dp(48) / scale) / 2f;
+        return Math.abs(vx - bounds.centerX()) <= halfWidth && Math.abs(vy - bounds.centerY()) <= halfHeight;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1872,18 +2093,20 @@ public class FGWrappedView extends View {
                 downX = event.getX();
                 downY = event.getY();
                 downTime = SystemClock.uptimeMillis();
+                gestureCancelled = false;
                 holding = true;
-                pausedAt = SystemClock.uptimeMillis();
+                updatePlayback();
+                return true;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                gestureCancelled = true;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
-                if (holding) {
-                    holding = false;
-                    pausedTotal += SystemClock.uptimeMillis() - pausedAt;
-                }
-                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                holding = false;
+                updatePlayback();
+                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL || gestureCancelled) {
                     return true;
                 }
                 float dx = event.getX() - downX;
@@ -1904,13 +2127,13 @@ public class FGWrappedView extends View {
                 }
                 float x = event.getX();
                 float y = event.getY();
-                if (x > closeX - AndroidUtilities.dp(30) && y > closeY - AndroidUtilities.dp(30) && y < closeY + AndroidUtilities.dp(30)) {
+                if (Math.abs(x - closeX) <= AndroidUtilities.dp(30) && Math.abs(y - closeY) <= AndroidUtilities.dp(30)) {
                     if (onClose != null) {
                         onClose.run();
                     }
                     return true;
                 }
-                if (stats != null && page() == P_SUMMARY) {
+                if (stats != null && page() == P_SUMMARY && (reduceMotion || now() - pageStart >= 1400)) {
                     if (hitSummary(x, y, shareButton)) {
                         export(true);
                         return true;
@@ -1928,18 +2151,27 @@ public class FGWrappedView extends View {
     }
 
     private void export(boolean share) {
-        if (sharing || stats == null) {
+        if (sharing || stats == null || !attached || page() != P_SUMMARY) {
             return;
         }
         sharing = true;
-        Bitmap bitmap;
+        updatePlayback();
+        Bitmap bitmap = null;
         try {
             bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888);
+            exporting = true;
             drawFrame(new Canvas(bitmap), 1080, 1920, now(), true);
         } catch (Throwable t) {
             FileLog.e(t);
+            if (bitmap != null) {
+                bitmap.recycle();
+            }
             sharing = false;
+            updatePlayback();
+            showExportError();
             return;
+        } finally {
+            exporting = false;
         }
         final Bitmap result = bitmap;
         Utilities.globalQueue.postRunnable(() -> {
@@ -1954,7 +2186,12 @@ public class FGWrappedView extends View {
             final boolean saved = ok;
             AndroidUtilities.runOnUIThread(() -> {
                 sharing = false;
-                if (!saved) {
+                updatePlayback();
+                if (!saved || !attached) {
+                    file.delete();
+                    if (!saved) {
+                        showExportError();
+                    }
                     return;
                 }
                 if (share) {
@@ -1967,11 +2204,14 @@ public class FGWrappedView extends View {
                         getContext().startActivity(Intent.createChooser(intent, LocaleController.getString(R.string.FG_Wrapped_Share)));
                     } catch (Throwable t) {
                         FileLog.e(t);
+                        file.delete();
+                        showExportError();
                     }
                 } else {
                     MediaController.saveFile(file.getAbsolutePath(), getContext(), 0, null, "image/png", uri -> AndroidUtilities.runOnUIThread(() -> {
+                        file.delete();
                         try {
-                            if (getParent() instanceof android.widget.FrameLayout) {
+                            if (attached && getParent() instanceof android.widget.FrameLayout) {
                                 BulletinFactory.of((android.widget.FrameLayout) getParent(), null)
                                         .createSimpleBulletin(R.raw.ic_download, LocaleController.getString(R.string.FG_Wrapped_Saved)).show();
                             }
@@ -1981,5 +2221,12 @@ public class FGWrappedView extends View {
                 }
             });
         });
+    }
+
+    private void showExportError() {
+        if (attached && getParent() instanceof android.widget.FrameLayout) {
+            BulletinFactory.of((android.widget.FrameLayout) getParent(), null)
+                    .createSimpleBulletin(R.raw.ic_download, LocaleController.getString(R.string.FG_Wrapped_ExportError)).show();
+        }
     }
 }

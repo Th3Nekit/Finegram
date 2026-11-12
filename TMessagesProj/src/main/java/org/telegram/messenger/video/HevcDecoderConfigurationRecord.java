@@ -77,21 +77,14 @@ public class HevcDecoderConfigurationRecord {
     public void parse(ByteBuffer content) {
         configurationVersion = IsoTypeReader.readUInt8(content);
 
-        /*
-         * unsigned int(2) general_profile_space;
-         * unsigned int(1) general_tier_flag;
-         * unsigned int(5) general_profile_idc;
-         */
         int a = IsoTypeReader.readUInt8(content);
         general_profile_space = (a & 0xC0) >> 6;
         general_tier_flag = (a & 0x20) > 0;
         general_profile_idc = (a & 0x1F);
 
-        /* unsigned int(32) general_profile_compatibility_flags; */
         general_profile_compatibility_flags = IsoTypeReader.readUInt32(content);
 
 
-        /* unsigned int(48) general_constraint_indicator_flags; */
         general_constraint_indicator_flags = IsoTypeReader.readUInt48(content);
 
         frame_only_constraint_flag = ((general_constraint_indicator_flags >> 44) & 0x08) > 0;
@@ -101,13 +94,8 @@ public class HevcDecoderConfigurationRecord {
 
         general_constraint_indicator_flags &= 0x7fffffffffffL;
 
-        /* unsigned int(8) general_level_idc; */
         general_level_idc = IsoTypeReader.readUInt8(content);
 
-        /*
-         * bit(4) reserved = ‘1111’b;
-         * unsigned int(12) min_spatial_segmentation_idc;
-         */
         a = IsoTypeReader.readUInt16(content);
         reserved1 = (a & 0xF000) >> 12;
         min_spatial_segmentation_idc = a & 0xFFF;
@@ -557,7 +545,6 @@ public class HevcDecoderConfigurationRecord {
         for (ByteBuffer nal : csd) {
             final H265NalUnitHeader unitHeader = getNalUnitHeader(nal);
             nal.position(0);
-            // collect sps/vps/pps
             switch (unitHeader.nalUnitType) {
                 case NAL_TYPE_PPS_NUT:
                     pps.add(nal.duplicate());
@@ -571,7 +558,6 @@ public class HevcDecoderConfigurationRecord {
                     spsStruct = new SequenceParameterSetRbsp(new CleanInputStream(Channels.newInputStream(new ByteBufferByteChannel(nal.slice()))));
                     break;
                 case NAL_TYPE_PREFIX_SEI_NUT:
-                    //new SEIMessage(new BitReaderBuffer(nal.slice()));
                     break;
             }
         }

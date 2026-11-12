@@ -975,13 +975,12 @@ public class StickerMakerView extends FrameLayout implements NotificationCenter.
                     }
                     detectedEmoji = ObjectDetectionEmojis.labelToEmoji(labels.get(0).getIndex());
                     FileLog.d("objimg: detected #" + labels.get(0).getIndex() + " " + detectedEmoji + " " + labels.get(0).getText());
-                    Emoji.getEmojiDrawable(detectedEmoji); // preload
+                    Emoji.getEmojiDrawable(detectedEmoji);
                 })
                 .addOnFailureListener(e -> {
                 });
         }
 
-        // preload emojis
         List<TLRPC.TL_availableReaction> defaultReactions = MediaDataController.getInstance(currentAccount).getEnabledReactionsList();
         for (int i = 0; i < Math.min(defaultReactions.size(), 9); ++i) {
             Emoji.getEmojiDrawable(defaultReactions.get(i).reaction);
@@ -1251,12 +1250,12 @@ public class StickerMakerView extends FrameLayout implements NotificationCenter.
             currentAccount = account;
 
             if (currentAccount >= 0 && isAttachedToWindow()) {
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploaded);
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploadProgressChanged);
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploadFailed);
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.filePreparingFailed);
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.filePreparingStarted);
-                NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileNewChunkAvailable);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploaded);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploadProgressChanged);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploadFailed);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.filePreparingFailed);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.filePreparingStarted);
+                NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileNewChunkAvailable);
             }
         }
     }
@@ -1278,12 +1277,12 @@ public class StickerMakerView extends FrameLayout implements NotificationCenter.
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploaded);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploadProgressChanged);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileUploadFailed);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.filePreparingFailed);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.filePreparingStarted);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileNewChunkAvailable);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploaded);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploadProgressChanged);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileUploadFailed);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.filePreparingFailed);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.filePreparingStarted);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.fileNewChunkAvailable);
     }
 
     @Override

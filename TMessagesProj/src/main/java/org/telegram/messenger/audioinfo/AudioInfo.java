@@ -28,29 +28,29 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 
 public abstract class AudioInfo {
-	protected String brand;			// brand, e.g. "M4A", "ID3", ...
-	protected String version;		// version, e.g. "0", "2.3.0", ... 
+	protected String brand;
+	protected String version;
 
-	protected long duration;		// track duration (milliseconds)
+	protected long duration;
 
-	protected String title;			// track title
-	protected String artist;		// track artist
-	protected String albumArtist;	// album artist
-	protected String album;			// album title
-	protected short year;			// year...
-	protected String genre;			// genre name
-	protected String comment;		// comment...
-	protected short track;			// track number
-	protected short tracks;			// number of tracks
-	protected short disc;			// disc number
-	protected short discs;			// number of discs
+	protected String title;
+	protected String artist;
+	protected String albumArtist;
+	protected String album;
+	protected short year;
+	protected String genre;
+	protected String comment;
+	protected short track;
+	protected short tracks;
+	protected short disc;
+	protected short discs;
 	protected String copyright;		// copyright notice
-	protected String composer;		// composer name
-	protected String grouping;		// track grouping
-	protected boolean compilation;	// compilation flag
-	protected String lyrics;		// song lyrics
-	protected Bitmap cover;			// cover image data
-    protected Bitmap smallCover;	// cover image data
+	protected String composer;
+	protected String grouping;
+	protected boolean compilation;
+	protected String lyrics;
+	protected Bitmap cover;
+    protected Bitmap smallCover;
 
 	private File coverFile;
 

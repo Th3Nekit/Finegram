@@ -149,7 +149,6 @@ public class SearchStateDrawable extends Drawable {
         float progressValue = toState == State.STATE_PROGRESS ? fromState == State.STATE_PROGRESS ? 1 : value : fromState == State.STATE_PROGRESS   ? 1f - value : 0;
 
         if (searchValue > 0) {
-            // o
             drawCircle(
                 canvas,
                 lerp(x(.25f), x(.444f), searchValue),
@@ -159,7 +158,6 @@ public class SearchStateDrawable extends Drawable {
         }
 
         if (searchValue > 0 || backValue > 0) {
-            // —
             canvas.save();
             canvas.rotate(searchValue * 45, cx, cy);
             drawLine(
@@ -177,7 +175,6 @@ public class SearchStateDrawable extends Drawable {
         }
 
         if (backValue > 0) {
-            // <
             float ax = fromState == State.STATE_PROGRESS ? lerp(x(.5f + progressRadius), x(.2409f), backValue) : x(.2409f);
 
             canvas.save();
@@ -292,7 +289,6 @@ public class SearchStateDrawable extends Drawable {
         float x1,
         float x2,
         float x3,
-        // t1 + t2 + t3 = 1
         float t1,
         float t2,
         float t3

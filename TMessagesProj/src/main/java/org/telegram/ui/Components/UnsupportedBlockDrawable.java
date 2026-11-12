@@ -113,7 +113,7 @@ public class UnsupportedBlockDrawable extends Drawable {
     }
 
     public void updateColors() {
-        final int white = Theme.getColor(Theme.key_chat_serviceText); // 0xFFFFFFFF;
+        final int white = Theme.getColor(Theme.key_chat_serviceText);
         final int black = 0xFF000000;
 
         planeDrawable.setColorFilter(new PorterDuffColorFilter(white, PorterDuff.Mode.MULTIPLY));

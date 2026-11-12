@@ -114,33 +114,6 @@ public class MP4Builder {
             writeNewMdat = false;
         }
 
-        /*if (writeLength && !wasFirstVideoFrame) {
-            wasFirstVideoFrame = true;
-            byte[] buff = new byte[bufferInfo.size];
-            byteBuf.position(bufferInfo.offset);
-            byteBuf.limit(bufferInfo.offset + bufferInfo.size);
-            byteBuf.get(buff);
-
-            ByteBuffer nativeBuffer = ByteBuffer.allocateDirect(bufferInfo.size);
-            nativeBuffer.position(4);
-            int indexOfNal = -1;
-            int totalLen = 0;
-            for (int a = 0, N = buff.length - 3; a < N; a++) {
-                if (buff[a] == 0 && buff[a + 1] == 0 && buff[a + 2] == 0 && buff[a + 3] == 1 || a == N - 1) {
-                    if (indexOfNal != -1) {
-                        int len = a - indexOfNal - 4;
-                        nativeBuffer.put(buff, indexOfNal, len);
-                        totalLen += len;
-                    }
-                    indexOfNal = a;
-                }
-            }
-            nativeBuffer.position(0);
-            nativeBuffer.putInt(totalLen);
-            bufferInfo.offset = 0;
-            bufferInfo.size = totalLen + 4;
-            byteBuf = nativeBuffer;
-        }*/
 
         mdat.setContentSize(mdat.getContentSize() + bufferInfo.size);
         wroteSinceLastMdat += bufferInfo.size;
@@ -232,7 +205,6 @@ public class MP4Builder {
         try (RandomAccessFile raf = new RandomAccessFile(into, "rw");
              FileChannel copiedFc = raf.getChannel()) {
 
-            // put mdat box
             copiedFc.position(wasPosition);
             if (mdat.getContentSize() != 0) {
                 copiedFc.position(mdat.getOffset());
@@ -240,7 +212,6 @@ public class MP4Builder {
                 copiedFc.position(wasPosition);
             }
 
-            // put moov box
             track2SampleSizes.clear();
             for (Track track : currentMp4Movie.getTracks()) {
                 List<Sample> samples = track.getSamples();
@@ -552,9 +523,6 @@ public class MP4Builder {
     }
 
     protected void createSidx(Track track, SampleTableBox stbl) {
-        //SampleSizeBox stsz = new SampleSizeBox();
-        //stsz.setSampleSizes(track2SampleSizes.get(track));
-        //stbl.addBox(stsz);
     }
 
     protected void createStco(Track track, SampleTableBox stbl) {

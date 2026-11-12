@@ -30,18 +30,15 @@ import org.webrtc.Logging;
 final class WebRtcAudioUtils {
   private static final String TAG = "WebRtcAudioUtilsExternal";
 
-  // Helper method for building a string of thread information.
   public static String getThreadInfo() {
     return "@[name=" + Thread.currentThread().getName() + ", id=" + Thread.currentThread().getId()
         + "]";
   }
 
-  // Returns true if we're running on emulator.
   public static boolean runningOnEmulator() {
     return Build.HARDWARE.equals("goldfish") && Build.BRAND.startsWith("generic_");
   }
 
-  // Information about the current build, taken from system properties.
   static void logDeviceInfo(String tag) {
     Logging.d(tag,
         "Android SDK: " + Build.VERSION.SDK_INT + ", "
@@ -55,9 +52,6 @@ final class WebRtcAudioUtils {
             + "Product: " + Build.PRODUCT);
   }
 
-  // Logs information about the current audio state. The idea is to call this
-  // method when errors are detected to log under what conditions the error
-  // occurred. Hopefully it will provide clues to what might be the root cause.
   static void logAudioState(String tag, Context context, AudioManager audioManager) {
     logDeviceInfo(tag);
     logAudioStateBasic(tag, context, audioManager);
@@ -65,7 +59,6 @@ final class WebRtcAudioUtils {
     logAudioDeviceInfo(tag, audioManager);
   }
 
-  // Converts AudioDeviceInfo types to local string representation.
   static String deviceTypeToString(int type) {
     switch (type) {
       case AudioDeviceInfo.TYPE_UNKNOWN:
@@ -121,7 +114,6 @@ final class WebRtcAudioUtils {
 
   @TargetApi(Build.VERSION_CODES.N)
   public static String audioSourceToString(int source) {
-    // AudioSource.UNPROCESSED requires API level 29. Use local define instead.
     final int VOICE_PERFORMANCE = 10;
     switch (source) {
       case AudioSource.DEFAULT:
@@ -150,9 +142,6 @@ final class WebRtcAudioUtils {
   }
 
   public static String channelMaskToString(int mask) {
-    // For input or AudioRecord, the mask should be AudioFormat#CHANNEL_IN_MONO or
-    // AudioFormat#CHANNEL_IN_STEREO. AudioFormat#CHANNEL_IN_MONO is guaranteed to work on all
-    // devices.
     switch (mask) {
       case AudioFormat.CHANNEL_IN_STEREO:
         return "IN_STEREO";
@@ -189,7 +178,6 @@ final class WebRtcAudioUtils {
     }
   }
 
-  // Reports basic audio statistics.
   private static void logAudioStateBasic(String tag, Context context, AudioManager audioManager) {
     Logging.d(tag,
         "Audio State: "
@@ -201,13 +189,11 @@ final class WebRtcAudioUtils {
             + "BT SCO: " + audioManager.isBluetoothScoOn());
   }
 
-  // Adds volume information for all possible stream types.
   private static void logAudioStateVolume(String tag, AudioManager audioManager) {
     final int[] streams = {AudioManager.STREAM_VOICE_CALL, AudioManager.STREAM_MUSIC,
         AudioManager.STREAM_RING, AudioManager.STREAM_ALARM, AudioManager.STREAM_NOTIFICATION,
         AudioManager.STREAM_SYSTEM};
     Logging.d(tag, "Audio State: ");
-    // Some devices may not have volume controls and might use a fixed volume.
     boolean fixedVolume = audioManager.isVolumeFixed();
     Logging.d(tag, "  fixed volume=" + fixedVolume);
     if (!fixedVolume) {
@@ -242,13 +228,11 @@ final class WebRtcAudioUtils {
       StringBuilder info = new StringBuilder();
       info.append("  ").append(deviceTypeToString(device.getType()));
       info.append(device.isSource() ? "(in): " : "(out): ");
-      // An empty array indicates that the device supports arbitrary channel counts.
       if (device.getChannelCounts().length > 0) {
         info.append("channels=").append(Arrays.toString(device.getChannelCounts()));
         info.append(", ");
       }
       if (device.getEncodings().length > 0) {
-        // Examples: ENCODING_PCM_16BIT = 2, ENCODING_PCM_FLOAT = 4.
         info.append("encodings=").append(Arrays.toString(device.getEncodings()));
         info.append(", ");
       }
@@ -261,7 +245,6 @@ final class WebRtcAudioUtils {
     }
   }
 
-  // Converts media.AudioManager modes into local string representation.
   static String modeToString(int mode) {
     switch (mode) {
       case MODE_IN_CALL:
@@ -296,7 +279,6 @@ final class WebRtcAudioUtils {
     }
   }
 
-  // Returns true if the device can record audio via a microphone.
   private static boolean hasMicrophone(Context context) {
     return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_MICROPHONE);
   }

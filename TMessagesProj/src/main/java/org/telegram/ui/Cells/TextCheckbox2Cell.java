@@ -19,6 +19,7 @@ import android.widget.TextView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimationProperties;
 import org.telegram.ui.Components.CheckBox2;
 import org.telegram.ui.Components.CubicBezierInterpolator;
@@ -67,7 +68,7 @@ public class TextCheckbox2Cell extends FrameLayout {
         super(context);
 
         textView = new TextView(context);
-        textView.setTextColor(Theme.getColor(dialog ? Theme.key_dialogTextBlack : Theme.key_windowBackgroundWhiteBlackText));
+        ThemeBind.textColor(textView, dialog ? Theme.key_dialogTextBlack : Theme.key_windowBackgroundWhiteBlackText);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setLines(1);
         textView.setMaxLines(1);
@@ -77,7 +78,7 @@ public class TextCheckbox2Cell extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? padding : 64, 0, LocaleController.isRTL ? 64 : padding, 0));
 
         valueTextView = new TextView(context);
-        valueTextView.setTextColor(Theme.getColor(dialog ? Theme.key_dialogIcon : Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(valueTextView, dialog ? Theme.key_dialogIcon : Theme.key_windowBackgroundWhiteGrayText2);
         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         valueTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
         valueTextView.setLines(1);
@@ -130,8 +131,7 @@ public class TextCheckbox2Cell extends FrameLayout {
     }
 
     public void setColors(int key, int switchKey, int switchKeyChecked, int switchThumb, int switchThumbChecked) {
-        textView.setTextColor(Theme.getColor(key));
-//        checkbox.setColors(switchKey, switchKeyChecked, switchThumb, switchThumbChecked);
+        ThemeBind.textColor(textView, key);
         textView.setTag(key);
     }
 
@@ -143,22 +143,15 @@ public class TextCheckbox2Cell extends FrameLayout {
         height = value;
     }
 
-//    public void setDrawCheckRipple(boolean value) {
-//        drawCheckRipple = value;
-//    }
 
     @Override
     public void setPressed(boolean pressed) {
-//        if (drawCheckRipple) {
-//            checkBox.setDrawRipple(pressed);
-//        }
         super.setPressed(pressed);
     }
 
     public void setTextAndValue(String text, String value, boolean multiline, boolean divider) {
         textView.setText(text);
         valueTextView.setText(value);
-//        checkbox.setChecked(checked, false);
         needDivider = divider;
         valueTextView.setVisibility(VISIBLE);
         isMultiline = multiline;
@@ -251,7 +244,6 @@ public class TextCheckbox2Cell extends FrameLayout {
         if (animationPaint == null) {
             animationPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         }
-//        checkbox.setOverrideColor(checked ? 1 : 2);
         animatedColorBackground = color;
         animationPaint.setColor(animatedColorBackground);
         animationProgress = 0.0f;
@@ -274,7 +266,6 @@ public class TextCheckbox2Cell extends FrameLayout {
         float cx = lastTouchX;
         int cy = getMeasuredHeight() / 2;
         float animatedRad = rad * animationProgress;
-//        checkbox.setOverrideColorProgress(cx, cy, animatedRad);
     }
 
     @Override

@@ -464,7 +464,6 @@ public class PinchToZoomHelper {
 
             addView(videoPlayerContainer, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
             setWillNotDraw(false);
-        //    videoTextureView.setVisibility(GONE);
         }
 
 

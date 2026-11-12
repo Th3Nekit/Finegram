@@ -65,7 +65,6 @@ public class StoryReactionWidgetBackground extends Drawable {
         points[7] = getBounds().top + getBounds().height() * 0.812f;
         points[8] = getBounds().height() * 0.132f;
 
-        //mirrored
         points[9] = getBounds().left + getBounds().width() * (1f - 1.027f);
         points[10] = getBounds().top + getBounds().height() * 0.956f;
         points[11] = getBounds().height() * 0.055f;
@@ -104,16 +103,13 @@ public class StoryReactionWidgetBackground extends Drawable {
                         continue;
                     }
                     path.addCircle(points[i * 3], points[i * 3 + 1], points[i * 3 + 2] * (1f - mirrorProgress) - shadowOffset, Path.Direction.CW);
-                    // drawCircle(canvas, , paint);
                 } else if (i == 3 || i == 4) {
                     if (mirrorProgress == 0) {
                         continue;
                     }
                     path.addCircle(points[i * 3], points[i * 3 + 1], points[i * 3 + 2] * mirrorProgress - shadowOffset, Path.Direction.CW);
-                    //drawCircle(canvas, points[i * 3], points[i * 3 + 1], points[i * 3 + 2] * mirrorProgress - shadowOffset, paint);
                 } else {
                     path.addCircle(points[i * 3], points[i * 3 + 1], points[i * 3 + 2] - shadowOffset, Path.Direction.CW);
-                 //   drawCircle(canvas, points[i * 3], points[i * 3 + 1], points[i * 3 + 2] - shadowOffset, paint);
                 }
             }
             canvas.drawPath(path, paint);

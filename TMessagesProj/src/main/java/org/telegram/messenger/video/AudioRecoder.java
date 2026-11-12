@@ -96,7 +96,6 @@ public class AudioRecoder {
                     } else {
                         encoderBuffer = encoder.getInputBuffers()[encoderBufferIndex].asShortBuffer();
                     }
-                    // mix the audios and add to encoder input buffer
                     mix(encoderBuffer);
 
                     encoder.queueInputBuffer(encoderBufferIndex,
@@ -159,7 +158,6 @@ public class AudioRecoder {
                 AudioInput input = audioInputs.get(j);
                 if (input.hasRemaining()) {
                     short value = input.getNext();
-                    //controlling volume
                     value = (short) (value * input.getVolume());
                     result += value / audioInputs.size();
                     put = true;

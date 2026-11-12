@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Prism names remain in Tokenization; this is only the default Android presentation policy. */
 public final class PrismaTokenStyles {
     public static final int COLOR_MASK = 0xff;
     public static final int BOLD = 1 << 8;
@@ -38,8 +37,6 @@ public final class PrismaTokenStyles {
     PrismaTokenStyles(String[] names) {
         nameStyles = new int[names.length];
         for (int i = 0; i < names.length; ++i) {
-            // Alias fields may contain several CSS classes. Resolve once per engine,
-            // without allocating a substring for each highlighted token.
             int style = 0;
             for (String name : names[i].split("\\s+")) {
                 Integer entry = DEFAULT_STYLES.get(name);
@@ -99,7 +96,6 @@ public final class PrismaTokenStyles {
         for (String name : names) target.put(name, style);
     }
 
-    /** Produces ordered, non-overlapping [start, end, color-group | font-flags] triples. */
     int[] resolve(PrismaHighlighter.Tokenization tokens) {
         int count = tokens.size();
         if (count == 0) return new int[0];

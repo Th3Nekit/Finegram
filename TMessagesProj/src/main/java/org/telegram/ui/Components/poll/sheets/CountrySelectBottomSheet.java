@@ -34,6 +34,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.ChatActionCell;
 import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Cells.GraySectionCell;
@@ -179,7 +180,7 @@ public class CountrySelectBottomSheet extends BottomSheetWithRecyclerListView im
                 super.onDraw(canvas);
             }
         };
-        doneItem.setTextColor(getThemedColor(Theme.key_featuredStickers_buttonText));
+        ThemeBind.textColor(doneItem, Theme.key_featuredStickers_buttonText, resourcesProvider);
         doneItem.setText(getString(R.string.Save));
         doneItem.setTypeface(AndroidUtilities.bold());
         doneItem.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -359,7 +360,7 @@ public class CountrySelectBottomSheet extends BottomSheetWithRecyclerListView im
 
     private void checkUi_listViewClip() {
         final int t = AndroidUtilities.statusBarHeight + ActionBar.getCurrentActionBarHeight() + dp(56)
-                + (int) animatorSelectorContainerHeight.getFactor();// - dp(6);
+                + (int) animatorSelectorContainerHeight.getFactor();
         final int b = containerView.getMeasuredHeight() - AndroidUtilities.navigationBarHeight - dp(34);
 
         final boolean invalidate = listViewClipBounds.top != t || listViewClipBounds.bottom != b;
@@ -438,10 +439,9 @@ public class CountrySelectBottomSheet extends BottomSheetWithRecyclerListView im
         }
 
         int ah = AndroidUtilities.displaySize.y
-            //+ AndroidUtilities.statusBarHeight
             - ActionBar.getCurrentActionBarHeight()
-            - dp(68)  // padding
-            + dp(13); // just gap
+            - dp(68)
+            + dp(13);
 
         final int gapH = dp(8 + 40 + 8 + 32) + selectedCountriesHeight;
         items.add(UItem.asSpace(0, gapH));
@@ -501,15 +501,6 @@ public class CountrySelectBottomSheet extends BottomSheetWithRecyclerListView im
         }
     }
 
-    /*
-    @Override
-    public void dismiss() {
-        if (listener != null) {
-            listener.onCountrySelected(new ArrayList<>(selectedCountries.keySet()));
-        }
-        super.dismiss();
-    }
-    */
 
     @Override
     public void onFactorChanged(int id, float factor, float fraction, FactorAnimator callee) {

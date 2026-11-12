@@ -42,11 +42,6 @@ public class GroupCallGridCell extends FrameLayout {
             float spanCount = GroupCallActivity.isLandscapeMode ? 3f : 2f;
             float parentWidth = AndroidUtilities.displaySize.x - dp(14) * 2 + (GroupCallActivity.isLandscapeMode ? -dp(90) : 0);
             float h;
-//            if (getParent() != null && ((View) getParent()).getMeasuredWidth() != 0) {
-//                parentWidth = ((View) getParent()).getMeasuredWidth();
-//            } else {
-//                parentWidth = MeasureSpec.getSize(widthMeasureSpec);
-//            }
             if (GroupCallActivity.isTabletMode) {
                 h = parentWidth / 2f;
             } else {

@@ -260,7 +260,6 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
                 Integer.parseInt(expr);
                 return;
             } catch (Exception e) {
-                //ignore
             }
 
             Matcher matcher = Pattern.compile(String.format(Locale.US, "(?!if|return|true|false)(%s)$", exprName)).matcher(expr);
@@ -275,7 +274,6 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
                 new JSONObject(expr).toString();
                 return;
             } catch (Exception e) {
-                //ignore
             }
 
             matcher = Pattern.compile(String.format(Locale.US, "(%s)\\[(.+)\\]$", exprName)).matcher(expr);
@@ -368,7 +366,6 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
         private HashMap<String, Object> extractObject(String objname) throws Exception {
             String funcName =  "(?:[a-zA-Z$0-9]+|\"[a-zA-Z$0-9]+\"|'[a-zA-Z$0-9]+')";
             HashMap<String, Object> obj = new HashMap<>();
-            //                                                                                         ?P<fields>
             Matcher matcher = Pattern.compile(String.format(Locale.US, "(?:var\\s+)?%s\\s*=\\s*\\{\\s*((%s\\s*:\\s*function\\(.*?\\)\\s*\\{.*?\\}(?:,\\s*)?)*)\\}\\s*;", Pattern.quote(objname), funcName)).matcher(jsCode);
             String fields = null;
             while (matcher.find()) {
@@ -382,7 +379,6 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
                 }
                 break;
             }
-            //                          ?P<key>                            ?P<args>     ?P<code>
             matcher = Pattern.compile(String.format("(%s)\\s*:\\s*function\\(([a-z,]+)\\)\\{([^}]+)\\}", funcName)).matcher(fields);
             while (matcher.find()) {
                 String[] argnames = matcher.group(2).split(",");
@@ -536,7 +532,6 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
                 if (httpConnection instanceof HttpURLConnection) {
                     int code = ((HttpURLConnection) httpConnection).getResponseCode();
                     if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_ACCEPTED && code != HttpURLConnection.HTTP_NOT_MODIFIED) {
-                        //canRetry = false;
                     }
                 }
             } catch (Exception e) {
@@ -2070,6 +2065,12 @@ public class WebPlayerView extends ViewGroup implements VideoPlayer.VideoPlayerD
 
     public boolean isInitied() {
         return initied;
+    }
+
+    public void exitFromInlineMode() {
+        if (isInline && inlineButton != null) {
+            inlineButton.callOnClick();
+        }
     }
 
     public boolean isInline() {

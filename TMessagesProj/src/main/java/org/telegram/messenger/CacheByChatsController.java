@@ -18,7 +18,6 @@ public class CacheByChatsController {
     public static int KEEP_MEDIA_ONE_WEEK = 0;
     public static int KEEP_MEDIA_ONE_MONTH = 1;
     public static int KEEP_MEDIA_TWO_DAY = 6;
-    //TEST VALUE
     public static int KEEP_MEDIA_ONE_MINUTE = 5;
 
     public static final int KEEP_MEDIA_TYPE_USER = 0;
@@ -73,7 +72,7 @@ public class CacheByChatsController {
             seconds = 60L * 60L * 24L;
         } else if (keepMedia == CacheByChatsController.KEEP_MEDIA_TWO_DAY) {
             seconds = 60L * 60L * 24L * 2;
-        }else if (keepMedia == CacheByChatsController.KEEP_MEDIA_ONE_MINUTE && BuildVars.DEBUG_PRIVATE_VERSION) { //one min
+        }else if (keepMedia == CacheByChatsController.KEEP_MEDIA_ONE_MINUTE && BuildVars.DEBUG_PRIVATE_VERSION) {
             seconds = 60L;
         } else {
             seconds = Long.MAX_VALUE;

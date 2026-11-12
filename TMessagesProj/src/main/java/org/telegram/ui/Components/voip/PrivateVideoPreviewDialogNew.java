@@ -43,6 +43,7 @@ import org.telegram.messenger.voip.VoIPService;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.BitmapShaderTools;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.LayoutHelper;
@@ -163,7 +164,7 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
         backDrawable.setShowStick(!FinegramAppearanceConfig.INSTANCE.getCenterTitle());
         actionBar.setBackButtonDrawable(backDrawable);
         actionBar.setBackgroundColor(Color.TRANSPARENT);
-        actionBar.setItemsColor(Theme.getColor(Theme.key_voipgroup_actionBarItems), false);
+        ThemeBind.actionBarItemsColor(actionBar, Theme.key_voipgroup_actionBarItems, false);
         actionBar.setOccupyStatusBar(true);
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
@@ -238,7 +239,7 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
         positiveButton.setMinWidth(AndroidUtilities.dp(64));
         positiveButton.setTag(Dialog.BUTTON_POSITIVE);
         positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        positiveButton.setTextColor(Theme.getColor(Theme.key_voipgroup_nameText));
+        ThemeBind.textColor(positiveButton, Theme.key_voipgroup_nameText);
         positiveButton.setGravity(Gravity.CENTER);
         positiveButton.setTypeface(AndroidUtilities.bold());
         positiveButton.getPaint().setTextAlign(Paint.Align.CENTER);
@@ -416,7 +417,6 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
 
         if (animate) {
             if (realCurrentPage == 0) {
-                //switch from screencast to any camera
                 if (visibleCameraPage != position) {
                     visibleCameraPage = position;
                     cameraReady = false;
@@ -430,13 +430,11 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
                 }
             } else {
                 if (position == 0) {
-                    //switch to screencast from any camera
                     viewPager.findViewWithTag("screencast_stub").setVisibility(VISIBLE);
                     saveLastCameraBitmap();
                     showStub(false, false);
                     textureView.animate().alpha(0f).setDuration(250).start();
                 } else {
-                    //switch between cameras
                     saveLastCameraBitmap();
                     visibleCameraPage = position;
                     cameraReady = false;
@@ -449,12 +447,10 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
             }
 
             if (position > realCurrentPage) {
-                //to the right
                 previousPage = realCurrentPage;
                 realCurrentPage = realCurrentPage + 1;
                 scrollAnimator = ValueAnimator.ofFloat(0.1f, 1f);
             } else {
-                //to the left
                 previousPage = realCurrentPage;
                 realCurrentPage = realCurrentPage - 1;
                 strangeCurrentPage = position;
@@ -667,7 +663,6 @@ public abstract class PrivateVideoPreviewDialogNew extends FrameLayout implement
                 alpha = 0.7f;
                 scale = 0.9f;
             } else if (i == strangeCurrentPage) {
-                //movement to the right or selected
                 alpha = 1.0f - 0.3f * pageOffset;
                 scale = 1.0f - 0.1f * pageOffset;
             } else {

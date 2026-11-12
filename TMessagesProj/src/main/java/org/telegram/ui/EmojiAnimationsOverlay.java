@@ -76,7 +76,6 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     private final static HashSet<String> excludeEmojiFromPack = new HashSet<>();
 
     static {
-        // 1️⃣, 2️⃣, 3️⃣... etc
         excludeEmojiFromPack.add("\u0030\u20E3");
         excludeEmojiFromPack.add("\u0031\u20E3");
         excludeEmojiFromPack.add("\u0032\u20E3");
@@ -113,9 +112,9 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
     public void onAttachedToWindow() {
         attached = true;
         checkStickerPack();
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.diceStickersDidLoad);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.onEmojiInteractionsReceived);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.updateInterfaces);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.diceStickersDidLoad);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.onEmojiInteractionsReceived);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.updateInterfaces);
         for (int i = 0; i < drawingObjects.size(); i++) {
             drawingObjects.get(i).imageReceiver.onAttachedToWindow();
             if (drawingObjects.get(i).genericEffect != null) {
@@ -741,7 +740,6 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
                     Integer lastIndex = lastAnimationIndex.get(document.id);
                     int currentIndex = (lastIndex == null ? 0 : lastIndex) + 1;
                     lastAnimationIndex.put(document.id, currentIndex);
-                    //currentIndex = currentIndex % 4;
 
                     ImageLocation imageLocation = ImageLocation.getForDocument(document);
                     drawingObject.imageReceiver.setUniqKeyPrefix(currentIndex + "_" + drawingObject.messageId + "_");
@@ -985,15 +983,12 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
         if (imageW > parent.getWidth() * 0.5f) {
             imageH = imageW = parent.getWidth() * 0.4f;
         }
-//        if (imageH <= 0 || imageW <= 0) {
-//            return false;
-//        }
 
         emoji = unwrapEmoji(emoji);
 
         int viewId = widgetView.hashCode();
         TLRPC.Document viewDocument = null;
-        boolean isOutOwner = widgetView.getTranslationX() > contentLayout.getMeasuredWidth() / 2f;//view.getMessageObject().isOutOwner();
+        boolean isOutOwner = widgetView.getTranslationX() > contentLayout.getMeasuredWidth() / 2f;
         if (visibleReaction.emojicon != null && createDrawingObject(emoji, viewId, viewDocument, messageObject, -1, false, false, imageW, imageH, isOutOwner)) {
             if (!drawingObjects.isEmpty()) {
                 DrawingObject drawingObject = drawingObjects.get(drawingObjects.size() - 1);
@@ -1118,13 +1113,6 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
                 loadingProgress = 1f;
             }
             float cachingProgress = 1f;
-//            if (imageReceiver.getLottieAnimation() != null) {
-//                RLottieDrawable drawable = imageReceiver.getLottieAnimation();
-//                cachingProgress = drawable.getGeneratingCacheProgress();
-//                if (cachingProgress < 0) {
-//                    return -2;
-//                }
-//            }
             return .15f + .55f * loadingProgress + .30f * cachingProgress * loadingProgress;
         }
 

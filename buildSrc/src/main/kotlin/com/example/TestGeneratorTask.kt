@@ -6,13 +6,6 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 abstract class TestGeneratorTask : DefaultTask() {
-/*
-    @get:InputDirectory
-    var rootDir: File = File("")
-
-    @get:InputDirectory
-    var resourcesDir: File = File("")
-*/
     @TaskAction
     fun read() {
         val jsonFile = project.file("src/main/resources/1.json")

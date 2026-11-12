@@ -58,6 +58,7 @@ import org.telegram.ui.ActionBar.AdjustPanLayoutHelper;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.ChatMessageCell;
+import org.telegram.ui.Cells.ChatMessageTransitionParams;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.BulletinFactory;
@@ -74,7 +75,7 @@ import org.telegram.ui.Components.SizeNotifierFrameLayout;
 import org.telegram.ui.Components.Text;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
-import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceBitmap;
+import org.telegram.utils.glass.source.GlassSourceBitmap;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 import org.telegram.ui.Components.chat.ViewPositionWatcher;
 import org.telegram.ui.Components.spoilers.SpoilerEffect2;
@@ -144,7 +145,7 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
 
     private SpoilerEffect2 spoilerEffect2;
 
-    private final BlurredBackgroundSourceBitmap iBlur3SourceBitmap;
+    private final GlassSourceBitmap iBlur3SourceBitmap;
     private final BlurredBackgroundDrawableViewFactory iBlur3Factory;
 
     public MessageSendPreview(Context context, Theme.ResourcesProvider resourcesProvider) {
@@ -215,7 +216,7 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
             }
         });
 
-        iBlur3SourceBitmap = new BlurredBackgroundSourceBitmap();
+        iBlur3SourceBitmap = new GlassSourceBitmap();
         iBlur3Factory = new BlurredBackgroundDrawableViewFactory(iBlur3SourceBitmap);
         iBlur3Factory.setSourceRootView(new ViewPositionWatcher(windowView), windowView);
 
@@ -642,10 +643,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
                         float r = (group.transitionParams.right + x + group.transitionParams.offsetRight);
                         float b = (group.transitionParams.bottom + group.transitionParams.offsetBottom);
 
-//                        if (!group.transitionParams.backgroundChangeBounds) {
-//                            t += group.transitionParams.cell.getTranslationY();
-//                            b += group.transitionParams.cell.getTranslationY();
-//                        }
 
                         if (t < -dp(20)) {
                             t = -dp(20);
@@ -807,14 +804,10 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
 
             @Override
             public void checkIsRunning() {
-//                if (scrollAnimationIndex == -1) {
-//                    scrollAnimationIndex = getNotificationCenter().setAnimationInProgress(scrollAnimationIndex, allowedNotificationsDuringChatListAnimations, false);
-//                }
             }
 
             @Override
             public void onAnimationStart() {
-//                scrollAnimationIndex = getNotificationCenter().setAnimationInProgress(scrollAnimationIndex, allowedNotificationsDuringChatListAnimations, false);
                 if (finishRunnable != null) {
                     AndroidUtilities.cancelRunOnUIThread(finishRunnable);
                     finishRunnable = null;
@@ -822,8 +815,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("chatItemAnimator disable notifications");
                 }
-//                chatActivityEnterView.getAdjustPanLayoutHelper().runDelayedAnimation();
-//                chatActivityEnterView.runEmojiPanelAnimation();
             }
 
             @Override
@@ -835,10 +826,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
                 }
                 AndroidUtilities.runOnUIThread(finishRunnable = () -> {
                     finishRunnable = null;
-//                    if (scrollAnimationIndex != -1) {
-//                        getNotificationCenter().onAnimationFinish(scrollAnimationIndex);
-//                        scrollAnimationIndex = -1;
-//                    }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d("chatItemAnimator enable notifications");
                     }
@@ -854,10 +841,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
                 }
                 AndroidUtilities.runOnUIThread(finishRunnable = () -> {
                     finishRunnable = null;
-//                    if (scrollAnimationIndex != -1) {
-//                        getNotificationCenter().onAnimationFinish(scrollAnimationIndex);
-//                        scrollAnimationIndex = -1;
-//                    }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d("chatItemAnimator enable notifications");
                     }
@@ -1023,9 +1006,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
                     sendButton.setLoading(progress >= 0f && progress < 1f, ChatActivityEnterView.SendButton.INFINITE_LOADING);
                 }
 
-//                if (effectSelector != null) {
-//                    effectSelector.setPaused(effectOverlay.hasPlaying(), true);
-//                }
                 if (!effectOverlay.isIdle()) {
                     invalidate();
                 }
@@ -1405,9 +1385,9 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
         if (MessagesController.getInstance(currentAccount).hasAvailableEffects()) {
             showEffectSelector();
         } else {
-            NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.availableEffectsUpdate);
+            NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.availableEffectsUpdate);
         }
-        if (effectSelector != null /*&& SharedConfig.getDevicePerformanceClass() < SharedConfig.PERFORMANCE_CLASS_HIGH*/) {
+        if (effectSelector != null                                                                                      ) {
             effectSelector.setPaused(true, true);
         }
 
@@ -1641,11 +1621,10 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
             mainMessageCell.isSavedChat = destCell.isSavedChat;
             mainMessageCell.isBot = destCell.isBot;
             mainMessageCell.isForum = destCell.isForum;
-            // mainMessageCell.isMonoForum = destCell.isMonoForum;
             mainMessageCell.isForumGeneral = destCell.isForumGeneral;
             mainMessageCell.setMessageObject(cell.getMessageObject(), null, cell.isPinnedBottom(), cell.isPinnedTop(), cell.isFirstInChat());
 
-            final ChatMessageCell.TransitionParams params = mainMessageCell.getTransitionParams();
+            final ChatMessageTransitionParams params = mainMessageCell.getTransitionParams();
             params.animateChange = mainMessageCell.getTransitionParams().animateChange();
             params.animateChangeProgress = 0f;
 
@@ -1861,7 +1840,6 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
         scrolledToLast = last;
     }
 
-    // assumed that messageObject is the same pointer
     public void changeMessage(MessageObject messageObject) {
         MessageObject.GroupedMessages group = getValidGroupedMessage(messageObject);
         if (group != null) {

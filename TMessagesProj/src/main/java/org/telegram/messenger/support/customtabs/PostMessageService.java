@@ -14,9 +14,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-/**
- * A service to receive postMessage related communication from a Custom Tabs provider.
- */
 public class PostMessageService extends Service {
     private IPostMessageService.Stub mBinder = new IPostMessageService.Stub() {
 

@@ -49,7 +49,7 @@ public class LerpedLayoutParams extends ViewGroup.MarginLayoutParams {
         return (int) (from + (to - from) * t);
     }
     private int lerpSz(int from, int to, float t) {
-        if (from < 0 || to < 0) // MATCH_PARENT or WRAP_CONTENT
+        if (from < 0 || to < 0)
             return t < .5f ? from : to;
         return lerp(from, to, t);
     }

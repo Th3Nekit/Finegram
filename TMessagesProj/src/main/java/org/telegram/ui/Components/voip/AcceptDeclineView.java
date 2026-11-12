@@ -85,7 +85,7 @@ public class AcceptDeclineView extends View {
     Drawable rippleDrawable;
     Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    private boolean isVideo;// = true;
+    private boolean isVideo;
     private RLottieDrawable acceptVoiceDrawable;
     private Drawable acceptVideoDrawable;
     private final ImageWithWavesView.AvatarWavesDrawable avatarWavesDrawable;

@@ -8,6 +8,8 @@
 
 package org.telegram.ui;
 
+import android.view.ViewAnimationUtils;
+
 import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.LocaleController.formatPluralString;
 import static org.telegram.messenger.LocaleController.formatString;
@@ -24,6 +26,8 @@ import android.app.Dialog;
 import android.app.PictureInPictureParams;
 import android.app.PictureInPictureUiState;
 import android.content.Context;
+import android.util.Log;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -31,6 +35,9 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.animation.ObjectAnimator;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -60,7 +67,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
@@ -139,10 +145,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.browser.Browser;
-import org.telegram.messenger.pip.PipActivityController;
-import org.telegram.messenger.pip.activity.IPipActivity;
-import org.telegram.messenger.pip.activity.IPipActivityHandler;
-import org.telegram.messenger.pip.activity.IPipActivityListener;
+import org.telegram.utils.pip.PipCoordinator;
 import org.telegram.messenger.utils.FrameMetricsOverlayView;
 import org.telegram.messenger.utils.LeakDetector;
 import org.telegram.messenger.utils.WindowVisibilityManager;
@@ -171,8 +174,11 @@ import org.telegram.ui.ActionBar.BottomSheetTabsOverlay;
 import org.telegram.ui.ActionBar.DrawerLayoutContainer;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
+import org.telegram.ui.ActionBar.ThemeColors;
 import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Cells.LanguageCell;
+import org.telegram.utils.twidget.WidgetMedia;
 import org.telegram.ui.Components.ActivityWindowEmptyBackgroundDrawable;
 import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
@@ -198,7 +204,6 @@ import org.telegram.ui.Components.PasscodeView;
 import org.telegram.ui.Components.PasscodeViewDialog;
 import org.telegram.ui.Components.PhonebookShareAlert;
 import org.telegram.ui.Components.PipRoundVideoView;
-import org.telegram.ui.Components.PipVideoOverlay;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.Premium.boosts.BoostPagerBottomSheet;
 import org.telegram.ui.Components.Premium.boosts.GiftInfoBottomSheet;
@@ -212,14 +217,15 @@ import org.telegram.ui.Components.SizeNotifierFrameLayout;
 import org.telegram.ui.Components.StickerSetBulletinLayout;
 import org.telegram.ui.Components.StickersAlert;
 import org.telegram.ui.Components.TermsOfServiceView;
+import org.telegram.ui.Components.ThemeRevealView;
 import org.telegram.ui.Components.TextStyleSpan;
 import org.telegram.ui.Components.ThemeEditorView;
 import org.telegram.ui.Components.UndoView;
 import org.telegram.ui.Components.inset.WindowAnimatedInsetsProvider;
 import org.telegram.ui.Components.poll.PollAttachedMediaPack;
 import org.telegram.ui.Components.spoilers.SpoilerEffect2;
-import org.telegram.ui.Components.voip.RTMPStreamPipOverlay;
 import org.telegram.ui.Components.voip.VoIPHelper;
+import org.telegram.ui.Components.voip.VoIPPiPView;
 import org.telegram.ui.Gifts.GiftSheet;
 import org.telegram.ui.Stars.ISuperRipple;
 import org.telegram.ui.Gifts.AuctionJoinSheet;
@@ -233,7 +239,6 @@ import org.telegram.ui.Stories.StoriesListPlaceProvider;
 import org.telegram.ui.Stories.StoryViewer;
 import org.telegram.ui.Stories.recorder.StoryEntry;
 import org.telegram.ui.Stories.recorder.StoryRecorder;
-import org.telegram.ui.Stories.LiveStoryPipOverlay;
 import org.telegram.ui.TON.TONIntroActivity;
 import org.telegram.ui.Wallet.GramWalletStorageAuth;
 import org.telegram.ui.Wallet.WalletActivity;
@@ -256,12 +261,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.HashSet;
 
 import com.th3nekit.finegram.core.configs.FinegramChatsConfig;
 import com.th3nekit.finegram.core.configs.FinegramCoreConfig;
@@ -275,8 +282,10 @@ import com.th3nekit.finegram.core.icons.FGUIResources;
 import com.th3nekit.finegram.camera.CameraXUtils;
 import com.th3nekit.finegram.core.crash.CrashLogs;
 
-public class LaunchActivity extends BasePermissionsActivity implements INavigationLayout.INavigationLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate, IPipActivity {
+public class LaunchActivity extends BasePermissionsActivity implements INavigationLayout.INavigationLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
     public final static String EXTRA_FORCE_NOT_INTERNAL_APPS = "force_not_internal_apps";
+    public final static String EXTRA_VOIP_ANSWER_TOKEN = "voip_answer_token";
+    public final static String VOIP_ANSWER_TOKEN = UUID.randomUUID().toString();
     public final static String EXTRA_FORCE_REQUEST = "force_request";
     public final static Pattern PREFIX_T_ME_PATTERN = Pattern.compile("^(?:http(?:s|)://|)([A-z0-9-]+?)\\.t\\.me");
 
@@ -313,11 +322,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     private boolean wasMutedByAdminRaisedHand;
 
-    private boolean isInPictureInPictureMode;
-    private final PipActivityController pipActivityController = new PipActivityController(this);
-    private final IPipActivityHandler pipActivityHandler = pipActivityController.getHandler();
 
-    private ImageView themeSwitchImageView;
+    private ThemeRevealView themeSwitchImageView;
     private ImageView themeSwitchSunView;
     public ActionBarLayout actionBarLayout;
     private ActionBarLayout layersActionBarLayout;
@@ -365,6 +371,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     private boolean pendingClientUpdater;
 
     private boolean tabletFullSize;
+    private boolean checkLayoutPending;
 
     private String loadingThemeFileName;
     private String loadingThemeWallpaperName;
@@ -399,7 +406,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     };
 
     private FlagSecureReason flagSecureReason;
-    private final LiteMode.BatteryReceiver batteryReceiver = new LiteMode.BatteryReceiver();
+    private BroadcastReceiver debugThemeReceiver;
+    private boolean debugInstantThemeSwitch;
     private WindowAnimatedInsetsProvider rootAnimatedInsetsListener;
 
     public static LaunchActivity instance;
@@ -430,7 +438,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         ApplicationLoader.postInitApplication();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
-        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        if (BuildVars.DEBUG_VERSION || BuildVars.DEBUG_PRIVATE_VERSION) {
+            registerDebugThemeReceiver();
+        }
         if (!UserConfig.getInstance(currentAccount).isClientActivated()) {
             Intent intent = getIntent();
             boolean isProxy = false;
@@ -484,33 +494,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         frameLayout.setClipChildren(false);
         setContentView(frameLayout);
         rootAnimatedInsetsListener = new WindowAnimatedInsetsProvider(frameLayout);
+        PipCoordinator.getInstance().onActivityCreate(this, createActivityVisibilityController(false));
 
-        pipActivityController.addPipListener(new IPipActivityListener() {
-            final ActivityVisibilityController activityVisibilityController = createActivityVisibilityController(false);
-
-            @Override
-            public void onCompleteEnterToPip() {
-                isInPictureInPictureMode = true;
-                activityVisibilityController.hide();
-                checkDecorViewVisibility();
-            }
-
-            @Override
-            public void onStartExitFromPip(boolean byActivityStop) {
-                activityVisibilityController.show();
-            }
-
-            @Override
-            public void onCompleteExitFromPip(boolean byActivityStop) {
-                isInPictureInPictureMode = false;
-                checkDecorViewVisibility();
-            }
-        });
-
-        ((ViewGroup) (getWindow().getDecorView())).addView(pipActivityController.getPipContentView());
-        pipActivityController.getPipContentView().bringToFront();
-
-        themeSwitchImageView = new ImageView(this);
+        themeSwitchImageView = new ThemeRevealView(this);
         themeSwitchImageView.setVisibility(View.GONE);
 
         drawerLayoutContainer = new DrawerLayoutContainer(this);
@@ -1054,13 +1040,22 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     final int height = MeasureSpec.getSize(heightMeasureSpec);
                     setMeasuredDimension(width, height);
 
-                    if (!AndroidUtilities.isInMultiwindow && (!AndroidUtilities.isSmallTablet() || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)) {
-                        tabletFullSize = false;
+                    if (isTabletSplitMode() == tabletFullSize && !checkLayoutPending) {
+                        checkLayoutPending = true;
+                        AndroidUtilities.runOnUIThread(() -> {
+                            checkLayoutPending = false;
+                            final boolean wasFullSize = tabletFullSize;
+                            checkLayout();
+                            if (wasFullSize != tabletFullSize) {
+                                requestLayout();
+                            }
+                        });
+                    }
+                    if (!tabletFullSize) {
                         final int leftWidth = AndroidUtilities.getTabletLeftFragmentSize(width, insets.left, insets.right);
                         actionBarLayout.getView().measure(MeasureSpec.makeMeasureSpec(leftWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
                         rightActionBarLayout.getView().measure(MeasureSpec.makeMeasureSpec(width - leftWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
                     } else {
-                        tabletFullSize = true;
                         actionBarLayout.getView().measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
                     }
                     backgroundTablet.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
@@ -1077,7 +1072,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 protected void onLayout(boolean changed, int l, int t, int r, int b) {
                     final int width = getMeasuredWidth();
                     final int height = getMeasuredHeight();
-                    if (!AndroidUtilities.isInMultiwindow && (!AndroidUtilities.isSmallTablet() || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)) {
+                    if (!tabletFullSize) {
                         final int leftWidth = AndroidUtilities.getTabletLeftFragmentSize(width, insets.left, insets.right);
                         actionBarLayout.getView().layout(0, 0, actionBarLayout.getView().getMeasuredWidth(), actionBarLayout.getView().getMeasuredHeight());
                         rightActionBarLayout.getView().layout(leftWidth, 0, leftWidth + rightActionBarLayout.getView().getMeasuredWidth(), rightActionBarLayout.getView().getMeasuredHeight());
@@ -1109,6 +1104,25 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 @Override
                 protected boolean isActionBarVisible() {
                     return false;
+                }
+
+                private ColorDrawable compactBackground;
+
+                @Override
+                protected Drawable getNewDrawable() {
+                    if (SharedConfig.compactMode) {
+                        final int color = Theme.getColor(Theme.key_chat_compact_background);
+                        if (compactBackground == null || compactBackground.getColor() != color) {
+                            compactBackground = new ColorDrawable(color);
+                        }
+                        return compactBackground;
+                    }
+                    return super.getNewDrawable();
+                }
+
+                @Override
+                protected boolean getNewDrawableMotion() {
+                    return !SharedConfig.compactMode && super.getNewDrawableMotion();
                 }
             };
             backgroundTablet.setOccupyStatusBar(false);
@@ -1434,12 +1448,16 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             .add(NotificationCenter.guardBotDecisionResult);
     }
 
+    private boolean isTabletSplitMode() {
+        return !AndroidUtilities.isInMultiwindow && (!AndroidUtilities.isSmallTablet() || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
+
     private void checkLayout() {
         if (!AndroidUtilities.isTablet() || rightActionBarLayout == null || AndroidUtilities.getWasTablet() != null && AndroidUtilities.getWasTablet() != AndroidUtilities.isTabletForce()) {
             return;
         }
 
-        if (!AndroidUtilities.isInMultiwindow && (!AndroidUtilities.isSmallTablet() || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)) {
+        if (isTabletSplitMode()) {
             tabletFullSize = false;
             List<BaseFragment> fragmentStack = actionBarLayout.getFragmentStack();
             if (fragmentStack.size() >= 2) {
@@ -1447,6 +1465,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     BaseFragment chatFragment = fragmentStack.get(a);
                     if (chatFragment instanceof ChatActivity) {
                         ((ChatActivity) chatFragment).setIgnoreAttachOnPause(true);
+                        ((ChatActivity) chatFragment).setKeepVoiceRecordingOnPause(true);
                     }
                     chatFragment.onPause();
                     chatFragment.onFragmentDestroy();
@@ -1470,6 +1489,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     BaseFragment chatFragment = fragmentStack.get(a);
                     if (chatFragment instanceof ChatActivity) {
                         ((ChatActivity) chatFragment).setIgnoreAttachOnPause(true);
+                        ((ChatActivity) chatFragment).setKeepVoiceRecordingOnPause(true);
                     }
                     chatFragment.onPause();
                     chatFragment.onFragmentDestroy();
@@ -1756,7 +1776,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if ((flags & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0) {
             if (intent != null && intent.getAction() != null && !restore) {
                 if (Intent.ACTION_SEND.equals(intent.getAction())) {
-                    if (SharedConfig.directShare && intent != null && intent.getExtras() != null) {
+                    if (SharedConfig.directShare && intent != null && intent.getExtras() != null && !intent.hasCategory(Intent.CATEGORY_BROWSABLE)) {
                         dialogId = intent.getExtras().getLong("dialogId", 0);
                         String hash = null;
                         if (dialogId == 0) {
@@ -1907,7 +1927,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         }
                     }
                     if (error) {
-                        Toast.makeText(this, "Unsupported content", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, LocaleController.getString(R.string.UnsupportedContent), Toast.LENGTH_SHORT).show();
                     }
                 } else if ("org.telegram.messenger.CREATE_STICKER_PACK".equals(intent.getAction())) {
                     try {
@@ -2040,7 +2060,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         error = true;
                     }
                     if (error) {
-                        Toast.makeText(this, "Unsupported content", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, LocaleController.getString(R.string.UnsupportedContent), Toast.LENGTH_SHORT).show();
                     }
                 } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
                     Uri data = DeeplinkHelper.normalizeSettingsUri(intent.getData());
@@ -3582,10 +3602,12 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
         }
         if (isVoipAnswerIntent) {
-            if (intent != null && intent.hasExtra("group_call_invite_msg_id")) {
-                VoIPGroupNotification.answer(this, intentAccount[0], intent.getIntExtra("group_call_invite_msg_id", 0));
-            } else {
-                VoIPPreNotificationService.answer(this);
+            if (intent != null && VOIP_ANSWER_TOKEN.equals(intent.getStringExtra(EXTRA_VOIP_ANSWER_TOKEN))) {
+                if (intent.hasExtra("group_call_invite_msg_id")) {
+                    VoIPGroupNotification.answer(this, intentAccount[0], intent.getIntExtra("group_call_invite_msg_id", 0));
+                } else {
+                    VoIPPreNotificationService.answer(this);
+                }
             }
         } else if (isVoipIntent) {
             VoIPFragment.show(this, intentAccount[0]);
@@ -3730,7 +3752,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
         }
         final boolean removeLast;
-        if (AndroidUtilities.isTablet()) {
+        if (AndroidUtilities.isTablet() && layersActionBarLayout != null) {
             removeLast = !layersActionBarLayout.getFragmentStack().isEmpty() && layersActionBarLayout.getFragmentStack().get(layersActionBarLayout.getFragmentStack().size() - 1) instanceof MainTabsActivity;
         } else {
             removeLast = actionBarLayout.getFragmentStack().size() > 1 && actionBarLayout.getFragmentStack().get(actionBarLayout.getFragmentStack().size() - 1) instanceof MainTabsActivity;
@@ -5305,6 +5327,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                                 BaseFragment fragment = mainFragmentsStack.get(mainFragmentsStack.size() - 1);
                                 fragment.showDialog(new JoinGroupAlert(LaunchActivity.this, invite, group, fragment, (fragment instanceof ChatActivity ? ((ChatActivity) fragment).themeDelegate : null)));
                             }
+                        } else if (error != null && error.text.startsWith("INVITE_HASH_EXPIRED") && getSafeLastFragment() != null) {
+                            BulletinFactory.of(getSafeLastFragment()).createSimpleBulletin(R.raw.linkbroken, LocaleController.getString(R.string.InviteExpired)).show();
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
                             builder.setTitle(com.th3nekit.finegram.core.ui.FGTitles.appName());
@@ -6119,7 +6143,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 } else {
                     AttachBotIntroTopView introTopView = new AttachBotIntroTopView(LaunchActivity.this);
                     introTopView.setColor(Theme.getColor(Theme.key_chat_attachIcon));
-                    introTopView.setBackgroundColor(Theme.getColor(Theme.key_dialogTopBackground));
+                    ThemeBind.backgroundColor(introTopView, Theme.key_dialogTopBackground);
                     introTopView.setAttachBot(attachMenuBot);
 
                     WebAppDisclaimerAlert.show(this, (allowSendMessage) -> {
@@ -6450,11 +6474,15 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        invalidateTabletMode();
+        checkLayout();
         handleIntent(intent, true, false, false, null, true, true);
     }
 
     public void onNewIntent(Intent intent, Browser.Progress progress) {
         super.onNewIntent(intent);
+        invalidateTabletMode();
+        checkLayout();
         handleIntent(intent, true, false, false, progress, true, false);
     }
 
@@ -7290,7 +7318,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         isResumed = false;
         AndroidUtilities.cancelRunOnUIThread(cameraDiagnosticsNotice);
         com.th3nekit.finegram.plugins.FGPluginsDispatcher.onAppPause();
-        pipActivityHandler.onPause();
+        WidgetMedia.onAppPaused(true);
+        PipCoordinator.getInstance().onActivityPause(this);
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.stopAllHeavyOperations, 4096);
         ApplicationLoader.mainInterfacePaused = true;
         int account = currentAccount;
@@ -7327,8 +7356,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         }
         StoryRecorder.onPause();
 
+        VoIPPiPView.checkWindowType(this);
         if (VoIPFragment.getInstance() != null) {
             VoIPFragment.onPause();
+        } else if (VoIPPiPView.getInstance() != null) {
+            VoIPPiPView.getInstance().onPause();
         }
         SpoilerEffect2.pause(true);
 
@@ -7340,7 +7372,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     protected void onStart() {
         super.onStart();
         isStarted = true;
-        pipActivityHandler.onStart();
+        PipCoordinator.getInstance().onActivityStart(this);
         Browser.bindCustomTabsService(this);
         ApplicationLoader.mainInterfaceStopped = false;
         GroupCallPip.updateVisibility(this);
@@ -7355,7 +7387,10 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         GramWalletStorageAuth.onActivityStopped(this);
         isStarted = false;
         com.th3nekit.finegram.plugins.FGPluginsDispatcher.onAppStop();
-        pipActivityHandler.onStop();
+        PipCoordinator.getInstance().onActivityStop(this);
+        if (PhotoViewer.hasInstance() && PhotoViewer.getInstance().isVisible()) {
+            PhotoViewer.getInstance().onStop();
+        }
         Browser.unbindCustomTabsService(this);
         ApplicationLoader.mainInterfaceStopped = true;
         GroupCallPip.updateVisibility(this);
@@ -7366,40 +7401,23 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     @Override
     public boolean onPictureInPictureRequested() {
-        pipActivityHandler.onPictureInPictureRequested();
+        PipCoordinator.getInstance().onPictureInPictureRequested();
         return super.onPictureInPictureRequested();
-    }
-
-    @Override
-    public void setPictureInPictureParams(@NonNull PictureInPictureParams params) {
-        super.setPictureInPictureParams(params);
-        pipActivityHandler.setPictureInPictureParams(params);
     }
 
     @Override
     public void onPictureInPictureUiStateChanged(@NonNull PictureInPictureUiState pipState) {
         super.onPictureInPictureUiStateChanged(pipState);
-        pipActivityHandler.onPictureInPictureUiStateChanged(pipState);
+        PipCoordinator.getInstance().onPictureInPictureUiStateChanged(pipState);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, @NonNull Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
-        pipActivityHandler.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        PipCoordinator.getInstance().onPictureInPictureModeChanged(isInPictureInPictureMode);
 
         if (!isInPictureInPictureMode && !isStarted) {
-            if (RTMPStreamPipOverlay.isVisible()) {
-                RTMPStreamPipOverlay.dismiss();
-            }
-            if (LiveStoryPipOverlay.isVisible()) {
-                LiveStoryPipOverlay.dismiss();
-            }
-            if (PipVideoOverlay.isVisible()) {
-                PipVideoOverlay.dismiss();
-            }
-
-            GroupCallActivity.onLeaveClick(this, null, false, true);
 
             if (PhotoViewer.getPipInstance() != null) {
                 PhotoViewer.getPipInstance().destroyPhotoViewer();
@@ -7412,15 +7430,90 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     private final int instanceId = System.identityHashCode(this);
 
+    private void registerDebugThemeReceiver() {
+        debugThemeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String mode = intent.getStringExtra("mode") != null ? intent.getStringExtra("mode") : "toggle";
+                final String style = intent.getStringExtra("style") != null ? intent.getStringExtra("style") : "reveal";
+                AndroidUtilities.runOnUIThread(() -> debugSetTheme(mode, style));
+            }
+        };
+        final IntentFilter filter = new IntentFilter("org.telegram.messenger.DEBUG_THEME");
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(debugThemeReceiver, filter, Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(debugThemeReceiver, filter);
+        }
+    }
+
+    public void notifyThemeColorsChanged() {
+        for (INavigationLayout layout : new INavigationLayout[] { actionBarLayout, layersActionBarLayout, rightActionBarLayout }) {
+            if (layout instanceof ActionBarLayout) {
+                ((ActionBarLayout) layout).notifyFragmentsThemeColorsChanged();
+            }
+        }
+    }
+
+    private void debugSetTheme(String mode, String style) {
+        if ("rebuild".equals(mode)) {
+            try {
+                rebuildAllFragments(true);
+                if (AndroidUtilities.isTablet() && rightActionBarLayout != null) {
+                    rightActionBarLayout.rebuildAllFragmentViews(true, true);
+                }
+                Log.i("tmessages", "DEBUG_THEME rebuilt fragment views");
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+            return;
+        }
+        if ("keys".equals(mode)) {
+            final HashSet<Integer> keys = ThemeBind.collectColorKeys();
+            final StringBuilder sb = new StringBuilder();
+            for (int key : keys) {
+                if (sb.length() > 0) sb.append(',');
+                sb.append(ThemeColors.getStringName(key));
+            }
+            Log.i("tmessages", "DEBUG_THEME keys on screen (" + keys.size() + "): " + sb);
+            return;
+        }
+        final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("themeconfig", Activity.MODE_PRIVATE);
+        String dayThemeName = preferences.getString("lastDayTheme", "Blue");
+        if (Theme.getTheme(dayThemeName) == null || Theme.getTheme(dayThemeName).isDark()) {
+            dayThemeName = "Blue";
+        }
+        String nightThemeName = preferences.getString("lastDarkTheme", "Dark Blue");
+        if (Theme.getTheme(nightThemeName) == null || !Theme.getTheme(nightThemeName).isDark()) {
+            nightThemeName = "Dark Blue";
+        }
+        final boolean toDark = "night".equals(mode) || !"day".equals(mode) && !Theme.getActiveTheme().isDark();
+        final Theme.ThemeInfo themeInfo = Theme.getTheme(toDark ? nightThemeName : dayThemeName);
+        Log.i("tmessages", "DEBUG_THEME " + (toDark ? "night" : "day") + " (" + themeInfo.getKey() + "), style " + style);
+        if ("instant".equals(style)) {
+            debugInstantThemeSwitch = true;
+            NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.needSetDayNightTheme, themeInfo, false, null, -1);
+        } else if ("fade".equals(style)) {
+            Theme.switchThemeWithReveal(themeInfo, false, -1, null);
+        } else {
+            final int[] pos = new int[] { drawerLayoutContainer.getMeasuredWidth() / 2, drawerLayoutContainer.getMeasuredHeight() / 2 };
+            NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.needSetDayNightTheme, themeInfo, false, pos, -1, toDark, null);
+        }
+    }
+
     @Override
     protected void onDestroy() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MonetHelper.unregisterReceiver(this);
         }
         GramWalletStorageAuth.onActivityDestroyed(this);
+        PipCoordinator.getInstance().onActivityDestroy(this);
         isActive = false;
         activeInstanceCount--;
-        unregisterReceiver(batteryReceiver);
+        if (debugThemeReceiver != null) {
+            unregisterReceiver(debugThemeReceiver);
+            debugThemeReceiver = null;
+        }
 
         if (activeInstanceCount == 0) {
             onDestroyStaticResources();
@@ -7527,7 +7620,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     @Override
     protected void onUserLeaveHint() {
-        pipActivityHandler.onUserLeaveHint();
+        PipCoordinator.getInstance().onUserLeaveHint();
         for (Runnable callback : onUserLeaveHintListeners) {
             callback.run();
         }
@@ -7561,10 +7654,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     protected void onResume() {
         com.th3nekit.finegram.net.bypass.FGBypassController.getInstance().onAppResume();
         super.onResume();
+        WidgetMedia.onAppPaused(false);
         isResumed = true;
         instance = this;
         com.th3nekit.finegram.plugins.FGPluginsDispatcher.onAppResume();
-        pipActivityHandler.onResume();
+        PipCoordinator.getInstance().onActivityResume(this);
         if (onResumeStaticCallback != null) {
             onResumeStaticCallback.run();
             onResumeStaticCallback = null;
@@ -7572,6 +7666,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if (Theme.selectedAutoNightType == Theme.AUTO_NIGHT_TYPE_SYSTEM) {
             Theme.checkAutoNightThemeConditions(true);
         }
+        LocationController.onAppResumed();
         checkWasMutedByAdmin(true);
 
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.startAllHeavyOperations, 4096);
@@ -7634,8 +7729,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ApplicationLoader.canDrawOverlays = Settings.canDrawOverlays(this);
         }
+        VoIPPiPView.checkWindowType(this);
         if (VoIPFragment.getInstance() != null) {
             VoIPFragment.onResume();
+        } else if (VoIPPiPView.getInstance() != null) {
+            VoIPPiPView.getInstance().onResume();
         }
         invalidateTabletMode();
         SpoilerEffect2.pause(false);
@@ -7726,10 +7824,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         orientationController.update();
         AndroidUtilities.setPreferredMaxRefreshRate(getWindow());
         super.onConfigurationChanged(newConfig);
-        pipActivityHandler.onConfigurationChanged(newConfig);
+        PipCoordinator.getInstance().onConfigurationChanged(newConfig);
         AndroidUtilities.resetTabletFlag();
         invalidateTabletMode();
         checkLayout();
+        AndroidUtilities.runOnUIThread(() -> AndroidUtilities.applyPendingOrientationUnlock(this));
         PipRoundVideoView pipRoundVideoView = PipRoundVideoView.getInstance();
         if (pipRoundVideoView != null) {
             pipRoundVideoView.onConfigurationChanged();
@@ -7753,6 +7852,12 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if (Theme.selectedAutoNightType == Theme.AUTO_NIGHT_TYPE_SYSTEM) {
             Theme.checkAutoNightThemeConditions(true);
         }
+    }
+
+    @Override
+    public void setRequestedOrientation(int requestedOrientation) {
+        AndroidUtilities.clearPendingOrientationUnlock();
+        super.setRequestedOrientation(requestedOrientation);
     }
 
     @Override
@@ -7813,6 +7918,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 colorsReplacement.put("info1", fragment.getThemedColor(Theme.key_dialogTopBackground));
                 colorsReplacement.put("info2", fragment.getThemedColor(Theme.key_dialogTopBackground));
                 builder.setTopAnimation(R.raw.not_available, AlertsCreator.NEW_DENY_DIALOG_TOP_ICON_SIZE, false, fragment.getThemedColor(Theme.key_dialogTopBackground), colorsReplacement);
+                builder.setTopBackgroundColorKey(Theme.key_dialogTopBackground, fragment.getResourceProvider());
                 builder.setTopAnimationIsNew(true);
             }
             if (reason != 2 && reason != 3) {
@@ -7934,7 +8040,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             BaseFragment fragment = actionBarLayout.getFragmentStack().get(actionBarLayout.getFragmentStack().size() - 1);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-            builder.setTopAnimation(R.raw.permission_request_contacts, AlertsCreator.PERMISSIONS_REQUEST_TOP_ICON_SIZE, false, Theme.getColor(Theme.key_dialogTopBackground));
+            builder.setTopAnimation(R.raw.permission_request_contacts, AlertsCreator.PERMISSIONS_REQUEST_TOP_ICON_SIZE, false, Theme.getColor(Theme.key_dialogTopBackground)); builder.setTopBackgroundColorKey(Theme.key_dialogTopBackground, null);
             builder.setTitle(LocaleController.getString(R.string.UpdateContactsTitle));
             builder.setMessage(LocaleController.getString(R.string.UpdateContactsMessage));
             builder.setPositiveButton(LocaleController.getString(R.string.OK), (dialogInterface, i) -> ContactsController.getInstance(account).syncPhoneBookByAlert(contactHashMap, first, schedule, false));
@@ -7944,6 +8050,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             fragment.showDialog(dialog);
             dialog.setCanceledOnTouchOutside(false);
         } else if (id == NotificationCenter.didSetNewTheme) {
+            ThemeBind.updateAll();
+            notifyThemeColorsChanged();
             if (fgDrawerView != null) {
                 fgDrawerView.updateColors();
             }
@@ -7961,11 +8069,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
             checkSystemBarColors(args.length > 2 && (boolean) args[2], true, checkNavigationBarColor && !isNavigationBarColorFrozen && !actionBarLayout.isTransitionAnimationInProgress());
         } else if (id == NotificationCenter.needSetDayNightTheme) {
-            boolean instant = false;
-            if (args[2] != null) {
-                if (themeSwitchImageView.getVisibility() == View.VISIBLE) {
-                    return;
-                }
+            debugInstantThemeSwitch = false;
+            boolean instant = true;
+            if (args[2] != null && themeSwitchImageView.getVisibility() != View.VISIBLE) {
                 try {
                     int[] pos = (int[]) args[2];
                     boolean toDark = (Boolean) args[4];
@@ -7973,9 +8079,6 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     final boolean colorNotDark = args.length > 8 ? (boolean) args[8] : false;
                     int w = drawerLayoutContainer.getMeasuredWidth();
                     int h = drawerLayoutContainer.getMeasuredHeight();
-                    if (!toDark && darkThemeView != null) {
-                        darkThemeView.setVisibility(View.INVISIBLE);
-                    }
                     rippleAbove = null;
                     if (args.length > 6) {
                         rippleAbove = (View) args[6];
@@ -7989,42 +8092,39 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     }
 
                     Bitmap bitmap = null;
+                    boolean windowBitmap = false;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         bitmap = AndroidUtilities.getBitmapFromWindow(getWindow());
+                        windowBitmap = bitmap != null;
                     }
                     if (bitmap == null) {
                         bitmap = AndroidUtilities.snapshotView(drawerLayoutContainer);
+                    }
+                    if (bitmap != null && darkThemeView != null) {
+                        ThemeRevealView.eraseFromSnapshot(bitmap, windowBitmap ? null : drawerLayoutContainer, darkThemeView);
                     }
                     if (rippleAbove != null && rippleAbove.getBackground() != null) {
                         rippleAbove.getBackground().setAlpha(255);
                     }
                     frameLayout.removeView(themeSwitchImageView);
-                    themeSwitchImageView = new ImageView(this);
+                    themeSwitchImageView = new ThemeRevealView(this);
                     final RLottieDrawable drawable = darkThemeView != null ? darkThemeView.getAnimatedDrawable() : null;
-                    themeSwitchSunView.setImageDrawable(drawable);
-                    if (toDark) {
-                        frameLayout.addView(themeSwitchImageView, 0, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-                        themeSwitchSunView.setVisibility(View.GONE);
-                    } else {
-
-                        int snapshotIndex = 1;
-                        if (fgDrawer != null) {
-                            final int drawerIndex = frameLayout.indexOfChild(fgDrawer);
-                            if (drawerIndex >= 0) snapshotIndex = drawerIndex + 1;
-                        }
-                        frameLayout.addView(themeSwitchImageView, snapshotIndex, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-                        themeSwitchSunView.setTranslationX(pos[0] - dp(24));
-                        themeSwitchSunView.setTranslationY(pos[1] - dp(24));
-                        themeSwitchSunView.setVisibility(View.VISIBLE);
-                        themeSwitchSunView.invalidate();
+                    int snapshotIndex = 1;
+                    if (fgDrawer != null && frameLayout.indexOfChild(fgDrawer) >= 0) snapshotIndex = frameLayout.indexOfChild(fgDrawer) + 1;
+                    frameLayout.addView(themeSwitchImageView, snapshotIndex, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+                    themeSwitchSunView.setVisibility(View.GONE);
+                    if (darkThemeView != null) {
+                        themeSwitchImageView.setIcon(darkThemeView, drawable != null ? drawable.getColorFilter() : null);
                     }
                     themeSwitchImageView.setImageBitmap(bitmap);
                     themeSwitchImageView.setVisibility(View.VISIBLE);
                     float finalRadius = (float) Math.max(Math.sqrt((w - pos[0]) * (w - pos[0]) + (h - pos[1]) * (h - pos[1])), Math.sqrt(pos[0] * pos[0] + (h - pos[1]) * (h - pos[1])));
                     float finalRadius2 = (float) Math.max(Math.sqrt((w - pos[0]) * (w - pos[0]) + pos[1] * pos[1]), Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1]));
                     finalRadius = Math.max(finalRadius, finalRadius2);
-                    Animator anim = ViewAnimationUtils.createCircularReveal(toDark ? drawerLayoutContainer : themeSwitchImageView, pos[0], pos[1], toDark ? 0 : finalRadius, toDark ? finalRadius : 0);
-                    anim.setDuration(400);
+                    themeSwitchImageView.setMask(pos[0], pos[1], toDark);
+                    final float softRadius = finalRadius / (1f - ThemeRevealView.SOFT_EDGE);
+                    Animator anim = ObjectAnimator.ofFloat(themeSwitchImageView, ThemeRevealView.RADIUS, toDark ? 0 : softRadius, toDark ? softRadius : 0);
+                    anim.setDuration(450);
                     anim.setInterpolator(Easings.easeInOutQuad);
 
                     Animator drawerAnim = null;
@@ -8042,13 +8142,14 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                             drawerLayoutContainer.invalidate();
                             themeSwitchImageView.invalidate();
                             themeSwitchImageView.setImageDrawable(null);
+                            themeSwitchImageView.clearMask();
                             themeSwitchImageView.setVisibility(View.GONE);
                             themeSwitchSunView.setVisibility(View.GONE);
                             if (darkThemeView != null) {
                                 darkThemeView.setImageDrawable(drawable);
                             }
                             NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.themeAccentListUpdated);
-                            if (!toDark && darkThemeView != null) {
+                            if (darkThemeView != null) {
                                 darkThemeView.setVisibility(View.VISIBLE);
                             }
                             DialogsActivity.switchingTheme = false;
@@ -8081,7 +8182,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         FileLog.e(e2);
                     }
                 }
-            } else {
+            } else if (args[2] == null) {
                 DialogsActivity.switchingTheme = false;
             }
             Theme.ThemeInfo theme = (Theme.ThemeInfo) args[0];
@@ -8592,7 +8693,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 cells[a] = new LanguageCell(LaunchActivity.this);
                 cells[a].setLanguage(locales[a], locales[a] == englishInfo ? englishName : null, true);
                 cells[a].setTag(a);
-                cells[a].setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_dialogButtonSelector), 2));
+                ThemeBind.selectorBackground(cells[a], Theme.createSelectorDrawable(Theme.getColor(Theme.key_dialogButtonSelector), 2), null, ThemeBind.of(Theme.key_dialogButtonSelector));
                 cells[a].setLanguageSelected(a == 0, false);
                 linearLayout.addView(cells[a], LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 50));
                 cells[a].setOnClickListener(v -> {
@@ -8605,7 +8706,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
             LanguageCell cell = new LanguageCell(LaunchActivity.this);
             cell.setValue(getStringForLanguageAlert(systemLocaleStrings, "ChooseYourLanguageOther", R.string.ChooseYourLanguageOther), getStringForLanguageAlert(englishLocaleStrings, "ChooseYourLanguageOther", R.string.ChooseYourLanguageOther));
-            cell.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_dialogButtonSelector), 2));
+            ThemeBind.selectorBackground(cell, Theme.createSelectorDrawable(Theme.getColor(Theme.key_dialogButtonSelector), 2), null, ThemeBind.of(Theme.key_dialogButtonSelector));
             cell.setOnClickListener(v -> {
                 localeDialog = null;
                 presentFragment(new LanguageSelectActivity());
@@ -9778,10 +9879,6 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         return mainFragmentsStack.size();
     }
 
-    @Override
-    public PipActivityController getPipController() {
-        return pipActivityController;
-    }
 
     private int reasonsToHideMainContent = 0;
     private int reasonsToHideDecorView = 0;

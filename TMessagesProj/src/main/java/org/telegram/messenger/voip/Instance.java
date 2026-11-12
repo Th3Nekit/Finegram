@@ -24,7 +24,6 @@ public final class Instance {
     public static final int VIDEO_STATE_PAUSED = 1;
     public static final int VIDEO_STATE_ACTIVE = 2;
 
-    //region Constants
     public static final int NET_TYPE_UNKNOWN = 0;
     public static final int NET_TYPE_GPRS = 1;
     public static final int NET_TYPE_EDGE = 2;
@@ -52,19 +51,16 @@ public final class Instance {
     public static final int DATA_SAVING_ROAMING = 3;
     public static final int PEER_CAP_GROUP_CALLS = 1;
 
-    // Java-side Errors
     public static final String ERROR_CONNECTION_SERVICE = "ERROR_CONNECTION_SERVICE";
     public static final String ERROR_INSECURE_UPGRADE = "ERROR_INSECURE_UPGRADE";
     public static final String ERROR_LOCALIZED = "ERROR_LOCALIZED";
     public static final String ERROR_PRIVACY = "ERROR_PRIVACY";
     public static final String ERROR_PEER_OUTDATED = "ERROR_PEER_OUTDATED";
 
-    // Native-side Errors
     public static final String ERROR_UNKNOWN = "ERROR_UNKNOWN";
     public static final String ERROR_INCOMPATIBLE = "ERROR_INCOMPATIBLE";
     public static final String ERROR_TIMEOUT = "ERROR_TIMEOUT";
     public static final String ERROR_AUDIO_IO = "ERROR_AUDIO_IO";
-    //endregion
 
     private static ServerConfig globalServerConfig = new ServerConfig(new JSONObject());
     private static int bufferSize;

@@ -17,27 +17,17 @@ import android.graphics.SweepGradient;
 
 import java.util.HashMap;
 
-/**
- * The parts of the QR glass shared by every view that draws it (the QR screen, the scanner, the emoji islands): the top
- * sheen and the "Dark out" outline, both pre-rendered bitmaps drawn as plain bitmap draws — no gradient shaders, clip-out
- * paths or Plus blend on the GPU (each was a GPU program of its own, compiled on the screens' first open).
- * UI thread only.
- */
 public final class QrGlass {
 
     private QrGlass() {
     }
 
-    /** The rim of the big controls (close, bottom buttons): for glass drawn outside the QR screen (the passcode keys). */
     public static final int RIM_BIG = RimTune.BIG;
 
-    /** The white fill of the controls' glass on a dark scene. */
     public static int controlFill() {
         return ((int) (255 * RimTune.v[RimTune.FILL] / 100f + 0.5f) << 24) | 0xFFFFFF;
     }
 
-    // ---- the sheen: white 25% (light scene) / 8% (dark scene, a faint top highlight) → 0 over the top 40dp, a 1 × 64
-    // alpha ramp rendered once and stretched
 
     private static final float SHEEN_DP = 40;
     private static Bitmap sheenRamp;
@@ -61,18 +51,16 @@ public final class QrGlass {
         return (int) (255 * Math.max(0f, Math.min(1f, alpha)) * (light ? 1f : 0x14 / (float) 0x40));
     }
 
-    /** The sheen over the top of r, inside the caller's clip of the glass shape. */
     static void drawSheen(Canvas c, RectF r, boolean light, float alpha) {
         sheenDst.set(r.left, r.top, r.right, r.top + Math.min(r.height(), dp(SHEEN_DP)));
         sheenPaint.setAlpha(sheenAlpha(light, alpha));
         c.drawBitmap(sheenRamp(), null, sheenDst, sheenPaint);
     }
 
-    /** The sheen of a rounded rect without a clip: the ramp as a shader of the rounded rect itself. */
     public static void drawSheenRound(Canvas c, RectF r, float radius, boolean light, float alpha) {
         final Bitmap ramp = sheenRamp();
         if (sheenShader == null) {
-            sheenShader = new BitmapShader(ramp, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP); // below the ramp: 0
+            sheenShader = new BitmapShader(ramp, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
             sheenRoundPaint.setShader(sheenShader);
         }
         sheenMatrix.setScale(r.width() / ramp.getWidth(), Math.min(r.height(), dp(SHEEN_DP)) / ramp.getHeight());
@@ -82,9 +70,6 @@ public final class QrGlass {
         c.drawRoundRect(r, radius, radius, sheenRoundPaint);
     }
 
-    // ---- the outline (rounded rects, Android 10+): the dark ring and both white crescents rendered once per group /
-    // radius / size into a bitmap and drawn in 9 slices (the corners as they are, the straight parts stretched). The
-    // light is from above (no tilt), the crescents plain white at their level (the Plus of a grey of it, over the glass)
 
     private static final HashMap<Long, Bitmap> rimBakes = new HashMap<>();
     private static final SweepGradient[] rimSweeps = new SweepGradient[RimTune.NG];
@@ -95,23 +80,18 @@ public final class QrGlass {
     private static final int[] rimSx = new int[4], rimSy = new int[4];
     private static final float[] rimDx = new float[4], rimDy = new float[4];
 
-    /**
-     * The outline of the rounded rect (r, radius) in group grp. False where it is not baked (before Android 10: no Plus
-     * there, the crescents are tinted per scene): the caller draws it itself.
-     */
     public static boolean drawRim(Canvas c, RectF r, float radius, int grp, float alpha) {
         if (!QrRender.hasNodes()) return false;
         if (alpha <= 0.004f) return true;
         ensureRims();
         final float[] gk = RimTune.g[grp];
-        final float inset = dpf2(gk[RimTune.INSET]); // < 0: the outline's geometry grows
+        final float inset = dpf2(gk[RimTune.INSET]);
         final float gl = r.left + inset, gt = r.top + inset, gr = r.right - inset, gbt = r.bottom - inset;
         final float w = gr - gl, h = gbt - gt;
         if (w < 1f || h < 1f) return true;
         final float rg = Math.min(Math.max(0f, radius - inset), Math.min(w, h) / 2f);
         final float dw = dpf2(gk[RimTune.D_W]), t = Math.max(dpf2(gk[RimTune.T_TOP]), dpf2(gk[RimTune.T_BOT]));
         final int pad = (int) Math.ceil(dw) + 2;
-        // a corner slice reaches past the arc and the crescents' taper (else the stretched rows would carry a sliver)
         final int corner = (int) Math.ceil(rg + t) + 1;
         final int rw = Math.round(w), rh = Math.round(h);
         final boolean sliceX = rw >= 2 * corner + 2, sliceY = rh >= 2 * corner + 2;
@@ -155,7 +135,6 @@ public final class QrGlass {
         return true;
     }
 
-    /** The dark ring's sweeps a(θ) = tb + (dA − tb)·|cos θ|^exp (73 stops, every 5°), black at that alpha; per group. */
     private static void ensureRims() {
         if (rimVersion == RimTune.version) return;
         rimVersion = RimTune.version;
@@ -168,7 +147,7 @@ public final class QrGlass {
             for (int i = 0; i < n; i++) {
                 final double th = Math.toRadians(i * 5);
                 final float side = (float) Math.pow(Math.abs(Math.cos(th)), gk[RimTune.D_EXP]);
-                final float sn = (float) Math.sin(th); // + = bottom
+                final float sn = (float) Math.sin(th);
                 final float tb = (sn < 0 ? gk[RimTune.D_TOP] : gk[RimTune.D_BOT]) / 100f;
                 final float a = Math.max(0f, Math.min(1f, tb + (gk[RimTune.D_A] / 100f - tb) * side));
                 cols[i] = ((int) (255 * a + 0.5f)) << 24;
@@ -178,13 +157,11 @@ public final class QrGlass {
         }
     }
 
-    /** The outline of a rounded rect ew × eh (radius rg), with pad px around for the ring outside. */
     private static Bitmap bakeRim(int grp, float rg, int ew, int eh, int pad) {
         final float[] gk = RimTune.g[grp];
         final Bitmap b = Bitmap.createBitmap(ew + 2 * pad, eh + 2 * pad, Bitmap.Config.ARGB_8888);
         final Canvas cv = new Canvas(b);
         final RectF e = new RectF(pad, pad, pad + ew, pad + eh);
-        // 1) the dark ring outside: the sweep a(θ), black at that alpha
         final float dw = dpf2(gk[RimTune.D_W]);
         if (dw > 0.05f) {
             final Matrix m = new Matrix();
@@ -200,7 +177,6 @@ public final class QrGlass {
             rr.inset(-dw / 2f, -dw / 2f);
             cv.drawRoundRect(rr, rg + dw / 2f, rg + dw / 2f, ring);
         }
-        // 2) the white crescents inside: the shape minus itself shifted along the light (down for the top one)
         final Paint white = new Paint(Paint.ANTI_ALIAS_FLAG);
         white.setColor(Color.WHITE);
         final Path a = new Path(), cut = new Path();

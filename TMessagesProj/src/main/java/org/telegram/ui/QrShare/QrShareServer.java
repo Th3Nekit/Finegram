@@ -24,44 +24,23 @@ import org.telegram.tgnet.tl.TL_stars;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * The server side of the QR screen ({@link QrShareView}). Anyone's theme is shown; the own one is set, and so is that of a
- * public chat whose info one can change (an admin right). The rest is only for the own QR:
- * <ul>
- * <li>the link of the code: the username, a public phone number, or else a contact token, replaced when it expires;</li>
- * <li>"Remove message fee": the chip shows while messages from non-contacts cost stars; the free code is a no-paid-messages
- * token, permanent (cached, shown at once) or, with the timer, a temporary one replaced every 30 seconds. Its link
- * comes from the server; with a contact token (no username, no import by phone) it is t.me/contact/…?free=…, and only
- * temporary codes exist then;</li>
- * <li>the theme: it comes with the full user / chat (share_theme); the one in memory is shown at once, the full is
- * asked for as a chat does (from the database, from the server when the last load is more than a minute old) and
- * replaces it if it differs; saved after every choice, written into the full at once; a chat's gift is one it owns
- * itself.</li>
- * </ul>
- */
 final class QrShareServer implements NotificationCenter.NotificationCenterDelegate {
 
-    private static final long TEMPORARY_CODE_ROTATION = 30_000;     // the server changes the code every 30 seconds
-    private static final int TEMPORARY_CODE_MARGIN = 5;              // s, a code is replaced this long before it expires
-    private static final long THEME_SAVE_DELAY = 700;                // emoji are often picked in a row
-    private static final long CONTACT_TOKEN_RETRY = 5_000;           // a failed contact token is asked for again
-    // shared with the previous QR screen, so the state carries over
+    private static final long TEMPORARY_CODE_ROTATION = 30_000;
+    private static final int TEMPORARY_CODE_MARGIN = 5;
+    private static final long THEME_SAVE_DELAY = 700;
+    private static final long CONTACT_TOKEN_RETRY = 5_000;
     private static final String PREF_NO_PAID_PERMANENT = "qrNoPaidPermanent";
     private static final String PREF_NO_PAID_TOKEN = "qrNoPaidToken";
     private static final String PREF_NO_PAID_URL = "qrNoPaidUrl";
 
-    /** The link of the code with the fee and the caption under the code. */
     static final class Link {
-        /** Null for a contact token still on its way. */
         final @Nullable String url;
         final String caption;
         final boolean captionIsUsername;
         final boolean contactToken;
-        /** The own QR: the fee, the contact token and saving the theme. */
         final boolean self;
-        /** The owner of the code: a user id, or a chat as a negative id. */
         final long peerId;
-        /** The theme can be set: the own QR, or a public chat whose info one can change. */
         final boolean themeEditable;
 
         Link(@Nullable String url, String caption, boolean captionIsUsername, boolean contactToken, boolean self, long peerId, boolean themeEditable) {
@@ -80,7 +59,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
     private final Link link;
 
     private int mode = QrShareView.FEE_PAID;
-    /** The free mode of the last time is restored once, when the fee is first known (the settings may come later). */
     private boolean freeModeRestored;
     private @Nullable TLRPC.TL_exportedNoPaidMessagesToken token;
     private long tokenTime;
@@ -91,17 +69,12 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
     private @Nullable TLRPC.ShareTheme pendingTheme;
     private int themeRequestId;
     private boolean themeChangedByUser;
-    /** A colour chosen before the palette with the server ids has come: saved once it does. */
     private boolean backdropWaitsForIds;
     private boolean released;
 
     private final Runnable tick = this::tick;
     private final Runnable saveTheme = this::saveTheme;
 
-    /**
-     * Resolves the link of the QR: the public username of a user or a chat. The own QR without a username
-     * leads to a public phone number, else to a contact token.
-     */
     static Link resolveLink(int account, long userId, long chatId) {
         final MessagesController controller = MessagesController.getInstance(account);
         final String prefix = "https://" + controller.linkPrefix + "/";
@@ -109,7 +82,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             final TLRPC.Chat chat = controller.getChat(chatId);
             final String username = ChatObject.getPublicUsername(chat);
             if (username != null) {
-                // the server sets the theme of a public chat only (PEER_PUBLIC_REQUIRED)
                 return new Link(prefix + username, username, true, false, false, -chatId, ChatObject.canChangeChatInfo(chat));
             }
             return new Link(prefix, chat != null ? chat.title : "", false, false, false, -chatId, false);
@@ -128,7 +100,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             return new Link(prefix + phone, phone, false, false, true, userId, true);
         }
         final TLRPC.TL_exportedContactToken cached = controller.getCachedContactToken();
-        // until a token comes, there is no code
         return new Link(cached != null ? cached.url : null, user != null ? UserObject.getUserName(user) : "", false, true, true, userId, true);
     }
 
@@ -153,12 +124,11 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             view.setGiftsOwner(link.peerId);
         }
         if (!link.self) {
-            // someone else's code: the link and its owner's theme, set only for a chat one administers
             view.setFeeStars(0);
             loadTheme();
             return;
         }
-        NotificationCenter.getInstance(account).addObserver(this, NotificationCenter.privacyRulesUpdated);
+        NotificationCenter.getInstance(account).addWeakObserver(this, NotificationCenter.privacyRulesUpdated);
         if (link.contactToken) {
             contactToken = MessagesController.getInstance(account).getCachedContactToken();
             if (contactToken == null) {
@@ -178,7 +148,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         NotificationCenter.getInstance(account).removeObserver(this, NotificationCenter.userInfoDidLoad);
         NotificationCenter.getInstance(account).removeObserver(this, NotificationCenter.chatInfoDidLoad);
         AndroidUtilities.cancelRunOnUIThread(tick);
-        // the last choice is still saved
         AndroidUtilities.cancelRunOnUIThread(saveTheme);
         saveTheme();
         if (tokenRequestId != 0) {
@@ -190,7 +159,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
         if (id == NotificationCenter.privacyRulesUpdated) {
-            // the paid messages setting has come or changed
             updateFee();
         } else if (id == NotificationCenter.userInfoDidLoad) {
             if ((Long) args[0] == link.peerId) {
@@ -208,7 +176,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return MessagesController.getMainSettings(account);
     }
 
-    /** The chip with the fee; the permanent free code of the last time comes back once there is a fee. */
     private void updateFee() {
         final long stars = getFeeStars();
         view.setFeeStars(stars);
@@ -239,7 +206,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return settings.noncontact_peers_paid_stars;
     }
 
-    /* Ticks: the temporary codes and the contact token */
 
     private void tick() {
         AndroidUtilities.cancelRunOnUIThread(tick);
@@ -249,7 +215,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         if (mode == QrShareView.FEE_TIMER && isTemporaryCodeDue()) {
             requestToken(false, true);
         }
-        // the same clock as the cache of MessagesController
         if (link.contactToken && (contactToken == null || System.currentTimeMillis() / 1000 >= contactToken.expires)
             && SystemClock.elapsedRealtime() - contactTokenRequestTime >= CONTACT_TOKEN_RETRY) {
             requestContactToken();
@@ -264,28 +229,23 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
                 return;
             }
             contactToken = token;
-            // the next one is asked for as soon as this one expires
             contactTokenRequestTime = 0;
             view.setLinks(token.url, link.caption, false);
             view.setLinkExpires(token.expires);
         });
     }
 
-    /* Fee */
 
-    /** The chip has switched the mode; the free modes need a code of their kind. */
     void onFeeMode(int newMode) {
         if (mode == newMode) {
             return;
         }
         if (link.contactToken && newMode == QrShareView.FEE_PERMANENT) {
-            // a contact token has temporary free codes only (the chip offers no permanent one)
             newMode = QrShareView.FEE_TIMER;
         }
         mode = newMode;
         getPrefs().edit().putBoolean(PREF_NO_PAID_PERMANENT, mode == QrShareView.FEE_PERMANENT).apply();
         if (mode == QrShareView.FEE_PAID) {
-            // nothing is revoked: temporary codes die by themselves, the permanent token stays valid
             if (tokenRequestId != 0) {
                 ConnectionsManager.getInstance(account).cancelRequest(tokenRequestId, true);
                 tokenRequestId = 0;
@@ -302,7 +262,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         requestToken(false, mode == QrShareView.FEE_TIMER);
     }
 
-    /** "Reset Code": all the codes are revoked; with the timer a temporary one from a new secret comes at once. */
     void onResetCode() {
         requestToken(true, mode == QrShareView.FEE_TIMER);
     }
@@ -315,13 +274,11 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             || isTemporary(token) && ConnectionsManager.getInstance(account).getCurrentTime() >= token.expires - TEMPORARY_CODE_MARGIN;
     }
 
-    /** A temporary code has an expiry (its flag differs between the constructors, the value does not). */
     private static boolean isTemporary(@Nullable TLRPC.TL_exportedNoPaidMessagesToken token) {
         return token != null && token.expires != 0;
     }
 
     private void requestToken(boolean revoke, boolean temporary) {
-        // the latest request wins, e.g. when the timer is switched on and off quickly
         if (tokenRequestId != 0) {
             ConnectionsManager.getInstance(account).cancelRequest(tokenRequestId, true);
         }
@@ -338,7 +295,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
                 final String error = err != null ? err.text : null;
                 FileLog.e("QrShare: exportNoPaidMessagesToken " + error);
                 if (token == null || isTemporary(token) != temporary) {
-                    // the mode has no code to show
                     mode = QrShareView.FEE_PAID;
                     getPrefs().edit().putBoolean(PREF_NO_PAID_PERMANENT, false).apply();
                     view.cancelFree(error);
@@ -347,7 +303,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
                 }
                 return;
             }
-            // a code that arrives after the mode has changed is of the wrong kind
             if (mode == QrShareView.FEE_PAID || temporary != (mode == QrShareView.FEE_TIMER)) {
                 return;
             }
@@ -372,7 +327,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return cached;
     }
 
-    /** The server's link of the code; a permanent token cached by an older version may have none: built then. */
     @Nullable
     private String getFreeLink(TLRPC.TL_exportedNoPaidMessagesToken token) {
         if (!TextUtils.isEmpty(token.url) || link.url == null || link.contactToken) {
@@ -381,9 +335,7 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return link.url + "?free=" + token.token;
     }
 
-    /* Theme */
 
-    /** The theme comes with the full user / chat (share_theme): the full peer is asked for on opening. */
     private void loadTheme() {
         final MessagesController controller = MessagesController.getInstance(account);
         if (link.peerId > 0) {
@@ -391,14 +343,14 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             if (user == null) {
                 return;
             }
-            NotificationCenter.getInstance(account).addObserver(this, NotificationCenter.userInfoDidLoad);
+            NotificationCenter.getInstance(account).addWeakObserver(this, NotificationCenter.userInfoDidLoad);
             controller.loadUserInfo(user, true, 0);
         } else {
             final TLRPC.Chat chat = controller.getChat(-link.peerId);
             if (chat == null) {
                 return;
             }
-            NotificationCenter.getInstance(account).addObserver(this, NotificationCenter.chatInfoDidLoad);
+            NotificationCenter.getInstance(account).addWeakObserver(this, NotificationCenter.chatInfoDidLoad);
             MessagesStorage.getInstance(account).loadChatInfo(chat.id, ChatObject.isChannel(chat), null, true, false);
         }
     }
@@ -411,20 +363,18 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         final LocalTheme local = localThemes(account).get(link.peerId);
         if (local != null) {
             if (same(theme, local.theme)) {
-                localThemes(account).remove(link.peerId); // the server has it
+                localThemes(account).remove(link.peerId);
             } else if (local.savedAt == 0 || SystemClock.elapsedRealtime() - local.savedAt < LOCAL_THEME_HOLD) {
-                // a full asked for before the choice was saved: the choice stays, in the full too
                 putFullTheme(local.theme);
                 return;
             } else {
-                localThemes(account).remove(link.peerId); // changed since (e.g. on another device)
+                localThemes(account).remove(link.peerId);
             }
         }
         if (themeChangedByUser) {
             return;
         }
         if (loadedTheme == null) {
-            // nothing on the screen yet (no full in memory): as it is, no swap animation
             view.setInstantTheme(true);
             applyTheme(theme);
             view.setInstantTheme(false);
@@ -433,7 +383,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         }
     }
 
-    /** The theme of the full user / chat in memory; null without a full, the default when it has no share_theme. */
     @Nullable
     private TLRPC.ShareTheme memoryFullTheme() {
         final MessagesController controller = MessagesController.getInstance(account);
@@ -445,7 +394,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return full != null ? themeOf(full.share_theme) : null;
     }
 
-    /** A choice made here: into the full user / chat in memory and in the database, ahead of the server. */
     private void putFullTheme(TLRPC.ShareTheme theme) {
         final MessagesController controller = MessagesController.getInstance(account);
         if (link.peerId > 0) {
@@ -464,10 +412,9 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
     }
 
     private static TLRPC.ShareTheme themeOf(@Nullable TLRPC.ShareTheme theme) {
-        return theme != null ? theme : new TLRPC.TL_shareThemeDefault(); // no share_theme: the default one
+        return theme != null ? theme : new TLRPC.TL_shareThemeDefault();
     }
 
-    /** The same theme, byte for byte: nothing to apply again. */
     private static boolean same(@Nullable TLObject a, @Nullable TLObject b) {
         if (a == null || b == null) {
             return a == b;
@@ -490,16 +437,11 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         }
     }
 
-    /**
-     * A theme chosen on this device and not yet seen in a full from the server (per peer, over the screens of a
-     * launch): a full asked for before the save went through still has the previous theme and must not bring it back.
-     */
     private static final class LocalTheme {
         TLRPC.ShareTheme theme;
-        long savedAt; // elapsedRealtime of the confirmed save, 0 while it is on its way
+        long savedAt;
     }
 
-    /** A full that left the server just before the save may still come with the old theme this long after it. */
     private static final long LOCAL_THEME_HOLD = 10_000;
 
     @SuppressWarnings("unchecked")
@@ -523,10 +465,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         return peer instanceof TLRPC.TL_inputPeerEmpty ? null : peer;
     }
 
-    /**
-     * The palette has been replaced: a backdrop theme that came before it (e.g. on the very first opening, with only the
-     * built-in table) is applied again, now with its server id known.
-     */
     void onPaletteChanged() {
         if (released) {
             return;
@@ -544,16 +482,13 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         if (theme instanceof TLRPC.TL_shareThemeGift && ((TLRPC.TL_shareThemeGift) theme).stargift instanceof TL_stars.TL_starGiftUnique) {
             view.applyThemeGift((TL_stars.TL_starGiftUnique) ((TLRPC.TL_shareThemeGift) theme).stargift);
         } else if (theme instanceof TLRPC.TL_shareThemeEmojiBackdrop) {
-            // emoji and / or a backdrop, together in one theme
             final TLRPC.TL_shareThemeEmojiBackdrop t = (TLRPC.TL_shareThemeEmojiBackdrop) theme;
             view.applyThemeEmojiBackdrop((t.flags & 1) != 0, t.backdrop_id, (t.flags & 2) != 0 ? t.emojis : null);
         } else {
-            // the default, or a profile color of the previous screen (not in the palette)
             view.applyThemeDefault();
         }
     }
 
-    /** The user has changed the theme: it is saved from what the screen shows (a gift, else the emoji with the colour). */
     void onThemeChanged() {
         themeChangedByUser = true;
         backdropWaitsForIds = false;
@@ -561,14 +496,12 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             return;
         }
         final TLRPC.ShareTheme theme;
-        // what the server will return, for the cache
         TLRPC.ShareTheme shown = null;
         final TL_stars.TL_starGiftUnique gift = view.getThemeGift();
         final ArrayList<TLRPC.Reaction> emoji = view.getPickedEmoji();
         if (gift != null) {
             final TL_stars.InputSavedStarGift input = getInputGift(gift);
             if (input == null) {
-                // cannot be saved; an earlier choice still waiting is outdated
                 cancelThemeSave();
                 return;
             }
@@ -579,11 +512,9 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
             shownGift.stargift = gift;
             shown = shownGift;
         } else {
-            // emoji (custom and standard, up to 6) and the colour go together; the default colour is no backdrop
             final int index = view.getThemeBackdropIndex();
             final boolean backdrop = index >= 0 && !view.isDefaultBackdrop(index);
             if (backdrop && Backdrops.IDS == null) {
-                // the built-in table has no server ids: the theme is saved when the palette comes
                 cancelThemeSave();
                 backdropWaitsForIds = true;
                 return;
@@ -613,7 +544,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         AndroidUtilities.runOnUIThread(saveTheme, THEME_SAVE_DELAY);
     }
 
-    /** The own gift goes by its slug; a chat's one by the chat and its saved id, it must be the chat's own gift. */
     @Nullable
     private TL_stars.InputSavedStarGift getInputGift(TL_stars.TL_starGiftUnique gift) {
         if (link.self) {
@@ -640,7 +570,7 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         AndroidUtilities.cancelRunOnUIThread(saveTheme);
         final LocalTheme local = localThemes(account).get(link.peerId);
         if (local != null && local.savedAt == 0) {
-            localThemes(account).remove(link.peerId); // not to be saved: the server's full is right again
+            localThemes(account).remove(link.peerId);
         }
     }
 
@@ -655,7 +585,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         if (req.peer == null) {
             return;
         }
-        // the previous choice is outdated
         if (themeRequestId != 0) {
             ConnectionsManager.getInstance(account).cancelRequest(themeRequestId, true);
         }
@@ -671,7 +600,7 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
                 if (err == null) {
                     sent.savedAt = SystemClock.elapsedRealtime();
                 } else {
-                    localThemes(account).remove(peerId); // not saved: the server's full is right
+                    localThemes(account).remove(peerId);
                 }
             }
             if (err != null) {
@@ -683,7 +612,6 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
         });
     }
 
-    /* Phone */
 
     private static boolean isPhonePublic(int account) {
         ArrayList<TLRPC.PrivacyRule> rules = ContactsController.getInstance(account).getPrivacyRules(ContactsController.PRIVACY_RULES_TYPE_PHONE);

@@ -31,6 +31,7 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.FixedHeightEmptyCell;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
@@ -153,14 +154,6 @@ public class FeaturesPageView extends BaseListPageView {
         }
         if (order != null) {
             final SparseIntArray finalOrder = order;
-//            if (finalOrder.size() > 0) {
-//                for (int i = 0; i < itemsTmp.size(); i++) {
-//                    if (finalOrder.get(itemsTmp.get(i).order, -1) == -1 && !BuildVars.DEBUG_PRIVATE_VERSION) {
-//                        itemsTmp.remove(i);
-//                        i--;
-//                    }
-//                }
-//            }
             Collections.sort(itemsTmp, (o1, o2) -> {
                 int type1 = finalOrder.get(o1.order, Integer.MAX_VALUE);
                 int type2 = finalOrder.get(o2.order, Integer.MAX_VALUE);
@@ -278,7 +271,7 @@ public class FeaturesPageView extends BaseListPageView {
                 TextView textView = new TextView(context);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
                 textView.setTypeface(AndroidUtilities.bold());
-                textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+                ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
                 textView.setText(LocaleController.getString(R.string.UpgradedStories));
                 addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 111, 0, 0));
 
@@ -335,7 +328,6 @@ public class FeaturesPageView extends BaseListPageView {
                 Canvas canvas = new Canvas(bitmap);
                 canvas.drawColor(ColorUtils.blendARGB(Theme.getColor(Theme.key_premiumGradient2, resourcesProvider), Theme.getColor(Theme.key_dialogBackground, resourcesProvider), 0.5f));
                 iconTextureView.setBackgroundBitmap(bitmap);
-//                iconTextureView.mRenderer.forceNight = true;
                 iconTextureView.mRenderer.colorKey1 = Theme.key_premiumGradient2;
                 iconTextureView.mRenderer.colorKey2 = Theme.key_premiumGradient1;
                 iconTextureView.mRenderer.updateColors();
@@ -348,14 +340,14 @@ public class FeaturesPageView extends BaseListPageView {
                 TextView textView = new TextView(context);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
                 textView.setTypeface(AndroidUtilities.bold());
-                textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+                ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
                 textView.setText(LocaleController.getString(R.string.TelegramBusiness));
                 textView.setGravity(Gravity.CENTER);
                 addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 33, 150, 33, 0));
 
                 textView = new TextView(context);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-                textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
+                ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
                 textView.setText(LocaleController.getString(R.string.TelegramBusinessSubtitle2));
                 textView.setGravity(Gravity.CENTER);
                 addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 33, 183, 33, 20));
@@ -404,12 +396,12 @@ public class FeaturesPageView extends BaseListPageView {
 
             textView = new TextView(context);
             textView.setTypeface(AndroidUtilities.bold());
-            textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+            ThemeBind.textColor(textView, Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 68, 8, 16, 0));
 
             description = new TextView(context);
-            description.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+            ThemeBind.textColor(description, Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
             description.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             addView(description, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 68, 28, 16, 8));
         }

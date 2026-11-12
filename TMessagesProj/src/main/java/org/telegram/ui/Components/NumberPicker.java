@@ -43,10 +43,30 @@ import android.widget.TextView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 
 import java.util.Locale;
 
-public class NumberPicker extends LinearLayout {
+public class NumberPicker extends LinearLayout implements Theme.Colorable {
+
+    private boolean customSelectorColor;
+
+    @Override
+    public void updateColors() {
+        try {
+            if (!customSelectorColor && mSelectionDivider != null) {
+                mSelectionDivider.setColor(getThemedColor(Theme.key_featuredStickers_addButton));
+                invalidate();
+            }
+        } catch (Exception e) {
+            org.telegram.messenger.FileLog.e(e);
+        }
+    }
+
+    @Override
+    public void addColorKeys(java.util.HashSet<Integer> colors) {
+        colors.add(Theme.key_featuredStickers_addButton);
+    }
 
     public static final int DEFAULT_SIZE_PER_COUNT = 42;
     private int SELECTOR_WHEEL_ITEM_COUNT = 3;
@@ -178,7 +198,7 @@ public class NumberPicker extends LinearLayout {
         mInputText = new TextView(getContext());
         mInputText.setGravity(Gravity.CENTER);
         mInputText.setSingleLine(true);
-        mInputText.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
+        ThemeBind.textColor(mInputText, Theme.key_dialogTextBlack, resourcesProvider);
         mInputText.setBackgroundResource(0);
         mInputText.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
         mInputText.setVisibility(INVISIBLE);
@@ -242,11 +262,13 @@ public class NumberPicker extends LinearLayout {
     }
 
     public void setTextColor(int color) {
+        ThemeBind.clear(mInputText);
         mInputText.setTextColor(color);
         mSelectorWheelPaint.setColor(color);
     }
 
     public void setSelectorColor(int color) {
+        customSelectorColor = true;
         mSelectionDivider.setColor(color);
     }
 
@@ -772,16 +794,10 @@ public class NumberPicker extends LinearLayout {
         x += textOffset;
         float y = mCurrentScrollOffset;
 
-        // draw the selector wheel
         int[] selectorIndices = mSelectorIndices;
         for (int i = 0; i < selectorIndices.length; i++) {
             int selectorIndex = selectorIndices[i];
             String scrollSelectorValue = mSelectorIndexToStringCache.get(selectorIndex);
-            // Do not draw the middle item if input is visible since the input
-            // is shown only if the wheel is static and it covers the middle
-            // item. Otherwise, if the user starts editing the text via the
-            // IME he may see a dimmed version of the old value intermixed
-            // with the new one.
             if (scrollSelectorValue != null && (i != SELECTOR_MIDDLE_ITEM_INDEX || mInputText.getVisibility() != VISIBLE)) {
                 if (SELECTOR_WHEEL_ITEM_COUNT > 3) {
                     float p;
@@ -1095,32 +1111,24 @@ public class NumberPicker extends LinearLayout {
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException e) {
-                // Ignore as if it's not a number we don't care
             }
         } else {
             for (int i = 0; i < mDisplayedValues.length; i++) {
-                // Don't force the user to type in jan when ja will do
                 value = value.toLowerCase();
                 if (mDisplayedValues[i].toLowerCase().startsWith(value)) {
                     return mMinValue + i;
                 }
             }
 
-            /*
-             * The user might have typed in a number into the month field i.e.
-             * 10 instead of OCT so support that too.
-             */
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException e) {
-                // Ignore as if it's not a number we don't care
             }
         }
         return mMinValue;
     }
 
     private boolean ensureScrollWheelAdjusted() {
-        // adjust to the closest value
         int deltaY = mInitialScrollOffset - mCurrentScrollOffset;
         if (deltaY != 0) {
             mPreviousScrollerY = 0;

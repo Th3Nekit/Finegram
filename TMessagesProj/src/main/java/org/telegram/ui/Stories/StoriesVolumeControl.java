@@ -46,7 +46,6 @@ public class StoriesVolumeControl extends View {
         return super.onKeyDown(keyCode, event);
     }
 
-    // unmutes only if muted
     public void unmute() {
         AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);

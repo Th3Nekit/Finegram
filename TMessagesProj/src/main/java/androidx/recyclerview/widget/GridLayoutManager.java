@@ -27,68 +27,33 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 import java.util.Arrays;
 
-/**
- * A {@link RecyclerView.LayoutManager} implementations that lays out items in a grid.
- * <p>
- * By default, each item occupies 1 span. You can change it by providing a custom
- * {@link SpanSizeLookup} instance via {@link #setSpanSizeLookup(SpanSizeLookup)}.
- */
 public class GridLayoutManager extends LinearLayoutManager {
 
     private static final boolean DEBUG = false;
     private static final String TAG = "GridLayoutManager";
     public static final int DEFAULT_SPAN_COUNT = -1;
-    /**
-     * Span size have been changed but we've not done a new layout calculation.
-     */
     boolean mPendingSpanCountChange = false;
     int mSpanCount = DEFAULT_SPAN_COUNT;
-    /**
-     * Right borders for each span.
-     * <p>For <b>i-th</b> item start is {@link #mCachedBorders}[i-1] + 1
-     * and end is {@link #mCachedBorders}[i].
-     */
     protected int [] mCachedBorders;
-    /**
-     * Temporary array to keep views in layoutChunk method
-     */
     View[] mSet;
     final SparseIntArray mPreLayoutSpanSizeCache = new SparseIntArray();
     final SparseIntArray mPreLayoutSpanIndexCache = new SparseIntArray();
     SpanSizeLookup mSpanSizeLookup = new DefaultSpanSizeLookup();
-    // re-used variable to acquire decor insets from RecyclerView
     final Rect mDecorInsets = new Rect();
 
     private boolean mUsingSpansToEstimateScrollBarDimensions;
 
-    /**
-     * Creates a vertical GridLayoutManager
-     *
-     * @param context Current context, will be used to access resources.
-     * @param spanCount The number of columns in the grid
-     */
     public GridLayoutManager(Context context, int spanCount) {
         super(context);
         setSpanCount(spanCount);
     }
 
-    /**
-     * @param context Current context, will be used to access resources.
-     * @param spanCount The number of columns or rows in the grid
-     * @param orientation Layout orientation. Should be {@link #HORIZONTAL} or {@link
-     *                      #VERTICAL}.
-     * @param reverseLayout When set to true, layouts from end to start.
-     */
     public GridLayoutManager(Context context, int spanCount,
             @RecyclerView.Orientation int orientation, boolean reverseLayout) {
         super(context, orientation, reverseLayout);
         setSpanCount(spanCount);
     }
 
-    /**
-     * stackFromEnd is not supported by GridLayoutManager. Consider using
-     * {@link #setReverseLayout(boolean)}.
-     */
     @Override
     public void setStackFromEnd(boolean stackFromEnd) {
         if (stackFromEnd) {
@@ -109,7 +74,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             return 0;
         }
 
-        // Row count is one more than the last item's row index.
         return getSpanGroupIndex(recycler, state, state.getItemCount() - 1) + 1;
     }
 
@@ -123,7 +87,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             return 0;
         }
 
-        // Column count is one more than the last item's column index.
         return getSpanGroupIndex(recycler, state, state.getItemCount() - 1) + 1;
     }
 
@@ -142,7 +105,7 @@ public class GridLayoutManager extends LinearLayoutManager {
                     glp.getSpanIndex(), glp.getSpanSize(),
                     spanGroupIndex, 1,
                     mSpanCount > 1 && glp.getSpanSize() == mSpanCount, false));
-        } else { // VERTICAL
+        } else {
             info.setCollectionItemInfo(AccessibilityNodeInfoCompat.CollectionItemInfoCompat.obtain(
                     spanGroupIndex , 1,
                     glp.getSpanIndex(), glp.getSpanSize(),
@@ -244,21 +207,10 @@ public class GridLayoutManager extends LinearLayoutManager {
         return lp instanceof LayoutParams;
     }
 
-    /**
-     * Sets the source to get the number of spans occupied by each item in the adapter.
-     *
-     * @param spanSizeLookup {@link SpanSizeLookup} instance to be used to query number of spans
-     *                       occupied by each item
-     */
     public void setSpanSizeLookup(SpanSizeLookup spanSizeLookup) {
         mSpanSizeLookup = spanSizeLookup;
     }
 
-    /**
-     * Returns the current {@link SpanSizeLookup} used by the GridLayoutManager.
-     *
-     * @return The current {@link SpanSizeLookup} used by the GridLayoutManager.
-     */
     public SpanSizeLookup getSpanSizeLookup() {
         return mSpanSizeLookup;
     }
@@ -295,20 +247,10 @@ public class GridLayoutManager extends LinearLayoutManager {
         setMeasuredDimension(width, height);
     }
 
-    /**
-     * @param totalSpace Total available space after padding is removed
-     */
     private void calculateItemBorders(int totalSpace) {
         mCachedBorders = calculateItemBorders(mCachedBorders, mSpanCount, totalSpace);
     }
 
-    /**
-     * @param cachedBorders The out array
-     * @param spanCount number of spans
-     * @param totalSpace total available space after padding is removed
-     * @return The updated array. Might be the same instance as the provided array if its size
-     * has not changed.
-     */
     protected int[] calculateItemBorders(int[] cachedBorders, int spanCount, int totalSpace) {
         if (cachedBorders == null || cachedBorders.length != spanCount + 1
                 || cachedBorders[cachedBorders.length - 1] != totalSpace) {
@@ -380,13 +322,11 @@ public class GridLayoutManager extends LinearLayoutManager {
                 itemDirection == LayoutState.ITEM_DIRECTION_TAIL;
         int span = getSpanIndex(recycler, state, anchorInfo.mPosition);
         if (layingOutInPrimaryDirection) {
-            // choose span 0
             while (span > 0 && anchorInfo.mPosition > 0) {
                 anchorInfo.mPosition--;
                 span = getSpanIndex(recycler, state, anchorInfo.mPosition);
             }
         } else {
-            // choose the max span we can get. hopefully last one
             final int indexLimit = state.getItemCount() - 1;
             int pos = anchorInfo.mPosition;
             int bestSpan = span;
@@ -423,12 +363,12 @@ public class GridLayoutManager extends LinearLayoutManager {
                 }
                 if (((RecyclerView.LayoutParams) view.getLayoutParams()).isItemRemoved()) {
                     if (invalidMatch == null) {
-                        invalidMatch = view; // removed item, least preferred
+                        invalidMatch = view;
                     }
                 } else if (mOrientationHelper.getDecoratedStart(view) >= boundsEnd
                         || mOrientationHelper.getDecoratedEnd(view) < boundsStart) {
                     if (outOfBoundsMatch == null) {
-                        outOfBoundsMatch = view; // item is not visible, less preferred
+                        outOfBoundsMatch = view;
                     }
                 } else {
                     return view;
@@ -518,11 +458,8 @@ public class GridLayoutManager extends LinearLayoutManager {
         final int otherDirSpecMode = mOrientationHelper.getModeInOther();
         final boolean flexibleInOtherDir = otherDirSpecMode != View.MeasureSpec.EXACTLY;
         final int currentOtherDirSize = getChildCount() > 0 ? mCachedBorders[mSpanCount] : 0;
-        // if grid layout's dimensions are not specified, let the new row change the measurements
-        // This is not perfect since we not covering all rows but still solves an important case
-        // where they may have a header row which should be laid out according to children.
         if (flexibleInOtherDir) {
-            updateMeasurements(); //  reset measurements
+            updateMeasurements();
         }
         final boolean layingOutInPrimaryDirection =
                 layoutState.mItemDirection == LayoutState.ITEM_DIRECTION_TAIL;
@@ -544,7 +481,7 @@ public class GridLayoutManager extends LinearLayoutManager {
             }
             remainingSpan -= spanSize;
             if (remainingSpan < 0) {
-                break; // item did not fit into this row or column
+                break;
             }
             View view = layoutState.next(recycler);
             if (view == null) {
@@ -561,9 +498,8 @@ public class GridLayoutManager extends LinearLayoutManager {
         }
 
         int maxSize = 0;
-        float maxSizeInOther = 0; // use a float to get size per span
+        float maxSizeInOther = 0;
 
-        // we should assign spans before item decor offsets are calculated
         assignSpans(recycler, state, count, layingOutInPrimaryDirection);
         for (int i = 0; i < count; i++) {
             View view = mSet[i];
@@ -595,9 +531,7 @@ public class GridLayoutManager extends LinearLayoutManager {
             }
         }
         if (flexibleInOtherDir) {
-            // re-distribute columns
             guessMeasurement(maxSizeInOther, currentOtherDirSize);
-            // now we should re-measure any item that was match parent.
             maxSize = 0;
             for (int i = 0; i < count; i++) {
                 View view = mSet[i];
@@ -609,8 +543,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             }
         }
 
-        // Views that did not measure the maxSize has to be re-measured
-        // We will stop doing this once we introduce Gravity in the GLM layout params
         for (int i = 0; i < count; i++) {
             final View view = mSet[i];
             if (mOrientationHelper.getDecoratedMeasurement(view) != maxSize) {
@@ -673,8 +605,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                 top = getPaddingTop() + mCachedBorders[params.mSpanIndex];
                 bottom = top + mOrientationHelper.getDecoratedMeasurementInOther(view);
             }
-            // We calculate everything with View's bounding box (which includes decor and margins)
-            // To calculate correct layout position, we subtract margins.
             layoutDecoratedWithMargins(view, left, top, right, bottom);
             if (DEBUG) {
                 Log.d(TAG, "laid out child at position " + getPosition(view) + ", with l:"
@@ -682,7 +612,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                         + (right - params.rightMargin) + ", b:" + (bottom - params.bottomMargin)
                         + ", span:" + params.mSpanIndex + ", spanSize:" + params.mSpanSize);
             }
-            // Consume the available space if the view is not removed OR changed
             if (params.isItemRemoved() || params.isItemChanged()) {
                 result.mIgnoreConsumed = true;
             }
@@ -691,15 +620,6 @@ public class GridLayoutManager extends LinearLayoutManager {
         Arrays.fill(mSet, null);
     }
 
-    /**
-     * Measures a child with currently known information. This is not necessarily the child's final
-     * measurement. (see fillChunk for details).
-     *
-     * @param view The child view to be measured
-     * @param otherDirParentSpecMode The RV measure spec that should be used in the secondary
-     *                               orientation
-     * @param alreadyMeasured True if we've already measured this view once
-     */
     protected void measureChild(View view, int otherDirParentSpecMode, boolean alreadyMeasured) {
         final LayoutParams lp = (LayoutParams) view.getLayoutParams();
         final Rect decorInsets = lp.mDecorInsets;
@@ -724,19 +644,8 @@ public class GridLayoutManager extends LinearLayoutManager {
         measureChildWithDecorationsAndMargin(view, wSpec, hSpec, alreadyMeasured);
     }
 
-    /**
-     * This is called after laying out a row (if vertical) or a column (if horizontal) when the
-     * RecyclerView does not have exact measurement specs.
-     * <p>
-     * Here we try to assign a best guess width or height and re-do the layout to update other
-     * views that wanted to MATCH_PARENT in the non-scroll orientation.
-     *
-     * @param maxSizeInOther The maximum size per span ratio from the measurement of the children.
-     * @param currentOtherDirSize The size before this layout chunk. There is no reason to go below.
-     */
     private void guessMeasurement(float maxSizeInOther, int currentOtherDirSize) {
         final int contentSize = Math.round(maxSizeInOther * mSpanCount);
-        // always re-calculate because borders were stretched during the fill
         calculateItemBorders(Math.max(contentSize, currentOtherDirSize));
     }
 
@@ -756,10 +665,7 @@ public class GridLayoutManager extends LinearLayoutManager {
 
     protected void assignSpans(RecyclerView.Recycler recycler, RecyclerView.State state, int count,
             boolean layingOutInPrimaryDirection) {
-        // spans are always assigned from 0 to N no matter if it is RTL or not.
-        // RTL is used only when positioning the view.
         int span, start, end, diff;
-        // make sure we traverse from min position to max position
         if (layingOutInPrimaryDirection) {
             start = 0;
             end = count;
@@ -779,25 +685,10 @@ public class GridLayoutManager extends LinearLayoutManager {
         }
     }
 
-    /**
-     * Returns the number of spans laid out by this grid.
-     *
-     * @return The number of spans
-     * @see #setSpanCount(int)
-     */
     public int getSpanCount() {
         return mSpanCount;
     }
 
-    /**
-     * Sets the number of spans to be laid out.
-     * <p>
-     * If {@link #getOrientation()} is {@link #VERTICAL}, this is the number of columns.
-     * If {@link #getOrientation()} is {@link #HORIZONTAL}, this is the number of rows.
-     *
-     * @param spanCount The total number of spans in the grid
-     * @see #getSpanCount()
-     */
     public void setSpanCount(int spanCount) {
         if (spanCount == mSpanCount) {
             return;
@@ -812,13 +703,6 @@ public class GridLayoutManager extends LinearLayoutManager {
         requestLayout();
     }
 
-    /**
-     * A helper class to provide the number of spans each item occupies.
-     * <p>
-     * Default implementation sets each item to occupy exactly 1 span.
-     *
-     * @see GridLayoutManager#setSpanSizeLookup(SpanSizeLookup)
-     */
     public abstract static class SpanSizeLookup {
 
         final SparseIntArray mSpanIndexCache = new SparseIntArray();
@@ -827,22 +711,8 @@ public class GridLayoutManager extends LinearLayoutManager {
         private boolean mCacheSpanIndices = false;
         private boolean mCacheSpanGroupIndices = false;
 
-        /**
-         * Returns the number of span occupied by the item at <code>position</code>.
-         *
-         * @param position The adapter position of the item
-         * @return The number of spans occupied by the item at the provided position
-         */
         public abstract int getSpanSize(int position);
 
-        /**
-         * Sets whether the results of {@link #getSpanIndex(int, int)} method should be cached or
-         * not. By default these values are not cached. If you are not overriding
-         * {@link #getSpanIndex(int, int)} with something highly performant, you should set this
-         * to true for better performance.
-         *
-         * @param cacheSpanIndices Whether results of getSpanIndex should be cached or not.
-         */
         public void setSpanIndexCacheEnabled(boolean cacheSpanIndices) {
             if (!cacheSpanIndices) {
                 mSpanGroupIndexCache.clear();
@@ -850,16 +720,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             mCacheSpanIndices = cacheSpanIndices;
         }
 
-        /**
-         * Sets whether the results of {@link #getSpanGroupIndex(int, int)} method should be cached
-         * or not. By default these values are not cached. If you are not overriding
-         * {@link #getSpanGroupIndex(int, int)} with something highly performant, and you are using
-         * spans to calculate scrollbar offset and range, you should set this to true for better
-         * performance.
-         *
-         * @param cacheSpanGroupIndices Whether results of getGroupSpanIndex should be cached or
-         *                              not.
-         */
         public void setSpanGroupIndexCacheEnabled(boolean cacheSpanGroupIndices)  {
             if (!cacheSpanGroupIndices) {
                 mSpanGroupIndexCache.clear();
@@ -867,36 +727,18 @@ public class GridLayoutManager extends LinearLayoutManager {
             mCacheSpanGroupIndices = cacheSpanGroupIndices;
         }
 
-        /**
-         * Clears the span index cache. GridLayoutManager automatically calls this method when
-         * adapter changes occur.
-         */
         public void invalidateSpanIndexCache() {
             mSpanIndexCache.clear();
         }
 
-        /**
-         * Clears the span group index cache. GridLayoutManager automatically calls this method
-         * when adapter changes occur.
-         */
         public void invalidateSpanGroupIndexCache() {
             mSpanGroupIndexCache.clear();
         }
 
-        /**
-         * Returns whether results of {@link #getSpanIndex(int, int)} method are cached or not.
-         *
-         * @return True if results of {@link #getSpanIndex(int, int)} are cached.
-         */
         public boolean isSpanIndexCacheEnabled() {
             return mCacheSpanIndices;
         }
 
-        /**
-         * Returns whether results of {@link #getSpanGroupIndex(int, int)} method are cached or not.
-         *
-         * @return True if results of {@link #getSpanGroupIndex(int, int)} are cached.
-         */
         public boolean isSpanGroupIndexCacheEnabled() {
             return mCacheSpanGroupIndices;
         }
@@ -927,37 +769,13 @@ public class GridLayoutManager extends LinearLayoutManager {
             return value;
         }
 
-        /**
-         * Returns the final span index of the provided position.
-         * <p>
-         * If you have a faster way to calculate span index for your items, you should override
-         * this method. Otherwise, you should enable span index cache
-         * ({@link #setSpanIndexCacheEnabled(boolean)}) for better performance. When caching is
-         * disabled, default implementation traverses all items from 0 to
-         * <code>position</code>. When caching is enabled, it calculates from the closest cached
-         * value before the <code>position</code>.
-         * <p>
-         * If you override this method, you need to make sure it is consistent with
-         * {@link #getSpanSize(int)}. GridLayoutManager does not call this method for
-         * each item. It is called only for the reference item and rest of the items
-         * are assigned to spans based on the reference item. For example, you cannot assign a
-         * position to span 2 while span 1 is empty.
-         * <p>
-         * Note that span offsets always start with 0 and are not affected by RTL.
-         *
-         * @param position  The position of the item
-         * @param spanCount The total number of spans in the grid
-         * @return The final span position of the item. Should be between 0 (inclusive) and
-         * <code>spanCount</code>(exclusive)
-         */
         public int getSpanIndex(int position, int spanCount) {
             int positionSpanSize = getSpanSize(position);
             if (positionSpanSize == spanCount) {
-                return 0; // quick return for full-span items
+                return 0;
             }
             int span = 0;
             int startPos = 0;
-            // If caching is enabled, try to jump
             if (mCacheSpanIndices) {
                 int prevKey = findFirstKeyLessThan(mSpanIndexCache, position);
                 if (prevKey >= 0) {
@@ -971,7 +789,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                 if (span == spanCount) {
                     span = 0;
                 } else if (span > spanCount) {
-                    // did not fit, moving to next row / column
                     span = size;
                 }
             }
@@ -986,8 +803,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             int hi = cache.size() - 1;
 
             while (lo <= hi) {
-                // Using unsigned shift here to divide by two because it is guaranteed to not
-                // overflow.
                 final int mid = (lo + hi) >>> 1;
                 final int midVal = cache.keyAt(mid);
                 if (midVal < position) {
@@ -1003,22 +818,11 @@ public class GridLayoutManager extends LinearLayoutManager {
             return -1;
         }
 
-        /**
-         * Returns the index of the group this position belongs.
-         * <p>
-         * For example, if grid has 3 columns and each item occupies 1 span, span group index
-         * for item 1 will be 0, item 5 will be 1.
-         *
-         * @param adapterPosition The position in adapter
-         * @param spanCount The total number of spans in the grid
-         * @return The index of the span group including the item at the given adapter position
-         */
         public int getSpanGroupIndex(int adapterPosition, int spanCount) {
             int span = 0;
             int group = 0;
             int start = 0;
             if (mCacheSpanGroupIndices) {
-                // This finds the first non empty cached group cache key.
                 int prevKey = findFirstKeyLessThan(mSpanGroupIndexCache, adapterPosition);
                 if (prevKey != -1) {
                     group = mSpanGroupIndexCache.get(prevKey);
@@ -1038,7 +842,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                     span = 0;
                     group++;
                 } else if (span > spanCount) {
-                    // did not fit, moving to next row / column
                     span = size;
                     group++;
                 }
@@ -1064,8 +867,6 @@ public class GridLayoutManager extends LinearLayoutManager {
         if (view == null) {
             return null;
         }
-        // LinearLayoutManager finds the last child. What we want is the child which has the same
-        // spanIndex.
         final int layoutDir = convertFocusDirectionToLayoutDirection(focusDirection);
         final boolean ascend = (layoutDir == LayoutState.LAYOUT_END) != mShouldReverseLayout;
         final int start, inc, limit;
@@ -1080,28 +881,14 @@ public class GridLayoutManager extends LinearLayoutManager {
         }
         final boolean preferLastSpan = mOrientation == VERTICAL && isLayoutRTL();
 
-        // The focusable candidate to be picked if no perfect focusable candidate is found.
-        // The best focusable candidate is the one with the highest amount of span overlap with
-        // the currently focused view.
-        View focusableWeakCandidate = null; // somewhat matches but not strong
+        View focusableWeakCandidate = null;
         int focusableWeakCandidateSpanIndex = -1;
-        int focusableWeakCandidateOverlap = 0; // how many spans overlap
+        int focusableWeakCandidateOverlap = 0;
 
-        // The unfocusable candidate to become visible on the screen next, if no perfect or
-        // weak focusable candidates are found to receive focus next.
-        // We are only interested in partially visible unfocusable views. These are views that are
-        // not fully visible, that is either partially overlapping, or out-of-bounds and right below
-        // or above RV's padded bounded area. The best unfocusable candidate is the one with the
-        // highest amount of span overlap with the currently focused view.
-        View unfocusableWeakCandidate = null; // somewhat matches but not strong
+        View unfocusableWeakCandidate = null;
         int unfocusableWeakCandidateSpanIndex = -1;
-        int unfocusableWeakCandidateOverlap = 0; // how many spans overlap
+        int unfocusableWeakCandidateOverlap = 0;
 
-        // The span group index of the start child. This indicates the span group index of the
-        // next focusable item to receive focus, if a focusable item within the same span group
-        // exists. Any focusable item beyond this group index are not relevant since they
-        // were already stored in the layout before onFocusSearchFailed call and were not picked
-        // by the focusSearch algorithm.
         int focusableSpanGroupIndex = getSpanGroupIndex(recycler, state, start);
         for (int i = start; i != limit; i += inc) {
             int spanGroupIndex = getSpanGroupIndex(recycler, state, i);
@@ -1111,10 +898,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             }
 
             if (candidate.hasFocusable() && spanGroupIndex != focusableSpanGroupIndex) {
-                // We are past the allowable span group index for the next focusable item.
-                // The search only continues if no focusable weak candidates have been found up
-                // until this point, in order to find the best unfocusable candidate to become
-                // visible on the screen next.
                 if (focusableWeakCandidate != null) {
                     break;
                 }
@@ -1126,7 +909,7 @@ public class GridLayoutManager extends LinearLayoutManager {
             final int candidateEnd = candidateLp.mSpanIndex + candidateLp.mSpanSize;
             if (candidate.hasFocusable() && candidateStart == prevSpanStart
                     && candidateEnd == prevSpanEnd) {
-                return candidate; // perfect match
+                return candidate;
             }
             boolean assignAsWeek = false;
             if ((candidate.hasFocusable() && focusableWeakCandidate == null)
@@ -1214,43 +997,11 @@ public class GridLayoutManager extends LinearLayoutManager {
         }
     }
 
-    /**
-     * When this flag is set, the scroll offset and scroll range calculations will take account
-     * of span information.
-     *
-     * <p>This is will increase the accuracy of the scroll bar's size and offset but will require
-     * more calls to {@link SpanSizeLookup#getSpanGroupIndex(int, int)}".
-     *
-     * <p>This additional accuracy may or may not be needed, depending on the characteristics of
-     * your layout.  You will likely benefit from this accuracy when:
-     *
-     * <ul>
-     *   <li>The variation in item span sizes is large.
-     *   <li>The size of your data set is small (if your data set is large, the scrollbar will
-     *   likely be very small anyway, and thus the increased accuracy has less impact).
-     *   <li>Calls to {@link SpanSizeLookup#getSpanGroupIndex(int, int)} are fast.
-     * </ul>
-     *
-     * <p>If you decide to enable this feature, you should be sure that calls to
-     * {@link SpanSizeLookup#getSpanGroupIndex(int, int)} are fast, that set span group index
-     * caching is set to true via a call to
-     * {@link SpanSizeLookup#setSpanGroupIndexCacheEnabled(boolean),
-     * and span index caching is also enabled via a call to
-     * {@link SpanSizeLookup#setSpanIndexCacheEnabled(boolean)}}.
-     */
     public void setUsingSpansToEstimateScrollbarDimensions(
             boolean useSpansToEstimateScrollBarDimensions) {
         mUsingSpansToEstimateScrollBarDimensions = useSpansToEstimateScrollBarDimensions;
     }
 
-    /**
-     * Returns true if the scroll offset and scroll range calculations take account of span
-     * information. See {@link #setUsingSpansToEstimateScrollbarDimensions(boolean)} for more
-     * information on this topic. Defaults to {@code false}.
-     *
-     * @return true if the scroll offset and scroll range calculations take account of span
-     * information.
-     */
     public boolean isUsingSpansToEstimateScrollbarDimensions() {
         return mUsingSpansToEstimateScrollBarDimensions;
     }
@@ -1272,7 +1023,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                     state.getItemCount() - 1, mSpanCount) + 1;
         }
 
-        // smooth scrollbar enabled. try to estimate better.
         final int laidOutArea = mOrientationHelper.getDecoratedEnd(endChild)
                 - mOrientationHelper.getDecoratedStart(startChild);
 
@@ -1284,7 +1034,6 @@ public class GridLayoutManager extends LinearLayoutManager {
                 mSpanCount) + 1;
         final int laidOutSpans = lastVisibleSpan - firstVisibleSpan + 1;
 
-        // estimate a size for full list.
         return (int) (((float) laidOutArea / laidOutSpans) * totalSpans);
     }
 
@@ -1330,9 +1079,6 @@ public class GridLayoutManager extends LinearLayoutManager {
             - mOrientationHelper.getDecoratedStart(startChild)));
     }
 
-    /**
-     * Default implementation for {@link SpanSizeLookup}. Each item occupies 1 span.
-     */
     public static final class DefaultSpanSizeLookup extends SpanSizeLookup {
 
         @Override
@@ -1346,18 +1092,8 @@ public class GridLayoutManager extends LinearLayoutManager {
         }
     }
 
-    /**
-     * LayoutParams used by GridLayoutManager.
-     * <p>
-     * Note that if the orientation is {@link #VERTICAL}, the width parameter is ignored and if the
-     * orientation is {@link #HORIZONTAL} the height parameter is ignored because child view is
-     * expected to fill all of the space given to it.
-     */
     public static class LayoutParams extends RecyclerView.LayoutParams {
 
-        /**
-         * Span Id for Views that are not laid out yet.
-         */
         public static final int INVALID_SPAN_ID = -1;
 
         int mSpanIndex = INVALID_SPAN_ID;
@@ -1384,30 +1120,10 @@ public class GridLayoutManager extends LinearLayoutManager {
             super(source);
         }
 
-        /**
-         * Returns the current span index of this View. If the View is not laid out yet, the return
-         * value is <code>undefined</code>.
-         * <p>
-         * Starting with RecyclerView <b>24.2.0</b>, span indices are always indexed from position 0
-         * even if the layout is RTL. In a vertical GridLayoutManager, <b>leftmost</b> span is span
-         * 0 if the layout is <b>LTR</b> and <b>rightmost</b> span is span 0 if the layout is
-         * <b>RTL</b>. Prior to 24.2.0, it was the opposite which was conflicting with
-         * {@link SpanSizeLookup#getSpanIndex(int, int)}.
-         * <p>
-         * If the View occupies multiple spans, span with the minimum index is returned.
-         *
-         * @return The span index of the View.
-         */
         public int getSpanIndex() {
             return mSpanIndex;
         }
 
-        /**
-         * Returns the number of spans occupied by this View. If the View not laid out yet, the
-         * return value is <code>undefined</code>.
-         *
-         * @return The number of spans occupied by this View.
-         */
         public int getSpanSize() {
             return mSpanSize;
         }

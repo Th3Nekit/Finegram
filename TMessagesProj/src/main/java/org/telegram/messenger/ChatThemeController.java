@@ -43,7 +43,7 @@ import com.th3nekit.finegram.core.configs.FinegramChatsConfig;
 public class ChatThemeController extends BaseController {
 
     private final long reloadTimeoutMs = 2 * 60 * 60 * 1000;
-    public static volatile DispatchQueue chatThemeQueue = new DispatchQueue("chatThemeQueue");
+    public static volatile DispatchQueue2 chatThemeQueue = new DispatchQueue2("chatThemeQueue");
 
     private final HashMap<Long, Bitmap> themeIdWallpaperThumbMap = new HashMap<>();
     private List<EmojiThemes> allChatThemes;
@@ -150,11 +150,7 @@ public class ChatThemeController extends BaseController {
                     }
                     editor.apply();
                 } else if (response instanceof TL_account.TL_themesNotModified) {
-                   // if (allChatThemes == null || allChatThemes.isEmpty()) {
                         chatThemes = getAllChatThemesFromPrefs();
-//                    } else {
-//                   //     return;
-//                    }
                 } else {
                     chatThemes = null;
                     isError = true;
@@ -940,7 +936,6 @@ public class ChatThemeController extends BaseController {
 
     private void requestNextChatThemes(ResultCallback<Void> callback) {
         if (giftsThemeList.hash == 0 || giftsThemeList.lastReloadTimeMs == 0) {
-            // init();
         }
 
         final boolean needReload = System.currentTimeMillis() - giftsThemeList.lastReloadTimeMs > reloadTimeoutMs;
@@ -982,7 +977,6 @@ public class ChatThemeController extends BaseController {
                         chatThemes.add(chatTheme);
                     }
 
-                    // todo save themes
 
                     AndroidUtilities.runOnUIThread(() -> {
                         giftsThemeList.offset = t.next_offset;

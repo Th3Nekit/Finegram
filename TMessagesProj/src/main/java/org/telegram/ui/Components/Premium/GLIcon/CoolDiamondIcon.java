@@ -27,7 +27,6 @@ import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** One small offscreen renderer shared by visible transfer cards, composited by their canvas. */
 public final class CoolDiamondIcon {
     private static CoolDiamondIcon instance;
     private final Context context;
@@ -81,7 +80,6 @@ public final class CoolDiamondIcon {
             float dt = (now - state.spinUpdated) / 1000f;
             float target = sending ? IDLE_SPEED * 3 : 0;
             float decay = (float) Math.exp(-dt / .2f);
-            // Integrate the easing speed, preserving the angle on both state transitions.
             state.spinOffset += target * dt + (state.spinSpeed - target) * .2f * (1 - decay);
             state.spinOffset %= (float) (Math.PI * 2);
             state.spinSpeed = target + (state.spinSpeed - target) * decay;
@@ -126,8 +124,6 @@ public final class CoolDiamondIcon {
         }
     }
     private final int size;
-    // Bound synchronous readback/upload work independently of screen density.
-    // The canvas still supplies the full spring scale, including its overshoot.
     private final int interactionSize;
     private long lastIdleRender;
     private float idleDt;
@@ -158,7 +154,6 @@ public final class CoolDiamondIcon {
         worker = new Handler(thread.getLooper());
     }
 
-    /** Called on the UI thread only, after the caller's clip rejection check. */
     public boolean draw(Canvas canvas, Rect bounds, View parent) {
         return draw(canvas, bounds, parent, false);
     }
@@ -183,7 +178,6 @@ public final class CoolDiamondIcon {
         }
         if (state.custom != custom || state.enlarged != enlarged) {
             state.generation++;
-            // Keep the last pose while a differently sized frame is being rendered.
             if (state.custom != custom) state.frame = null;
         }
         state.custom = custom;
@@ -203,7 +197,6 @@ public final class CoolDiamondIcon {
         Bitmap image = custom && state.frame != null ? state.frame : frame;
         if (image == null) return false;
         canvas.save();
-        // GL readback starts at the bottom row; retain its premultiplied RGBA bytes.
         canvas.translate(bounds.left, bounds.bottom);
         canvas.scale(bounds.width() / (float) image.getWidth(), -bounds.height() / (float) image.getHeight());
         canvas.drawBitmap(image, 0, 0, paint);
@@ -248,8 +241,6 @@ public final class CoolDiamondIcon {
             elapsed += dt;
             float yaw = elapsed * IDLE_SPEED + tiltYaw;
             float pitch = tiltPitch;
-            // Other cards retain their idle cadence while the dragged card
-            // updates at display speed; don't render the shared pose twice as often.
             idleDt += dt;
             if (lastIdleRender == 0 || now - lastIdleRender >= 33) {
                 renderedIdle = renderImage(renderer, size, yaw, pitch, idleDt);
@@ -262,8 +253,6 @@ public final class CoolDiamondIcon {
             boolean advancedCustom = false, advancedInteraction = false;
             for (int i = 0; i < batch.length; i++) {
                 Request request = batch[i];
-                // Keep each renderer's targets at a fixed size, including when a
-                // sending card and a dragged card are visible together.
                 DiamondRenderer target;
                 float step;
                 if (request.enlarged) {
@@ -282,8 +271,6 @@ public final class CoolDiamondIcon {
                 images[i] = renderImage(target, request.size, request.yaw, request.pitch, step);
             }
             if (pending && generation == renderGeneration) {
-                // Keep at most one unpublished batch. UI work must not add a
-                // full vsync delay to the GL loop or queue stale drag poses.
                 completed.set(new RenderedFrame(generation, yaw, pitch, renderedIdle, batch, images));
                 main.removeCallbacks(publishTask);
                 main.post(publishTask);
@@ -306,7 +293,6 @@ public final class CoolDiamondIcon {
     }
 
     private void publish(Bitmap next) {
-        // Do not recycle a bitmap which RenderThread may still be using.
         if (next != null) frame = next;
         long now = SystemClock.uptimeMillis();
         viewers.entrySet().removeIf(entry -> !entry.getKey().isAttachedToWindow()
@@ -349,8 +335,6 @@ public final class CoolDiamondIcon {
         renderer = new DiamondRenderer(context, 2);
         renderer.appearance = GLIconRenderer.DIAMOND_COOL;
         pixels = ByteBuffer.allocateDirect(bufferSize * bufferSize * 4);
-        // Compile shaders and allocate the enlarged targets before publishing
-        // readiness, not on the first touch.
         interactionRenderer = new DiamondRenderer(context, 2);
         interactionRenderer.appearance = GLIconRenderer.DIAMOND_COOL;
         interactionRenderer.drawToTexture(interactionSize, 0, 0, 0);

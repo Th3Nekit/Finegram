@@ -21,26 +21,12 @@ public class ANRDetector implements ForegroundDetector.Listener {
     private volatile boolean foreground;
     private volatile boolean destroyed;
 
-    /**
-     * Changes on every foreground/background transition.
-     */
     private volatile int generation;
 
-    /**
-     * Monotonically increasing id of each UI ping.
-     */
     private int nextPingId;
 
-    /**
-     * Last ping actually executed by the main thread.
-     */
     private volatile int acknowledgedPingId = -1;
 
-    /**
-     * Prevents reporting the same freeze repeatedly.
-     *
-     * Reset only after the main thread becomes responsive again.
-     */
     private volatile boolean anrReported;
 
     public ANRDetector(Runnable anrDetected) {
@@ -55,10 +41,6 @@ public class ANRDetector implements ForegroundDetector.Listener {
 
                 acknowledgedPingId = msg.arg1;
 
-                /*
-                 * If we previously detected an ANR, execution of this
-                 * message means that the UI thread has recovered.
-                 */
                 anrReported = false;
             }
         };
@@ -79,10 +61,6 @@ public class ANRDetector implements ForegroundDetector.Listener {
             final int pingId;
 
             synchronized (lock) {
-                /*
-                 * Do absolutely nothing while the application is in
-                 * background.
-                 */
                 while (!foreground && !destroyed) {
                     try {
                         lock.wait();
@@ -98,9 +76,6 @@ public class ANRDetector implements ForegroundDetector.Listener {
                 pingId = ++nextPingId;
             }
 
-            /*
-             * Post a ping to the main thread.
-             */
             Message message = mainHandler.obtainMessage(
                     MSG_UI_PING,
                     pingId,
@@ -111,10 +86,6 @@ public class ANRDetector implements ForegroundDetector.Listener {
             try {
                 Thread.sleep(TIMEOUT_MS);
             } catch (InterruptedException ignore) {
-                /*
-                 * Usually means foreground/background transition
-                 * or destroy().
-                 */
                 continue;
             }
 
@@ -122,26 +93,14 @@ public class ANRDetector implements ForegroundDetector.Listener {
                 return;
             }
 
-            /*
-             * Ignore this check if application state changed while
-             * we were waiting.
-             */
             if (!foreground || generation != checkGeneration) {
                 continue;
             }
 
-            /*
-             * Main thread processed our ping in time.
-             */
             if (acknowledgedPingId == pingId) {
                 continue;
             }
 
-            /*
-             * UI thread did not process the ping within TIMEOUT_MS.
-             *
-             * Report only once until the UI actually recovers.
-             */
             if (!anrReported) {
                 anrReported = true;
 
@@ -164,18 +123,11 @@ public class ANRDetector implements ForegroundDetector.Listener {
             generation++;
             foreground = true;
 
-            /*
-             * A previous ANR belongs to the previous foreground
-             * session.
-             */
             anrReported = false;
 
             lock.notifyAll();
         }
 
-        /*
-         * Interrupt any timeout that may belong to an old generation.
-         */
         detectorThread.interrupt();
     }
 
@@ -190,15 +142,8 @@ public class ANRDetector implements ForegroundDetector.Listener {
             foreground = false;
         }
 
-        /*
-         * Old UI pings are no longer interesting.
-         */
         mainHandler.removeMessages(MSG_UI_PING);
 
-        /*
-         * Wake the detector from Thread.sleep() immediately so it can
-         * enter lock.wait() and consume no periodic CPU in background.
-         */
         detectorThread.interrupt();
     }
 

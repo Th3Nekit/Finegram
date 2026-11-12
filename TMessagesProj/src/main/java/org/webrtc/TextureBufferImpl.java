@@ -14,10 +14,6 @@ import android.graphics.Matrix;
 import android.os.Handler;
 import androidx.annotation.Nullable;
 
-/**
- * Android texture buffer that glues together the necessary information together with a generic
- * release callback. ToI420() is implemented by providing a Handler and a YuvConverter.
- */
 public class TextureBufferImpl implements VideoFrame.TextureBuffer {
   interface RefCountMonitor {
     void onRetain(TextureBufferImpl textureBuffer);
@@ -25,12 +21,8 @@ public class TextureBufferImpl implements VideoFrame.TextureBuffer {
     void onDestroy(TextureBufferImpl textureBuffer);
   }
 
-  // This is the full resolution the texture has in memory after applying the transformation matrix
-  // that might include cropping. This resolution is useful to know when sampling the texture to
-  // avoid downscaling artifacts.
   private final int unscaledWidth;
   private final int unscaledHeight;
-  // This is the resolution that has been applied after cropAndScale().
   private final int width;
   private final int height;
   private final Type type;
@@ -129,8 +121,6 @@ public class TextureBufferImpl implements VideoFrame.TextureBuffer {
   public VideoFrame.Buffer cropAndScale(
       int cropX, int cropY, int cropWidth, int cropHeight, int scaleWidth, int scaleHeight) {
     final Matrix cropAndScaleMatrix = new Matrix();
-    // In WebRTC, Y=0 is the top row, while in OpenGL Y=0 is the bottom row. This means that the Y
-    // direction is effectively reversed.
     final int cropYFromBottom = height - (cropY + cropHeight);
     cropAndScaleMatrix.preTranslate(cropX / (float) width, cropYFromBottom / (float) height);
     cropAndScaleMatrix.preScale(cropWidth / (float) width, cropHeight / (float) height);
@@ -158,17 +148,12 @@ public class TextureBufferImpl implements VideoFrame.TextureBuffer {
     return yuvConverter;
   }
 
-  /**
-   * Create a new TextureBufferImpl with an applied transform matrix and a new size. The
-   * existing buffer is unchanged. The given transform matrix is applied first when texture
-   * coordinates are still in the unmodified [0, 1] range.
-   */
   @Override
   public TextureBufferImpl applyTransformMatrix(
       Matrix transformMatrix, int newWidth, int newHeight) {
-    return applyTransformMatrix(transformMatrix, /* unscaledWidth= */ newWidth,
-        /* unscaledHeight= */ newHeight, /* scaledWidth= */ newWidth,
-        /* scaledHeight= */ newHeight);
+    return applyTransformMatrix(transformMatrix,                      newWidth,
+                              newHeight,                    newWidth,
+                            newHeight);
   }
 
   private TextureBufferImpl applyTransformMatrix(Matrix transformMatrix, int unscaledWidth,

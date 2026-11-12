@@ -98,32 +98,12 @@ public class ExpiredStoryView {
             textX = offset + horizontalPadding + AndroidUtilities.dp(12);
             rect.set(offset + horizontalPadding, verticalPadding, offset + horizontalPadding + width, parent.getMeasuredHeight() - verticalPadding);
         }
-     //   Theme.chat_replyNamePaint.setColor(getThemedColor(Theme.key_chat_inReplyNameText));
 
         if (parent.getMessageObject().isOutOwner()) {
             Theme.chat_replyTextPaint.setColor(parent.getThemedColor(Theme.key_chat_outReplyNameText));
         } else {
             Theme.chat_replyTextPaint.setColor(parent.getThemedColor(Theme.key_chat_inReplyNameText));
         }
-       // float roundRadius = AndroidUtilities.dp(8);
-//        if (alpha != 1f) {
-//            int oldAlpha = parent.getThemedPaint(Theme.key_paint_chatActionBackground).getAlpha();
-//            parent.getThemedPaint(Theme.key_paint_chatActionBackground).setAlpha((int) (alpha * oldAlpha));
-//            canvas.drawRoundRect(rect, roundRadius, roundRadius, parent.getThemedPaint(Theme.key_paint_chatActionBackground));
-//            parent.getThemedPaint(Theme.key_paint_chatActionBackground).setAlpha(oldAlpha);
-//        } else {
-//            canvas.drawRoundRect(rect, roundRadius, roundRadius, parent.getThemedPaint(Theme.key_paint_chatActionBackground));
-//        }
-//        if (parent.hasGradientService()) {
-//            if (alpha != 1f) {
-//                int oldAlpha = Theme.chat_actionBackgroundGradientDarkenPaint.getAlpha();
-//                Theme.chat_actionBackgroundGradientDarkenPaint.setAlpha((int) (alpha * oldAlpha));
-//                canvas.drawRoundRect(rect, roundRadius, roundRadius, Theme.chat_actionBackgroundGradientDarkenPaint);
-//                Theme.chat_actionBackgroundGradientDarkenPaint.setAlpha(oldAlpha);
-//            } else {
-//                canvas.drawRoundRect(rect, roundRadius, roundRadius, Theme.chat_actionBackgroundGradientDarkenPaint);
-//            }
-//        }
 
         canvas.save();
         canvas.translate(textX, textY);

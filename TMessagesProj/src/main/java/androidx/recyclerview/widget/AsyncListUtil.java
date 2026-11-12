@@ -25,27 +25,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
-/**
- * A utility class that supports asynchronous content loading.
- * <p>
- * It can be used to load Cursor data in chunks without querying the Cursor on the UI Thread while
- * keeping UI and cache synchronous for better user experience.
- * <p>
- * It loads the data on a background thread and keeps only a limited number of fixed sized
- * chunks in memory at all times.
- * <p>
- * {@link AsyncListUtil} queries the currently visible range through {@link ViewCallback},
- * loads the required data items in the background through {@link DataCallback}, and notifies a
- * {@link ViewCallback} when the data is loaded. It may load some extra items for smoother
- * scrolling.
- * <p>
- * Note that this class uses a single thread to load the data, so it suitable to load data from
- * secondary storage such as disk, but not from network.
- * <p>
- * This class is designed to work with {@link RecyclerView}, but it does
- * not depend on it and can be used with other list views.
- *
- */
 public class AsyncListUtil<T> {
     static final String TAG = "AsyncListUtil";
 
@@ -79,14 +58,6 @@ public class AsyncListUtil<T> {
         Log.d(TAG, "[MAIN] " + String.format(s, args));
     }
 
-    /**
-     * Creates an AsyncListUtil.
-     *
-     * @param klass Class of the data item.
-     * @param tileSize Number of item per chunk loaded at once.
-     * @param dataCallback Data access callback.
-     * @param viewCallback Callback for querying visible item range and update notifications.
-     */
     public AsyncListUtil(@NonNull Class<T> klass, int tileSize,
             @NonNull DataCallback<T> dataCallback, @NonNull ViewCallback viewCallback) {
         mTClass = klass;
@@ -107,49 +78,19 @@ public class AsyncListUtil<T> {
         return mRequestedGeneration != mDisplayedGeneration;
     }
 
-    /**
-     * Updates the currently visible item range.
-     *
-     * <p>
-     * Identifies the data items that have not been loaded yet and initiates loading them in the
-     * background. Should be called from the view's scroll listener (such as
-     * {@link RecyclerView.OnScrollListener#onScrolled}).
-     */
     public void onRangeChanged() {
         if (isRefreshPending()) {
-            return;  // Will update range will the refresh result arrives.
+            return;
         }
         updateRange();
         mAllowScrollHints = true;
     }
 
-    /**
-     * Forces reloading the data.
-     * <p>
-     * Discards all the cached data and reloads all required data items for the currently visible
-     * range. To be called when the data item count and/or contents has changed.
-     */
     public void refresh() {
         mMissingPositions.clear();
         mBackgroundProxy.refresh(++mRequestedGeneration);
     }
 
-    /**
-     * Returns the data item at the given position or <code>null</code> if it has not been loaded
-     * yet.
-     *
-     * <p>
-     * If this method has been called for a specific position and returned <code>null</code>, then
-     * {@link ViewCallback#onItemLoaded(int)} will be called when it finally loads. Note that if
-     * this position stays outside of the cached item range (as defined by
-     * {@link ViewCallback#extendRangeInto} method), then the callback will never be called for
-     * this position.
-     *
-     * @param position Item position.
-     *
-     * @return The data item at the given position or <code>null</code> if it has not been loaded
-     *         yet.
-     */
     @Nullable
     public T getItem(int position) {
         if (position < 0 || position >= mItemCount) {
@@ -162,15 +103,6 @@ public class AsyncListUtil<T> {
         return item;
     }
 
-    /**
-     * Returns the number of items in the data set.
-     *
-     * <p>
-     * This is the number returned by a recent call to
-     * {@link DataCallback#refreshData()}.
-     *
-     * @return Number of items.
-     */
     public int getItemCount() {
         return mItemCount;
     }
@@ -181,14 +113,12 @@ public class AsyncListUtil<T> {
             return;
         }
         if (mTmpRange[1] >= mItemCount) {
-            // Invalid range may arrive soon after the refresh.
             return;
         }
 
         if (!mAllowScrollHints) {
             mScrollHint = ViewCallback.HINT_SCROLL_NONE;
         } else if (mTmpRange[0] > mPrevRange[1] || mPrevRange[0] > mTmpRange[1]) {
-            // Ranges do not intersect, long leap not a scroll.
             mScrollHint = ViewCallback.HINT_SCROLL_NONE;
         } else if (mTmpRange[0] < mPrevRange[0]) {
             mScrollHint = ViewCallback.HINT_SCROLL_DESC;
@@ -223,8 +153,7 @@ public class AsyncListUtil<T> {
             mDisplayedGeneration = mRequestedGeneration;
             recycleAllTiles();
 
-            mAllowScrollHints = false;  // Will be set to true after a first real scroll.
-            // There will be no scroll event if the size change does not affect the current range.
+            mAllowScrollHints = false;
             updateRange();
         }
 
@@ -333,8 +262,6 @@ public class AsyncListUtil<T> {
                         mFirstRequiredTileStart, mLastRequiredTileStart);
             }
 
-            // All pending tile requests are removed by ThreadUtil at this point.
-            // Re-request all required tiles in the most optimal order.
             if (scrollHint == ViewCallback.HINT_SCROLL_DESC) {
                 requestTiles(mFirstRequiredTileStart, lastVisibleTileStart, scrollHint, true);
                 requestTiles(lastVisibleTileStart + mTileSize, mLastRequiredTileStart, scrollHint,
@@ -431,7 +358,6 @@ public class AsyncListUtil<T> {
                         (scrollHint == ViewCallback.HINT_SCROLL_DESC))){
                     removeTile(lastLoadedTileStart);
                 } else {
-                    // Could not flush on either side, bail out.
                     return;
                 }
             }
@@ -442,136 +368,35 @@ public class AsyncListUtil<T> {
         }
     };
 
-    /**
-     * The callback that provides data access for {@link AsyncListUtil}.
-     *
-     * <p>
-     * All methods are called on the background thread.
-     */
     public static abstract class DataCallback<T> {
 
-        /**
-         * Refresh the data set and return the new data item count.
-         *
-         * <p>
-         * If the data is being accessed through {@link android.database.Cursor} this is where
-         * the new cursor should be created.
-         *
-         * @return Data item count.
-         */
         @WorkerThread
         public abstract int refreshData();
 
-        /**
-         * Fill the given tile.
-         *
-         * <p>
-         * The provided tile might be a recycled tile, in which case it will already have objects.
-         * It is suggested to re-use these objects if possible in your use case.
-         *
-         * @param startPosition The start position in the list.
-         * @param itemCount The data item count.
-         * @param data The data item array to fill into. Should not be accessed beyond
-         *             <code>itemCount</code>.
-         */
         @WorkerThread
         public abstract void fillData(@NonNull T[] data, int startPosition, int itemCount);
 
-        /**
-         * Recycle the objects created in {@link #fillData} if necessary.
-         *
-         *
-         * @param data Array of data items. Should not be accessed beyond <code>itemCount</code>.
-         * @param itemCount The data item count.
-         */
         @WorkerThread
         public void recycleData(@NonNull T[] data, int itemCount) {
         }
 
-        /**
-         * Returns tile cache size limit (in tiles).
-         *
-         * <p>
-         * The actual number of cached tiles will be the maximum of this value and the number of
-         * tiles that is required to cover the range returned by
-         * {@link ViewCallback#extendRangeInto(int[], int[], int)}.
-         * <p>
-         * For example, if this method returns 10, and the most
-         * recent call to {@link ViewCallback#extendRangeInto(int[], int[], int)} returned
-         * {100, 179}, and the tile size is 5, then the maximum number of cached tiles will be 16.
-         * <p>
-         * However, if the tile size is 20, then the maximum number of cached tiles will be 10.
-         * <p>
-         * The default implementation returns 10.
-         *
-         * @return Maximum cache size.
-         */
         @WorkerThread
         public int getMaxCachedTiles() {
             return 10;
         }
     }
 
-    /**
-     * The callback that links {@link AsyncListUtil} with the list view.
-     *
-     * <p>
-     * All methods are called on the main thread.
-          */
     public static abstract class ViewCallback {
 
-        /**
-         * No scroll direction hint available.
-         */
         public static final int HINT_SCROLL_NONE = 0;
 
-        /**
-         * Scrolling in descending order (from higher to lower positions in the order of the backing
-         * storage).
-         */
         public static final int HINT_SCROLL_DESC = 1;
 
-        /**
-         * Scrolling in ascending order (from lower to higher positions in the order of the backing
-         * storage).
-         */
         public static final int HINT_SCROLL_ASC = 2;
 
-        /**
-         * Compute the range of visible item positions.
-         * <p>
-         * outRange[0] is the position of the first visible item (in the order of the backing
-         * storage).
-         * <p>
-         * outRange[1] is the position of the last visible item (in the order of the backing
-         * storage).
-         * <p>
-         * Negative positions and positions greater or equal to {@link #getItemCount} are invalid.
-         * If the returned range contains invalid positions it is ignored (no item will be loaded).
-         *
-         * @param outRange The visible item range.
-         */
         @UiThread
         public abstract void getItemRangeInto(@NonNull int[] outRange);
 
-        /**
-         * Compute a wider range of items that will be loaded for smoother scrolling.
-         *
-         * <p>
-         * If there is no scroll hint, the default implementation extends the visible range by half
-         * its length in both directions. If there is a scroll hint, the range is extended by
-         * its full length in the scroll direction, and by half in the other direction.
-         * <p>
-         * For example, if <code>range</code> is <code>{100, 200}</code> and <code>scrollHint</code>
-         * is {@link #HINT_SCROLL_ASC}, then <code>outRange</code> will be <code>{50, 300}</code>.
-         * <p>
-         * However, if <code>scrollHint</code> is {@link #HINT_SCROLL_NONE}, then
-         * <code>outRange</code> will be <code>{50, 250}</code>
-         *
-         * @param range Visible item range.
-         * @param outRange Extended range.
-         * @param scrollHint The scroll direction hint.
-         */
         @UiThread
         public void extendRangeInto(@NonNull int[] range, @NonNull int[] outRange, int scrollHint) {
             final int fullRange = range[1] - range[0] + 1;
@@ -580,16 +405,9 @@ public class AsyncListUtil<T> {
             outRange[1] = range[1] + (scrollHint == HINT_SCROLL_ASC ? fullRange : halfRange);
         }
 
-        /**
-         * Called when the entire data set has changed.
-         */
         @UiThread
         public abstract void onDataRefresh();
 
-        /**
-         * Called when an item at the given position is loaded.
-         * @param position Item position.
-         */
         @UiThread
         public abstract void onItemLoaded(int position);
     }

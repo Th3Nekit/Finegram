@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Locale;
+import java.util.TreeSet;
 
 public final class FGOutboundLink {
 
@@ -22,13 +23,19 @@ public final class FGOutboundLink {
         public final String title;
 
         public final JSONObject outbound;
+        public final JSONObject xray;
 
         Parsed(String kind, String host, int port, String title, JSONObject outbound) {
+            this(kind, host, port, title, outbound, null);
+        }
+
+        Parsed(String kind, String host, int port, String title, JSONObject outbound, JSONObject xray) {
             this.kind = kind;
             this.host = host;
             this.port = port;
             this.title = title;
             this.outbound = outbound;
+            this.xray = xray;
         }
     }
 
@@ -45,6 +52,14 @@ public final class FGOutboundLink {
     }
 
     public static Parsed parse(String link) {
+        try {
+            return FGSubscriptionParser.server(link == null ? null : link.trim()).parsed;
+        } catch (FGSubscriptionError ignored) {
+            return null;
+        }
+    }
+
+    static Parsed parseUnchecked(String link) {
         if (!looksLikeLink(link)) return null;
         try {
             final String raw = link.trim();
@@ -64,6 +79,10 @@ public final class FGOutboundLink {
                     ? host : uri.getFragment();
 
             if ("vless".equals(scheme)) {
+                if (isXhttp(param(uri, "type"))) {
+                    if (!FGXrayProcess.isAvailable()) return null;
+                    return new Parsed(KIND_VLESS, host, port, title, null, xhttp(uri, host, port, userInfo));
+                }
                 return new Parsed(KIND_VLESS, host, port, title, vless(uri, host, port, userInfo));
             }
             return new Parsed(KIND_HYSTERIA2, host, port, title, hysteria2(uri, host, port, userInfo));
@@ -124,6 +143,81 @@ public final class FGOutboundLink {
 
         final JSONObject transport = transport(uri, host);
         if (transport != null) out.put("transport", transport);
+        return out;
+    }
+
+    public static boolean isXhttp(String type) {
+        return "xhttp".equalsIgnoreCase(type) || "splithttp".equalsIgnoreCase(type);
+    }
+
+    private static JSONObject xhttp(Uri uri, String host, int port, String uuid) throws Exception {
+        final String security = lower(param(uri, "security"));
+        if (!TextUtils.isEmpty(security) && !"none".equals(security)
+                && !"tls".equals(security) && !"reality".equals(security)) {
+            throw new IllegalArgumentException("unsupported security");
+        }
+        final String encryption = param(uri, "encryption");
+        final JSONObject user = new JSONObject();
+        user.put("id", uuid);
+        user.put("encryption", TextUtils.isEmpty(encryption) ? "none" : encryption);
+        final JSONObject server = new JSONObject();
+        server.put("address", host);
+        server.put("port", port);
+        server.put("users", new JSONArray().put(user));
+
+        final String hostHeader = splitCommaValues(param(uri, "host")).optString(0);
+        String sni = firstOf(uri, "sni", "peer");
+        if (TextUtils.isEmpty(sni)) sni = hostHeader;
+        final String serverName = TextUtils.isEmpty(sni) ? host : sni;
+        final String fp = param(uri, "fp");
+
+        final JSONObject stream = new JSONObject();
+        stream.put("network", "xhttp");
+        if ("reality".equals(security)) {
+            stream.put("security", "reality");
+            final JSONObject r = new JSONObject();
+            r.put("serverName", serverName);
+            r.put("publicKey", param(uri, "pbk"));
+            final String sid = param(uri, "sid");
+            if (!TextUtils.isEmpty(sid)) r.put("shortId", sid);
+            final String spx = param(uri, "spx");
+            if (!TextUtils.isEmpty(spx)) r.put("spiderX", spx);
+            r.put("fingerprint", TextUtils.isEmpty(fp) ? "chrome" : fp);
+            stream.put("realitySettings", r);
+        } else if ("tls".equals(security)) {
+            stream.put("security", "tls");
+            final JSONObject t = new JSONObject();
+            t.put("serverName", serverName);
+            t.put("fingerprint", TextUtils.isEmpty(fp) ? "chrome" : fp);
+            if (truthy(param(uri, "enableSessionResumption"))) t.put("enableSessionResumption", true);
+            final String pins = param(uri, "pcs");
+            if (!TextUtils.isEmpty(pins)) t.put("pinnedPeerCertSha256", certificatePins(pins));
+            final String names = param(uri, "vcn");
+            if (!TextUtils.isEmpty(names)) t.put("verifyPeerCertByName", names);
+            final String alpn = param(uri, "alpn");
+            if (!TextUtils.isEmpty(alpn)) t.put("alpn", splitCommaValues(alpn));
+            stream.put("tlsSettings", t);
+        } else {
+            stream.put("security", "none");
+        }
+
+        final JSONObject settings = new JSONObject();
+        final String path = param(uri, "path");
+        settings.put("path", TextUtils.isEmpty(path) ? "/" : path);
+        settings.put("host", TextUtils.isEmpty(hostHeader) ? serverName : hostHeader);
+        final String mode = param(uri, "mode");
+        if (!TextUtils.isEmpty(mode)) settings.put("mode", mode);
+        final String extra = param(uri, "extra");
+        if (!TextUtils.isEmpty(extra)) {
+            settings.put("extra", FGSubscriptionXray.extra(extra));
+        }
+        stream.put("xhttpSettings", settings);
+
+        final JSONObject out = new JSONObject();
+        out.put("tag", "proxy");
+        out.put("protocol", "vless");
+        out.put("settings", new JSONObject().put("vnext", new JSONArray().put(server)));
+        out.put("streamSettings", stream);
         return out;
     }
 
@@ -236,7 +330,7 @@ public final class FGOutboundLink {
     }
 
     public static String config(Parsed parsed, FGOutboundCredentials credentials) {
-        if (parsed == null || credentials == null || credentials.port <= 0) return "";
+        if (parsed == null || parsed.outbound == null || credentials == null || credentials.port <= 0) return "";
         try {
             final JSONObject root = new JSONObject();
 
@@ -286,6 +380,17 @@ public final class FGOutboundLink {
 
     private static boolean truthy(String value) {
         return "1".equals(value) || "true".equalsIgnoreCase(value);
+    }
+
+    private static String certificatePins(String value) {
+        final TreeSet<String> pins = new TreeSet<>();
+        for (String part : value.split(",")) {
+            if (part.trim().isEmpty()) continue;
+            final String pin = part.trim().replace(":", "").toLowerCase(Locale.ROOT);
+            if (!pin.matches("[0-9a-f]{64}")) throw new IllegalArgumentException("invalid certificate pin");
+            pins.add(pin);
+        }
+        return String.join(",", pins);
     }
 
     private static String lower(String value) {

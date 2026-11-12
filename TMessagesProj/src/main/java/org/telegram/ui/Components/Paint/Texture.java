@@ -86,7 +86,7 @@ public class Texture {
         if (!bitmap.isRecycled() && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             int px = bitmap.getPixel(0, 0);
             px = px & 0xff00ff00 | ((px & 0xff) << 16) | ((px >> 16) & 0xff);
-            ByteBuffer buffer = ByteBuffer.allocateDirect(4); //fix for android 9.0
+            ByteBuffer buffer = ByteBuffer.allocateDirect(4);
             buffer.putInt(px).position(0);
             GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
         }

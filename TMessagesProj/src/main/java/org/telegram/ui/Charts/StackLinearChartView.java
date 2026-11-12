@@ -63,7 +63,6 @@ public class StackLinearChartView<T extends StackLinearViewData> extends BaseCha
                 if (transitionProgressHalf > 1f) {
                     transitionProgressHalf = 1f;
                 }
-               // transitionAlpha = (int) ((1f - transitionParams.progress) * 255);
                 ovalPath.reset();
 
                 float radiusStart = (chartArea.width() > chartArea.height() ? chartArea.width() : chartArea.height());
@@ -318,10 +317,6 @@ public class StackLinearChartView<T extends StackLinearViewData> extends BaseCha
                             localX = mapPoints[0];
                             localY = mapPoints[1];
 
-                            // 0 right_top
-                            // 1 right_bottom
-                            // 2 left_bottom
-                            // 3 left_top
                             int endQuarter;
                             int startQuarter;
 

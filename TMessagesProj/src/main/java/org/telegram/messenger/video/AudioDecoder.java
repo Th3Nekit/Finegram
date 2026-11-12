@@ -261,7 +261,6 @@ public class AudioDecoder {
                 data.flags = outputBufferInfo.flags;
                 data.offset = outputBufferInfo.offset;
 
-                // Adjusting start time
                 if (data.presentationTimeUs < startTimeUs) {
                     long timeDiff = startTimeUs - data.presentationTimeUs;
                     int bytesForTimeDiff = AudioConversions.usToBytes(timeDiff, getSampleRate(), getChannelCount());
@@ -271,7 +270,6 @@ public class AudioDecoder {
                     }
                 }
 
-                // Adjusting end time
                 long nextTime = data.presentationTimeUs + AudioConversions.bytesToUs(data.size, getSampleRate(), getChannelCount());
                 if (nextTime > endTimeUs) {
                     int bytesToRemove = AudioConversions.usToBytes(nextTime - endTimeUs, getSampleRate(), getChannelCount());
@@ -283,7 +281,6 @@ public class AudioDecoder {
                     }
                 }
 
-                // Did we get all output from decoder?
                 if ((outputBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0)
                     decodingDone = true;
                 if (data.byteBuffer.remaining() > 0) currentOutputDone = true;
@@ -294,11 +291,6 @@ public class AudioDecoder {
         return data;
     }
 
-    /**
-     * @param index last decoded output buffer's index
-     *              <p>
-     *              This method must be called each time after decoding and and using the ByteBuffer sample
-     */
     public void releaseOutputBuffer(int index) {
         decoder.releaseOutputBuffer(index, false);
     }

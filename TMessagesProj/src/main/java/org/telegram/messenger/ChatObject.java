@@ -356,20 +356,6 @@ public class ChatObject {
             }
         }
 
-//        public void loadRtmpStreamChannels() {
-//            if (call == null || loadedRtmpStreamParticipant) {
-//                return;
-//            }
-//            TLRPC.TL_phone_getGroupCallStreamChannels getGroupCallStreamChannels = new TLRPC.TL_phone_getGroupCallStreamChannels();
-//            getGroupCallStreamChannels.call = getInputGroupCall();
-//            currentAccount.getConnectionsManager().sendRequest(getGroupCallStreamChannels, (response, error, timestamp) -> {
-//                if (response instanceof TLRPC.TL_phone_groupCallStreamChannels) {
-//                    TLRPC.TL_phone_groupCallStreamChannels streamChannels = (TLRPC.TL_phone_groupCallStreamChannels) response;
-//                    createRtmpStreamParticipant(streamChannels.channels);
-//                    loadedRtmpStreamParticipant = true;
-//                }
-//            }, ConnectionsManager.RequestFlagFailOnServerErrors, ConnectionsManager.ConnectionTypeDownload, call.stream_dc_id);
-//        }
 
         public void createRtmpStreamParticipant(List<TL_phone.TL_groupCallStreamChannel> channels) {
             if (loadedRtmpStreamParticipant && rtmpStreamParticipant != null) {
@@ -1320,9 +1306,9 @@ public class ChatObject {
             } else {
                 if (call.rtmpStreamParticipant != null && call.rtmpStreamParticipant.participant == participant || call.videoNotAvailableParticipant != null && call.videoNotAvailableParticipant.participant == participant || call.participants.get(MessageObject.getPeerId(participant.peer)) != null) {
                     if (presentation) {
-                        return participant.presentation != null;// && participant.hasPresentationFrame == 2;
+                        return participant.presentation != null;
                     } else {
-                        return participant.video != null;// && participant.hasCameraFrame == 2;
+                        return participant.video != null;
                     }
                 } else {
                     return false;
@@ -1343,7 +1329,7 @@ public class ChatObject {
             long selfId = getSelfId();
             VoIPService service = VoIPService.getSharedInstance();
             TLRPC.GroupCallParticipant selfParticipant = participants.get(selfId);
-            canStreamVideo = true;//selfParticipant != null && selfParticipant.video_joined || BuildVars.DEBUG_PRIVATE_VERSION;
+            canStreamVideo = true;
             boolean allowedVideoCount;
             boolean hasAnyVideo = false;
             activeVideos = 0;
@@ -2305,14 +2291,12 @@ public class ChatObject {
 
     public static boolean canDeleteTopic(int currentAccount, TLRPC.Chat chat, long topicId) {
         if (topicId == 1) {
-            // general topic can't be deleted
             return false;
         }
         return chat != null && canDeleteTopic(currentAccount, chat, MessagesController.getInstance(currentAccount).getTopicsController().findTopic(chat.id, topicId));
     }
     public static boolean canDeleteTopic(int currentAccount, TLRPC.Chat chat, TLRPC.TL_forumTopic topic) {
         if (topic != null && topic.id == 1) {
-            // general topic can't be deleted
             return false;
         }
         return canUserDoAction(chat, ACTION_DELETE_MESSAGES) || isMyTopic(currentAccount, topic) && topic.topMessage != null && topic.topicStartMessage != null && topic.topMessage.id - topic.topicStartMessage.id <= Math.max(1, topic.groupedMessages == null ? 0 : topic.groupedMessages.size()) && MessageObject.peersEqual(topic.from_id, topic.topMessage.from_id);
@@ -2530,7 +2514,7 @@ public class ChatObject {
         public TLRPC.GroupCallParticipant participant;
         public boolean presentation;
         public boolean hasSame;
-        public float aspectRatio;// w / h
+        public float aspectRatio;
         public int aspectRatioFromWidth;
         public int aspectRatioFromHeight;
 
@@ -2569,9 +2553,6 @@ public class ChatObject {
     }
 
     public static MessagesController.PeerColor getPeerColorForAvatar(int currentAccount, TLRPC.Chat chat) {
-//        if (chat != null && chat.profile_color != null && chat.profile_color.color >= 0 && MessagesController.getInstance(currentAccount).profilePeerColors != null) {
-//            return MessagesController.getInstance(currentAccount).profilePeerColors.getColor(chat.profile_color.color);
-//        }
         return null;
     }
 
@@ -2638,5 +2619,9 @@ public class ChatObject {
     public static boolean isChannelCG(long dialogID) {
         TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogID);
         return isChannelCG(chat);
+    }
+
+    public static boolean isSidebarEnabled(TLRPC.Chat chat) {
+        return chat != null && (chat.forum && chat.forum_sidebar || chat.monoforum);
     }
 }

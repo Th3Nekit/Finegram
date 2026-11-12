@@ -29,19 +29,6 @@ public class CastMediaRouteButton extends MediaRouteButton {
 
     public CastMediaRouteButton(@NonNull Context context) {
         super(context);
-//        setDialogFactory(new MediaRouteDialogFactory() {
-//            @NonNull
-//            @Override
-//            public MediaRouteChooserDialogFragment onCreateChooserDialogFragment() {
-//                return new MyMediaRouteChooserDialogFragment();
-//            }
-//
-//            @NonNull
-//            @Override
-//            public MediaRouteControllerDialogFragment onCreateControllerDialogFragment() {
-//                return new MyMediaRouteControllerDialogFragment();
-//            }
-//        });
     }
 
     public static class MyMediaRouteChooserDialogFragment extends MediaRouteChooserDialogFragment {

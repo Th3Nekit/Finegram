@@ -10,13 +10,9 @@
 
 package org.webrtc;
 
-// Explicit imports necessary for JNI generation.
 import androidx.annotation.Nullable;
 import org.webrtc.VideoEncoder;
 
-/**
- * This class contains the Java glue code for JNI generation of VideoEncoder.
- */
 class VideoEncoderWrapper {
   @CalledByNative
   static boolean getScalingSettingsOn(VideoEncoder.ScalingSettings scalingSettings) {

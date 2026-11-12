@@ -31,42 +31,33 @@ public class ID3v2FrameHeader {
 
 		ID3v2DataInput data = input.getData();
 		
-		/*
-		 * Frame Id
-		 */
-		if (input.getTagHeader().getVersion() == 2) { // $xx xx xx (three characters)
+		if (input.getTagHeader().getVersion() == 2) {
 			frameId = new String(data.readFully(3), "ISO-8859-1");
-		} else { // $xx xx xx xx (four characters)
+		} else {
 			frameId = new String(data.readFully(4), "ISO-8859-1");
 		}
 		
-		/*
-		 * Size 
-		 */
-		if (input.getTagHeader().getVersion() == 2) { // $xx xx xx
+		if (input.getTagHeader().getVersion() == 2) {
 			bodySize = ((data.readByte() & 0xFF) << 16) | ((data.readByte() & 0xFF) << 8) | (data.readByte() & 0xFF);
-		} else if (input.getTagHeader().getVersion() == 3) { // $xx xx xx xx
+		} else if (input.getTagHeader().getVersion() == 3) {
 			bodySize = data.readInt();
-		} else { // 4 * %0xxxxxxx (sync-save integer)
+		} else {
 			bodySize = data.readSyncsafeInt();
 		}
 		
-		/*
-		 * Flags
-		 */
-		if (input.getTagHeader().getVersion() > 2) { // $xx xx
-			data.readByte(); // status flags
+		if (input.getTagHeader().getVersion() > 2) {
+			data.readByte();
 			byte formatFlags = data.readByte();
 			int compressionMask;
 			int encryptionMask;
 			int groupingIdentityMask;
 			int unsynchronizationMask = 0x00;
 			int dataLengthIndicatorMask = 0x00;
-			if (input.getTagHeader().getVersion() == 3) { // %(compression)(encryption)(groupingIdentity)00000
+			if (input.getTagHeader().getVersion() == 3) {
 				compressionMask = 0x80;
 				encryptionMask = 0x40;
 				groupingIdentityMask = 0x20;
-			} else { // %0(groupingIdentity)00(compression)(encryption)(unsynchronization)(dataLengthIndicator)
+			} else {
 				groupingIdentityMask = 0x40;
 				compressionMask = 0x08;
 				encryptionMask = 0x04;
@@ -77,29 +68,26 @@ public class ID3v2FrameHeader {
 			unsynchronization = (formatFlags & unsynchronizationMask) != 0;
 			encryption = (formatFlags & encryptionMask) != 0;
 
-			/*
-			 * Read flag attachments in the order of the flags (version dependent).
-			 */
 			if (input.getTagHeader().getVersion() == 3) {
 				if (compression) {
 					dataLengthIndicator = data.readInt();
 					bodySize -= 4;
 				}
 				if (encryption) {
-					data.readByte(); // just skip
+					data.readByte();
 					bodySize -= 1;
 				}
 				if ((formatFlags & groupingIdentityMask) != 0) {
-					data.readByte(); // just skip
+					data.readByte();
 					bodySize -= 1;
 				}
 			} else {
 				if ((formatFlags & groupingIdentityMask) != 0) {
-					data.readByte(); // just skip
+					data.readByte();
 					bodySize -= 1;
 				}
 				if (encryption) {
-					data.readByte(); // just skip
+					data.readByte();
 					bodySize -= 1;
 				}
 				if ((formatFlags & dataLengthIndicatorMask) != 0) {

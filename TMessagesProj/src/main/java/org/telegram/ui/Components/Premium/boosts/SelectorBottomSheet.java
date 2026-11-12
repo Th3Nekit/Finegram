@@ -30,6 +30,7 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.GraySectionCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Components.AnimatedFloat;
@@ -113,7 +114,7 @@ public class SelectorBottomSheet extends BottomSheetWithRecyclerListView {
         backgroundPaddingLeft = 0;
         this.currentChat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
 
-        ((ViewGroup) actionBar.getParent()).removeView(actionBar); //we used custom action bar
+        ((ViewGroup) actionBar.getParent()).removeView(actionBar);
 
         statusBarT = new AnimatedFloat(containerView, 0, 350, CubicBezierInterpolator.EASE_OUT_QUINT);
 
@@ -131,7 +132,7 @@ public class SelectorBottomSheet extends BottomSheetWithRecyclerListView {
                 selectorAdapter.notifyChangedLast();
             }
         };
-        searchField.setBackgroundColor(getThemedColor(Theme.key_dialogBackground));
+        ThemeBind.backgroundColor(searchField, Theme.key_dialogBackground, resourcesProvider);
         searchField.setOnSearchTextChange(this::onSearch);
 
         sectionCell = new GraySectionCell(getContext(), resourcesProvider);
@@ -139,13 +140,12 @@ public class SelectorBottomSheet extends BottomSheetWithRecyclerListView {
 
         containerView.addView(headerView, LayoutHelper.createFrameMarginPx(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.FILL_HORIZONTAL, backgroundPaddingLeft, 0, backgroundPaddingLeft, 0));
         containerView.addView(searchField, LayoutHelper.createFrameMarginPx(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.FILL_HORIZONTAL, backgroundPaddingLeft, 0, backgroundPaddingLeft, 0));
-//        containerView.addView(sectionCell, LayoutHelper.createFrameMarginPx(LayoutHelper.MATCH_PARENT, 32, Gravity.TOP | Gravity.FILL_HORIZONTAL, backgroundPaddingLeft, 0, backgroundPaddingLeft, 0));
 
         buttonContainer = new SelectorBtnCell(getContext(), resourcesProvider, null);
         buttonContainer.setClickable(true);
         buttonContainer.setOrientation(LinearLayout.VERTICAL);
         buttonContainer.setPadding(dp(10), dp(10), dp(10), dp(10));
-        buttonContainer.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
+        ThemeBind.backgroundColor(buttonContainer, Theme.key_dialogBackground, resourcesProvider);
         actionButton = new ButtonWithCounterView(getContext(), resourcesProvider);
         actionButton.setOnClickListener(v -> save(false));
         buttonContainer.addView(actionButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL));
@@ -518,7 +518,6 @@ public class SelectorBottomSheet extends BottomSheetWithRecyclerListView {
         float fromY = Math.max(top, minTop);
         headerView.setTranslationY(fromY);
         searchField.setTranslationY(headerView.getTranslationY() + headerView.getMeasuredHeight());
-//        sectionCell.setTranslationY(searchField.getTranslationY() + searchField.getMeasuredHeight());
         recyclerListView.setTranslationY(headerView.getMeasuredHeight() + searchField.getMeasuredHeight() - AndroidUtilities.dp(16));
         drawFilledStatusBar(canvas, top);
     }

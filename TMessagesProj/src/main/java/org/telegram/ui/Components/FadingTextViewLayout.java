@@ -64,7 +64,7 @@ public class FadingTextViewLayout extends FrameLayout {
                 nextView.setLayerType(LAYER_TYPE_NONE, null);
                 nextView.setVisibility(GONE);
                 if (foregroundView != null) {
-                    currentView.setText(text); // remove spans
+                    currentView.setText(text);
                     foregroundView.setVisibility(GONE);
                 }
             }
@@ -121,10 +121,9 @@ public class FadingTextViewLayout extends FrameLayout {
                         }
 
                         if (startIndex == 0) {
-                            // no unchanged static chars
                         } else if (startIndex > 0) {
                             points.add(new Point(startIndex, length));
-                        } else { // fully the same
+                        } else {
                             points.add(new Point(length, 0));
                         }
 

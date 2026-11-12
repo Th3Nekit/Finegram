@@ -2,20 +2,14 @@ package com.carrotsearch.randomizedtesting;
 
 import java.util.Random;
 
-/**
- * Implements Xoroshiro128PlusRandom. Not synchronized (anywhere).
- *
- * @see "http://xoroshiro.di.unimi.it/"
- */
 @SuppressWarnings("serial")
 public class Xoroshiro128PlusRandom extends Random {
-    private static final double DOUBLE_UNIT = 0x1.0p-53; // 1.0 / (1L << 53);
-    private static final float  FLOAT_UNIT  = 0x1.0p-24f; // 1.0 / (1L << 24);
+    private static final double DOUBLE_UNIT = 0x1.0p-53;
+    private static final float  FLOAT_UNIT  = 0x1.0p-24f;
 
     private long s0, s1;
 
     public Xoroshiro128PlusRandom(long seed) {
-        // Must be here, the only Random constructor. Has side-effects on setSeed, see below.
         super(0);
 
         s0 = MurmurHash3.hash(seed);
@@ -29,7 +23,6 @@ public class Xoroshiro128PlusRandom extends Random {
 
     @Override
     public void setSeed(long seed) {
-        // Called from super constructor and observing uninitialized state?
         if (s0 == 0 && s1 == 0) {
             return;
         }
@@ -69,13 +62,11 @@ public class Xoroshiro128PlusRandom extends Random {
 
     @Override
     public int nextInt(int n) {
-        // Leave superclass's implementation.
         return super.nextInt(n);
     }
 
     @Override
     public double nextGaussian() {
-        // Leave superclass's implementation.
         return super.nextGaussian();
     }
 

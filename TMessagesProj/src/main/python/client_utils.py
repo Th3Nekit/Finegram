@@ -151,7 +151,7 @@ def send_message(params, account=None):
             send_params = SendMessagesHelper.SendMessageParams.of(
                 str(params["message"]), int(params["peer"]), None, None, None,
                 True, _java_entities(params.get("entities")), None, None,
-                bool(params.get("notify", True)), 0, None, False)
+                bool(params.get("notify", True)), 0, 0, None, False)
             if "silent" in params:
                 send_params.notify = not bool(params["silent"])
             if "reply_to" in params and params["reply_to"] is not None:
@@ -206,8 +206,8 @@ def _send_file(peer, path, params, account):
             paths.add(str(path))
             SendMessagesHelper.prepareSendingDocuments(
                 get_account_instance(account), paths, paths, None,
-                params.get("caption"), None, peer, params.get("reply_to"), None, None, None,
-                bool(params.get("notify", True)), 0, None, None, 0, False, None
+                params.get("caption"), None, peer, params.get("reply_to"), None, None, None, None,
+                bool(params.get("notify", True)), 0, None, None, 0, False, 0
             )
             return True
         except Exception as error:

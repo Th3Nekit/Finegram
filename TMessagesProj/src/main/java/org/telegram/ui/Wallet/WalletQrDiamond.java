@@ -22,17 +22,11 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.Premium.GLIcon.GLIconRenderer;
 import org.telegram.ui.Components.Premium.GLIcon.WalletDiamondTextureView;
 
-/**
- * The gram in the middle of the wallet QR: a slowly spinning 3D diamond that grows and follows the finger
- * while held, like the one on the chat payment card. Static on low-end devices and in power saving.
- */
 final class WalletQrDiamond extends FrameLayout {
     private static final float IDLE_SPEED = (float) (2 * Math.PI / 18 * 1.70775);
     private static final float ENLARGED_SCALE = 3f;
-    /** How much larger than the blank QR center this view is laid out. */
     static final float OVERHANG = 1.35f;
 
-    /** Whether to keep the gram drawn into the QR bitmap instead of placing this view over it. */
     static boolean isStatic(Context context) {
         if (SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW || LiteMode.isPowerSaverApplied()) {
             return true;
@@ -56,7 +50,6 @@ final class WalletQrDiamond extends FrameLayout {
         setClipChildren(false);
         fallback = new ImageView(context);
         fallback.setImageResource(R.drawable.mini_gram_72);
-        // Until the diamond draws, match the static gram the QR would have had.
         fallback.setScaleX(1f / OVERHANG);
         fallback.setScaleY(1f / OVERHANG);
         addView(fallback, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
@@ -71,7 +64,6 @@ final class WalletQrDiamond extends FrameLayout {
             @Override
             public void onSurfaceTextureUpdated(android.graphics.SurfaceTexture texture) {
                 super.onSurfaceTextureUpdated(texture);
-                // Swap the static gram for the diamond once it has drawn its first frame.
                 if (isReady() && fallback.getVisibility() == View.VISIBLE) fallback.setVisibility(View.INVISIBLE);
             }
         };
@@ -159,7 +151,6 @@ final class WalletQrDiamond extends FrameLayout {
     private void release() {
         pointer = MotionEvent.INVALID_POINTER_ID;
         if (getParent() != null) getParent().requestDisallowInterceptTouchEvent(false);
-        // Spin on from wherever it was let go, easing back upright.
         spinOffset = (float) Math.IEEEremainder(spinOffset + yaw - restingYaw(), Math.PI * 2);
         final float pitchOffset = (float) Math.IEEEremainder(pitch, Math.PI * 2);
         returning = true;

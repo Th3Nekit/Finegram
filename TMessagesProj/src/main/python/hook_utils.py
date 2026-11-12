@@ -7,7 +7,13 @@ except ImportError:
 
 
 def find_class(class_name):
-    return runtime.find_class(class_name)
+    target = runtime.find_class(class_name)
+    if target is None or jclass is None:
+        return target
+    try:
+        return jclass(str(target.getName()))
+    except Exception:
+        return target
 
 
 def get_private_field(obj, field_name):

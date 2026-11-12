@@ -37,7 +37,6 @@ public class RichHtml {
     }
 
     private static class ListState {
-        // stack of open list levels: true = ordered
         final ArrayList<Boolean> stack = new ArrayList<>();
 
         void sync(StringBuilder out, int level, boolean ordered) {
@@ -1321,7 +1320,7 @@ public class RichHtml {
                         continue;
                     }
                     int e = findTagEnd(p);
-                    if (e < 0) { // malformed: treat as text
+                    if (e < 0) {
                         addText(stack, roots, s.substring(p));
                         break;
                     }
@@ -1388,7 +1387,6 @@ public class RichHtml {
             String name = inner.substring(0, i).toLowerCase();
             if (name.isEmpty()) return null;
             Node el = Node.el(name);
-            // attributes
             while (i < inner.length()) {
                 while (i < inner.length() && isSpace(inner.charAt(i))) i++;
                 if (i >= inner.length()) break;

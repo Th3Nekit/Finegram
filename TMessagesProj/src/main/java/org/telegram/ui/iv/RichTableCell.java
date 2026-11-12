@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 
 import org.telegram.messenger.Emoji;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.tgnet.tl.TL_iv;
@@ -31,6 +32,7 @@ import org.telegram.ui.Components.UniversalRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.HashSet;
 
 public class RichTableCell extends RichBlockCell implements Theme.Colorable, TextSelectionHelper.ArticleSelectableView {
 
@@ -244,8 +246,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         ((TL_iv.pageBlockTable) currentRow.block).title = RichTextStyle.fromSpannable(titleEditText.getText());
     }
 
-    // Child-position scheme for the selection helper: the title is drawn on top of the table, so it
-    // is child 0; the cell anchors follow as 1..N (cell i == anchors().get(childPos - 1)).
     public int titleChildPos() {
         return 0;
     }
@@ -278,7 +278,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         return titleEditText;
     }
 
-    // Live text length of a selection child (title == 0, cells == 1..N).
     public int childTextLength(int childPos) {
         final RichEditText et = editTextForChildPos(childPos);
         return et != null ? et.length() : 0;
@@ -341,7 +340,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         }
     }
 
-    /** Replaces the current selection with the rectangular range between two cells. */
     public void selectCellRectangle(TL_iv.pageTableCell start, TL_iv.pageTableCell end) {
         if (model == null || start == null || end == null) return;
         final int startRow = model.anchorRowOf(start);
@@ -359,8 +357,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
             startCol + TableModel.spanCol(start) - 1,
             endCol + TableModel.spanCol(end) - 1));
 
-        // A merged cell is indivisible. If the initial range touches one, include its complete
-        // span and keep expanding until the selected logical rectangle is closed over all spans.
         boolean expanded;
         do {
             expanded = false;
@@ -514,8 +510,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
             MeasureSpec.makeMeasureSpec(avail, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
         );
-        // Field-mode cell: apply the quote's vertical edge padding here (the base onBlockInsetChanged override
-        // doesn't, since we lay out manually), so a table inside a quote sits inside its background.
         final int qEdge = RichBlockChrome.quoteTopPad(currentRow) + RichBlockChrome.quoteBottomPad(currentRow);
         setMeasuredDimension(width, qEdge + titleH + dp(9) + scrollView.getMeasuredHeight());
     }
@@ -528,7 +522,7 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         final int insLeft = blockRtl ? endInset : startInset;
         final int insRight = blockRtl ? startInset : endInset;
         final int titleH = titleEditText.getMeasuredHeight();
-        final int qTop = RichBlockChrome.quoteTopPad(currentRow); // push content down to sit inside the quote bg
+        final int qTop = RichBlockChrome.quoteTopPad(currentRow);
         titleEditText.layout(insLeft + dp(16), qTop, Math.max(insLeft + dp(16), width - insRight - dp(16)), qTop + titleH);
         final int scrollTop = qTop + titleH + dp(9);
         scrollView.layout(insLeft, scrollTop, width - insRight, scrollTop + scrollView.getMeasuredHeight());
@@ -795,9 +789,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         return ok;
     }
 
-    // Entry point for arrow navigation crossing into the table from a neighbouring block:
-    // focus the title (caret at start) when entering from above, the last cell (caret at end)
-    // when entering from below.
     public boolean focusEdgeCell(boolean last) {
         if (model == null) return false;
         if (!last) {
@@ -814,7 +805,6 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
         return true;
     }
 
-    // Move from the title down into the first cell (used by Tab / arrow-down out of the title).
     public boolean focusFirstCell() {
         if (model == null || model.anchors().isEmpty()) return false;
         final RichTableCellHost host = grid.hostForAnchor(model.anchors().get(0));
@@ -984,13 +974,28 @@ public class RichTableCell extends RichBlockCell implements Theme.Colorable, Tex
             if (child instanceof RichTableCellHost) ((RichTableCellHost) child).editText.updateColors();
         }
         grid.applyColors();
+        updateDraggingBackgroundColor();
+    }
+
+    private void updateDraggingBackgroundColor() {
+        try {
+            if (getBackground() instanceof RichEditor.DraggingDrawable) {
+                ((RichEditor.DraggingDrawable) getBackground()).setColor(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider));
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    @Override
+    public void addColorKeys(HashSet<Integer> colors) {
+        colors.add(Theme.key_windowBackgroundWhiteBlackText);
+        colors.add(Theme.key_windowBackgroundWhite);
     }
 
     @Override
     public void fillTextLayoutBlocks(ArrayList<TextSelectionHelper.TextLayoutBlock> out) {
         if (model == null) return;
-        // Child 0 is the title (drawn above the grid); cell anchors follow as 1..N. The order here
-        // defines the child positions the selection helper uses, so the title must come first.
         final Layout titleLayout = titleEditText.getLayout();
         if (titleLayout != null) {
             final int titleX = titleEditText.getLeft() + titleEditText.getPaddingLeft();

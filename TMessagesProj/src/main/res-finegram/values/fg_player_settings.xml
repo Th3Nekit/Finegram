@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="FG_Player_Preview_Full">Player</string>
+    <string name="FG_Player_Preview_Mini">Mini</string>
+    <string name="FG_Player_Preview_Profile">Profile</string>
+    <string name="FG_Player_Preview_Play">Play preview</string>
+    <string name="FG_Player_Preview_Pause">Pause preview</string>
+    <string name="FG_Player_MiniCover">Show artwork</string>
+    <string name="FG_Player_MiniCover_Desc">Hide the cover to give track names more space.</string>
+    <string name="FG_Player_MiniNext">Next track button</string>
+    <string name="FG_Player_MiniNext_Desc">Show a next track button when there is enough room.</string>
+    <string name="FG_Plugins_SettingsFailed">Could not load settings. Try again.</string>
+</resources>

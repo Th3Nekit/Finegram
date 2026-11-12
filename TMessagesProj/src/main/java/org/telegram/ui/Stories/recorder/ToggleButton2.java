@@ -159,8 +159,6 @@ public class ToggleButton2 extends View implements FlashViews.Invertable {
         }
 
         float t = animatedSelected.set(selected);
-//        canvas.save();
-//        canvas.scale(scale, scale, getWidth() / 2.0f, getHeight() / 2.0f);
 
         final int w = drawable.getIntrinsicWidth(), h = drawable.getIntrinsicHeight();
 
@@ -189,7 +187,6 @@ public class ToggleButton2 extends View implements FlashViews.Invertable {
             canvas.restore();
         }
 
-//        canvas.restore();
     }
 
     @Override

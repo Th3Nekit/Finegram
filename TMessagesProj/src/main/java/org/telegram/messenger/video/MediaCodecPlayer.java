@@ -21,12 +21,10 @@ public class MediaCodecPlayer {
         this.outputSurface = surface;
         this.extractor = new MediaExtractor();
 
-        // Set up the extractor to read the video file
         extractor.setDataSource(videoPath);
         MediaFormat videoFormat = null;
         int videoTrackIndex = -1;
 
-        // Find the video track
         for (int i = 0; i < extractor.getTrackCount(); i++) {
             MediaFormat format = extractor.getTrackFormat(i);
             String mimeType = format.getString(MediaFormat.KEY_MIME);

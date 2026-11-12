@@ -148,7 +148,6 @@ public class VideoEncodingService extends Service implements NotificationCenter.
             startForeground(4, builder.build());
         } catch (Throwable e) {
             org.telegram.messenger.FileLog.e(e);
-            //ignore ForegroundServiceStartNotAllowedException
             FileLog.e(e);
         }
         AndroidUtilities.runOnUIThread(this::updateNotification);

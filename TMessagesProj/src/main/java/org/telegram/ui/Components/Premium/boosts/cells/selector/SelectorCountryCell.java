@@ -37,7 +37,6 @@ public class SelectorCountryCell extends BaseCell {
         super(context, resourcesProvider);
         paint.setTextSize(dp(20));
 
-        // titleTextView.setTypeface(AndroidUtilities.bold());
         radioButton.setVisibility(View.GONE);
         imageView.setVisibility(View.GONE);
         checkBox = new CheckBox2(context, 21, resourcesProvider);
@@ -79,7 +78,6 @@ public class SelectorCountryCell extends BaseCell {
 
     private CharSequence getCountryNameWithFlag(TLRPC.TL_help_country country) {
         SpannableStringBuilder sb = new SpannableStringBuilder();
-        // String flag = LocaleController.getLanguageFlag(country.iso2);
 
         final CharSequence flag = Emoji.replaceWithRestrictedEmoji(LocaleController.getLanguageFlag(country.iso2),
             paint.getFontMetricsInt(), AnimatedEmojiDrawable.CACHE_TYPE_MESSAGES, setCountryRunnable);

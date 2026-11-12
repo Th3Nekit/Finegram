@@ -9,8 +9,6 @@ import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.ComposeShader;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -63,11 +61,16 @@ public class ProfileGalleryBlurView extends View {
     private boolean sizeChanged = false;
     private boolean needNewFrame = false;
 
-    private ProfileActionsView actionsView;
-    private ProfileSuggestionView suggestionView;
-    private ProfileMusicView musicView;
-    private boolean shouldBlurActions;
-    private RenderNode blurNode, actionsBlurNode;
+    private RenderNode blurNode;
+    private float renderNodeBlurRadius;
+    private int renderNodeActionSize = -1;
+    private final android.graphics.Matrix continuationMatrix = new android.graphics.Matrix();
+    private final float[] continuationPoints = new float[4];
+    private static final float MIRROR_STRETCH = 1.5f;
+    private RenderNode openingNode;
+    private final Paint openingShadePaint = new Paint();
+    private float openingNodeBlurRadius;
+    private int openingNodeActionSize = -1;
 
     private final SizeNotifierFrameLayout.IViewWithInvalidateCallback[] listeners =
             new SizeNotifierFrameLayout.IViewWithInvalidateCallback[3];
@@ -124,7 +127,7 @@ public class ProfileGalleryBlurView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), size + actionSize);
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), (usingRenderNode ? getMirrorLead() : size) + actionSize);
     }
 
     public void restartAlpha() {
@@ -136,18 +139,6 @@ public class ProfileGalleryBlurView extends View {
 
     public boolean isUsingRenderNode() {
         return usingRenderNode;
-    }
-
-    public void setActionsView(ProfileActionsView actionsView) {
-        this.actionsView = actionsView;
-    }
-
-    public void setSuggestionView(ProfileSuggestionView suggestionView) {
-        this.suggestionView = suggestionView;
-    }
-
-    public void setMusicView(ProfileMusicView musicView) {
-        this.musicView = musicView;
     }
 
     private void swap(int from, int to, int clear) {
@@ -182,6 +173,9 @@ public class ProfileGalleryBlurView extends View {
     private void updateContent() {
         needNewFrame = true;
         postInvalidateOnAnimation();
+        if (mirrorTarget != null) {
+            mirrorTarget.invalidate();
+        }
     }
 
     public void notifyUpdateSize() {
@@ -218,14 +212,11 @@ public class ProfileGalleryBlurView extends View {
                 blurNode.discardDisplayList();
                 blurNode = null;
             }
-            if (actionsBlurNode != null) {
-                actionsBlurNode.discardDisplayList();
-                actionsBlurNode = null;
+            if (openingNode != null) {
+                openingNode.discardDisplayList();
+                openingNode = null;
             }
         }
-        actionsView = null;
-        suggestionView = null;
-        musicView = null;
         synchronized (lock) {
             for (int i = 0; i < 3; i++) {
                 if (nextFrame[i] != null) {
@@ -261,7 +252,7 @@ public class ProfileGalleryBlurView extends View {
             }
             try {
                 Bitmap bitmap = holder.bitmap;
-                Utilities.stackBlurBitmap(bitmap, Math.max(10, bitmap.getWidth() / 180));
+                Utilities.stackBlurBitmap(bitmap, Math.max(10, bitmap.getWidth() / 180) * (hasTallActions() ? 2 : 1));
                 synchronized (lock) {
                     int index = indexOf(holder);
                     if (generation != frameGeneration || index < 0 || holder.destroying) continue;
@@ -313,7 +304,6 @@ public class ProfileGalleryBlurView extends View {
         if (view == null || view.isZooming()) return false;
 
         int viewportWidth = view.getMeasuredWidth();
-        // int viewportHeight = Math.max(view.getMeasuredWidth(), view.getMeasuredHeight());
 
         int w = (int) (viewportWidth / 6.0f);
         int h = (int) (size / 6.0f);
@@ -405,7 +395,6 @@ public class ProfileGalleryBlurView extends View {
             return;
         }
 
-        // float hScale = dy / size;
 
         LinearGradient alphaGradient = new LinearGradient(
                 0, 0, 0, size / 6f,
@@ -463,16 +452,6 @@ public class ProfileGalleryBlurView extends View {
                 return;
             }
         }
-        if (actionsView != null) {
-            actionsView.drawingBlur(false);
-        }
-        if (suggestionView != null) {
-            suggestionView.drawingBlur(false);
-        }
-        if (musicView != null) {
-            musicView.drawingBlur(false);
-        }
-
         boolean shouldCapture = needNewFrame || sizeChanged || loopInvalidate ||
                 (paints[0].getShader() == null && paints[1].getShader() == null && !isBluring);
         if (shouldCapture) {
@@ -533,16 +512,25 @@ public class ProfileGalleryBlurView extends View {
     @RequiresApi(api = Build.VERSION_CODES.S)
     private void initRenderNode() {
         if (blurNode == null) {
-            float scale = getRenderNodeScale();
             blurNode = new RenderNode("profileBlurNode");
+            renderNodeBlurRadius = 0f;
+        }
+        final float r = getBlurRadius() * (hasTallActions() ? 3f : 1f);
+        if (renderNodeBlurRadius != r || renderNodeActionSize != actionSize) {
+            renderNodeBlurRadius = r;
+            renderNodeActionSize = actionSize;
+            final float scale = getRenderNodeScale();
+            final int lead = getMirrorLead();
+            final float total = Math.max(1, lead + actionSize);
+            final float in = lead / total;
+            final float out = Math.min(1f, (lead + dp(72)) / total);
             LinearGradient renderNodeAlphaGradient = new LinearGradient(
-                    0, 0, 0, size / scale,
-                    new int[]{Color.TRANSPARENT, Color.WHITE},
-                    new float[]{0f, AndroidUtilities.dpf2(56) / size},
+                    0, 0, 0, total / scale,
+                    new int[]{Color.TRANSPARENT, 0x0FFFFFFF, 0x52FFFFFF, 0xB3FFFFFF, Color.WHITE, 0x80FFFFFF, Color.TRANSPARENT},
+                    new float[]{0f, in * .3f, in * .6f, in * .85f, in, (in + out) / 2f, out},
                     Shader.TileMode.CLAMP
             );
 
-            float r = getBlurRadius();
             blurNode.setRenderEffect(RenderEffect.createBlendModeEffect(
                     RenderEffect.createBlurEffect(r, r, Shader.TileMode.CLAMP),
                     RenderEffect.createShaderEffect(renderNodeAlphaGradient),
@@ -552,25 +540,32 @@ public class ProfileGalleryBlurView extends View {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    private void initActionsRenderNode() {
-        if (actionsView == null && suggestionView == null && musicView == null) {
-            shouldBlurActions = false;
-            return;
+    private void initOpeningNode() {
+        if (openingNode == null) {
+            openingNode = new RenderNode("profileOpeningBlurNode");
+            openingNodeBlurRadius = 0f;
         }
-
-        if (actionsBlurNode == null) {
-            actionsBlurNode = new RenderNode("profileActionsBlurNode");
-
-            ColorMatrix colorMatrix = new ColorMatrix();
-            AndroidUtilities.adjustSaturationColorMatrix(colorMatrix, .65f);
-            AndroidUtilities.multiplyBrightnessColorMatrix(colorMatrix, .5f);
-
-            actionsBlurNode.setRenderEffect(//RenderEffect.createChainEffect(
-//                    RenderEffect.createBlurEffect(8, 2, Shader.TileMode.CLAMP),
-                RenderEffect.createColorFilterEffect(new ColorMatrixColorFilter(colorMatrix))
-            /*)*/);
+        final float r = getBlurRadius() * (hasTallActions() ? 3f : 1f);
+        if (openingNodeBlurRadius != r || openingNodeActionSize != actionSize) {
+            openingNodeBlurRadius = r;
+            openingNodeActionSize = actionSize;
+            final float scale = getRenderNodeScale();
+            final float total = Math.max(1, size + actionSize);
+            final float fadeIn = Math.min(.45f, AndroidUtilities.dpf2(56) / total);
+            final float fadeOut = Math.max(fadeIn, 1f - actionSize * .75f / total);
+            final float fadeLength = 1f - fadeOut;
+            final LinearGradient gradient = new LinearGradient(
+                    0, 0, 0, total / scale,
+                    new int[]{Color.TRANSPARENT, Color.WHITE, Color.WHITE, 0xD7FFFFFF, 0x80FFFFFF, 0x28FFFFFF, Color.TRANSPARENT},
+                    new float[]{0f, fadeIn, fadeOut, fadeOut + fadeLength * .25f, fadeOut + fadeLength * .5f, fadeOut + fadeLength * .75f, 1f},
+                    Shader.TileMode.CLAMP
+            );
+            openingNode.setRenderEffect(RenderEffect.createBlendModeEffect(
+                    RenderEffect.createBlurEffect(r, r, Shader.TileMode.CLAMP),
+                    RenderEffect.createShaderEffect(gradient),
+                    BlendMode.DST_IN
+            ));
         }
-        shouldBlurActions = true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -581,7 +576,8 @@ public class ProfileGalleryBlurView extends View {
         if (listeners[1] != null) listeners[1].listenInvalidate(null);
 
         float scale = getRenderNodeScale();
-        blurNode.setPosition(0, 0, (int) Math.ceil(width / scale), (int) Math.ceil((size + actionSize) / scale));
+        final int lead = getMirrorLead();
+        blurNode.setPosition(0, 0, (int) Math.ceil(width / scale), (int) Math.ceil((lead + actionSize) / scale));
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
         try {
         recordingCanvas.scale(1f / scale, 1f / scale);
@@ -604,29 +600,31 @@ public class ProfileGalleryBlurView extends View {
         blurNode.setAlpha(alpha.set(1f));
 
         canvas.save();
+        canvas.clipRect(0, 0, width, lead + actionSize);
         canvas.scale(scale, scale);
         canvas.drawRenderNode(blurNode);
         canvas.restore();
-
-        if (getVisibility() == View.VISIBLE && getAlpha() > 0f) {
-            captureActionsBlurRenderNode(width, null, 1f, size);
-        }
     }
 
     private void drawViewWithRenderNode(Canvas recordingCanvas, int index) {
         View drawingView = view.getItemViewAt(currentPosition + index);
 
         if (drawingView != null) {
-            int h = drawingView.getMeasuredHeight();
+            final int w = drawingView.getMeasuredWidth();
+            final float photoBottom = drawingView.getMeasuredHeight() - actionSize;
+            final float seam = getMirrorLead();
+            final float total = seam + actionSize;
             recordingCanvas.save();
-            recordingCanvas.translate(0, size - h);
+            recordingCanvas.clipRect(0, 0, w, seam);
+            recordingCanvas.translate(0, seam - photoBottom);
             drawingView.draw(recordingCanvas);
             recordingCanvas.restore();
 
             recordingCanvas.save();
-            recordingCanvas.scale(1f, -1f);
-            recordingCanvas.translate(0f, -h - size);
-            recordingCanvas.scale(1f, 2f, 0, h);
+            recordingCanvas.clipRect(0, seam, w, total);
+            recordingCanvas.translate(0, seam);
+            recordingCanvas.scale(1f, -MIRROR_STRETCH);
+            recordingCanvas.translate(0, -photoBottom);
             drawingView.draw(recordingCanvas);
             recordingCanvas.restore();
         }
@@ -659,10 +657,10 @@ public class ProfileGalleryBlurView extends View {
         float croppedSize = size * fraction;
         float scaledSize = size * fraction * openingScale;
         float scale = getRenderNodeScale() * openingScale;
-        initRenderNode();
+        initOpeningNode();
 
-        blurNode.setPosition(0, 0, (int) Math.ceil(width / scale), (int) Math.ceil((croppedSize + actionSize) / scale));
-        final RecordingCanvas recordingCanvas = blurNode.beginRecording();
+        openingNode.setPosition(0, 0, (int) Math.ceil(width / scale), (int) Math.ceil((croppedSize + actionSize) / scale));
+        final RecordingCanvas recordingCanvas = openingNode.beginRecording();
         try {
         recordingCanvas.scale(1f / scale, 1f / scale);
 
@@ -676,64 +674,13 @@ public class ProfileGalleryBlurView extends View {
         }
 
         } finally {
-            blurNode.endRecording();
+            openingNode.endRecording();
         }
-        blurNode.setAlpha(alpha);
+        openingNode.setAlpha(alpha);
 
         canvas.translate(0f, -scaledSize);
         canvas.scale(scale, scale);
-        canvas.drawRenderNode(blurNode);
-
-        captureActionsBlurRenderNode(width, avatarImageView, openingScale, croppedSize);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.S)
-    private void captureActionsBlurRenderNode(float width, ProfileActivity.AvatarImageView avatarImageView, float openingScale, float size) {
-        initActionsRenderNode();
-
-        if (!shouldBlurActions) {
-            if (actionsView != null) {
-                actionsView.drawingBlur(false);
-            }
-            if (suggestionView != null) {
-                suggestionView.drawingBlur(false);
-            }
-            if (musicView != null) {
-                musicView.drawingBlur(false);
-            }
-            return;
-        }
-
-        float outScale = 8f;
-        float scale = getRenderNodeScale() * openingScale * outScale;
-        actionsBlurNode.setPosition(0, 0, (int) Math.ceil(width / scale), (int) Math.ceil((size + actionSize) / scale));
-        RecordingCanvas recordingCanvas = actionsBlurNode.beginRecording();
-        recordingCanvas.scale(1f / outScale, 1f / outScale);
-        recordingCanvas.drawRenderNode(blurNode);
-        actionsBlurNode.endRecording();
-        actionsBlurNode.setAlpha(alpha.set(1f));
-
-        if (actionsView != null) {
-            if (avatarImageView != null) {
-                actionsView.drawingBlur(actionsBlurNode, avatarImageView, scale / openingScale, -size);
-            } else {
-                actionsView.drawingBlur(actionsBlurNode, null, scale, -size);
-            }
-        }
-        if (suggestionView != null) {
-            if (avatarImageView != null) {
-                suggestionView.drawingBlur(actionsBlurNode, avatarImageView, scale / openingScale, -size);
-            } else {
-                suggestionView.drawingBlur(actionsBlurNode, null, scale, -size);
-            }
-        }
-        if (musicView != null) {
-            if (avatarImageView != null) {
-                musicView.drawingBlur(actionsBlurNode, avatarImageView, scale / openingScale, -size - dp(74));
-            } else {
-                musicView.drawingBlur(actionsBlurNode, null, scale, -size - dp(74));
-            }
-        }
+        canvas.drawRenderNode(openingNode);
     }
 
     private void drawOpeningImageRenderNode(
@@ -754,11 +701,20 @@ public class ProfileGalleryBlurView extends View {
         recordingCanvas.restore();
 
         recordingCanvas.save();
-        recordingCanvas.scale(1f, -1f);
-        recordingCanvas.translate(0f, -height - scaledSize);
-        recordingCanvas.scale(1f, 2f, 0, height);
+        recordingCanvas.clipRect(0, scaledSize, imageReceiver.getImageX2() + 1, scaledSize + actionSize + height);
+        recordingCanvas.translate(0, scaledSize);
+        recordingCanvas.scale(1f, -MIRROR_STRETCH);
+        recordingCanvas.translate(0, -height);
         imageReceiver.draw(recordingCanvas);
         recordingCanvas.restore();
+
+        final float shadeTop = scaledSize * .2f;
+        final float shadeBottom = Math.max(scaledSize + 1, scaledSize + actionSize);
+        openingShadePaint.setShader(new LinearGradient(0, shadeTop, 0, shadeBottom,
+                new int[]{0x00000000, 0x6B000000, 0x4D000000},
+                new float[]{0f, (scaledSize - shadeTop) / (shadeBottom - shadeTop), 1f},
+                Shader.TileMode.CLAMP));
+        recordingCanvas.drawRect(0, shadeTop, imageReceiver.getImageX2() + 1, shadeBottom, openingShadePaint);
 
         imageReceiver.setRoundRadius(oldR);
     }
@@ -771,8 +727,186 @@ public class ProfileGalleryBlurView extends View {
         }
     }
 
+    public static int getMirrorLead() {
+        return dp(220);
+    }
+
+    private static LinearGradient seamShadeShader;
+
+    public static Shader getSeamShade(float seamY) {
+        if (seamShadeShader == null) {
+            final int lead = getMirrorLead();
+            final float a = -lead;
+            final float b = dp(200);
+            seamShadeShader = new LinearGradient(0, a, 0, b,
+                    new int[]{0x00000000, 0x14000000, 0x40000000, 0x6B000000, 0x5C000000, 0x4D000000},
+                    new float[]{0f, (lead * .45f) / (b - a), (lead * .8f) / (b - a), lead / (b - a), (lead + dp(80)) / (b - a), 1f},
+                    Shader.TileMode.CLAMP);
+        }
+        final android.graphics.Matrix m = new android.graphics.Matrix();
+        m.setTranslate(0, seamY);
+        seamShadeShader.setLocalMatrix(m);
+        return seamShadeShader;
+    }
+
+    private static final class MirrorEntry {
+        Object key;
+        float height;
+        Bitmap bitmap;
+        BitmapShader shader;
+    }
+
+    private final MirrorEntry[] mirrorCache = new MirrorEntry[3];
+    private int mirrorCacheNext;
+    private View mirrorTarget;
+    private final Paint mirrorPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    private final Paint mirrorShadePaint = new Paint();
+    private final android.graphics.Matrix mirrorMatrix = new android.graphics.Matrix();
+
+    public void setMirrorTarget(View target) {
+        mirrorTarget = target;
+    }
+
+    private MirrorEntry getMirror(View item) {
+        if (!(item instanceof BackupImageView)) {
+            return null;
+        }
+        final ImageReceiver receiver = ((BackupImageView) item).getImageReceiver();
+        final Bitmap source = receiver.getBitmap();
+        final float photoBottom = item.getMeasuredHeight() - actionSize;
+        final Object key = receiver.getImageKey() != null ? receiver.getImageKey() : source;
+        if (key == null) {
+            return null;
+        }
+        for (MirrorEntry entry : mirrorCache) {
+            if (entry != null && entry.height == photoBottom && key.equals(entry.key)) {
+                return entry;
+            }
+        }
+        if (source == null || source.isRecycled()) {
+            return null;
+        }
+        final float dstW = item.getMeasuredWidth();
+        if (dstW <= 0 || photoBottom <= 0) {
+            return null;
+        }
+        try {
+            Bitmap readable = source;
+            if (Build.VERSION.SDK_INT >= 26 && source.getConfig() == Bitmap.Config.HARDWARE) {
+                readable = source.copy(Bitmap.Config.ARGB_8888, false);
+                if (readable == null) {
+                    return null;
+                }
+            }
+            final float imageX = receiver.getImageX(), imageY = receiver.getImageY();
+            final float imageW = receiver.getImageWidth() > 0 ? receiver.getImageWidth() : dstW;
+            final float imageH = receiver.getImageHeight() > 0 ? receiver.getImageHeight() : photoBottom;
+            final float bw = readable.getWidth(), bh = readable.getHeight();
+            final float k = Math.max(imageW / bw, imageH / bh);
+            final float srcX = (bw - imageW / k) / 2f + (0 - imageX) / k;
+            final float srcY = (bh - imageH / k) / 2f + (0 - imageY) / k;
+            final android.graphics.Rect src = new android.graphics.Rect(
+                    (int) Math.max(0, srcX), (int) Math.max(0, srcY),
+                    (int) Math.min(bw, srcX + dstW / k), (int) Math.min(bh, srcY + photoBottom / k));
+            if (src.width() <= 0 || src.height() <= 0) {
+                return null;
+            }
+            final int outW = 36;
+            final int outH = Math.max(8, Math.round(outW * photoBottom / dstW));
+            final Bitmap out = Bitmap.createBitmap(outW, outH, Bitmap.Config.ARGB_8888);
+            final Canvas c = new Canvas(out);
+            c.scale(1f, -1f, 0, outH / 2f);
+            c.drawBitmap(readable, src, new android.graphics.Rect(0, 0, outW, outH), new Paint(Paint.FILTER_BITMAP_FLAG));
+            if (readable != source) {
+                readable.recycle();
+            }
+            Utilities.stackBlurBitmap(out, 5);
+            Utilities.stackBlurBitmap(out, 5);
+            final MirrorEntry entry = new MirrorEntry();
+            entry.key = key;
+            entry.height = photoBottom;
+            entry.bitmap = out;
+            entry.shader = new BitmapShader(out, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+            mirrorCache[mirrorCacheNext] = entry;
+            mirrorCacheNext = (mirrorCacheNext + 1) % mirrorCache.length;
+            return entry;
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    private MirrorEntry lastMirror;
+
+    public boolean drawMirrorBackground(Canvas canvas, View target, float progress) {
+        if (view == null || progress <= 0f || !isAttachedToWindow() || getVisibility() != VISIBLE || getAlpha() <= 0f
+                || view.getVisibility() != VISIBLE || !view.isAttachedToWindow() || getWidth() <= 0) {
+            return false;
+        }
+        MirrorEntry first = getMirror(view.getItemViewAt(currentPosition));
+        if (first == null) {
+            first = lastMirror;
+        } else {
+            lastMirror = first;
+        }
+        if (first == null) {
+            return false;
+        }
+        MirrorEntry second = null;
+        if (offset != 0) {
+            second = getMirror(view.getItemViewAt(currentPosition + 1));
+            if (second == null) {
+                second = first;
+            }
+        }
+        continuationMatrix.reset();
+        transformMatrixToGlobal(continuationMatrix);
+        target.transformMatrixToLocal(continuationMatrix);
+        continuationPoints[0] = 0;
+        continuationPoints[1] = getHeight() - actionSize;
+        continuationPoints[2] = getWidth();
+        continuationPoints[3] = getHeight();
+        continuationMatrix.mapPoints(continuationPoints);
+        final float left = continuationPoints[0];
+        final float right = continuationPoints[2];
+        final float seamY = continuationPoints[1];
+        final float headerBottom = continuationPoints[3];
+        if (right <= left) {
+            return false;
+        }
+        final float scaleX = (right - left) / getWidth();
+        final int a = (int) (0xFF * Math.min(1f, progress) * getAlpha());
+        final float shift = offset * scaleX;
+        drawMirrorPage(canvas, target, first, left - shift, right - left, seamY, scaleX, a);
+        if (second != null) {
+            drawMirrorPage(canvas, target, second, right - shift, right - left, seamY, scaleX, a);
+        }
+        mirrorShadePaint.setShader(getSeamShade(seamY));
+        mirrorShadePaint.setAlpha(a);
+        canvas.drawRect(0, Math.max(seamY, headerBottom), target.getWidth(), target.getHeight(), mirrorShadePaint);
+        return true;
+    }
+
+    private void drawMirrorPage(Canvas canvas, View target, MirrorEntry entry, float x, float width, float seamY, float scaleX, int alpha) {
+        final float l = Math.max(0, x);
+        final float r = Math.min(target.getWidth(), x + width);
+        if (r <= l) {
+            return;
+        }
+        final float tile = entry.height * scaleX * MIRROR_STRETCH;
+        mirrorMatrix.setScale(width / entry.bitmap.getWidth(), tile / entry.bitmap.getHeight());
+        mirrorMatrix.postTranslate(x, seamY);
+        entry.shader.setLocalMatrix(mirrorMatrix);
+        mirrorPaint.setShader(entry.shader);
+        mirrorPaint.setAlpha(alpha);
+        canvas.drawRect(l, seamY, r, target.getHeight(), mirrorPaint);
+    }
+
     private float getRenderNodeScale() {
         return dp(1);
+    }
+
+    private boolean hasTallActions() {
+        return actionSize > dp(110);
     }
 
     private float getBlurRadius() {

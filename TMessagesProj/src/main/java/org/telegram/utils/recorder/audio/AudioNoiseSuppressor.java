@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Owns one native RNNoise state. */
 final class AudioNoiseSuppressor {
 
     private long nativeHandle;

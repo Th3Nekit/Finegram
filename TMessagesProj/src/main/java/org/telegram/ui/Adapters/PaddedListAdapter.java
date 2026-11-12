@@ -11,9 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.ui.Components.RecyclerListView;
 
-/**
- * PaddedListAdapter wraps list adapter and adds transparent padding view at the start
- */
 public class PaddedListAdapter extends RecyclerListView.SelectionAdapter {
 
     private final int PADDING_VIEW_TYPE = -983904;

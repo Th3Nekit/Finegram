@@ -13,7 +13,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-/** Driver-specific binaries are only a cache: source compilation is always the fallback. */
 public final class GLProgramCache {
     private static final int MAGIC = 0x44475031;
     private static final int MAX_BINARY_SIZE = 16 * 1024 * 1024;
@@ -70,7 +69,6 @@ public final class GLProgramCache {
         if (count[0] == 0) return null;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            // Binaries must never cross driver updates, GPUs or source changes.
             for (String value : new String[]{"gl-program-v1", namespace, vertex, fragment, positionAttribute, normalAttribute,
                     GLES30.glGetString(GLES30.GL_VENDOR), GLES30.glGetString(GLES30.GL_RENDERER),
                     GLES30.glGetString(GLES30.GL_VERSION), GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION)}) {
@@ -93,21 +91,18 @@ public final class GLProgramCache {
             if (input.readInt() != MAGIC) throw new IllegalStateException("Invalid program cache");
             int format = input.readInt(), size = input.readInt();
             if (size <= 0 || size > MAX_BINARY_SIZE) throw new IllegalStateException("Invalid binary length");
-            // Some drivers (e.g. the emulator) return formats from glGetProgramBinary that are absent from
-            // GL_PROGRAM_BINARY_FORMATS; glProgramBinary itself rejects unusable formats via LINK_STATUS.
             int[] count = new int[1];
             byte[] data = new byte[size];
             input.readFully(data);
             if (input.read() != -1) throw new IllegalStateException("Invalid binary size");
             ByteBuffer binary = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
             binary.put(data).position(0);
-            while (GLES30.glGetError() != GLES30.GL_NO_ERROR) ; // don't blame stale errors on the restore
+            while (GLES30.glGetError() != GLES30.GL_NO_ERROR) ;
             GLES30.glProgramBinary(program, format, binary, size);
             int error = GLES30.glGetError();
             GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, count, 0);
             if (error == GLES30.GL_NO_ERROR && count[0] != 0) return true;
         } catch (Exception ignore) {
-            // A truncated/stale cache is harmless; recompile the source below.
         }
         file.delete();
         return false;

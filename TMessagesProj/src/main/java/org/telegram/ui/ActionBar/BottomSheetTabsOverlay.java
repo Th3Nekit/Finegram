@@ -383,11 +383,11 @@ public class BottomSheetTabsOverlay extends View {
 
     public float offset;
     public float getScrollOffset() {
-        return this.offset; // Utilities.clamp(this.offset, getScrollMax(), getScrollMin());
+        return this.offset;
     }
 
     public void setScrollOffset(float offset) {
-        this.offset = offset; // Utilities.clamp(offset, getScrollMax(), getScrollMin());
+        this.offset = offset;
     }
 
     private float getScrollStep() {
@@ -503,7 +503,6 @@ public class BottomSheetTabsOverlay extends View {
             }
         });
         AndroidUtilities.applySpring(animator, 260, 30, 1);
-//        animator.setDuration(5000);
         animator.start();
 
         return true;
@@ -605,7 +604,6 @@ public class BottomSheetTabsOverlay extends View {
 
         dismissingSheet = sheet;
         sheet.setLastVisible(false);
-//        sheet.getWindowView().setDrawingFromOverlay(true);
 
         if (animator != null) {
             animator.cancel();
@@ -1229,7 +1227,6 @@ public class BottomSheetTabsOverlay extends View {
 
         private final Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-//        private RenderNode node;
         private final Matrix matrix = new Matrix();
         private final float[] src = new float[8];
         private final float[] dst = new float[8];
@@ -1283,7 +1280,7 @@ public class BottomSheetTabsOverlay extends View {
             this.parentView = parentView;
             this.tabData = tabData;
             this.tabDrawable = tabDrawable;
-            this.webView = null;// tabData.webView;
+            this.webView = null;
             this.bounce = new ButtonBounce(parentView);
 
             backgroundPaint.setColor(tabData.backgroundColor);

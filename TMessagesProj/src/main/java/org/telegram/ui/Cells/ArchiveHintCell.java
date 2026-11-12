@@ -28,9 +28,6 @@ public class ArchiveHintCell extends FrameLayout {
         viewPager = new ViewPager(context) {
             @Override
             public boolean onInterceptTouchEvent(MotionEvent ev) {
-//                if (getParent() != null) {
-//                    getParent().requestDisallowInterceptTouchEvent(true);
-//                }
                 return super.onInterceptTouchEvent(ev);
             }
 

@@ -75,6 +75,7 @@ class BotButton {
         RectF rect,
         boolean drawProgress,
         boolean drawBuyCard,
+        boolean compact,
         Theme.ResourcesProvider resourcesProvider
     ) {
         boolean invalidate = false;
@@ -119,17 +120,6 @@ class BotButton {
             canvas.drawPath(path, Theme.chat_actionBackgroundGradientDarkenPaint);
         }
 
-//        boolean drawProgress = (button instanceof TLRPC.TL_keyboardButtonCallback_layer228 || button instanceof TLRPC.TL_keyboardButtonGame || button instanceof TLRPC.TL_keyboardButtonBuy_layer228 || button instanceof TLRPC.TL_keyboardButtonUrlAuth_layer228) && SendMessagesHelper.getInstance(currentAccount).isSendingCallback(currentMessageObject, button)
-//                || button instanceof TLRPC.TL_keyboardButtonRequestGeoLocation && SendMessagesHelper.getInstance(currentAccount).isSendingCurrentLocation(currentMessageObject, button)
-//                || button instanceof TLRPC.TL_keyboardButtonUrl && delegate != null && delegate.isProgressLoading(this, ChatActivity.PROGRESS_BOT_BUTTON) && delegate.getProgressLoadingBotButtonUrl(this) == button.url;
-//
-//        if (button.buttonCustom != null && currentMessageObject != null) {
-//            if (button.buttonCustom.id == BotInlineKeyboard.ButtonCustom.SUGGESTION_ACCEPT) {
-//                drawProgress |= MessagesController.getInstance(currentAccount).isSendingSuggestedMessageApproval(currentMessageObject.getDialogId(), currentMessageObject.getId(), true);
-//            } else if (button.buttonCustom.id == BotInlineKeyboard.ButtonCustom.SUGGESTION_DECLINE) {
-//                drawProgress |= MessagesController.getInstance(currentAccount).isSendingSuggestedMessageApproval(currentMessageObject.getDialogId(), currentMessageObject.getId(), false);
-//            }
-//        }
 
         canvas.save();
         canvas.clipPath(path);
@@ -152,11 +142,14 @@ class BotButton {
             loadingRect.inset(AndroidUtilities.dpf2(.625f), AndroidUtilities.dpf2(.625f));
             loadingDrawable.setRadii(radii);
             loadingDrawable.setBounds(loadingRect);
+            final int loadingColor = compact ?
+                Theme.multAlpha(Theme.getColor(Theme.key_chat_compact_botButtonText, resourcesProvider), .125f) :
+                Theme.getColor(Theme.key_chat_serviceBackgroundSelector, resourcesProvider);
             loadingDrawable.setColors(
-                Theme.multAlpha(Theme.getColor(Theme.key_chat_serviceBackgroundSelector, resourcesProvider), 1f),
-                Theme.multAlpha(Theme.getColor(Theme.key_chat_serviceBackgroundSelector, resourcesProvider), 2.5f),
-                Theme.multAlpha(Theme.getColor(Theme.key_chat_serviceBackgroundSelector, resourcesProvider), 3f),
-                Theme.multAlpha(Theme.getColor(Theme.key_chat_serviceBackgroundSelector, resourcesProvider), 10f)
+                Theme.multAlpha(loadingColor, 1f),
+                Theme.multAlpha(loadingColor, 2.5f),
+                Theme.multAlpha(loadingColor, 3f),
+                Theme.multAlpha(loadingColor, 10f)
             );
             loadingDrawable.setAlpha(0xFF);
             loadingDrawable.draw(canvas);

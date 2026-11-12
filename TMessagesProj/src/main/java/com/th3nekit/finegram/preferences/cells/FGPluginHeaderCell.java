@@ -6,19 +6,25 @@
 package com.th3nekit.finegram.preferences.cells;
 
 import static org.telegram.messenger.AndroidUtilities.dp;
+import static org.telegram.messenger.AndroidUtilities.dpf2;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
+import android.graphics.SweepGradient;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,7 +37,9 @@ import com.th3nekit.finegram.plugins.FGPluginIcon;
 import com.th3nekit.finegram.plugins.FGPluginLinks;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CubicBezierInterpolator;
@@ -42,18 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FGPluginHeaderCell extends LinearLayout implements Theme.Colorable {
-    private boolean stateAlert;
-    private boolean pluginEnabled;
-
-    public interface Delegate {
-        void onToggle();
-
-        void onShare();
-
-        void onLog();
-
-        void onUpdate();
-    }
 
     public static final class Action {
         final int icon;
@@ -69,22 +65,34 @@ public class FGPluginHeaderCell extends LinearLayout implements Theme.Colorable 
         }
     }
 
-    private static final int BADGE_SIZE_DP = 92;
+    private static final int BADGE_SIZE_DP = 88;
+    private static final int RING_SIZE_DP = 108;
 
     private final Theme.ResourcesProvider resourcesProvider;
     private final FrameLayout badge;
     private final View placeholderView;
     private final BackupImageView badgeView;
     private final TextView nameView;
-    private final TextView metaView;
-    private final TextView stateView;
+    private final ChipRow chipsView;
     private final TextView aboutView;
-    private final LinearLayout actionsView;
+    private final LinearLayout primaryView;
+    private final LinearLayout secondaryView;
     private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Matrix ringMatrix = new Matrix();
 
-    private int glowColor;
+    private String pluginId;
+    private String version;
+    private CharSequence author;
+    private CharSequence state;
+    private boolean stateAlert;
+    private boolean pluginEnabled;
+    private int accent;
     private int glowWidth;
+    private int ringState = -1;
     private boolean introPlayed;
+    private boolean actionsEnabled = true;
+    private List<Action> lastActions = new ArrayList<>();
 
     public FGPluginHeaderCell(Context context, Theme.ResourcesProvider resourcesProvider) {
         super(context);
@@ -92,7 +100,9 @@ public class FGPluginHeaderCell extends LinearLayout implements Theme.Colorable 
         setOrientation(VERTICAL);
         setLayoutDirection(LocaleController.isRTL ? LAYOUT_DIRECTION_RTL : LAYOUT_DIRECTION_LTR);
         setWillNotDraw(false);
-        setPadding(dp(20), dp(20), dp(20), dp(16));
+        setPadding(dp(20), dp(18), dp(20), dp(18));
+        ringPaint.setStyle(Paint.Style.STROKE);
+        ringPaint.setStrokeCap(Paint.Cap.ROUND);
 
         badge = new FrameLayout(context);
         placeholderView = new View(context);
@@ -100,165 +110,240 @@ public class FGPluginHeaderCell extends LinearLayout implements Theme.Colorable 
         badgeView = new BackupImageView(context);
         badgeView.setVisibility(GONE);
         badge.addView(badgeView, LayoutHelper.createFrame(BADGE_SIZE_DP, BADGE_SIZE_DP, Gravity.CENTER));
-        addView(badge, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, BADGE_SIZE_DP));
+        addView(badge, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, RING_SIZE_DP));
 
         nameView = new TextView(context);
-        nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         nameView.setTypeface(AndroidUtilities.bold());
-        nameView.setLetterSpacing(-0.01f);
+        nameView.setLetterSpacing(-0.015f);
         nameView.setGravity(Gravity.CENTER);
         nameView.setMaxLines(2);
         nameView.setEllipsize(TextUtils.TruncateAt.END);
-        addView(nameView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 14, 0, 0));
+        addView(nameView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 12, 0, 0));
 
-        final LinearLayout metaRow = new LinearLayout(context);
-        metaRow.setOrientation(HORIZONTAL);
-        metaRow.setGravity(Gravity.CENTER);
-        addView(metaRow, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
-
-        metaView = new TextView(context);
-        metaView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        metaView.setLines(1);
-        metaView.setEllipsize(TextUtils.TruncateAt.END);
-        metaRow.addView(metaView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0f, Gravity.CENTER_VERTICAL));
-
-        stateView = new TextView(context);
-        stateView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        stateView.setTypeface(AndroidUtilities.bold());
-        stateView.setGravity(Gravity.CENTER);
-        stateView.setLines(1);
-        stateView.setEllipsize(TextUtils.TruncateAt.END);
-        stateView.setMinHeight(dp(20));
-        stateView.setPadding(dp(8), dp(2), dp(8), dp(2));
-        metaRow.addView(stateView, LayoutHelper.createLinearRelatively(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT,
-                Gravity.CENTER_VERTICAL, 8, 0, 0, 0));
+        chipsView = new ChipRow(context);
+        addView(chipsView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 10, 0, 0));
 
         aboutView = new TextView(context);
         aboutView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         aboutView.setGravity(Gravity.CENTER);
         aboutView.setLineSpacing(dp(3), 1f);
-        addView(aboutView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 4, 12, 4, 0));
+        addView(aboutView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 6, 14, 6, 0));
 
-        actionsView = new LinearLayout(context);
-        actionsView.setOrientation(HORIZONTAL);
-        actionsView.setBaselineAligned(false);
-        actionsView.setMinimumHeight(dp(62));
-        addView(actionsView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 18, 0, 0));
+        primaryView = new LinearLayout(context);
+        primaryView.setOrientation(VERTICAL);
+        addView(primaryView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 18, 0, 0));
+
+        secondaryView = new LinearLayout(context);
+        secondaryView.setOrientation(HORIZONTAL);
+        secondaryView.setBaselineAligned(false);
+        addView(secondaryView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 10, 0, 0));
     }
 
-    public void set(String id, String name, String icon, CharSequence about, CharSequence meta,
+    public void set(String id, String name, String icon, CharSequence about, String version, CharSequence author,
                     CharSequence state, boolean stateAlert, boolean enabled, List<Action> actions) {
+        pluginId = id;
+        this.version = version;
+        this.author = author;
+        this.state = state;
         this.stateAlert = stateAlert;
         pluginEnabled = enabled;
-        final int text = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
-        final int gray = Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
+        accent = readableAccent(FGPluginIcon.accentFor(id));
 
         placeholderView.setBackground(new FGPluginAvatar(getContext(), id, icon, 0.3f));
         placeholderView.setVisibility(VISIBLE);
         badgeView.setVisibility(GONE);
         FGPluginIcon.load(badgeView, icon, BADGE_SIZE_DP, () -> placeholderView.setVisibility(GONE));
-        badge.setAlpha(enabled ? 1f : 0.6f);
-
-        glowColor = FGPluginIcon.accentFor(id);
-        glowWidth = 0;
+        applyBadgeState();
 
         nameView.setText(name);
-        nameView.setTextColor(text);
-        FGPluginLinks.setText(metaView, meta, Theme.getColor(Theme.key_windowBackgroundWhiteLinkText, resourcesProvider));
-        metaView.setTextColor(gray);
-        metaView.setVisibility(TextUtils.isEmpty(meta) ? GONE : VISIBLE);
-
-        final int stateColor = stateAlert
-                ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
-                : enabled ? Theme.getColor(Theme.key_windowBackgroundWhiteBlueText, resourcesProvider) : gray;
-        stateView.setText(state);
-        stateView.setTextColor(stateColor);
-        stateView.setBackground(Theme.createRoundRectDrawable(dp(10), ColorUtils.setAlphaComponent(stateColor, 32)));
-
         FGPluginLinks.setText(aboutView, about, Theme.getColor(Theme.key_windowBackgroundWhiteLinkText, resourcesProvider));
-        aboutView.setTextColor(gray);
         aboutView.setVisibility(TextUtils.isEmpty(about) ? GONE : VISIBLE);
-
-        fillActions(actions);
-        invalidate();
+        lastActions = actions == null ? new ArrayList<>() : actions;
+        glowWidth = 0;
+        ringState = -1;
+        updateColors();
     }
 
-    private void fillActions(List<Action> actions) {
-        actionsView.removeAllViews();
-        final int accent = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
+    private int readableAccent(int color) {
+        int background = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
+        int contrast = ColorUtils.calculateLuminance(background) > .5 ? Color.BLACK : Color.WHITE;
+        color = ColorUtils.setAlphaComponent(color, 255);
+        for (int i = 0; i < 12 && ColorUtils.calculateContrast(color, ColorUtils.setAlphaComponent(background, 255)) < 4.5; i++) {
+            color = ColorUtils.blendARGB(color, contrast, .18f);
+        }
+        return color;
+    }
+
+    private int readableAccent(int color, int background) {
+        background = ColorUtils.setAlphaComponent(background, 255);
+        int contrast = ColorUtils.calculateContrast(Color.BLACK, background) >= ColorUtils.calculateContrast(Color.WHITE, background)
+                ? Color.BLACK : Color.WHITE;
+        color = ColorUtils.setAlphaComponent(color, 255);
+        for (int i = 0; i < 12 && ColorUtils.calculateContrast(color, ColorUtils.setAlphaComponent(background, 255)) < 4.5; i++) {
+            color = ColorUtils.blendARGB(color, contrast, .18f);
+        }
+        return ColorUtils.calculateContrast(color, background) >= 4.5 ? color : contrast;
+    }
+
+    private void applyBadgeState() {
+        float alpha = pluginEnabled ? 1f : .78f;
+        badge.setAlpha(alpha);
+        if (pluginEnabled) {
+            badgeView.getImageReceiver().setColorFilter(null);
+        } else {
+            ColorMatrix matrix = new ColorMatrix();
+            matrix.setSaturation(.15f);
+            badgeView.getImageReceiver().setColorFilter(new ColorMatrixColorFilter(matrix));
+        }
+        badgeView.invalidate();
+    }
+
+    private void fillChips() {
         final int text = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
-        final List<Action> list = actions == null ? new ArrayList<>() : actions;
-        for (int i = 0; i < list.size(); i++) {
-            final Action action = list.get(i);
-            final LinearLayout tile = new LinearLayout(getContext());
-            tile.setTag(action.accent);
-            tile.setOrientation(VERTICAL);
-            tile.setGravity(Gravity.CENTER);
-            tile.setMinimumWidth(dp(48));
-            tile.setMinimumHeight(dp(62));
-            tile.setPadding(0, dp(8), 0, dp(8));
-            tile.setContentDescription(action.text);
-            final int background = action.accent ? accent : ColorUtils.setAlphaComponent(accent, 26);
-            final int foreground = action.accent ? Theme.getColor(Theme.key_featuredStickers_buttonText, resourcesProvider) : accent;
-            tile.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(16), background,
-                    ColorUtils.setAlphaComponent(action.accent ? Color.WHITE : accent, 40)));
-
-            final ImageView icon = new ImageView(getContext());
-            icon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            icon.setImageResource(action.icon);
-            icon.setColorFilter(new PorterDuffColorFilter(foreground, PorterDuff.Mode.SRC_IN));
-            tile.addView(icon, LayoutHelper.createLinear(24, 24));
-
-            final TextView label = new TextView(getContext());
-            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            label.setTypeface(AndroidUtilities.bold());
-            label.setTextColor(action.accent ? foreground : text);
-            label.setSingleLine(true);
-            label.setEllipsize(TextUtils.TruncateAt.END);
-            label.setGravity(Gravity.CENTER);
-            label.setText(action.text);
-            tile.addView(label, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 4, 5, 4, 0));
-
-            tile.setOnClickListener(v -> {
-                if (action.run != null) action.run.run();
-            });
-            ScaleStateListAnimator.apply(tile, 0.04f, 1.2f);
-            final int gap = i == 0 ? 0 : 8;
-            actionsView.addView(tile, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1f,
-                    LocaleController.isRTL ? 0 : gap, 0, LocaleController.isRTL ? gap : 0, 0));
+        final int gray = Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
+        final int link = Theme.getColor(Theme.key_windowBackgroundWhiteLinkText, resourcesProvider);
+        chipsView.removeAllViews();
+        if (!TextUtils.isEmpty(state)) {
+            int stateColor = readableAccent(stateAlert ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
+                    : pluginEnabled ? 0xFF2FB35C : gray);
+            chipsView.addView(chip(state, stateColor, Theme.multAlpha(stateColor, .14f), stateColor, true));
         }
-        actionsView.setVisibility(list.isEmpty() ? GONE : VISIBLE);
+        if (!TextUtils.isEmpty(version)) {
+            chipsView.addView(chip(version.startsWith("v") || !Character.isDigit(version.charAt(0)) ? version : "v" + version,
+                    gray, Theme.multAlpha(text, .07f), 0, false));
+        }
+        if (!TextUtils.isEmpty(author)) {
+            int background = ColorUtils.compositeColors(Theme.multAlpha(text, .07f),
+                    ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider), 255));
+            TextView authorChip = chip(null, readableAccent(gray, background), background, 0, false);
+            FGPluginLinks.setText(authorChip, author, readableAccent(link, background));
+            authorChip.setMaxLines(2);
+            authorChip.setSingleLine(false);
+            chipsView.addView(authorChip);
+        }
+        chipsView.setVisibility(chipsView.getChildCount() == 0 ? GONE : VISIBLE);
     }
 
-    private void measureActions(int available) {
-        final int count = actionsView.getChildCount();
-        if (count == 0) {
-            return;
+    private TextView chip(CharSequence value, int textColor, int background, int dotColor, boolean bold) {
+        TextView view = new TextView(getContext());
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        if (bold) view.setTypeface(AndroidUtilities.bold());
+        view.setMaxLines(1);
+        view.setEllipsize(TextUtils.TruncateAt.END);
+        view.setGravity(Gravity.CENTER);
+        view.setTextColor(textColor);
+        view.setMinHeight(dp(28));
+        view.setPadding(dp(dotColor != 0 ? 22 : 12), dp(4), dp(12), dp(4));
+        if (value != null) view.setText(value);
+        view.setBackground(new ChipBackground(background, dotColor));
+        return view;
+    }
+
+    private void fillActions() {
+        primaryView.removeAllViews();
+        secondaryView.removeAllViews();
+        final int text = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
+        final int onAccent = ColorUtils.calculateContrast(Color.BLACK, accent) >= ColorUtils.calculateContrast(Color.WHITE, accent) ? Color.BLACK : Color.WHITE;
+        int secondaryCount = 0;
+        for (Action action : lastActions) {
+            if (!action.accent) secondaryCount++;
         }
-        final int tileWidth = (available - dp(8) * (count - 1)) / count;
-        boolean stacked = false;
-        for (int i = 0; i < count; i++) {
-            final LinearLayout tile = (LinearLayout) actionsView.getChildAt(i);
-            final TextView label = (TextView) tile.getChildAt(1);
-            label.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
-                    MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-            final LinearLayout.LayoutParams labelParams = (LinearLayout.LayoutParams) label.getLayoutParams();
-            if (Math.max(tile.getMinimumWidth(), label.getMeasuredWidth() + labelParams.leftMargin + labelParams.rightMargin) > tileWidth) {
-                stacked = true;
+        for (Action action : lastActions) {
+            if (action.accent) {
+                LinearLayout button = new LinearLayout(getContext());
+                button.setOrientation(HORIZONTAL);
+                button.setGravity(Gravity.CENTER);
+                button.setMinimumHeight(dp(52));
+                button.setPadding(dp(16), dp(12), dp(16), dp(12));
+                button.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(26), accent,
+                        Theme.multAlpha(onAccent, .18f)));
+                ImageView icon = new ImageView(getContext());
+                icon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                icon.setImageResource(action.icon);
+                icon.setColorFilter(new PorterDuffColorFilter(onAccent, PorterDuff.Mode.SRC_IN));
+                button.addView(icon, LayoutHelper.createLinear(22, 22, Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
+                TextView label = new TextView(getContext());
+                label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                label.setTypeface(AndroidUtilities.bold());
+                label.setTextColor(onAccent);
+                label.setMaxLines(3);
+                label.setEllipsize(TextUtils.TruncateAt.END);
+                label.setText(action.text);
+                button.addView(label, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f, Gravity.CENTER_VERTICAL));
+                label.setGravity(Gravity.CENTER);
+                button.setContentDescription(action.text);
+                button.setEnabled(actionsEnabled);
+                button.setAlpha(actionsEnabled ? 1f : .5f);
+                button.setOnClickListener(v -> {
+                    if (action.run != null) action.run.run();
+                });
+                ScaleStateListAnimator.apply(button, .03f, 1.2f);
+                primaryView.addView(button, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
+                        0, primaryView.getChildCount() == 0 ? 0 : 8, 0, 0));
+            } else {
+                LinearLayout tile = new LinearLayout(getContext());
+                tile.setOrientation(VERTICAL);
+                tile.setGravity(Gravity.CENTER);
+                tile.setMinimumHeight(dp(66));
+                tile.setPadding(dp(4), dp(10), dp(4), dp(10));
+                tile.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(18), Theme.multAlpha(text, .06f),
+                        Theme.multAlpha(text, .12f)));
+                ImageView icon = new ImageView(getContext());
+                icon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                icon.setImageResource(action.icon);
+                icon.setColorFilter(new PorterDuffColorFilter(text, PorterDuff.Mode.SRC_IN));
+                tile.addView(icon, LayoutHelper.createLinear(24, 24));
+                TextView label = new TextView(getContext());
+                label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+                label.setTypeface(AndroidUtilities.bold());
+                label.setTextColor(text);
+                label.setMaxLines(3);
+                label.setEllipsize(TextUtils.TruncateAt.END);
+                label.setGravity(Gravity.CENTER);
+                label.setText(action.text);
+                tile.addView(label, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
+                tile.setContentDescription(action.text);
+                tile.setEnabled(actionsEnabled);
+                tile.setAlpha(actionsEnabled ? 1f : .5f);
+                tile.setOnClickListener(v -> {
+                    if (action.run != null) action.run.run();
+                });
+                ScaleStateListAnimator.apply(tile, .05f, 1.2f);
+                int gap = secondaryView.getChildCount() == 0 ? 0 : 8;
+                secondaryView.addView(tile, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f,
+                        LocaleController.isRTL ? 0 : gap, 0, LocaleController.isRTL ? gap : 0, 0));
             }
         }
-        actionsView.setOrientation(stacked ? VERTICAL : HORIZONTAL);
-        for (int i = 0; i < count; i++) {
-            final LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) actionsView.getChildAt(i).getLayoutParams();
-            final int gap = i == 0 ? 0 : dp(8);
-            params.width = stacked ? LayoutHelper.MATCH_PARENT : 0;
-            params.height = stacked ? LayoutHelper.WRAP_CONTENT : LayoutHelper.MATCH_PARENT;
-            params.weight = stacked ? 0f : 1f;
-            params.leftMargin = !stacked && !LocaleController.isRTL ? gap : 0;
-            params.rightMargin = !stacked && LocaleController.isRTL ? gap : 0;
-            params.topMargin = stacked ? gap : 0;
-            params.bottomMargin = 0;
+        primaryView.setVisibility(primaryView.getChildCount() == 0 ? GONE : VISIBLE);
+        secondaryView.setVisibility(secondaryCount == 0 ? GONE : VISIBLE);
+        ((LinearLayout.LayoutParams) secondaryView.getLayoutParams()).topMargin = primaryView.getChildCount() == 0 ? dp(18) : dp(10);
+    }
+
+    public void setActionsEnabled(boolean enabled) {
+        actionsEnabled = enabled;
+        for (LinearLayout group : new LinearLayout[]{primaryView, secondaryView}) {
+            for (int i = 0; i < group.getChildCount(); i++) {
+                group.getChildAt(i).setEnabled(enabled);
+                group.getChildAt(i).setAlpha(enabled ? 1f : .5f);
+            }
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft() - getPaddingRight();
+        boolean stacked = width < dp(300) || getResources().getConfiguration().fontScale > 1.25f;
+        secondaryView.setOrientation(stacked ? VERTICAL : HORIZONTAL);
+        for (int i = 0; i < secondaryView.getChildCount(); i++) {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) secondaryView.getChildAt(i).getLayoutParams();
+            params.width = stacked ? LayoutHelper.MATCH_PARENT : 0;
+            params.weight = stacked ? 0f : 1f;
+            params.leftMargin = !stacked && !LocaleController.isRTL && i > 0 ? dp(8) : 0;
+            params.rightMargin = !stacked && LocaleController.isRTL && i > 0 ? dp(8) : 0;
+            params.topMargin = stacked && i > 0 ? dp(8) : 0;
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -266,95 +351,186 @@ public class FGPluginHeaderCell extends LinearLayout implements Theme.Colorable 
         final int text = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider);
         final int gray = Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
         final int link = Theme.getColor(Theme.key_windowBackgroundWhiteLinkText, resourcesProvider);
+        if (pluginId != null) accent = readableAccent(FGPluginIcon.accentFor(pluginId));
         nameView.setTextColor(text);
-        metaView.setTextColor(gray);
         aboutView.setTextColor(gray);
-        metaView.setLinkTextColor(link);
         aboutView.setLinkTextColor(link);
-        final int stateColor = stateAlert ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
-                : pluginEnabled ? Theme.getColor(Theme.key_windowBackgroundWhiteBlueText, resourcesProvider) : gray;
-        stateView.setTextColor(stateColor);
-        stateView.setBackground(Theme.createRoundRectDrawable(dp(10), ColorUtils.setAlphaComponent(stateColor, 32)));
-        final int accent = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
-        for (int i = 0; i < actionsView.getChildCount(); i++) {
-            final LinearLayout tile = (LinearLayout) actionsView.getChildAt(i);
-            final boolean filled = Boolean.TRUE.equals(tile.getTag());
-            final int foreground = filled ? Theme.getColor(Theme.key_featuredStickers_buttonText, resourcesProvider) : accent;
-            tile.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(16),
-                    filled ? accent : ColorUtils.setAlphaComponent(accent, 26),
-                    ColorUtils.setAlphaComponent(filled ? Color.WHITE : accent, 40)));
-            ((ImageView) tile.getChildAt(0)).setColorFilter(new PorterDuffColorFilter(foreground, PorterDuff.Mode.SRC_IN));
-            ((TextView) tile.getChildAt(1)).setTextColor(filled ? foreground : text);
-        }
+        fillChips();
+        fillActions();
+        glowWidth = 0;
+        ringState = -1;
         invalidate();
-    }
-
-    @Override
-    protected void onMeasure(int widthSpec, int heightSpec) {
-        final int available = MeasureSpec.getSize(widthSpec) - getPaddingLeft() - getPaddingRight();
-        if (available > 0) {
-            measureActions(available);
-            final boolean hasMeta = metaView.getVisibility() != GONE;
-            final int gap = hasMeta ? dp(8) : 0;
-            final LinearLayout.LayoutParams stateParams = (LinearLayout.LayoutParams) stateView.getLayoutParams();
-            stateParams.leftMargin = LocaleController.isRTL ? 0 : gap;
-            stateParams.rightMargin = LocaleController.isRTL ? gap : 0;
-            int taken = 0;
-            if (stateView.getVisibility() != GONE) {
-                stateView.setMaxWidth(Math.max(0, available - (hasMeta ? Math.min(dp(56), available / 2) + gap : 0)));
-                stateView.measure(
-                        MeasureSpec.makeMeasureSpec(available, MeasureSpec.AT_MOST),
-                        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-                taken = stateView.getMeasuredWidth() + gap;
-            }
-            metaView.setMaxWidth(Math.max(0, available - taken));
-        }
-        super.onMeasure(widthSpec, heightSpec);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (glowWidth != getMeasuredWidth() && getMeasuredWidth() > 0) {
-            glowWidth = getMeasuredWidth();
-            final float cx = getMeasuredWidth() / 2f;
-            final float cy = getPaddingTop() + dp(BADGE_SIZE_DP) / 2f;
-            glowPaint.setShader(new RadialGradient(cx, cy, dp(150),
-                    new int[]{ColorUtils.setAlphaComponent(glowColor, 70), ColorUtils.setAlphaComponent(glowColor, 22), Color.TRANSPARENT},
-                    new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
-        }
-        if (glowPaint.getShader() != null) {
-            canvas.drawRect(0, 0, getMeasuredWidth(), getPaddingTop() + dp(BADGE_SIZE_DP + 110), glowPaint);
-        }
-        super.onDraw(canvas);
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (introPlayed) {
+            invalidate();
             return;
         }
         introPlayed = true;
-        playIntro(badge, 0, 0.9f);
+        if (!SharedConfig.animationsEnabled() || LiteMode.isPowerSaverApplied()
+                || android.os.Build.VERSION.SDK_INT >= 26 && !android.animation.ValueAnimator.areAnimatorsEnabled()) return;
+        playIntro(badge, 0, .96f);
         playIntro(nameView, 60, 1f);
-        playIntro((View) metaView.getParent(), 80, 1f);
-        playIntro(aboutView, 100, 1f);
-        playIntro(actionsView, 130, 1f);
+        playIntro(chipsView, 90, 1f);
+        playIntro(aboutView, 120, 1f);
+        playIntro(primaryView, 150, 1f);
+        playIntro(secondaryView, 180, 1f);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        for (View view : new View[]{badge, nameView, chipsView, aboutView, primaryView, secondaryView}) {
+            view.animate().cancel();
+            view.setAlpha(view == badge ? pluginEnabled ? 1f : .78f : 1f);
+            view.setScaleX(1f);
+            view.setScaleY(1f);
+            view.setTranslationY(0f);
+        }
+        super.onDetachedFromWindow();
     }
 
     private void playIntro(View view, long delay, float fromScale) {
-        if (view == null) {
-            return;
-        }
-        final float target = view.getAlpha() == 0f ? 1f : view.getAlpha();
+        if (view == null) return;
+        final float target = view == badge ? badge.getAlpha() : 1f;
         view.setAlpha(0f);
         view.setScaleX(fromScale);
         view.setScaleY(fromScale);
-        view.setTranslationY(fromScale == 1f ? dp(8) : 0);
-        view.animate().alpha(view == badge ? target : 1f).scaleX(1f).scaleY(1f).translationY(0)
+        view.setTranslationY(fromScale == 1f ? dp(10) : 0);
+        view.animate().alpha(target).scaleX(1f).scaleY(1f).translationY(0)
                 .setStartDelay(delay)
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT)
                 .start();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        final int width = getMeasuredWidth();
+        if (width <= 0) return;
+        final float cx = width / 2f;
+        final float cy = getPaddingTop() + dp(RING_SIZE_DP) / 2f;
+        if (glowWidth != width) {
+            glowWidth = width;
+            int glow = pluginEnabled ? accent : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider);
+            glowPaint.setShader(new RadialGradient(cx, cy, dp(190),
+                    new int[]{Theme.multAlpha(glow, .32f), Theme.multAlpha(glow, .1f), Color.TRANSPARENT},
+                    new float[]{0f, .5f, 1f}, Shader.TileMode.CLAMP));
+        }
+        canvas.drawRect(0, 0, width, getPaddingTop() + dp(RING_SIZE_DP + 140), glowPaint);
+
+        int state = stateAlert ? 2 : pluginEnabled ? 1 : 0;
+        if (ringState != state) {
+            ringState = state;
+            int color = state == 2 ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
+                    : state == 1 ? accent : Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider), .5f);
+            if (state == 1) {
+                ringPaint.setShader(new SweepGradient(cx, cy, new int[]{color, Theme.multAlpha(color, .15f), color}, null));
+            } else {
+                ringPaint.setShader(null);
+                ringPaint.setColor(color);
+            }
+        }
+        float radius = dp(RING_SIZE_DP) / 2f - dp(4);
+        ringPaint.setStrokeWidth(dpf2(3f));
+        if (ringPaint.getShader() != null) {
+            ringMatrix.setRotate(-90f, cx, cy);
+            ringPaint.getShader().setLocalMatrix(ringMatrix);
+        }
+        canvas.drawCircle(cx, cy, radius, ringPaint);
+        super.onDraw(canvas);
+
+    }
+
+    private static final class ChipBackground extends android.graphics.drawable.Drawable {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.RectF rect = new android.graphics.RectF();
+        private final int color;
+        private final int dot;
+
+        ChipBackground(int color, int dot) {
+            this.color = color;
+            this.dot = dot;
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            rect.set(getBounds());
+            paint.setColor(color);
+            canvas.drawRoundRect(rect, rect.height() / 2f, rect.height() / 2f, paint);
+            if (dot != 0) {
+                paint.setColor(dot);
+                canvas.drawCircle(rect.left + dp(12), rect.centerY(), dp(3.5f), paint);
+            }
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+        }
+
+        @Override
+        public void setColorFilter(android.graphics.ColorFilter colorFilter) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return android.graphics.PixelFormat.TRANSLUCENT;
+        }
+    }
+
+    private static final class ChipRow extends ViewGroup {
+        ChipRow(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            int width = MeasureSpec.getSize(widthMeasureSpec);
+            int gap = dp(6);
+            int lineWidth = 0, height = 0, lineHeight = 0;
+            for (int i = 0; i < getChildCount(); i++) {
+                View child = getChildAt(i);
+                child.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+                int cw = child.getMeasuredWidth();
+                if (lineWidth > 0 && lineWidth + gap + cw > width) {
+                    height += lineHeight + gap;
+                    lineWidth = 0;
+                    lineHeight = 0;
+                }
+                lineWidth += (lineWidth > 0 ? gap : 0) + cw;
+                lineHeight = Math.max(lineHeight, child.getMeasuredHeight());
+            }
+            height += lineHeight;
+            setMeasuredDimension(width, height);
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int l, int t, int r, int b) {
+            int width = r - l;
+            int gap = dp(6);
+            int start = 0;
+            int top = 0;
+            while (start < getChildCount()) {
+                int lineWidth = 0, lineHeight = 0, end = start;
+                while (end < getChildCount()) {
+                    int cw = getChildAt(end).getMeasuredWidth();
+                    if (end > start && lineWidth + gap + cw > width) break;
+                    lineWidth += (end > start ? gap : 0) + cw;
+                    lineHeight = Math.max(lineHeight, getChildAt(end).getMeasuredHeight());
+                    end++;
+                }
+                int x = (width - lineWidth) / 2;
+                for (int i = start; i < end; i++) {
+                    View child = getChildAt(LocaleController.isRTL ? end - 1 - (i - start) : i);
+                    int y = top + (lineHeight - child.getMeasuredHeight()) / 2;
+                    child.layout(x, y, x + child.getMeasuredWidth(), y + child.getMeasuredHeight());
+                    x += child.getMeasuredWidth() + gap;
+                }
+                top += lineHeight + gap;
+                start = end;
+            }
+        }
     }
 }

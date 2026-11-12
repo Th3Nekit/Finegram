@@ -33,13 +33,6 @@ import org.telegram.messenger.BuildVars;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * This implementation of {@link RecyclerView.ItemAnimator} provides basic
- * animations on remove, add, and move events that happen to the items in
- * a RecyclerView. RecyclerView uses a DefaultItemAnimator by default.
- *
- * @see RecyclerView#setItemAnimator(RecyclerView.ItemAnimator)
- */
 public class DefaultItemAnimator extends SimpleItemAnimator {
     private static final boolean DEBUG = BuildVars.DEBUG_VERSION;
 
@@ -119,15 +112,12 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
         boolean changesPending = !mPendingChanges.isEmpty();
         boolean additionsPending = !mPendingAdditions.isEmpty();
         if (!removalsPending && !movesPending && !additionsPending && !changesPending) {
-            // nothing to animate
             return;
         }
-        // First, remove stuff
         for (RecyclerView.ViewHolder holder : mPendingRemovals) {
             animateRemoveImpl(holder);
         }
         mPendingRemovals.clear();
-        // Next, move stuff
         if (movesPending) {
             final ArrayList<MoveInfo> moves = new ArrayList<>();
             moves.addAll(mPendingMoves);
@@ -151,7 +141,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
                 mover.run();
             }
         }
-        // Next, change stuff, to run in parallel with move animations
         if (changesPending) {
             final ArrayList<ChangeInfo> changes = new ArrayList<>();
             changes.addAll(mPendingChanges);
@@ -175,7 +164,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
                 changer.run();
             }
         }
-        // Next, add stuff
         if (additionsPending) {
             final ArrayList<RecyclerView.ViewHolder> additions = new ArrayList<>();
             additions.addAll(mPendingAdditions);
@@ -189,7 +177,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
                         minPosition = Math.min(minPosition, additions.get(i).getAdapterPosition());
                     }
                     for (int i = additions.size() - 1; i >= 0; --i) {
-//                    for (int i = 0; i < additions.size(); ++i) {
                         final RecyclerView.ViewHolder holder = additions.get(i);
                         animateAddImpl(holder, (holder.getAdapterPosition() - minPosition) * delayIncrement);
                     }
@@ -227,7 +214,7 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
     }
 
     protected float animateByScale(View view) {
-        return 0; // animates from (1f - animateByScale()) to 1f
+        return 0;
     }
 
     public void setDelayAnimations(boolean value) {
@@ -243,7 +230,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
         final ViewPropertyAnimator animation = view.animate();
         mRemoveAnimations.add(holder);
         if (getRemoveDelay() > 0) {
-            // wanted to achieve an effect of next items covering current
             view.bringToFront();
         }
         animation
@@ -430,9 +416,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
         if (deltaY != 0) {
             view.animate().translationY(0);
         }
-        // TODO: make EndActions end listeners instead, since end actions aren't called when
-        // vpas are canceled (and can't end them. why?)
-        // need listener functionality in VPACompat for this. Ick.
         final ViewPropertyAnimator animation = view.animate();
         mMoveAnimations.add(holder);
         if (Build.VERSION.SDK_INT >= 19) {
@@ -489,8 +472,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
     public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, ItemHolderInfo info,
             int fromX, int fromY, int toX, int toY) {
         if (oldHolder == newHolder) {
-            // Don't know how to run change animations when the same view holder is re-used.
-            // run a move animation to handle position changes.
             return animateMove(oldHolder,info, fromX, fromY, toX, toY);
         }
         final float prevTranslationX = oldHolder.itemView.getTranslationX();
@@ -499,12 +480,10 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
         resetAnimation(oldHolder);
         int deltaX = (int) (toX - fromX - prevTranslationX);
         int deltaY = (int) (toY - fromY - prevTranslationY);
-        // recover prev translation state after ending animation
         oldHolder.itemView.setTranslationX(prevTranslationX);
         oldHolder.itemView.setTranslationY(prevTranslationY);
         oldHolder.itemView.setAlpha(prevAlpha);
         if (newHolder != null) {
-            // carry over translation values
             resetAnimation(newHolder);
             newHolder.itemView.setTranslationX(-deltaX);
             newHolder.itemView.setTranslationY(-deltaY);
@@ -671,9 +650,7 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
     @Override
     public void endAnimation(RecyclerView.ViewHolder item) {
         final View view = item.itemView;
-        // this will trigger end callback which should set properties to their target values.
         view.animate().cancel();
-        // TODO if some other animations are chained to end, how do we cancel them as well?
         for (int i = mPendingMoves.size() - 1; i >= 0; i--) {
             MoveInfo moveInfo = mPendingMoves.get(i);
             if (moveInfo.holder == item) {
@@ -735,7 +712,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
             }
         }
 
-        // animations should be ended by the cancel above.
         //noinspection PointlessBooleanExpression,ConstantConditions
         if (mRemoveAnimations.remove(item) && BuildVars.DEBUG_VERSION) {
             throw new IllegalStateException("after animation is cancelled, item should not be in "
@@ -801,11 +777,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
                 || !mChangesList.isEmpty());
     }
 
-    /**
-     * Check the state of currently pending and running animations. If there are none
-     * pending/running, call {@link #dispatchAnimationsFinished()} to notify any
-     * listeners.
-     */
     protected void dispatchFinishedWhenDone() {
         if (!isRunning()) {
             dispatchAnimationsFinished();
@@ -926,22 +897,6 @@ public class DefaultItemAnimator extends SimpleItemAnimator {
         return mAddAnimations.contains(holder);
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * If the payload list is not empty, DefaultItemAnimator returns <code>true</code>.
-     * When this is the case:
-     * <ul>
-     * <li>If you override {@link #animateChange(RecyclerView.ViewHolder, RecyclerView.ViewHolder, int, int, int, int)}, both
-     * ViewHolder arguments will be the same instance.
-     * </li>
-     * <li>
-     * If you are not overriding {@link #animateChange(RecyclerView.ViewHolder, RecyclerView.ViewHolder, int, int, int, int)},
-     * then DefaultItemAnimator will call {@link #animateMove(RecyclerView.ViewHolder, int, int, int, int)} and
-     * run a move animation instead.
-     * </li>
-     * </ul>
-     */
     @Override
     public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder,
             @NonNull List<Object> payloads) {

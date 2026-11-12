@@ -854,7 +854,6 @@ public class SharedPhotoVideoCell2 extends FrameLayout {
         clipPath.rewind();
 
         AndroidUtilities.rectTmp.set(0, 0, width, height);
-        // AndroidUtilities.rectTmp.inset(getPadding(), getPadding());
         float r = dp(12) * progress;
         clipPath.addRoundRect(AndroidUtilities.rectTmp, r, r, Path.Direction.CW);
         clipPath.close();

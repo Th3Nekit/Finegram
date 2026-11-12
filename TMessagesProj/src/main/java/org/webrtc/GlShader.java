@@ -14,7 +14,6 @@ import android.opengl.GLES20;
 
 import java.nio.FloatBuffer;
 
-// Helper class for handling OpenGL shaders and shader programs.
 public class GlShader {
   private static final String TAG = "GlShader";
 
@@ -54,13 +53,6 @@ public class GlShader {
       Logging.e(TAG, "Could not link program: " + GLES20.glGetProgramInfoLog(program));
       throw new RuntimeException(GLES20.glGetProgramInfoLog(program));
     }
-    // According to the documentation of glLinkProgram():
-    // "After the link operation, applications are free to modify attached shader objects, compile
-    // attached shader objects, detach shader objects, delete shader objects, and attach additional
-    // shader objects. None of these operations affects the information log or the program that is
-    // part of the program object."
-    // But in practice, detaching shaders from the program seems to break some devices. Deleting the
-    // shaders are fine however - it will delete them when they are no longer attached to a program.
     GLES20.glDeleteShader(vertexShader);
     GLES20.glDeleteShader(fragmentShader);
     GlUtil.checkNoGLES2Error("Creating GlShader");
@@ -77,18 +69,10 @@ public class GlShader {
     return location;
   }
 
-  /**
-   * Enable and upload a vertex array for attribute `label`. The vertex data is specified in
-   * `buffer` with `dimension` number of components per vertex.
-   */
   public void setVertexAttribArray(String label, int dimension, FloatBuffer buffer) {
-    setVertexAttribArray(label, dimension, 0 /* stride */, buffer);
+    setVertexAttribArray(label, dimension, 0             , buffer);
   }
 
-  /**
-   * Enable and upload a vertex array for attribute `label`. The vertex data is specified in
-   * `buffer` with `dimension` number of components per vertex and specified `stride`.
-   */
   public void setVertexAttribArray(String label, int dimension, int stride, FloatBuffer buffer) {
     if (program == -1) {
       throw new RuntimeException("The program has been released");
@@ -122,7 +106,6 @@ public class GlShader {
 
   public void release() {
     Logging.d(TAG, "Deleting shader.");
-    // Delete program, automatically detaching any shaders from it.
     if (program != -1) {
       GLES20.glDeleteProgram(program);
       program = -1;

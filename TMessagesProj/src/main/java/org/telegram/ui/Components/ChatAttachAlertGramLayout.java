@@ -59,6 +59,7 @@ import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.MessageDrawable;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Stories.recorder.ButtonWithCounterView;
 import org.telegram.ui.Wallet.GramWallet;
@@ -90,6 +91,9 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
     private final WalletRecipientView recipientView;
     private final ActionBarMenuItem moreItem;
     private final ActionBarMenuItem inlineMoreItem;
+    private Drawable currencyBackground;
+    private MessageDrawable commentBackground;
+    private ColoredImageSpan insufficientFundsArrowSpan;
 
     private String recipientAddress;
     private byte[] recipientPublicKey;
@@ -203,10 +207,10 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         );
         inlineMoreItem.setIcon(R.drawable.ic_ab_other);
         inlineMoreItem.setContentDescription(getString(R.string.AccDescrMoreOptions));
-        inlineMoreItem.setBackground(Theme.createSelectorDrawable(
+        ThemeBind.selectorBackground(inlineMoreItem, Theme.createSelectorDrawable(
                 getThemedColor(Theme.key_listSelector),
                 Theme.RIPPLE_MASK_CIRCLE_20DP
-        ));
+        ), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         inlineMoreItem.setOnClickListener(v -> {
             ItemOptions.makeOptions(ChatAttachAlertGramLayout.this, resourcesProvider, inlineMoreItem)
                 .dontFocus()
@@ -222,12 +226,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
                 .translate(0, -dp(48))
                 .show();
         });
-//        addView(inlineMoreItem, LayoutHelper.createFrame(
-//                48,
-//                48,
-//                Gravity.TOP | Gravity.RIGHT,
-//                0, 0, 4, 0
-//        ));
 
         recipientView = new WalletRecipientView(context, resourcesProvider,
                 () -> {
@@ -361,16 +359,13 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         currencyView.setAnimationProperties(.35f, 0, 320, 3.5f, CubicBezierInterpolator.EASE_OUT_QUINT);
         currencyView.setScaleProperty(0.35f);
         currencyView.setText(getCurrencyPreviewText(GramWallet.getInstance(currentAccount), 0));
-        currencyView.setTextColor(Theme.blendOver(
-                getThemedColor(Theme.key_windowBackgroundWhite),
-                getThemedColor(Theme.key_windowBackgroundWhiteGrayText2)
-        ));
+        ThemeBind.textColor(currencyView, ThemeBind.blendOver(Theme.key_windowBackgroundWhite, Theme.key_windowBackgroundWhiteGrayText2), resourcesProvider);
         currencyView.setTextSize(dp(14));
         currencyView.setTypeface(AndroidUtilities.getTypeface("fonts/gram.ttf"));
         currencyView.setGravity(Gravity.CENTER);
         currencyView.setPadding(dp(10), 0, dp(10), 0);
         currencyView.setAllowCancel(true);
-        currencyView.setSizeableBackground(Theme.createRoundRectDrawable(
+        currencyView.setSizeableBackground(currencyBackground = Theme.createRoundRectDrawable(
                 dp(14),
                 Theme.multAlpha(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2), 0.08f)
         ));
@@ -391,7 +386,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
 
         tapToSetAmount = new TextView(context);
         tapToSetAmount.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        tapToSetAmount.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(tapToSetAmount, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
         tapToSetAmount.setPadding(dp(10), 0, dp(10), 0);
         tapToSetAmount.setGravity(Gravity.CENTER);
         tapToSetAmount.setText(LocaleController.getString(R.string.WalletTapToSetAmount));
@@ -417,7 +412,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         centerBottomVisible = false;
 
         commentView = new TextView(context);
-        final MessageDrawable commentBackground = new MessageDrawable(MessageDrawable.TYPE_TEXT, true, false);
+        final MessageDrawable commentBackground = this.commentBackground = new MessageDrawable(MessageDrawable.TYPE_TEXT, true, false);
         commentBackground.shadow = false;
         commentBackground.paint.setStyle(Paint.Style.STROKE);
         commentBackground.paint.setStrokeWidth(Math.max(1, dpf2(0.5f)));
@@ -426,7 +421,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         commentView.setPadding(dp(15), dp(7), dp(19), dp(8));
         commentView.setBackground(commentBackground);
         commentView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        commentView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(commentView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
         commentView.setTypeface(AndroidUtilities.bold());
         commentView.setVisibility(View.GONE);
         commentView.setEllipsize(TextUtils.TruncateAt.END);
@@ -443,8 +438,8 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         ScaleStateListAnimator.apply(commentView, .02f, 1.2f);
 
         insufficientFundsView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
-        insufficientFundsView.setTextColor(getThemedColor(Theme.key_text_RedBold));
-        insufficientFundsView.setLinkTextColor(getThemedColor(Theme.key_featuredStickers_addButton));
+        ThemeBind.textColor(insufficientFundsView, Theme.key_text_RedBold, resourcesProvider);
+        ThemeBind.linkTextColor(insufficientFundsView, Theme.key_featuredStickers_addButton, resourcesProvider);
         insufficientFundsView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         insufficientFundsView.setGravity(Gravity.CENTER);
         insufficientFundsView.setTypeface(AndroidUtilities.bold());
@@ -459,7 +454,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
 
         bottomContainer = new FrameLayout(context);
         bottomContainer.setPadding(dp(16), 0, dp(16), dp(12));
-        // Keep intro offsets separate from keyboard pan and send-button visibility.
         bottomIntroContainer = new FrameLayout(context);
         bottomContainer.setClipChildren(false);
         bottomContainer.setClipToPadding(false);
@@ -468,7 +462,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         bottomContainer.addView(bottomIntroContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
         balanceView = new TextView(context);
-        balanceView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(balanceView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
         balanceView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         balanceView.setGravity(Gravity.CENTER);
         bottomIntroContainer.addView(balanceView, LayoutHelper.createFrame(
@@ -478,7 +472,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         ));
 
         feeView = new TextView(context);
-        feeView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2));
+        ThemeBind.textColor(feeView, Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider);
         feeView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         feeView.setGravity(Gravity.CENTER);
         feeView.setPadding(0, dp(4), 0, dp(4));
@@ -509,7 +503,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         ));
         updateSendButtonVisibility(false, false);
 
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.walletUpdate);
+        NotificationCenter.getInstance(currentAccount).addWeakObserver(this, NotificationCenter.walletUpdate);
         updateBalance();
         loadRecipientAddress();
     }
@@ -539,7 +533,7 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
                 int from = sb.length();
                 sb.append(getString(R.string.WalletDepositFunds));
                 sb.append(" >");
-                sb.setSpan(new ColoredImageSpan(R.drawable.settings_arrow).setOverrideColor(getThemedColor(Theme.key_featuredStickers_addButton)).translate(0, dpf2(0.66f)), sb.length() - 1, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(insufficientFundsArrowSpan = new ColoredImageSpan(R.drawable.settings_arrow).setOverrideColor(getThemedColor(Theme.key_featuredStickers_addButton)).translate(0, dpf2(0.66f)), sb.length() - 1, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 sb.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(@NonNull View view) {
@@ -616,7 +610,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
             return;
         }
         requestAmountKeyboard();
-        // Let the amount layout finish resizing before the dialog takes IME focus.
         final long deadline = android.os.SystemClock.uptimeMillis() + 1500;
         pendingCommentAlert = () -> {
             if (destroyed || !layoutShown || !isShown()) {
@@ -629,7 +622,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
                 postDelayed(pendingCommentAlert, 32);
                 return;
             }
-            // Also allow comments when a hardware keyboard prevents the IME opening.
             pendingCommentAlert = null;
             showAddCommentAlert();
         };
@@ -694,8 +686,8 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
             }
         };
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editText.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
-        editText.setHintTextColor(getThemedColor(Theme.key_dialogTextHint));
+        ThemeBind.textColor(editText, Theme.key_dialogTextBlack, resourcesProvider);
+        ThemeBind.hintTextColor(editText, Theme.key_dialogTextHint, resourcesProvider);
         editText.setHint(getString(R.string.WalletCommentOptionalMessage));
         editText.setText(comment);
         editText.setSelection(editText.length());
@@ -704,20 +696,16 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
                 | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setMaxLines(5);
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        editText.setLineColors(
-                getThemedColor(Theme.key_windowBackgroundWhiteInputField),
-                getThemedColor(Theme.key_windowBackgroundWhiteInputFieldActivated),
-                getThemedColor(Theme.key_text_RedRegular)
-        );
+        ThemeBind.lineColors(editText, Theme.key_windowBackgroundWhiteInputField, Theme.key_windowBackgroundWhiteInputFieldActivated, Theme.key_text_RedRegular, resourcesProvider);
         editText.setBackground(null);
         editText.setPadding(0, dp(10), dp(48), dp(10));
 
         final CheckBoxCell publicCommentCell = new CheckBoxCell(context, 1, resourcesProvider);
-        publicCommentCell.setBackground(Theme.createSelectorDrawable(
+        ThemeBind.selectorBackground(publicCommentCell, Theme.createSelectorDrawable(
                 Theme.getColor(Theme.key_listSelector, resourcesProvider),
                 Theme.RIPPLE_MASK_ROUNDRECT_6DP,
                 dp(12)
-        ));
+        ), null, ThemeBind.of(Theme.key_listSelector), resourcesProvider);
         publicCommentCell.setText(
                 getString(R.string.WalletMakeCommentPublic),
                 "",
@@ -1165,7 +1153,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         amountKeyboardSuppressed = true;
         pendingKeyboardRequest = false;
         cancelPendingCommentAlert();
-        // Keep the focused editor and IME alive until the flight actually starts.
         queuedTransaction = null;
         wallet.send(
             recipientUser,
@@ -1266,7 +1253,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         feeVisibilityProgress = progress;
         feeView.setAlpha(progress);
         feeView.setVisibility(progress > 0 ? View.VISIBLE : View.GONE);
-        // Keep footer growth in sync with the fade and the center's pre-draw geometry.
         requestLayout();
     }
 
@@ -1290,7 +1276,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
             final boolean couldEmulateFee = feeEmulationAvailable;
             updateAmount();
             if (couldEmulateFee != feeEmulationAvailable) {
-                // Resume after a top-up, or cancel an estimate that can no longer succeed.
                 loadFee();
             }
         }
@@ -1299,8 +1284,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
     private void suppressAmountKeyboardAfterAuthorization() {
         if (!amountKeyboardSuppressed || destroyed) return;
         pendingKeyboardRequest = false;
-        // Authentication temporarily takes window focus. Do not let Android or
-        // a delayed makeFocusable callback restore this editor/IME on return.
         amountEdit.setShowSoftInputOnFocus(false);
         amountEdit.setFocusable(false);
         amountEdit.clearFocus();
@@ -1340,8 +1323,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         parentAlert.actionBar.setTitle(getString(R.string.WalletSendMoneyTo));
         parentAlert.actionBar.setDrawGlassTitle(false);
         moreItem.setVisibility(View.VISIBLE);
-//        inlineMoreItem.setVisibility(View.VISIBLE);
-//        inlineMoreItem.bringToFront();
         amountEdit.clearFocus();
         loadFee();
         introProgress = introRevealProgress = amountInput.getDiamondView().canAnimateIntro() ? 0f : 1f;
@@ -1441,13 +1422,11 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
             commentDialog.dismiss();
         }
         moreItem.setVisibility(View.GONE);
-//        inlineMoreItem.setVisibility(View.GONE);
         AndroidUtilities.hideKeyboard(amountEdit);
         amountEdit.clearFocus();
     }
 
     private void lockPortraitIfNeeded() {
-        // The shorter display side is the height in landscape, regardless of current rotation.
         if (portraitLockedActivity != null || AndroidUtilities.isTablet()
                 || Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) >= dp(700)) {
             return;
@@ -1481,10 +1460,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
     protected void dispatchDraw(Canvas canvas) {
         final float actionBarAlpha = parentAlert.actionBar.getAlpha();
         final float inlineAlpha = 1.0f - actionBarAlpha;
-//        inlineMoreItem.setAlpha(inlineAlpha);
-//        inlineMoreItem.setScaleX(0.8f + 0.2f * inlineAlpha);
-//        inlineMoreItem.setScaleY(0.8f + 0.2f * inlineAlpha);
-//        inlineMoreItem.setClickable(inlineAlpha > 0.5f);
         updateCenterGeometry();
         if (introAnimator != null || introProgress < 1f) updateIntroGeometry();
         super.dispatchDraw(canvas);
@@ -1548,8 +1523,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
 
         final FrameLayout.LayoutParams bottomLayoutParams =
                 (FrameLayout.LayoutParams) bottomContainer.getLayoutParams();
-        // Keep the wallet footer's internal geometry fixed. Reserving tabs with
-        // padding made the send button jump independently of the balance label.
         bottomLayoutParams.height = footerHeight;
         bottomLayoutParams.bottomMargin = tabsReservedHeight;
 
@@ -1576,8 +1549,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
 
         final int inlineTop = Math.max(0, padding - AndroidUtilities.statusBarHeight + dp(4));
         final FrameLayout.LayoutParams recipientLayoutParams = (FrameLayout.LayoutParams) recipientView.getLayoutParams();
-        // The parent already places this layout below the status bar. Use the
-        // action bar's content height here so the gap is independent of that inset.
         final int recipientTop = Math.max(0, keyboardVisible
                 ? ActionBar.getCurrentActionBarHeight() + dp(4)
                 : inlineTop - dp(4));
@@ -1673,7 +1644,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
         if (view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0) {
             return Float.POSITIVE_INFINITY;
         }
-        // Center against the footer's destination, not its temporary intro offset.
         return getScreenY(view) - bottomIntroContainer.getTranslationY()
                 + view.getPivotY() * (1.0f - view.getScaleY());
     }
@@ -1690,8 +1660,6 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
             view = parent;
         }
         view.getLocationOnScreen(screenLocation);
-        // Keep keyboard geometry independent of the sheet's exit, otherwise
-        // its compensation pins the recipient/footer on screen during dismissal.
         return y + screenLocation[1] + canvasPanTranslationY - parentAlert.getGramSendExitTranslationY();
     }
 
@@ -1723,6 +1691,37 @@ public class ChatAttachAlertGramLayout extends ChatAttachAlert.AttachAlertLayout
     @Override
     public boolean hasCustomBackground() {
         return true;
+    }
+
+    @Override
+    public void checkColors() {
+        try {
+            if (inlineMoreItem != null) {
+                inlineMoreItem.setIconColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+            }
+            if (currencyBackground != null) {
+                Theme.setDrawableColor(currencyBackground, Theme.multAlpha(getThemedColor(Theme.key_windowBackgroundWhiteGrayText2), 0.08f));
+                if (currencyView != null) {
+                    currencyView.invalidate();
+                }
+            }
+            if (commentBackground != null) {
+                final int color = getThemedColor(Theme.key_wallet_out_commentBorder);
+                commentBackground.paint.setColor(color);
+                commentBackground.overrideColor = color;
+                if (commentView != null) {
+                    commentView.invalidate();
+                }
+            }
+            if (insufficientFundsArrowSpan != null) {
+                insufficientFundsArrowSpan.setOverrideColor(getThemedColor(Theme.key_featuredStickers_addButton));
+                if (insufficientFundsView != null) {
+                    insufficientFundsView.invalidate();
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     @Override

@@ -28,7 +28,6 @@ public class ChevronView extends View {
 
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    // Path instead of Canvas#drawLine allows to render even transparent colors
     private Path path = new Path();
 
     public ChevronView(Context context, @Direction int direction) {

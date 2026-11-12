@@ -230,7 +230,6 @@ public class NotificationsSettingsFacade {
             } else {
                 String path = NotificationsSoundActivity.findRingtonePathByName(localSound.title);
                 if (path == null) {
-//                    settings = new TLRPC.TL_notificationSoundDefault();
                     return;
                 } else {
                     localSound.data = path;

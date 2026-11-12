@@ -12,7 +12,6 @@ import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-/** GLES port of InteractiveDiamond2, including perspective and silhouette compensation. */
 final class DiamondRenderer {
     private static final String MODEL = "models/diamond_ios/";
     private static final String SHADERS = "shaders/diamond/";
@@ -156,7 +155,6 @@ final class DiamondRenderer {
         Matrix.setIdentityM(projection, 0);
         projection[0] = 1 / (h * aspect);
         projection[5] = 1 / h;
-        // Metal's perspective matrix; the vertex shader converts clip depth to GLES.
         float w0 = 1 / camera[2], wz = -w0 / camera[1];
         projection[0] *= horizontalScale;
         projection[9] = .12f / h * wz;
@@ -167,7 +165,6 @@ final class DiamondRenderer {
         projection[15] = w0;
     }
 
-    /** Same interpolated silhouette correction as Swift's DiamondSilhouette. */
     private float horizontalScale(float yaw, float pitch) {
         float quadrant = Math.abs((float) Math.IEEEremainder(yaw, Math.PI / 2));
         float sample = Math.min(90, quadrant * 360 / (float) Math.PI);
@@ -208,7 +205,6 @@ final class DiamondRenderer {
         draw(w, h, yaw, pitch, roll, dt, alpha, white, false);
     }
 
-    /** Renders once into the resolved texture, ready for GPU composition or readback. */
     void drawToTexture(int side, float yaw, float pitch, float dt) {
         draw(side, side, yaw, pitch, 0, dt, 1, 0, true);
     }
@@ -225,13 +221,10 @@ final class DiamondRenderer {
             float a = frames[index * 42 + n];
             frame[n] = a + (frames[(index + 1) * 42 + n] - a) * fraction;
         }
-        // Only these offscreen targets change during enlargement. The window's
-        // buffer and its compositor transform stay independent of GL resolution.
         resize(Math.max(1, Math.round(w * resolutionScale)), Math.max(1, Math.round(h * resolutionScale)));
         pitch += camera[0];
         horizontalScale = horizontalScale(yaw, pitch);
         Matrix.setIdentityM(model, 0);
-        // Apply screen-facing roll before pitch/yaw; positive matches View rotation.
         Matrix.rotateM(model, 0, -(float) Math.toDegrees(roll), 0, 0, 1);
         Matrix.rotateM(model, 0, (float) Math.toDegrees(pitch), 1, 0, 0);
         Matrix.rotateM(model, 0, (float) Math.toDegrees(yaw), 0, 1, 0);
@@ -256,7 +249,6 @@ final class DiamondRenderer {
         GLES30.glDisable(GLES30.GL_CULL_FACE);
         GLES30.glEnable(GLES30.GL_BLEND);
         GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-        // Preserve the requested 336px front-facing body width on a 512px canvas.
         projection((float) w / h, (336f / 512) * 1.52f / silhouetteWidths[0]);
         setup(programs[0], time, angle, visibility);
         GLES30.glDisable(GLES30.GL_BLEND);
@@ -274,7 +266,6 @@ final class DiamondRenderer {
             GLES30.glUniform1ui(loc("baseInstance"), n - 1);
             GLES30.glDrawArraysInstanced(GLES30.GL_TRIANGLES, 0, counts[n], n == 1 ? 1 : 7);
         }
-        // Resolve MSAA before fading the entire premultiplied group, including sparkles.
         GLES30.glBindFramebuffer(GLES30.GL_READ_FRAMEBUFFER, targets[0]);
         GLES30.glBindFramebuffer(GLES30.GL_DRAW_FRAMEBUFFER, targets[1]);
         GLES30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GLES30.GL_COLOR_BUFFER_BIT, GLES30.GL_NEAREST);
@@ -286,7 +277,6 @@ final class DiamondRenderer {
         drawTexture(w, h, alpha, white);
     }
 
-    /** Composites the last rendered image into the current EGL window surface. */
     void drawTexture(int w, int h, float alpha) {
         drawTexture(w, h, alpha, 0);
     }

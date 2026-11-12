@@ -12,7 +12,6 @@ package org.webrtc;
 
 import java.util.IdentityHashMap;
 
-/** Java version of VideoTrackInterface. */
 public class VideoTrack extends MediaStreamTrack {
   private final IdentityHashMap<VideoSink, Long> sinks = new IdentityHashMap<VideoSink, Long>();
 
@@ -20,20 +19,10 @@ public class VideoTrack extends MediaStreamTrack {
     super(nativeTrack);
   }
 
-  /**
-   * Adds a VideoSink to the track.
-   *
-   * A track can have any number of VideoSinks. VideoSinks will replace
-   * renderers. However, converting old style texture frames will involve costly
-   * conversion to I420 so it is not recommended to upgrade before all your
-   * sources produce VideoFrames.
-   */
   public void addSink(VideoSink sink) {
     if (sink == null) {
       throw new IllegalArgumentException("The VideoSink is not allowed to be null");
     }
-    // We allow calling addSink() with the same sink multiple times. This is similar to the C++
-    // VideoTrack::AddOrUpdateSink().
     if (!sinks.containsKey(sink)) {
       final long nativeSink = nativeWrapSink(sink);
       sinks.put(sink, nativeSink);
@@ -41,11 +30,6 @@ public class VideoTrack extends MediaStreamTrack {
     }
   }
 
-  /**
-   * Removes a VideoSink from the track.
-   *
-   * If the VideoSink was not attached to the track, this is a no-op.
-   */
   public void removeSink(VideoSink sink) {
     final Long nativeSink = sinks.remove(sink);
     if (nativeSink != null) {
@@ -64,7 +48,6 @@ public class VideoTrack extends MediaStreamTrack {
     super.dispose();
   }
 
-  /** Returns a pointer to webrtc::VideoTrackInterface. */
   public long getNativeVideoTrack() {
     return getNativeMediaStreamTrack();
   }

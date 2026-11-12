@@ -309,6 +309,7 @@ public final class FGSubscriptionUi {
             case UNSUPPORTED_PROTOCOL:
                 return text("FG_Subscription_ErrorUnsupportedProtocol");
             case UNSUPPORTED_LINK: return text("FG_Subscription_ErrorUnsupported");
+            case UNSUPPORTED_XHTTP: return text("FG_Subscription_ErrorXhttp");
             case INVALID_ENCODING:
             case INVALID_FORMAT:
             case INVALID_LINK: return text("FG_Subscription_ErrorFormat");

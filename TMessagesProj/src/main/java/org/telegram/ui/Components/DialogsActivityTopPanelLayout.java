@@ -22,7 +22,7 @@ import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import me.vkryl.android.animator.ListAnimator;
 import com.th3nekit.finegram.core.configs.FinegramAppearanceConfig;
 
-public class DialogsActivityTopPanelLayout extends AnimatedLinearLayout {
+public class DialogsActivityTopPanelLayout extends AnimatedLinearLayout implements Theme.Colorable {
     private final GradientDrawable fadeDrawable;
 
     public DialogsActivityTopPanelLayout(@NonNull Context context) {
@@ -88,6 +88,8 @@ public class DialogsActivityTopPanelLayout extends AnimatedLinearLayout {
         this.defaultRadiusDp = defaultRadius;
     }
 
+    /** also called on every theme update (Theme.Colorable) */
+    @Override
     public void updateColors() {
         if (backgroundDrawable != null) {
             backgroundDrawable.updateColors();

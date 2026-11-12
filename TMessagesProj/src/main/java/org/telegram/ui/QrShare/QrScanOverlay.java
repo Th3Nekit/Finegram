@@ -77,44 +77,28 @@ import org.telegram.ui.PhotoAlbumPickerActivity;
 
 import java.util.ArrayList;
 
-/**
- * The QR scanner of the QR screen, opened like the story camera: the scan button swells a little, then stretches over
- * the whole screen while the camera comes in; closing runs the same way back into the button.
- * <p>
- * Its own camera and recognition, no fragment or sheet: frames of the preview are read in the background (Google Vision,
- * else zxing), a Telegram link is outlined like in the story camera and then opened. The controls are the glass of the
- * QR screen over the blurred camera.
- */
 @SuppressLint("ViewConstructor")
 public final class QrScanOverlay extends FrameLayout {
 
     public interface Listener {
-        /** A Telegram link has been scanned; the overlay is already closing. */
         void onScanned(String link);
 
-        /** The overlay has shrunk back into the button and is to be removed. */
         void onClosed(QrScanOverlay overlay);
     }
 
-    // the shape morphs between the button exactly as the QR screen draws it and the whole screen (no swell: the open
-    // starts and the close lands on the button's own size)
     private static final long STRETCH_MS = 390, CLOSE_MS = 330;
     private static final long OPEN_MS = STRETCH_MS;
-    // a fast start and a long settle (Material "emphasized decelerate"): the screen shoots out of the button
     private static final CubicBezierInterpolator STRETCH = new CubicBezierInterpolator(0.05, 0.7, 0.1, 1.0);
-    // closing: it gathers speed, then lands in the button
     private static final CubicBezierInterpolator SHRINK = new CubicBezierInterpolator(0.3, 0.0, 0.1, 1.0);
     private static final long SCAN_INTERVAL = 150, FOUND_DELAY = 450;
     private static final int MAX_FRAME_SIDE = 720;
-    // the glass without a blur source: during the open (no camera yet) a little darker, so the white icons stay
-    // readable; where the blur is off or unsupported, 50% darker
     private static final int FLAT_SHADE = 0x29000000, NO_BLUR_SHADE = 0x80000000;
-    private static final int DIM_COLOR = 0x40000000;     // 25% black around the frame
-    private static final int FOUND_COLOR = 0xFFFFDE07;   // the outline of a scanned code, as in the story camera
+    private static final int DIM_COLOR = 0x40000000;
+    private static final int FOUND_COLOR = 0xFFFFDE07;
 
     private final Listener listener;
-    private @Nullable CameraView cameraView; // only once the open has finished, released when the close starts
-    private @Nullable Object blurNode;    // the camera's blurred render node (Android 12+), see QrRender
+    private @Nullable CameraView cameraView;
+    private @Nullable Object blurNode;
 
     private final RectF button = new RectF(), shape = new RectF();
     private final RectF closeRect = new RectF(), flashRect = new RectF(), galleryRect = new RectF(), frameRect = new RectF(), textureRect = new RectF();
@@ -124,11 +108,9 @@ public final class QrScanOverlay extends FrameLayout {
     private final Drawable scanIcon, flashIcon, galleryIcon;
     private final BackDrawable closeIcon = new BackDrawable(true);
     private final TextPaint titlePaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-    /** The label of a pill button ("Scan QR"): its icon on the left, the label after it; null for a round button. */
     private @Nullable String buttonLabel;
     private final TextPaint buttonLabelPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
-    /** The button is a pill with an icon and this label (as the QR screen draws it), not a round icon button. */
     public void setButtonLabel(@Nullable String label) {
         buttonLabel = label;
         buttonLabelPaint.setTypeface(AndroidUtilities.bold());
@@ -136,9 +118,7 @@ public final class QrScanOverlay extends FrameLayout {
         invalidate();
     }
 
-    /** The button the scanner grows out of is the screen's own (not the QR screen's glass): only the black is drawn there. */
     private boolean plainButton;
-    /** Which scanned codes are taken; the others are ignored and the scan goes on. Called on the scan thread. */
     private Utilities.CallbackReturn<String, Boolean> accept = QrScanOverlay::isTelegramLink;
 
     public void setPlainButton(boolean plain) {
@@ -150,7 +130,6 @@ public final class QrScanOverlay extends FrameLayout {
         this.accept = accept;
     }
 
-    /** The gallery button to the left of the flash (as in the old scanner); none without a listener. */
     private @Nullable Runnable onGallery;
 
     public void setOnGallery(@Nullable Runnable onGallery) {
@@ -159,11 +138,6 @@ public final class QrScanOverlay extends FrameLayout {
         invalidate();
     }
 
-    /**
-     * The scanner over a whole fragment (its layout's overlay container), grown out of {@code button}, a plain view of
-     * the screen; {@code onScanned} gets the first code {@code accept} takes. The fragment closes the returned overlay on
-     * back and destroys it on pause and destroy; the camera permission is the caller's.
-     */
     @Nullable
     public static QrScanOverlay open(BaseFragment fragment, View button, Utilities.CallbackReturn<String, Boolean> accept, Utilities.Callback<String> onScanned, @Nullable Runnable onClosed) {
         final INavigationLayout layout = fragment.getParentLayout();
@@ -195,7 +169,6 @@ public final class QrScanOverlay extends FrameLayout {
             if (!checkGalleryPermission(fragment.getParentActivity())) {
                 return;
             }
-            // the scanner shrinks back and the picker opens; a picked code goes the same way as a scanned one
             overlay.close();
             pickFromGallery(fragment, accept, onScanned);
         });
@@ -203,7 +176,6 @@ public final class QrScanOverlay extends FrameLayout {
         return overlay;
     }
 
-    /** True when the photos can be read; else they are asked for (the button is to be tapped again). */
     public static boolean checkGalleryPermission(@Nullable android.app.Activity activity) {
         if (activity == null) {
             return false;
@@ -222,7 +194,6 @@ public final class QrScanOverlay extends FrameLayout {
         return true;
     }
 
-    /** A photo from the gallery, read in the background: the first code {@code accept} takes, else an error bulletin. */
     public static void pickFromGallery(BaseFragment fragment, Utilities.CallbackReturn<String, Boolean> accept, Utilities.Callback<String> onScanned) {
         final PhotoAlbumPickerActivity picker = new PhotoAlbumPickerActivity(PhotoAlbumPickerActivity.SELECT_TYPE_QR, false, false, null);
         picker.setMaxSelectedPhotos(1, false);
@@ -267,10 +238,6 @@ public final class QrScanOverlay extends FrameLayout {
         fragment.presentFragment(picker);
     }
 
-    /**
-     * Runs once the fragment is back on top with no transition going (the picker and the photo viewer still closing):
-     * a fragment presented during the transition would be dropped. Gives up after ~2s.
-     */
     private static void whenOnTop(BaseFragment fragment, int attempt, Runnable action) {
         if (fragment.isFinished) {
             return;
@@ -284,7 +251,6 @@ public final class QrScanOverlay extends FrameLayout {
         AndroidUtilities.runOnUIThread(() -> whenOnTop(fragment, attempt + 1, action), 50);
     }
 
-    /** The first code in a picture that {@code accept} takes, or null; not on the UI thread. */
     @Nullable
     public static String readQr(Bitmap bitmap, Utilities.CallbackReturn<String, Boolean> accept) {
         BarcodeDetector vision = null;
@@ -306,18 +272,15 @@ public final class QrScanOverlay extends FrameLayout {
     private @Nullable StaticLayout titleLayout;
     private final float cornerRadius;
 
-    /** 0 = the scan button, 1 = the scanner on the whole screen. */
     private float progress;
     private @Nullable ValueAnimator animator;
     private boolean closing, destroyed;
 
-    // controls
-    private int pressed = -1;          // 0 = close, 1 = flash, 2 = gallery
+    private int pressed = -1;
     private float closePress = 1f, flashPress = 1f, galleryPress = 1f;
     private boolean torch;
     private float torchK;
 
-    // recognition, on its own thread
     private final HandlerThread scanThread = new HandlerThread("QrScan");
     private final Handler scanHandler;
     private volatile boolean scanning;
@@ -325,7 +288,7 @@ public final class QrScanOverlay extends FrameLayout {
     private @Nullable QRCodeReader zxingReader;
     private @Nullable Bitmap frameBitmap;
     private boolean found;
-    private @Nullable PointF[] foundPoints;    // in texture shares
+    private @Nullable PointF[] foundPoints;
     private float foundK;
 
     QrScanOverlay(Context context, RectF from, RectF closeButton, Listener listener) {
@@ -381,16 +344,13 @@ public final class QrScanOverlay extends FrameLayout {
         return QrRender.screenCornerRadius(activity != null ? activity.getWindow().getDecorView() : this);
     }
 
-    /* Open / close */
 
-    /** Shrinks back into the scan button; the camera is released at the end. */
     public void close() {
         if (closing || destroyed) {
             return;
         }
         closing = true;
         scanning = false;
-        // the camera's last frame goes on as a bitmap: the camera is released before the close runs
         takeSnapshot();
         releaseCamera();
         animate(0f, CLOSE_MS, () -> {
@@ -399,7 +359,6 @@ public final class QrScanOverlay extends FrameLayout {
         });
     }
 
-    /** Releases the camera at once, e.g. when the screen goes away with the scanner open. */
     public void destroy() {
         if (destroyed) {
             return;
@@ -425,7 +384,6 @@ public final class QrScanOverlay extends FrameLayout {
         });
     }
 
-    /** The progress runs linearly in time; the phases have their own curves, see {@link #stretch()}. */
     private void animate(float to, long duration, @Nullable Runnable onEnd) {
         if (animator != null) {
             animator.cancel();
@@ -459,8 +417,6 @@ public final class QrScanOverlay extends FrameLayout {
         a.start();
     }
 
-    /** The swell of the button, 0..1: first when opening; when closing it stays until the shape is back. */
-    /** The stretch over the screen, 0..1. */
     private float stretch() {
         if (closing) {
             return 1f - SHRINK.getInterpolation(1f - progress);
@@ -468,7 +424,6 @@ public final class QrScanOverlay extends FrameLayout {
         return STRETCH.getInterpolation(Utilities.clamp01(progress));
     }
 
-    /** The camera and the controls come in once the shape is large enough to show them. */
     private float contentAlpha() {
         return Utilities.clamp01((stretch() - 0.15f) / 0.45f);
     }
@@ -477,10 +432,6 @@ public final class QrScanOverlay extends FrameLayout {
         invalidate();
     }
 
-    /**
-     * The camera starts once the open has finished (the morph runs over black: no camera start, preview frames or blur
-     * pipeline during it); its preview fades in when it is ready.
-     */
     private void startCamera() {
         if (destroyed || closing || cameraView != null || !CameraView.isCameraAllowed()) {
             return;
@@ -514,8 +465,6 @@ public final class QrScanOverlay extends FrameLayout {
         removeView(camera);
     }
 
-    // the close: the camera's last frame (TextureView.getBitmap: the TextureView's own content, without the controls a
-    // window copy would hold), at half size, and a strongly reduced blurred copy for the glass of the buttons
     private @Nullable Bitmap snapshot, snapshotBlur;
     private final RectF snapshotRect = new RectF();
     private final Paint snapshotPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
@@ -553,7 +502,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
     }
 
-    /** The glass blur at all: Android 12+ and blur on in the power saving settings (LiteMode). */
     private static boolean blurAllowed() {
         return QrRender.hasEffects() && LiteMode.isEnabled(LiteMode.FLAG_CHAT_BLUR);
     }
@@ -570,7 +518,6 @@ public final class QrScanOverlay extends FrameLayout {
         );
     }
 
-    /* Layout */
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -581,7 +528,6 @@ public final class QrScanOverlay extends FrameLayout {
         frameRect.set(w / 2f - side / 2f, cy - side / 2f, w / 2f + side / 2f, cy + side / 2f);
         final float fs = dp(56);
         final float fy = frameRect.bottom + dp(64);
-        // with the gallery: the two side by side, 70dp apart, as in the old scanner
         final float fx = onGallery != null ? w / 2f + dp(35) + fs / 2f : w / 2f;
         flashRect.set(fx - fs / 2f, fy, fx + fs / 2f, fy + fs);
         final float gx = w / 2f - dp(35) - fs / 2f;
@@ -593,7 +539,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
     }
 
-    /* Drawing */
 
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
@@ -605,7 +550,6 @@ public final class QrScanOverlay extends FrameLayout {
             clip.addRoundRect(shape, radius, radius, Path.Direction.CW);
             canvas.clipPath(clip);
         }
-        // the button's glass turns into the black under the camera
         final float buttonGlass = 1f - Utilities.clamp01(stretch() / 0.35f);
         final float dark = Utilities.clamp01(stretch() / 0.3f);
         if (dark > 0f) {
@@ -613,7 +557,6 @@ public final class QrScanOverlay extends FrameLayout {
             fill.setAlpha((int) (255 * dark));
             canvas.drawRect(shape, fill);
         }
-        // the whole scanner grows out of the button: scaled down to cover the shape, its centre on the shape's centre
         final int w = getWidth(), h = getHeight();
         if (progress < 1f && w > 0 && h > 0) {
             final float k = Math.max(shape.width() / w, shape.height() / h);
@@ -623,7 +566,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
         super.dispatchDraw(canvas);
         if (snapshot != null) {
-            // closing: the camera's last frame in its place
             snapshotPaint.setAlpha((int) (255 * contentAlpha()));
             canvas.drawBitmap(snapshot, null, snapshotRect, snapshotPaint);
         }
@@ -636,7 +578,6 @@ public final class QrScanOverlay extends FrameLayout {
             drawGlassBody(canvas, shape, radius, buttonGlass, false);
             final float gs = 1f;
             if (buttonLabel != null) {
-                // the pill's content as the screen draws it: a 20dp icon 12dp in, the label 6dp after it
                 final int size = (int) (dp(20) * gs);
                 final float ix = shape.left + (dp(12) + dp(10)) * gs;
                 scanIcon.setBounds((int) (ix - size / 2f), (int) (shape.centerY() - size / 2f), (int) (ix + size / 2f), (int) (shape.centerY() + size / 2f));
@@ -656,13 +597,10 @@ public final class QrScanOverlay extends FrameLayout {
     }
 
     private void drawScanner(Canvas canvas, float alpha) {
-        // the camera is dimmed around the frame
         final float r = dp(14);
         fill.setColor(DIM_COLOR);
         fill.setAlpha((int) ((DIM_COLOR >>> 24) * alpha));
         if (Build.VERSION.SDK_INT >= 29) {
-            // the screen minus the frame as one analytic shape (an even-odd path of the screen's size went through
-            // Skia's stencil-then-cover: two GPU programs on the open)
             screenRect.set(0, 0, getWidth(), getHeight());
             canvas.drawDoubleRoundRect(screenRect, 0, 0, frameRect, r, r, fill);
         } else {
@@ -674,7 +612,6 @@ public final class QrScanOverlay extends FrameLayout {
             path.setFillType(Path.FillType.WINDING);
         }
 
-        // the frame: four rounded corners, fading out when a code is outlined
         drawCorners(canvas, r, alpha * (1f - foundK));
 
         if (titleLayout != null) {
@@ -687,7 +624,6 @@ public final class QrScanOverlay extends FrameLayout {
 
         drawFound(canvas, alpha);
 
-        // controls on glass
         closePress = approach(closePress, pressed == 0 ? 0.88f : 1f);
         flashPress = approach(flashPress, pressed == 1 ? 0.88f : 1f);
         galleryPress = approach(galleryPress, pressed == 2 ? 0.88f : 1f);
@@ -699,8 +635,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
     }
 
-    // the frame's corners: one corner (a 4dp white stroke, 28dp arms, the frame's radius) rendered once into a bitmap and
-    // drawn mirrored at the four corners (the stroked path went through Skia's path renderer: a GPU program of its own)
     private @Nullable Bitmap cornerBitmap;
     private final Paint cornerBitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
@@ -733,7 +667,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
     }
 
-    /** The scanned code: its corners outlined in yellow, growing in like in the story camera. */
     private void drawFound(Canvas canvas, float alpha) {
         foundK = approach(foundK, foundPoints != null ? 1f : 0f);
         if (foundPoints == null || foundPoints.length < 3 || cameraView == null || foundK <= 0f) {
@@ -781,7 +714,6 @@ public final class QrScanOverlay extends FrameLayout {
         final float radius = rect.height() / 2f;
         drawGlassBody(canvas, rect, radius, alpha, true);
         if (icon == flashIcon && torchK > 0f) {
-            // the torch is on: the glass fills up white
             fill.setColor(0xFFFFFFFF);
             fill.setAlpha((int) (0x66 * torchK * alpha));
             canvas.drawRoundRect(rect, radius, radius, fill);
@@ -801,10 +733,6 @@ public final class QrScanOverlay extends FrameLayout {
         canvas.restore();
     }
 
-    /**
-     * The glass of the QR screen: the blurred backdrop (here the camera), a faint white fill, a top sheen and the
-     * Dark out rim. Without a blur source the fill is a little darker instead.
-     */
     private void drawGlassBody(Canvas canvas, RectF rect, float radius, float alpha, boolean blurred) {
         if (alpha <= 0f) {
             return;
@@ -817,7 +745,7 @@ public final class QrScanOverlay extends FrameLayout {
             canvas.clipPath(path);
             canvas.save();
             canvas.translate(cameraView.getLeft(), cameraView.getTop());
-            QrRender.setAlpha(blurNode, alpha); // the node's own alpha: no extra layer for the fade
+            QrRender.setAlpha(blurNode, alpha);
             QrRender.draw(canvas, blurNode);
             canvas.restore();
             fill.setColor(0x00FFFFFF | (white << 24));
@@ -826,7 +754,6 @@ public final class QrScanOverlay extends FrameLayout {
             QrGlass.drawSheen(canvas, rect, false, alpha);
             canvas.restore();
         } else if (blurred && snapshotBlur != null) {
-            // closing: the blurred last frame as the rounded rect's shader, the glass' white over it
             snapshotGlassPaint.setAlpha((int) (255 * alpha));
             canvas.drawRoundRect(rect, radius, radius, snapshotGlassPaint);
             fill.setColor(0x00FFFFFF | (white << 24));
@@ -834,27 +761,20 @@ public final class QrScanOverlay extends FrameLayout {
             canvas.drawRoundRect(rect, radius, radius, fill);
             QrGlass.drawSheenRound(canvas, rect, radius, false, alpha);
         } else {
-            // no blur (yet, or none): one solid rounded rect — the flat shade with the glass' white over it — and the
-            // sheen as the rounded rect's own shader: no clip
             fill.setColor(ColorUtils.compositeColors(0x00FFFFFF | (white << 24), blurAllowed() ? FLAT_SHADE : NO_BLUR_SHADE));
             fill.setAlpha((int) (Color.alpha(fill.getColor()) * alpha));
             canvas.drawRoundRect(rect, radius, radius, fill);
             QrGlass.drawSheenRound(canvas, rect, radius, false, alpha);
         }
-        rim.draw(canvas, rect, radius, RimTune.BIG, alpha); // baked (QrGlass) where it can be
+        rim.draw(canvas, rect, radius, RimTune.BIG, alpha);
     }
 
-    /**
-     * The camera's blur under the controls: with the camera, i.e. once the scanner has covered the screen (never during
-     * the morph: it is an offscreen pipeline with GPU programs of its own), on Android 12+ with blur on in the power
-     * saving settings.
-     */
     private boolean blurReady(Canvas canvas) {
         if (cameraView == null || !canvas.isHardwareAccelerated() || !blurAllowed()) {
             return false;
         }
         if (blurNode == null) {
-            blurNode = cameraView.getBlurRenderNode(); // the camera records its blurred copy from now on
+            blurNode = cameraView.getBlurRenderNode();
             invalidate();
         }
         return QrRender.hasDisplayList(blurNode);
@@ -862,12 +782,10 @@ public final class QrScanOverlay extends FrameLayout {
 
     private final RectF screenRect = new RectF();
 
-    /* Touches */
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        // the scanner takes every touch; the controls only once it covers the screen
         if (progress < 1f || closing) {
             return true;
         }
@@ -921,7 +839,6 @@ public final class QrScanOverlay extends FrameLayout {
         invalidate();
     }
 
-    /* Recognition */
 
     private void startScanning() {
         if (destroyed || scanning || found) {
@@ -968,7 +885,7 @@ public final class QrScanOverlay extends FrameLayout {
 
     private static final class Scanned {
         final String link;
-        final PointF[] points;     // corners in shares of the frame
+        final PointF[] points;
 
         Scanned(String link, PointF[] points) {
             this.link = link;
@@ -976,7 +893,6 @@ public final class QrScanOverlay extends FrameLayout {
         }
     }
 
-    /** The first Telegram link in the frame; other codes are ignored and the scan goes on. */
     @Nullable
     private static Scanned decode(Bitmap bitmap, @Nullable BarcodeDetector visionReader, @Nullable QRCodeReader zxingReader, Utilities.CallbackReturn<String, Boolean> accept) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
@@ -1008,7 +924,6 @@ public final class QrScanOverlay extends FrameLayout {
                 return null;
             }
             final ResultPoint[] rp = result.getResultPoints();
-            // zxing gives the finder patterns (three, maybe an alignment one): the outline is drawn only for four points
             final PointF[] points = new PointF[rp != null && rp.length == 4 ? 4 : 0];
             for (int k = 0; k < points.length; k++) {
                 points[k] = new PointF(rp[k].getX() / w, rp[k].getY() / h);
@@ -1049,7 +964,6 @@ public final class QrScanOverlay extends FrameLayout {
             foundPoints = scanned.points;
             invalidate();
         }
-        // the outline is shown for a moment, then the scanner closes and the link opens
         AndroidUtilities.runOnUIThread(() -> {
             if (destroyed) {
                 return;

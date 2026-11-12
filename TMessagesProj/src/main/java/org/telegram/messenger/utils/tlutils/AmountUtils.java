@@ -38,7 +38,6 @@ public class AmountUtils {
             return (double) nanos / getDecimals(currency);
         }
 
-        // todo rename: asPlainString
         public String asDecimalString() {
             return new BigDecimal(asNano())
                 .divide(BigDecimal.valueOf(getDecimals(currency)), MathContext.UNLIMITED)

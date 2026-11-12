@@ -401,7 +401,6 @@ public class VoIPToggleButton extends FrameLayout {
         }
     }
 
-    //animate background if true
     public void setCheckable(boolean checkable) {
         this.checkable = checkable;
     }

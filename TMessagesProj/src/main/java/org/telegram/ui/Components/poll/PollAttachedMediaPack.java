@@ -49,7 +49,6 @@ public class PollAttachedMediaPack {
 
     private void removeAndShiftKeys(int index) {
         if (index < 0) {
-            //
             return;
         }
 

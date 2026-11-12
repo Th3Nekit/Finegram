@@ -430,16 +430,9 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
         final SharedPreferences prefs = MessagesController.getInstance(currentAccount).getMainSettings();
 
         report = new Action(ACTION_REPORT, actionParticipants);
-//        if (prefs.getBoolean("delete_report", false)) {
-//            report.setAllChecks(true, false);
-//        }
         deleteAll = new Action(ACTION_DELETE_ALL, actionParticipants);
         deleteAllReactions = new Action(ACTION_DELETE_ALL_REACTIONS, actionParticipants);
         isSingleUsersMode = actionParticipants.size() == 1;
-//        if (prefs.getBoolean("delete_deleteAll", false)) {
-//            deleteAll.setAllChecks(true, false);
-//            onDeleteAllChanged();
-//        }
 
         monoforum = ChatObject.isMonoForum(inChat);
 
@@ -498,9 +491,6 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
             banOrRestrict = new Action(ACTION_BAN, new ArrayList<>(0));
         }
 
-//        if (banOrRestrict != null && !restrict && prefs.getBoolean("delete_ban", false)) {
-//            banOrRestrict.setAllChecks(true, false);
-//        }
 
         adapter.update(false);
         actionBar.setTitle(getTitle());
@@ -609,9 +599,17 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
         final int[] messageCount = {messages != null ? messages.size() : 0};
 
         if (participantMessageCounts != null && participantMessageCountsLoaded) {
-            deleteAll.forEachSelected((o, i) -> {
-                messageCount[0] += participantMessageCounts[i];
-            });
+            if (isSingleUsersMode) {
+                if (restrictUserDeleteAllMessages) {
+                    for (int count : participantMessageCounts) {
+                        messageCount[0] += count;
+                    }
+                }
+            } else {
+                deleteAll.forEachSelected((o, i) -> {
+                    messageCount[0] += participantMessageCounts[i];
+                });
+            }
         }
 
         return LocaleController.formatPluralString("DeleteOptionsTitle", messageCount[0]);
@@ -1058,7 +1056,7 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
                     onRestrictionsChanged();
                 } else if (item.id == OPTION_DELETE_MESSAGES) {
                     restrictUserDeleteAllMessages = !restrictUserDeleteAllMessages;
-                    updateTitleAnimated();
+                    onDeleteAllChanged();
                 } else if (item.id == OPTION_DELETE_REACTIONS) {
                     restrictUserDeleteAllReactions = !restrictUserDeleteAllReactions;
                     updateTitleAnimated();
@@ -1109,7 +1107,7 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
             saveScrollPosition();
             adapter.update(true);
             applyScrolledPosition(true);
-            updateTitleAnimated();
+            onDeleteAllChanged();
         } else if (item.viewType == VIEW_TYPE_SHADOW_COLLAPSE_BUTTON) {
             restrict = !restrict;
             banOrRestrict.setFilter(restrict ? restrictFilter : banFilter);
@@ -1384,4 +1382,15 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
         builder.setCustomView(linearLayout);
         builder.show();
     }
+
+    @Override
+    public void onThemeColorsChanged() {
+        super.onThemeColorsChanged();
+        final int color = getThemedColor(Theme.key_windowBackgroundGray);
+        if (color != lastThemedBackgroundColor) {
+            lastThemedBackgroundColor = color;
+            setBackgroundColor(color);
+        }
+    }
+    private int lastThemedBackgroundColor;
 }

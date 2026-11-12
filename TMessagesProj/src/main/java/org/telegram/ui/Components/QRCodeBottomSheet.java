@@ -77,7 +77,6 @@ public class QRCodeBottomSheet extends BottomSheet {
         iconImage = new RLottieImageView(context);
         iconImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
         iconImage.setBackgroundColor(Color.WHITE);
-        //iconImage.setPadding(-AndroidUtilities.dp(4), -AndroidUtilities.dp(4), -AndroidUtilities.dp(4), -AndroidUtilities.dp(4));
 
         FrameLayout frameLayout = new FrameLayout(context) {
 
@@ -130,7 +129,6 @@ public class QRCodeBottomSheet extends BottomSheet {
             button2TextView.setPadding(AndroidUtilities.dp(34), 0, AndroidUtilities.dp(34), 0);
             button2TextView.setGravity(Gravity.CENTER);
             button2TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-            //        button2TextView.setTypeface(AndroidUtilities.medium());
             button2TextView.setText(LocaleController.getString(R.string.ShareLink));
             button2TextView.setOnClickListener(view -> {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -195,5 +193,43 @@ public class QRCodeBottomSheet extends BottomSheet {
             getTitleView().setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
         }
         setBackgroundColor(getThemedColor(Theme.key_dialogBackground));
+    }
+
+    private boolean themeColorsApplied;
+    private int appliedThemeColorsHash;
+
+    @Override
+    public void onThemeColorsChanged() {
+        super.onThemeColorsChanged();
+        try {
+            // recolor in place (updateColors() recreates the button drawables); skip when nothing changed
+            final int stateHash = getThemedColor(Theme.key_featuredStickers_buttonText) * 31 + getThemedColor(Theme.key_featuredStickers_addButton) * 17
+                + getThemedColor(Theme.key_featuredStickers_addButtonPressed) * 13 + getThemedColor(Theme.key_listSelector) * 7
+                + getThemedColor(Theme.key_windowBackgroundWhiteGrayText) * 5 + getThemedColor(Theme.key_windowBackgroundWhiteBlackText) * 3
+                + getThemedColor(Theme.key_dialogBackground);
+            if (themeColorsApplied && stateHash == appliedThemeColorsHash) {
+                return;
+            }
+            themeColorsApplied = true;
+            appliedThemeColorsHash = stateHash;
+            if (buttonTextView != null) {
+                buttonTextView.setTextColor(getThemedColor(Theme.key_featuredStickers_buttonText));
+                Theme.setSelectorDrawableColor(buttonTextView.getBackground(), getThemedColor(Theme.key_featuredStickers_addButton), false);
+                Theme.setSelectorDrawableColor(buttonTextView.getBackground(), getThemedColor(Theme.key_featuredStickers_addButtonPressed), true);
+            }
+            if (button2TextView != null) {
+                button2TextView.setTextColor(getThemedColor(Theme.key_featuredStickers_addButton));
+                Theme.setSelectorDrawableColor(button2TextView.getBackground(), ColorUtils.setAlphaComponent(getThemedColor(Theme.key_featuredStickers_addButton), Math.min(255, Color.alpha(getThemedColor(Theme.key_listSelector)) * 2)), true);
+            }
+            if (help != null) {
+                help.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText));
+            }
+            if (getTitleView() != null) {
+                getTitleView().setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+            }
+            setBackgroundColor(getThemedColor(Theme.key_dialogBackground));
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 }

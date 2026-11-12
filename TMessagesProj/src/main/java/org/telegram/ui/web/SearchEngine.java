@@ -16,13 +16,6 @@ import org.telegram.messenger.Utilities;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-/*
- * You can add your own search engines of preference with extending custom langpack with such keys:
- * - SearchEngine6Name — name of your search engine
- * - SearchEngine6SearchURL — url of search, query would be put at the end of the url
- * - SearchEngine6AutocompleteURL — url of autocomplete, query would be put at the end of the url
- * - SearchEngine6PrivacyPolicyURL — privacy policy url to show in a dialog
- * */
 public class SearchEngine {
 
     @NonNull

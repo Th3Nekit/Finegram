@@ -163,9 +163,6 @@ public class WallpaperUpdater {
     }
 
     public void cleanup() {
-        /*if (currentWallpaperPath != null) {
-            currentWallpaperPath.delete();
-        }*/
     }
 
     public String getCurrentPicturePath() {

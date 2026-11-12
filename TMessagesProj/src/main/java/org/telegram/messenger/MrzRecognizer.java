@@ -42,7 +42,7 @@ public class MrzRecognizer {
 	}
 
 	private static Result recognizeBarcode(Bitmap bitmap) {
-		BarcodeDetector detector = new BarcodeDetector.Builder(ApplicationLoader.applicationContext)/*.setBarcodeFormats(Barcode.PDF417)*/.build();
+		BarcodeDetector detector = new BarcodeDetector.Builder(ApplicationLoader.applicationContext)                                      .build();
 		if (bitmap.getWidth() > 1500 || bitmap.getHeight() > 1500) {
 			float scale = 1500f / Math.max(bitmap.getWidth(), bitmap.getHeight());
 			bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(bitmap.getWidth() * scale), Math.round(bitmap.getHeight() * scale), true);
@@ -50,7 +50,7 @@ public class MrzRecognizer {
 		SparseArray<Barcode> barcodes = detector.detect(new Frame.Builder().setBitmap(bitmap).build());
 		for (int i = 0; i < barcodes.size(); i++) {
 			Barcode code = barcodes.valueAt(i);
-			if (code.valueFormat == Barcode.DRIVER_LICENSE && code.driverLicense != null) { // BarcodeDetector has built-in support for North American driver licenses/IDs
+			if (code.valueFormat == Barcode.DRIVER_LICENSE && code.driverLicense != null) {
 				Result res = new Result();
 				res.type = "ID".equals(code.driverLicense.documentType) ? Result.TYPE_ID : Result.TYPE_DRIVER_LICENSE;
 				switch (code.driverLicense.issuingCountry) {
@@ -100,9 +100,7 @@ public class MrzRecognizer {
 				}
 
 				return res;
-			} else if (code.valueFormat == Barcode.TEXT && code.format == Barcode.PDF417) { // Russian driver licenses (new-ish ones) use a non-very-much-documented format
-				// base64(number|issue date|expiry date|last name|first name|middle/father name|birth date|categories|???|???)
-				// all dates are YYYYMMDD, names are capital cyrillic letters in Windows-1251, categories are comma separated
+			} else if (code.valueFormat == Barcode.TEXT && code.format == Barcode.PDF417) {
 				if (code.rawValue.matches("^[A-Za-z0-9=]+$")) {
 					try {
 						byte[] _data = Base64.decode(code.rawValue, 0);
@@ -255,7 +253,7 @@ public class MrzRecognizer {
 			result.rawMRZ = TextUtils.join("\n", mrzLines);
 			HashMap<String, String> countries = getCountriesMap();
 			char type = mrzLines[0].charAt(0);
-			if (type == 'P') { // passport
+			if (type == 'P') {
 				result.type = Result.TYPE_PASSPORT;
 				if (mrzLines[0].length() == 44) {
 					result.issuingCountry = mrzLines[0].substring(2, 5);
@@ -285,7 +283,6 @@ public class MrzRecognizer {
 						parseExpiryDate(expiryDate, result);
 					}
 
-					// Russian internal passports use transliteration for the name and have a number one digit longer than fits into the standard MRZ format
 					if ("RUS".equals(result.issuingCountry) && mrzLines[0].charAt(1) == 'N') {
 						result.type = Result.TYPE_INTERNAL_PASSPORT;
 						String[] names = result.firstName.split(" ");
@@ -303,7 +300,7 @@ public class MrzRecognizer {
 					result.firstName = capitalize(result.firstName);
 					result.middleName = capitalize(result.middleName);
 				}
-			} else if (type == 'I' || type == 'A' || type == 'C') { // id
+			} else if (type == 'I' || type == 'A' || type == 'C') {
 				result.type = Result.TYPE_ID;
 				if (mrzLines.length == 3 && mrzLines[0].length() == 30 && mrzLines[2].length() == 30) {
 					result.issuingCountry = mrzLines[0].substring(2, 5);
@@ -332,7 +329,7 @@ public class MrzRecognizer {
 					}
 				} else if (mrzLines.length == 2 && mrzLines[0].length() == 36) {
 					result.issuingCountry = mrzLines[0].substring(2, 5);
-					if ("FRA".equals(result.issuingCountry) && type == 'I' && mrzLines[0].charAt(1) == 'D') { // French IDs use an entirely different format
+					if ("FRA".equals(result.issuingCountry) && type == 'I' && mrzLines[0].charAt(1) == 'D') {
 						result.nationality = "FRA";
 						result.lastName = mrzLines[0].substring(5, 30).replace('<', ' ').trim();
 						result.firstName = mrzLines[1].substring(13, 27).replace("<<", ", ").replace('<', ' ').trim();

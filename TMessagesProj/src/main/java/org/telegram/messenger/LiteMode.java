@@ -3,9 +3,11 @@ package org.telegram.messenger;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.SystemClock;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.math.MathUtils;
@@ -13,10 +15,13 @@ import androidx.core.math.MathUtils;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
+import org.telegram.utils.glass.GlassEngine;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import me.vkryl.core.BitwiseUtils;
 
 public class LiteMode {
 
@@ -56,7 +61,7 @@ public class LiteMode {
         FLAG_AUTOPLAY_GIFS |
         FLAG_CHAT_THANOS |
         FLAG_PARTICLES
-    ); // 198684
+    );
     public static int PRESET_MEDIUM = (
         FLAGS_ANIMATED_STICKERS |
         FLAG_ANIMATED_EMOJI_KEYBOARD_PREMIUM |
@@ -68,7 +73,7 @@ public class LiteMode {
         FLAG_AUTOPLAY_GIFS |
         FLAG_CHAT_THANOS |
         FLAG_PARTICLES
-    ); // 204383
+    );
     public static int PRESET_HIGH = (
         FLAGS_ANIMATED_STICKERS |
         FLAGS_ANIMATED_EMOJI |
@@ -82,7 +87,7 @@ public class LiteMode {
         FLAG_AUTOPLAY_VIDEOS |
         FLAG_AUTOPLAY_GIFS |
         FLAG_PARTICLES
-    ); // 262143
+    );
     public static int PRESET_POWER_SAVER = 0;
 
     private static int BATTERY_LOW = 10;
@@ -103,8 +108,8 @@ public class LiteMode {
         if (!loaded) {
             loadPreference();
         }
-        if (!ignorePowerSaving && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (getBatteryLevel() <= powerSaverLevel && powerSaverLevel > 0) {
+        if (!ignorePowerSaving) {
+            if (powerSaverLevel > 0 && isBatteryLow(getBatteryLevel())) {
                 if (!lastPowerSaverApplied) {
                     onPowerSaverApplied(lastPowerSaverApplied = true);
                 }
@@ -121,20 +126,70 @@ public class LiteMode {
         return false;
     }
 
-    private static int lastBatteryLevelCached = -1;
-    private static long lastBatteryLevelChecked;
+    private static final long BATTERY_LEVEL_QUERY_INTERVAL = 60 * 1000;
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private static volatile int lastBatteryLevel = -1;
+    private static volatile long lastBatteryLevelChecked;
+    private static volatile boolean batteryLevelQueryRunning;
+
+    private static boolean isBatteryLow(int batteryLevel) {
+        return powerSaverLevel >= 100 || batteryLevel >= 0 && batteryLevel <= powerSaverLevel;
+    }
+
     public static int getBatteryLevel() {
-        long time = 0;
-        if (lastBatteryLevelCached < 0 || (time = System.currentTimeMillis()) - lastBatteryLevelChecked > 1000 * 12) {
+        final long time = SystemClock.elapsedRealtime();
+        if (!batteryLevelQueryRunning && (lastBatteryLevelChecked == 0 || time - lastBatteryLevelChecked > BATTERY_LEVEL_QUERY_INTERVAL)) {
+            batteryLevelQueryRunning = true;
+            lastBatteryLevelChecked = time;
+            Utilities.globalQueue.postRunnable(LiteMode::queryBatteryLevel);
+        }
+        return lastBatteryLevel;
+    }
+
+    private static void queryBatteryLevel() {
+        int level = -1;
+        try {
             BatteryManager batteryManager = (BatteryManager) ApplicationLoader.applicationContext.getSystemService(Context.BATTERY_SERVICE);
             if (batteryManager != null) {
-                lastBatteryLevelCached = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-                lastBatteryLevelChecked = time;
+                level = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
             }
+        } catch (Throwable e) {
+            FileLog.e(e);
         }
-        return lastBatteryLevelCached;
+        lastBatteryLevelChecked = SystemClock.elapsedRealtime();
+        batteryLevelQueryRunning = false;
+        if (level >= 0 && level <= 100) {
+            setBatteryLevel(level);
+        }
+    }
+
+    private static void setBatteryLevel(int level) {
+        lastBatteryLevelChecked = SystemClock.elapsedRealtime();
+        if (lastBatteryLevel == level) {
+            return;
+        }
+        lastBatteryLevel = level;
+        AndroidUtilities.runOnUIThread(() -> getValue(false));
+    }
+
+    private static void onBatteryChanged(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        final int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        final int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        if (level >= 0 && scale > 0) {
+            setBatteryLevel(MathUtils.clamp(Math.round(level * 100f / scale), 0, 100));
+        }
+    }
+
+    public static void registerBatteryReceiver() {
+        try {
+            final Intent intent = ApplicationLoader.applicationContext.registerReceiver(new BatteryReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+            onBatteryChanged(intent);
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
     }
 
     private static int preprocessFlag(int flag) {
@@ -152,7 +207,6 @@ public class LiteMode {
 
     public static boolean isEnabled(int flag) {
         if (flag == FLAG_CHAT_FORUM_TWOCOLUMN && AndroidUtilities.isTablet()) {
-            // always enabled for tablets
             return true;
         }
         return (getValue() & preprocessFlag(flag)) > 0;
@@ -171,8 +225,6 @@ public class LiteMode {
     }
 
     public static void setAllFlags(int flags) {
-        // in settings it is already handled. would you handle it? 🫵
-        // onFlagsUpdate(value, flags);
         value = flags;
         savePreference();
     }
@@ -244,7 +296,6 @@ public class LiteMode {
                         defaultValue = PRESET_HIGH;
                     }
                 }
-                // migrate settings
                 if (preferences.contains("loopStickers")) {
                     boolean loopStickers = preferences.getBoolean("loopStickers", true);
                     if (loopStickers) {
@@ -304,7 +355,6 @@ public class LiteMode {
         powerSaverLevel = MathUtils.clamp(value, 0, 100);
         savePreference();
 
-        // check power saver applied
         getValue(false);
     }
 
@@ -343,6 +393,9 @@ public class LiteMode {
         if ((changedFlags & FLAG_CHAT_BACKGROUND) > 0) {
             Theme.reloadWallpaper(true);
         }
+        if (BitwiseUtils.hasFlag(changedFlags, FLAG_CHAT_BLUR) || BitwiseUtils.hasFlag(changedFlags, FLAG_LIQUID_GLASS)) {
+            GlassEngine.getCurrentGlassSettings();
+        }
     }
 
     private static HashSet<Utilities.Callback<Boolean>> onPowerSaverAppliedListeners;
@@ -359,11 +412,10 @@ public class LiteMode {
         }
     }
 
-    public static class BatteryReceiver extends BroadcastReceiver {
+    private static class BatteryReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            lastBatteryLevelChecked = 0;
-            getValue();
+            onBatteryChanged(intent);
         }
     }
 }

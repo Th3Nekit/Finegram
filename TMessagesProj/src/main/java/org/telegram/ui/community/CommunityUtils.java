@@ -32,6 +32,7 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Cells.DialogCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.AlertsCreator;
@@ -394,7 +395,7 @@ public class CommunityUtils {
                 if (!add) {
                     TextView button = (TextView) dialog.getButton(DialogInterface.BUTTON_POSITIVE);
                     if (button != null) {
-                        button.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+                        ThemeBind.textColor(button, Theme.key_text_RedBold);
                     }
                 }
                 return;
@@ -480,7 +481,6 @@ public class CommunityUtils {
 
     private static void showChatsToAddSheet(BaseFragment fragment, int currentAccount, TLRPC.Chat community, ArrayList<TLRPC.Chat> chats) {
         if (!chats.isEmpty()) {
-            //fragment.showDialog(new CommunityChatsToAddSheet(fragment.getContext(), chats, (chat) -> {
             fragment.showDialog(new CommunitySheet(fragment, 0, chats, (chat) -> {
                 fragment.showDialog(new CommunityAddOptionsSheet(fragment.getContext(), community, -chat.id, (isHidden) -> {
                     linkToCommunityAndConvertIfNeeded(fragment, currentAccount, chat, community.id, isHidden);
@@ -721,7 +721,7 @@ public class CommunityUtils {
 
         @Override
         public boolean equals(UItem a, UItem b) {
-            return a.id == b.id; // todo
+            return a.id == b.id;
         }
 
         @Override

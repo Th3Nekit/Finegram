@@ -7,7 +7,6 @@ import android.graphics.Paint;
 
 import org.telegram.messenger.DispatchQueue;
 
-/** The white die-cut outline of a wallet card sticker, built off the main thread. */
 final class WalletStickerOutline {
     static final int SIZE = 288, PADDING = 10, RADIUS = 7;
 
@@ -18,7 +17,6 @@ final class WalletStickerOutline {
         return queue;
     }
 
-    /** Squared distance → outline alpha: a disk of RADIUS with a one pixel antialiased rim. */
     private static final int CAP = RADIUS + 1;
     private static final int[] RIM = new int[2 * CAP * CAP + 1];
     static {
@@ -27,10 +25,8 @@ final class WalletStickerOutline {
         }
     }
 
-    /** Puts {@code src} (non-premultiplied ARGB, SIZE×SIZE) over its white outline into {@code out}. */
     static void compose(int[] src, int[] out, int[] alpha, int[] line) {
         final int n = SIZE;
-        // rows: distance to the nearest opaque pixel, capped at CAP
         for (int y = 0; y < n; y++) {
             final int row = y * n;
             int d = CAP;
@@ -44,7 +40,6 @@ final class WalletStickerOutline {
                 if (d < alpha[row + x]) alpha[row + x] = d;
             }
         }
-        // columns: min over |dy| ≤ CAP of dx² + dy², i.e. a true circle instead of a square
         for (int x = 0; x < n; x++) {
             for (int y = 0; y < n; y++) line[y] = alpha[y * n + x];
             for (int y = 0; y < n; y++) {
@@ -66,7 +61,6 @@ final class WalletStickerOutline {
         return SIZE;
     }
 
-    /** Non-premultiplied {@code color} drawn over white with {@code alpha}. */
     private static int over(int color, int alpha) {
         final int sa = color >>> 24;
         if (sa == 255) return color;
@@ -78,7 +72,6 @@ final class WalletStickerOutline {
         return ra << 24 | r << 16 | g << 8 | b;
     }
 
-    /** Whether enough of the sticker has been drawn to cast a shadow (lottie may hand out an empty first frame). */
     static boolean covered(int[] pixels) {
         final int n = SIZE;
         int covered = 0;

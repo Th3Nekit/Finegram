@@ -15,7 +15,6 @@ public class TelegramCarAppService extends CarAppService {
         if (BuildVars.DEBUG_VERSION) {
             return HostValidator.ALLOW_ALL_HOSTS_VALIDATOR;
         }
-        // Production: only Google-published Auto/Automotive hosts (signed by Google).
         return new HostValidator.Builder(getApplicationContext())
                 .addAllowedHosts(androidx.car.app.R.array.hosts_allowlist_sample)
                 .build();

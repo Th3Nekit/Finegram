@@ -51,7 +51,6 @@ public class QuoteHighlight extends Path {
         public float prevTop;
         public float nextBottom;
 
-        // rich messages: rects of each text block are a separate group, following the block's position (e.g. a scrolled table)
         public int group;
         public TextSelectionHelper.TextLayoutBlock block;
         public float blockX, blockY;
@@ -100,8 +99,8 @@ public class QuoteHighlight extends Path {
         }, 350, 420, CubicBezierInterpolator.EASE_OUT_QUINT);
         this.id = id;
         this.pollOptionId = taskId;
-        this.start = 0; //-taskId;
-        this.end = 0; //-taskId;
+        this.start = 0;
+        this.end = 0;
         this.todo = false;
         this.poll = true;
 
@@ -140,7 +139,7 @@ public class QuoteHighlight extends Path {
 
             currentOffsetX = -offsetX;
             if (block.code && !block.quote) {
-                currentOffsetX += dp(10);
+                currentOffsetX += block.compactCode ? dp(MessageObject.TextLayoutBlock.COMPACT_CODE_HPAD) : dp(10);
             }
             currentOffsetY = block.textYOffset(blocks) + block.padTop;
             minX = block.quote ? dp(10) : 0;
@@ -160,7 +159,6 @@ public class QuoteHighlight extends Path {
         finishRects();
     }
 
-    /** start and end are offsets in RichMessageLayout.joinedText */
     public QuoteHighlight(
         View view, ViewParent parent,
         int id,
@@ -300,7 +298,6 @@ public class QuoteHighlight extends Path {
             path.addRect(AndroidUtilities.rectTmp, Path.Direction.CW);
             path.closeRects();
         } else if (groupsCount > 1) {
-            // every group grows out of the bubble on its own, overlaps are composed in a layer so they aren't drawn twice
             canvas.translate(textX, textY);
             int groupIndex = -1;
             CornerPath groupPath = null;
@@ -345,7 +342,6 @@ public class QuoteHighlight extends Path {
         canvas.restore();
     }
 
-    /** keeps the appearance progress of the previous highlight of the same message, so it isn't animated again */
     public void continueFrom(QuoteHighlight prev) {
         if (prev != null && prev.id == id && !prev.todo && !prev.poll) {
             t.set(prev.t.get(), true);
@@ -377,11 +373,6 @@ public class QuoteHighlight extends Path {
         if (left >= right) {
             return;
         }
-//        if (lastRect != null && Math.abs(lastRect.top - top) < 1f) {
-//            lastRect.left = Math.min(lastRect.left, left);
-//            lastRect.right = Math.min(lastRect.right, right);
-//            return;
-//        }
 
         left = Math.max(minX, left);
         right = Math.max(minX, right);

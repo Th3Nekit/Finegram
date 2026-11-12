@@ -254,7 +254,6 @@ public class CropInlineEditor extends FrameLayout {
         cropView.onHide();
         contentView.setVisibility(View.GONE);
         setVisibility(View.GONE);
-//        previewView.setVisibility(View.VISIBLE);
     }
 
     public boolean applied;
@@ -315,17 +314,6 @@ public class CropInlineEditor extends FrameLayout {
         protected void dispatchDraw(@NonNull Canvas canvas) {
             if (photoView == null) return;
 
-//            canvas.save();
-//            canvas.translate(-thisLocation[0], -thisLocation[1]);
-//            canvas.translate(previewLocation[0], previewLocation[1]);
-//
-//            previewClipPath.rewind();
-//            previewClipRect.set(0, 0, previewView.getWidth(), previewView.getHeight());
-//            previewClipPath.addRoundRect(previewClipRect, dp(12), dp(12), Path.Direction.CW);
-//            canvas.clipPath(previewClipPath);
-//            previewView.drawBackground(canvas);
-//
-//            canvas.restore();
 
             canvas.save();
             dimPaint.setColor(0xFF000000);
@@ -344,8 +332,8 @@ public class CropInlineEditor extends FrameLayout {
                 canvas.clipPath(previewClipPath);
             }
 
-            final float pa = 1.0f - appearProgress; // preview alpha
-            final float ca = appearProgress; // crop alpha
+            final float pa = 1.0f - appearProgress;
+            final float ca = appearProgress;
 
             canvas.translate(-thisLocation[0] * pa, -thisLocation[1] * pa);
 
@@ -434,13 +422,6 @@ public class CropInlineEditor extends FrameLayout {
             canvas.scale(s, s);
             canvas.translate(cropTransform.getCropPx() * rotatedWidth * alpha, cropTransform.getCropPy() * rotatedHeight * alpha);
             float rotate = photoView.getOrientation() + cropTransform.getRotation() + animatedOrientation.set((lastOrientation / 360) * 360 + orientation);
-//            if (lastOrientation != orientation) {
-//                if ((lastOrientation / 360) * 360 + orientation < lastOrientation) {
-//                    lastOrientation = ((lastOrientation / 360 + 1) * 360) + orientation;
-//                } else {
-//                    lastOrientation = (lastOrientation / 360) * 360 + orientation;
-//                }
-//            }
             if (photoView.crop == null) {
                 rotate = lerp(0, rotate, appearProgress);
             } else {

@@ -5,6 +5,8 @@
 
 package com.th3nekit.finegram.net.outbound;
 
+import android.net.Uri;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -28,6 +30,8 @@ final class FGSubscriptionXray {
             LinkedHashMap<String, FGSubscriptionParser.Server> servers = new LinkedHashMap<>();
             int count = 0;
             int skipped = 0;
+            boolean unsupportedTransport = false;
+            boolean xhttp = false;
             for (int i = 0; i < configs.length(); i++) {
                 JSONObject config = configs.getJSONObject(i);
                 JSONArray outbounds = config.optJSONArray("outbounds");
@@ -49,14 +53,37 @@ final class FGSubscriptionXray {
                         skipped++;
                         continue;
                     }
-                    for (String link : links(outbound, title)) {
+                    List<String> links;
+                    try {
+                        links = links(outbound, title);
+                    } catch (FGSubscriptionError error) {
+                        if (error.code != FGSubscriptionError.Code.UNSUPPORTED_LINK) throw error;
                         if (++count > FGSubscriptionParser.MAX_SERVERS) fail(FGSubscriptionError.Code.TOO_MANY_SERVERS);
-                        FGSubscriptionParser.Server server = FGSubscriptionParser.server(link);
+                        JSONObject stream = outbound.optJSONObject("streamSettings");
+                        xhttp |= stream != null && FGSubscriptionParser.isXhttp(stream.optString("network", null)) && !FGXrayProcess.isAvailable();
+                        unsupportedTransport = true;
+                        skipped++;
+                        continue;
+                    }
+                    for (String link : links) {
+                        if (++count > FGSubscriptionParser.MAX_SERVERS) fail(FGSubscriptionError.Code.TOO_MANY_SERVERS);
+                        FGSubscriptionParser.Server server;
+                        try {
+                            server = FGSubscriptionParser.server(link);
+                        } catch (FGSubscriptionError error) {
+                            if (error.code != FGSubscriptionError.Code.UNSUPPORTED_LINK) throw error;
+                            xhttp |= FGSubscriptionParser.isXhttp(Uri.parse(link).getQueryParameter("type")) && !FGXrayProcess.isAvailable();
+                            unsupportedTransport = true;
+                            skipped++;
+                            continue;
+                        }
                         servers.putIfAbsent(server.id, server);
                     }
                 }
             }
-            if (servers.isEmpty()) fail(skipped > 0 ? FGSubscriptionError.Code.UNSUPPORTED_PROTOCOL : FGSubscriptionError.Code.NO_SERVERS);
+            if (servers.isEmpty()) fail(xhttp ? FGSubscriptionError.Code.UNSUPPORTED_XHTTP
+                    : unsupportedTransport ? FGSubscriptionError.Code.UNSUPPORTED_LINK
+                    : skipped > 0 ? FGSubscriptionError.Code.UNSUPPORTED_PROTOCOL : FGSubscriptionError.Code.NO_SERVERS);
             return new FGSubscriptionParser.Parsed(new ArrayList<>(servers.values()), skipped, "");
         } catch (FGSubscriptionError error) {
             throw error;
@@ -84,6 +111,8 @@ final class FGSubscriptionXray {
             case "tcp": transportKey = "tcpSettings"; break;
             case "raw": transportKey = "rawSettings"; break;
             case "hysteria": case "hysteria2": transportKey = "hysteriaSettings"; break;
+            case "xhttp": transportKey = "xhttpSettings"; break;
+            case "splithttp": transportKey = "splithttpSettings"; break;
             default: fail(FGSubscriptionError.Code.UNSUPPORTED_LINK); return null;
         }
         keys(stream, "network", "method", "security", tlsKey, transportKey);
@@ -92,10 +121,20 @@ final class FGSubscriptionXray {
         JSONObject tls = object(stream, tlsKey);
         if ("none".equals(security) && tls.length() != 0) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
         if (vless) params.put("security", security);
-        keys(tls, "serverName", "allowInsecure", "alpn", "fingerprint", "publicKey", "password", "shortId");
+        keys(tls, "serverName", "allowInsecure", "alpn", "fingerprint", "publicKey", "password", "shortId", "spiderX", "enableSessionResumption", "pinnedPeerCertSha256", "verifyPeerCertByName");
         put(params, "sni", string(tls, "serverName", ""));
         if (tls.has("allowInsecure")) params.put("insecure", bool(tls, "allowInsecure") ? "1" : "0");
         if (tls.has("alpn")) put(params, "alpn", stringList(tls.get("alpn")));
+        if (tls.has("pinnedPeerCertSha256") || tls.has("verifyPeerCertByName")) {
+            if (!vless || !FGSubscriptionParser.isXhttp(network) || !"tls".equals(security)) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+            put(params, "pcs", string(tls, "pinnedPeerCertSha256", ""));
+            put(params, "vcn", string(tls, "verifyPeerCertByName", ""));
+        }
+        if (tls.has("enableSessionResumption")) {
+            boolean enabled = bool(tls, "enableSessionResumption");
+            if (enabled && (!vless || !FGSubscriptionParser.isXhttp(network) || !"tls".equals(security))) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+            if (enabled) params.put("enableSessionResumption", "1");
+        }
         if (vless) {
             put(params, "fp", string(tls, "fingerprint", ""));
             if ("reality".equals(security)) {
@@ -103,11 +142,12 @@ final class FGSubscriptionXray {
                 if (tls.has("publicKey") && tls.has("password") && !tls.getString("password").equals(key)) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
                 put(params, "pbk", key);
                 put(params, "sid", string(tls, "shortId", ""));
-            } else if (tls.has("publicKey") || tls.has("password") || tls.has("shortId")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
-            params.put("type", network);
+                put(params, "spx", string(tls, "spiderX", ""));
+            } else if (tls.has("publicKey") || tls.has("password") || tls.has("shortId") || tls.has("spiderX")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+            params.put("type", "splithttp".equals(network) ? "xhttp" : network);
             transport(network, object(stream, transportKey), params);
         } else {
-            if (tls.has("fingerprint") || tls.has("publicKey") || tls.has("password") || tls.has("shortId")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+            if (tls.has("fingerprint") || tls.has("publicKey") || tls.has("password") || tls.has("shortId") || tls.has("spiderX")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
             if (!network.equals("hysteria") && !network.equals("hysteria2")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
         }
         List<String> result = new ArrayList<>();
@@ -189,6 +229,18 @@ final class FGSubscriptionXray {
                 if (object.has("host")) put(params, "host", stringList(object.get("host")));
                 put(params, "path", string(object, "path", "/"));
                 break;
+            case "xhttp": case "splithttp":
+                put(params, "path", string(object, "path", "/"));
+                put(params, "host", string(object, "host", ""));
+                put(params, "mode", string(object, "mode", ""));
+                JSONObject extra = object.has("extra") ? new JSONObject(object.getJSONObject("extra").toString()) : new JSONObject();
+                Iterator<String> names = object.keys();
+                while (names.hasNext()) {
+                    String name = names.next();
+                    if (!object.has("extra") && !Arrays.asList("path", "host", "mode").contains(name)) extra.put(name, object.get(name));
+                }
+                if (extra.length() > 0) params.put("extra", extra.toString());
+                break;
             case "grpc":
                 keys(object, "serviceName", "multiMode");
                 if (object.has("multiMode") && bool(object, "multiMode")) fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
@@ -260,6 +312,39 @@ final class FGSubscriptionXray {
         return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
     }
 
+    static JSONObject extra(String text) throws Exception {
+        checkDepth(text);
+        JSONTokener tokener = new JSONTokener(text);
+        Object value = tokener.nextValue();
+        if (!(value instanceof JSONObject) || tokener.nextClean() != 0) fail(FGSubscriptionError.Code.INVALID_LINK);
+        checkExtra(value);
+        return (JSONObject) value;
+    }
+
+    private static void checkExtra(Object value) throws Exception {
+        if (value instanceof JSONObject) {
+            JSONObject object = (JSONObject) value;
+            Iterator<String> keys = object.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                Object child = object.get(key);
+                if (("tlsSettings".equalsIgnoreCase(key) || "realitySettings".equalsIgnoreCase(key)) && child instanceof JSONObject) {
+                    Iterator<String> settings = ((JSONObject) child).keys();
+                    while (settings.hasNext()) {
+                        String name = settings.next();
+                        if ("masterKeyLog".equalsIgnoreCase(name) || "certificates".equalsIgnoreCase(name)) {
+                            fail(FGSubscriptionError.Code.UNSUPPORTED_LINK);
+                        }
+                    }
+                }
+                checkExtra(child);
+            }
+        } else if (value instanceof JSONArray) {
+            JSONArray array = (JSONArray) value;
+            for (int i = 0; i < array.length(); i++) checkExtra(array.get(i));
+        }
+    }
+
     static void checkDepth(String text) throws FGSubscriptionError {
         int depth = 0;
         boolean quoted = false;
@@ -268,8 +353,16 @@ final class FGSubscriptionXray {
             char c = text.charAt(i);
             if (escaped) { escaped = false; continue; }
             if (quoted && c == '\\') { escaped = true; continue; }
-            if (c == '"') quoted = !quoted;
+            if (c == '"') {
+                if (!quoted) {
+                    int before = i - 1;
+                    while (before >= 0 && Character.isWhitespace(text.charAt(before))) before--;
+                    if (before >= 0 && "[{,:".indexOf(text.charAt(before)) < 0) fail(FGSubscriptionError.Code.INVALID_FORMAT);
+                }
+                quoted = !quoted;
+            }
             if (quoted) continue;
+            if (c == '\'' || c == '/' || c == '#') fail(FGSubscriptionError.Code.INVALID_FORMAT);
             if (c == '[' || c == '{') if (++depth > 32) fail(FGSubscriptionError.Code.INVALID_FORMAT);
             if (c == ']' || c == '}') if (--depth < 0) fail(FGSubscriptionError.Code.INVALID_FORMAT);
         }

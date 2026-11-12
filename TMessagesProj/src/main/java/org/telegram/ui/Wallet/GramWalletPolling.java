@@ -7,7 +7,6 @@ import org.telegram.messenger.FileLog;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.tl.TL_wallet;
 
-/** Polls one submitted message. Lifecycle and callbacks run on the UI thread. */
 public class GramWalletPolling {
     private static final long[] DELAYS_MS = {500, 1000, 3000, 5000, 10000};
     private static final long REQUEST_TIMEOUT_MS = 30_000;
@@ -21,7 +20,6 @@ public class GramWalletPolling {
     private int requestId = -1;
 
     public interface IGramWalletPollingSubscriber {
-        /** Return true once a terminal transaction has been handled; false to keep polling. */
         boolean onTransactions(TL_wallet.walletTransactions result);
     }
 
@@ -93,7 +91,6 @@ public class GramWalletPolling {
             if (error == null && result != null && subscriber.onTransactions(result)) {
                 stop();
             } else if (running && generation == requestGeneration) {
-                // Empty results and RPC errors are not transaction failures.
                 schedule();
             }
         });

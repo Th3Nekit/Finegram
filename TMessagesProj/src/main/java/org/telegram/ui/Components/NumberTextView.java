@@ -235,12 +235,6 @@ public class NumberTextView extends View {
     }
 
     public interface OnTextWidthProgressChangedListener {
-        /**
-         * Notifies layout that text width has changed
-         * @param fromWidth Old text width value
-         * @param toWidth New text width value
-         * @param progress Progress for the animation
-         */
         void onTextWidthProgress(float fromWidth, float toWidth, float progress);
     }
 }

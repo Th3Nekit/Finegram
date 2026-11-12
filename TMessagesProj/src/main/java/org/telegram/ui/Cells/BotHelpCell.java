@@ -238,7 +238,7 @@ public class BotHelpCell extends View {
         width += dp(4 + 18);
 
         if (isPhotoVisible) {
-            height += (photoHeight = (int) (width * 0.5625)) + dp(4); // 16:9
+            height += (photoHeight = (int) (width * 0.5625)) + dp(4);
         }
     }
 

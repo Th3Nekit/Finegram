@@ -30,10 +30,6 @@ import android.widget.RemoteViews;
 
 import java.util.List;
 
-/**
- * A class to be used for Custom Tabs related communication. Clients that want to launch Custom Tabs
- * can use this class exclusively to handle all related communication.
- */
 public final class CustomTabsSession {
     private static final String TAG = "CustomTabsSession";
     private final Object mLock = new Object();
@@ -41,40 +37,17 @@ public final class CustomTabsSession {
     private final ICustomTabsCallback mCallback;
     private final ComponentName mComponentName;
 
-    /**
-     * Provides browsers a way to generate a dummy {@link CustomTabsSession} for testing
-     * purposes.
-     *
-     * @param componentName The component the session should be created for.
-     * @return A dummy session with no functionality.
-     */
     public static CustomTabsSession createDummySessionForTesting(ComponentName componentName) {
         return new CustomTabsSession(null, new CustomTabsSessionToken.DummyCallback(), componentName);
     }
 
-    /* package */ CustomTabsSession(
+                  CustomTabsSession(
             ICustomTabsService service, ICustomTabsCallback callback, ComponentName componentName) {
         mService = service;
         mCallback = callback;
         mComponentName = componentName;
     }
 
-    /**
-     * Tells the browser of a likely future navigation to a URL.
-     * The most likely URL has to be specified first. Optionally, a list of
-     * other likely URLs can be provided. They are treated as less likely than
-     * the first one, and have to be sorted in decreasing priority order. These
-     * additional URLs may be ignored.
-     * All previous calls to this method will be deprioritized.
-     *
-     * @param url                Most likely URL.
-     * @param extras             Reserved for future use.
-     * @param otherLikelyBundles Other likely destinations, sorted in decreasing
-     *                           likelihood order. Inside each Bundle, the client should provide a
-     *                           {@link Uri} using {@link CustomTabsService#KEY_URL} with
-     *                           {@link Bundle#putParcelable(String, android.os.Parcelable)}.
-     * @return                   true for success.
-     */
     public boolean mayLaunchUrl(Uri url, Bundle extras, List<Bundle> otherLikelyBundles) {
         try {
             return mService.mayLaunchUrl(mCallback, url, extras, otherLikelyBundles);
@@ -83,15 +56,6 @@ public final class CustomTabsSession {
         }
     }
 
-    /**
-     * This sets the action button on the toolbar with ID
-     * {@link CustomTabsIntent#TOOLBAR_ACTION_BUTTON_ID}.
-     *
-     * @param icon          The new icon of the action button.
-     * @param description   Content description of the action button.
-     *
-     * @see CustomTabsSession#setToolbarItem(int, Bitmap, String)
-     */
     public boolean setActionButton(@NonNull Bitmap icon, @NonNull String description) {
         Bundle bundle = new Bundle();
         bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
@@ -106,15 +70,6 @@ public final class CustomTabsSession {
         }
     }
 
-    /**
-     * Updates the {@link RemoteViews} of the secondary toolbar in an existing custom tab session.
-     * @param remoteViews   The updated {@link RemoteViews} that will be shown in secondary toolbar.
-     *                      If null, the current secondary toolbar will be dismissed.
-     * @param clickableIDs  The ids of clickable views. The onClick event of these views will be
-     *                      handled by custom tabs.
-     * @param pendingIntent The {@link PendingIntent} that will be sent when the user clicks on one
-     *                      of the {@link View}s in clickableIDs.
-     */
     public boolean setSecondaryToolbarViews(@Nullable RemoteViews remoteViews,
                                             @Nullable int[] clickableIDs, @Nullable PendingIntent pendingIntent) {
         Bundle bundle = new Bundle();
@@ -128,16 +83,6 @@ public final class CustomTabsSession {
         }
     }
 
-    /**
-     * Updates the visuals for toolbar items. Will only succeed if a custom tab created using this
-     * session is in the foreground in browser and the given id is valid.
-     * @param id            The id for the item to update.
-     * @param icon          The new icon of the toolbar item.
-     * @param description   Content description of the toolbar item.
-     * @return              Whether the update succeeded.
-     * @deprecated Use
-     * CustomTabsSession#setSecondaryToolbarViews(RemoteViews, int[], PendingIntent)
-     */
     @Deprecated
     public boolean setToolbarItem(int id, @NonNull Bitmap icon, @NonNull String description) {
         Bundle bundle = new Bundle();
@@ -154,15 +99,6 @@ public final class CustomTabsSession {
         }
     }
 
-    /**
-     * Sends a request to create a two way postMessage channel between the client and the browser.
-     *
-     * @param postMessageOrigin      A origin that the client is requesting to be identified as
-     *                               during the postMessage communication.
-     * @return Whether the implementation accepted the request. Note that returning true
-     *         here doesn't mean an origin has already been assigned as the validation is
-     *         asynchronous.
-     */
     public boolean requestPostMessageChannel(Uri postMessageOrigin) {
         try {
             return mService.requestPostMessageChannel(
@@ -172,18 +108,6 @@ public final class CustomTabsSession {
         }
     }
 
-    /**
-     * Sends a postMessage request using the origin communicated via
-     * {@link CustomTabsService#requestPostMessageChannel(
-     * CustomTabsSessionToken, Uri)}. Fails when called before
-     * {@link PostMessageServiceConnection#notifyMessageChannelReady(Bundle)} is received on
-     * the client side.
-     *
-     * @param message The message that is being sent.
-     * @param extras Reserved for future use.
-     * @return An integer constant about the postMessage request result. Will return
-     *        {@link CustomTabsService#RESULT_SUCCESS} if successful.
-     */
     public int postMessage(String message, Bundle extras) {
         synchronized (mLock) {
             try {
@@ -194,11 +118,11 @@ public final class CustomTabsSession {
         }
     }
 
-    /* package */ IBinder getBinder() {
+                  IBinder getBinder() {
         return mCallback.asBinder();
     }
 
-    /* package */ ComponentName getComponentName() {
+                  ComponentName getComponentName() {
         return mComponentName;
     }
 }

@@ -97,7 +97,6 @@ public class ChatBackgroundDrawable extends Drawable {
         this.themeIsDark = themeIsDark;
         if (themeIsDark && (wallpaper.document != null || wallpaper.uploadingImage != null) && !wallpaper.pattern && wallpaper.settings != null) {
             dimAmount = wallpaper.settings.intensity / 100f;
-           // imageReceiver.setColorFilter(new PorterDuffColorFilter(ColorUtils.setAlphaComponent(Color.BLACK, (int) (dimAmount * 255)), PorterDuff.Mode.DARKEN));
         }
         if ((isPattern || wallPaper.document == null) && wallPaper.settings != null && wallPaper.settings.second_background_color != 0 && wallPaper.settings.third_background_color != 0) {
             motionBackgroundDrawable = new MotionBackgroundDrawable();
@@ -157,9 +156,9 @@ public class ChatBackgroundDrawable extends Drawable {
             if (wallPaper.settings == null || wallPaper.settings.intensity < 0) {
                 thumb = bitmapDrawableOf(new ColorDrawable(Color.BLACK));
             } else {
-                if (wallPaper.settings.second_background_color == 0) { //one color
+                if (wallPaper.settings.second_background_color == 0) {
                     thumb = bitmapDrawableOf(new ColorDrawable(ColorUtils.setAlphaComponent(wallPaper.settings.background_color, 255)));
-                } else if (wallPaper.settings.third_background_color == 0) { //two color
+                } else if (wallPaper.settings.third_background_color == 0) {
                     int color1 = ColorUtils.setAlphaComponent(wallPaper.settings.background_color, 255);
                     int color2 = ColorUtils.setAlphaComponent(wallPaper.settings.second_background_color, 255);
                     thumb = bitmapDrawableOf(new GradientDrawable(BackgroundGradientDrawable.getGradientOrientation(wallPaper.settings.rotation), new int[]{color1, color2}));
@@ -256,9 +255,7 @@ public class ChatBackgroundDrawable extends Drawable {
     }
 
     public void onDetachedFromWindow(View view) {
-        if (attachedViews.contains(view)) {
-            attachedViews.remove(view);
-        }
+        attachedViews.remove(view);
         if (isAttached() && !attached) {
             attached = true;
             imageReceiver.onAttachedToWindow();

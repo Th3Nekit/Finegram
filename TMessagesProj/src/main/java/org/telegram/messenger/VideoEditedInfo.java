@@ -823,13 +823,11 @@ public class VideoEditedInfo {
         public FloatBuffer posBuffer;
         public FloatBuffer uvBuffer;
 
-        // software rendering
         public AnimatedFileDrawable animatedFileDrawable;
         public float currentFrame;
         public float framesPerDraw;
         public float msPerFrame;
 
-        // hardware rendering
         public SurfaceTexture surfaceTexture;
         public MediaCodecPlayer player;
 

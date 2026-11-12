@@ -7,7 +7,7 @@ object RulesHolder {
             "Chat", "User",
             "UserFull", "ChatFull",
             "StarsTransaction", "StarGift",
-            "SavedStarGift", "InputStorePaymentPurpose", //, "ChatTheme"
+            "SavedStarGift", "InputStorePaymentPurpose",
             "ForumTopic", "EphemeralMessage"
         ),
         ignoredTypes = setOf(

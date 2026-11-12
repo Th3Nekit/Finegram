@@ -7,6 +7,7 @@ package com.th3nekit.finegram.plugins
 
 import com.th3nekit.finegram.core.FinegramLogger
 import org.json.JSONObject
+import org.telegram.messenger.LocaleController
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -71,7 +72,16 @@ object FGPluginBundle {
                     ?: return null
                 val entry = zip.getEntry(metaName) ?: return null
                 val text = zip.getInputStream(entry).use { readMetadata(it) }
-                pluginOf(if (metaName.endsWith(".yml")) flatYaml(text) else JSONObject(text), archive)
+                val meta = if (metaName.endsWith(".yml")) flatYaml(text) else JSONObject(text)
+                pluginOf(localizedMetadata(meta, refmap) { name ->
+                    try {
+                        zip.getEntry(name)?.takeUnless { it.isDirectory }?.let { value ->
+                            JSONObject(zip.getInputStream(value).use { readMetadata(it) })
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }, archive)
             }
         } catch (e: Throwable) {
             FinegramLogger.d("FGPlugins") { "не прочитать сборку ${archive.name}: ${e.message}" }
@@ -99,7 +109,16 @@ object FGPluginBundle {
         if (metaFile == null) return null
         return try {
             val text = metaFile.inputStream().use { readMetadata(it) }
-            pluginOf(if (metaFile.name.endsWith(".yml")) flatYaml(text) else JSONObject(text), dir)
+            val meta = if (metaFile.name.endsWith(".yml")) flatYaml(text) else JSONObject(text)
+            pluginOf(localizedMetadata(meta, refmap) { name ->
+                try {
+                    containedFile(dir, name)?.let { value ->
+                        JSONObject(value.inputStream().use { readMetadata(it) })
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }, dir)
         } catch (e: Throwable) {
             null
         }
@@ -148,6 +167,43 @@ object FGPluginBundle {
             }
         }
         return out
+    }
+
+    private val metadataPlaceholder = Regex("\\{([A-Za-z0-9_.-]{1,64})\\}")
+
+    private fun localizedMetadata(json: JSONObject, refmap: JSONObject?, readTable: (String) -> JSONObject?): JSONObject {
+        val keys = json.keys().asSequence().filter { it != "id" }.toList()
+        if (keys.none { (json.opt(it) as? String)?.let(metadataPlaceholder::containsMatchIn) == true }) {
+            return json
+        }
+        val language = try {
+            LocaleController.getInstance().currentLocale.language
+        } catch (e: Exception) {
+            "en"
+        }
+        val explicit = refmap?.optString("strings")?.takeIf { it.isNotEmpty() }
+        val main = refmap?.optString("main")?.takeIf { it.isNotEmpty() }
+            ?: refmap?.optString("entry").orEmpty()
+        val parent = main.substringBeforeLast('/', "")
+        val folders = explicit?.let { listOf(it.trimEnd('/')) }
+            ?: listOf(parent.substringBeforeLast('/', ""), parent, "").distinct().flatMap { path ->
+                listOf("locales", "strings").map { if (path.isEmpty()) it else "$path/$it" }
+            }
+        val strings = HashMap<String, String>()
+        for (folder in folders) {
+            for (locale in listOf("en", language).distinct()) {
+                val table = readTable("$folder/strings_$locale.json") ?: continue
+                for (key in table.keys()) {
+                    (table.opt(key) as? String)?.let { strings[key] = it }
+                }
+            }
+            if (strings.isNotEmpty()) break
+        }
+        for (key in keys) {
+            val value = json.opt(key) as? String ?: continue
+            json.put(key, metadataPlaceholder.replace(value) { strings[it.groupValues[1]] ?: it.value })
+        }
+        return json
     }
 
     private fun pluginOf(json: JSONObject, where: File): FGPluginsController.Plugin? {

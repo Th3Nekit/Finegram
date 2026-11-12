@@ -160,9 +160,7 @@ public class TableModel {
         if (header) cell.flags |= TLObject.FLAG_0; else cell.flags &= ~TLObject.FLAG_0;
     }
 
-    // Horizontal alignment: 0 = left, 1 = center, 2 = right.
     public static final int ALIGN_LEFT = 0, ALIGN_CENTER = 1, ALIGN_RIGHT = 2;
-    // Vertical alignment: 0 = top, 1 = middle, 2 = bottom.
     public static final int VALIGN_TOP = 0, VALIGN_MIDDLE = 1, VALIGN_BOTTOM = 2;
 
     public static int alignOf(TL_iv.pageTableCell cell) {

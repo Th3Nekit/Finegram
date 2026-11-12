@@ -1,8 +1,5 @@
 package org.telegram.messenger.voip;
 
-/**
- * Created by grishka on 13.03.17.
- */
 
 public class EncryptionKeyEmojifier {
 	private static final String[] emojis = {"\uD83D\uDE09", "\uD83D\uDE0D", "\uD83D\uDE1B", "\uD83D\uDE2D", "\uD83D\uDE31", "\uD83D\uDE21", "\uD83D\uDE0E", "\uD83D\uDE34",

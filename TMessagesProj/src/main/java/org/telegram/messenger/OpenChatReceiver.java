@@ -45,8 +45,5 @@ public class OpenChatReceiver extends Activity {
         startActivity(intent2);
         finish();
 
-        /*
-
-         */
     }
 }

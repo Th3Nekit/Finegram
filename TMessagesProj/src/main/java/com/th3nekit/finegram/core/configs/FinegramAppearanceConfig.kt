@@ -146,6 +146,7 @@ object FinegramAppearanceConfig {
     var profileBackgroundColor by sharedPreferences.boolean("CP_ProfileBackgroundColor", SharedConfig.getDevicePerformanceClass() >= SharedConfig.PERFORMANCE_CLASS_AVERAGE)
     var profileBackgroundEmoji by sharedPreferences.boolean("CP_ProfileBackgroundEmoji", SharedConfig.getDevicePerformanceClass() >= SharedConfig.PERFORMANCE_CLASS_AVERAGE)
     var profileColorFade by sharedPreferences.boolean("FG_ProfileColorFade", true)
+    var profileAccentPage by sharedPreferences.boolean("FG_ProfileAccentPage", true)
 
     var showAccounts by sharedPreferences.boolean("AP_ShowAccounts", true)
     var marketPlaceDrawerButton by sharedPreferences.boolean("AP_MarketplaceDrawerButton", true)

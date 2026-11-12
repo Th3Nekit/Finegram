@@ -185,7 +185,6 @@ public class MainTabsLayout extends AnimatedLinearLayout {
 
 
 
-    // fills tabsTextWidth[] and return visible child count;
 
     private float[] tabsTextWidth;
     private float[] tabsTextWidthWithMargin;

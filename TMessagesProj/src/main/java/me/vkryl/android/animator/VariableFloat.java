@@ -49,7 +49,7 @@ public class VariableFloat {
     if (future) {
       this.from = this.now = this.to;
     } else {
-      /*this.to = */this.from = this.now;
+                    this.from = this.now;
     }
   }
 

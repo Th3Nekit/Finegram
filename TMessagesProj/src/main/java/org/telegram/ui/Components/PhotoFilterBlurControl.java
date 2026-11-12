@@ -442,14 +442,6 @@ public class PhotoFilterBlurControl extends FrameLayout {
     }
 
     private void setSelected(boolean selected, boolean animated) {
-        /*if (animated) {
-            [UIView animateWithDuration:0.16f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^
-            {
-                self.alpha = selected ? 0.6f : 1.0f;
-            } completion:nil];
-        } else {
-            self.alpha = selected ? 0.6f : 1.0f;
-        }*/
     }
 
     public void setActualAreaSize(float width, float height) {

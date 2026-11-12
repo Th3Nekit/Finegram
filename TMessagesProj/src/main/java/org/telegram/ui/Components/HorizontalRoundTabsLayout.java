@@ -147,8 +147,6 @@ public class HorizontalRoundTabsLayout extends HorizontalScrollView {
         canvas.drawPath(clipPath, bgPaint);
 
         textPaint.setColor(
-//            accent ?
-//                Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider) :
                 Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider)
         );
         canvas.save();

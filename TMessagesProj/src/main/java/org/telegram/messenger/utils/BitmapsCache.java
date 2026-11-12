@@ -99,7 +99,6 @@ public class BitmapsCache {
         file = new File(fileTmo, fileName + "_" + w + "_" + h + (noLimit ? "_nolimit" : " ") + (fitz != 0 ? "_fitz" + fitz : "") + ".pcache2");
         useSharedBuffers = w < AndroidUtilities.dp(60) && h < AndroidUtilities.dp(60);
 
-        // check cache created in file load queue only for high devices
         if (SharedConfig.getDevicePerformanceClass() >= SharedConfig.PERFORMANCE_CLASS_HIGH) {
             fileExist = file.exists();
             if (fileExist) {
@@ -284,7 +283,12 @@ public class BitmapsCache {
                     return;
                 }
 
-                if (source.getNextFrame(bitmap[index]) != 1) {
+                int frameResult = source.getNextFrame(bitmap[index]);
+                if (frameResult == -1) {
+                    closed.set(true);
+                    continue;
+                }
+                if (frameResult != 1) {
                     break;
                 }
                 countDownLatch[index] = new CountDownLatch(1);
@@ -396,7 +400,6 @@ public class BitmapsCache {
     }
 
     public void cancelCreate() {
-//        cancelled.set(true);
     }
 
     public int getFrame(Bitmap bitmap, Metadata metadata) {
@@ -533,7 +536,6 @@ public class BitmapsCache {
             }
         }
 
-        // source.getFirstFrame(bitmap);
         return FRAME_RESULT_NO_FRAME;
     }
 

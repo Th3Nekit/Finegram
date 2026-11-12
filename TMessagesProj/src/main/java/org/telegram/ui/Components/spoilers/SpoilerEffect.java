@@ -151,54 +151,27 @@ public class SpoilerEffect extends Drawable {
         setColor(Color.TRANSPARENT);
     }
 
-    /**
-     * Sets if we should suppress updates or not
-     */
     public void setSuppressUpdates(boolean suppressUpdates) {
         this.suppressUpdates = suppressUpdates;
         invalidateSelf();
     }
 
-    /**
-     * Sets if we should invalidate parent instead
-     */
     public void setInvalidateParent(boolean invalidateParent) {
         this.invalidateParent = invalidateParent;
     }
 
-    /**
-     * Updates max particles count
-     */
     public void updateMaxParticles() {
         setMaxParticlesCount(MathUtils.clamp((getBounds().width() / AndroidUtilities.dp(6)) * PARTICLES_PER_CHARACTER, PARTICLES_PER_CHARACTER, MAX_PARTICLES_PER_ENTITY));
     }
 
-    /**
-     * Sets callback to be run after ripple animation ends
-     */
     public void setOnRippleEndCallback(@Nullable Runnable onRippleEndCallback) {
         this.onRippleEndCallback = onRippleEndCallback;
     }
 
-    /**
-     * Starts ripple
-     *
-     * @param rX     Ripple center x
-     * @param rY     Ripple center y
-     * @param radMax Max ripple radius
-     */
     public void startRipple(float rX, float rY, float radMax) {
         startRipple(rX, rY, radMax, false);
     }
 
-    /**
-     * Starts ripple
-     *
-     * @param rX      Ripple center x
-     * @param rY      Ripple center y
-     * @param radMax  Max ripple radius
-     * @param reverse If we should start reverse ripple
-     */
     public void startRipple(float rX, float rY, float radMax, boolean reverse) {
         rippleX = rX;
         rippleY = rY;
@@ -243,18 +216,10 @@ public class SpoilerEffect extends Drawable {
         invalidateSelf();
     }
 
-    /**
-     * Sets new ripple interpolator
-     *
-     * @param rippleInterpolator New interpolator
-     */
     public void setRippleInterpolator(@NonNull TimeInterpolator rippleInterpolator) {
         this.rippleInterpolator = rippleInterpolator;
     }
 
-    /**
-     * Gets ripple path
-     */
     public void getRipplePath(Path path) {
         path.addCircle(rippleX, rippleY, rippleMaxRadius * MathUtils.clamp(rippleProgress, 0, 1), Path.Direction.CW);
     }
@@ -263,25 +228,16 @@ public class SpoilerEffect extends Drawable {
         return rippleMaxRadius > 0 && rippleProgress > 0;
     }
 
-    /**
-     * @return Current ripple progress
-     */
     public float getRippleProgress() {
         return rippleProgress;
     }
 
-    /**
-     * @return If we should invalidate color
-     */
     public boolean shouldInvalidateColor() {
         boolean b = shouldInvalidateColor;
         shouldInvalidateColor = false;
         return b;
     }
 
-    /**
-     * Sets new ripple progress
-     */
     public void setRippleProgress(float rippleProgress) {
         this.rippleProgress = rippleProgress;
         if (rippleProgress == -1 && rippleAnimator != null) {
@@ -506,9 +462,6 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * Updates visible bounds to update particles
-     */
     public void setVisibleBounds(float left, float top, float right, float bottom) {
         if (visibleRect == null)
             visibleRect = new RectF();
@@ -537,18 +490,10 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * Attaches to the parent view
-     *
-     * @param parentView Parent view
-     */
     public void setParentView(View parentView) {
         this.mParent = parentView;
     }
 
-    /**
-     * @return Currently used parent view
-     */
     public View getParentView() {
         return mParent;
     }
@@ -568,11 +513,6 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * Sets particles color
-     *
-     * @param color New color
-     */
     public void setColor(int color) {
         if (lastColor != color) {
             for (int i = 0; i < ALPHAS.length; i++) {
@@ -583,9 +523,6 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * @return If effect has color
-     */
     public boolean hasColor() {
         return lastColor != Color.TRANSPARENT;
     }
@@ -595,16 +532,10 @@ public class SpoilerEffect extends Drawable {
         return PixelFormat.TRANSPARENT;
     }
 
-    /**
-     * @return Max particles count
-     */
     public int getMaxParticlesCount() {
         return maxParticles;
     }
 
-    /**
-     * Sets new max particles count
-     */
     public void setMaxParticlesCount(int maxParticles) {
         this.maxParticles = maxParticles;
         while (particlesPool.size() + particles.size() < maxParticles) {
@@ -612,13 +543,6 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * Alias for it's big bro
-     *
-     * @param tv           Text view to use as a parent view
-     * @param spoilersPool Cached spoilers pool
-     * @param spoilers     Spoilers list to populate
-     */
     public static void addSpoilers(TextView tv, @Nullable Stack<SpoilerEffect> spoilersPool, List<SpoilerEffect> spoilers) {
         int width = tv.getMeasuredWidth();
         addSpoilers(tv, tv.getLayout(), 0, width > 0 ? width : -2, (Spanned) tv.getText(), spoilersPool, spoilers, null);
@@ -629,14 +553,6 @@ public class SpoilerEffect extends Drawable {
         addSpoilers(tv, tv.getLayout(), 0, width > 0 ? width : -2, (Spanned) tv.getText(), spoilersPool, spoilers, quoteBlocks);
     }
 
-    /**
-     * Alias for it's big bro
-     *
-     * @param v            View to use as a parent view
-     * @param textLayout   Text layout to measure
-     * @param spoilersPool Cached spoilers pool, could be null, but highly recommended
-     * @param spoilers     Spoilers list to populate
-     */
     public static void addSpoilers(@Nullable View v, Layout textLayout, @Nullable Stack<SpoilerEffect> spoilersPool, List<SpoilerEffect> spoilers) {
         if (textLayout.getText() instanceof Spanned) {
             addSpoilers(v, textLayout, (Spanned) textLayout.getText(), spoilersPool, spoilers);
@@ -658,19 +574,6 @@ public class SpoilerEffect extends Drawable {
 
     public static final int MAX_SPOILERS_COUNT = 100;
 
-    /**
-     * Parses spoilers from spannable
-     *
-     * @param v            View to use as a parent view
-     * @param textLayout   Text layout to measure
-     * @param layoutLeft   The minimum left bound to limit spoilers in
-     * @param layoutRight  The maximum right bound to limit spoilers in. Use -1 when
-     *                     needed calculation, use -2 (or any other negative) when
-     *                     you don't want to limit anyway
-     * @param spannable    Text to parse
-     * @param spoilersPool Cached spoilers pool, could be null, but highly recommended
-     * @param spoilers     Spoilers list to populate
-     */
     public static void addSpoilers(@Nullable View v, Layout textLayout, int layoutLeft, int layoutRight, Spanned spannable, @Nullable Stack<SpoilerEffect> spoilersPool, List<SpoilerEffect> spoilers, ArrayList<QuoteSpan.Block> quoteBlocks) {
         if (textLayout == null) {
             return;
@@ -732,12 +635,8 @@ public class SpoilerEffect extends Drawable {
         spoilers.add(spoilerEffect);
     }
 
-    /**
-     * Clips out spoilers from canvas
-     */
     public static void clipOutCanvas(Canvas canvas, List<SpoilerEffect> spoilers) {
         if (spoilers.isEmpty()) {
-            // nothing to clip
             return;
         }
         tempPath.rewind();
@@ -782,20 +681,6 @@ public class SpoilerEffect extends Drawable {
         }
     }
 
-    /**
-     * Optimized version of text layout double-render
-     *
-     * @param v                        View to use as a parent view
-     * @param invalidateSpoilersParent Set to invalidate parent or not
-     * @param spoilersColor            Spoilers' color
-     * @param verticalOffset           Additional vertical offset
-     * @param patchedLayoutRef         Patched layout reference
-     * @param patchedLayoutType
-     * @param textLayout               Layout to render
-     * @param spoilers                 Spoilers list to render
-     * @param canvas                   Canvas to render
-     * @param useParentWidth
-     */
     @SuppressLint("WrongConstant")
     @MainThread
     public static void renderWithRipple(View v, boolean invalidateSpoilersParent, int spoilersColor, int verticalOffset, AtomicReference<Layout> patchedLayoutRef, int patchedLayoutType, Layout textLayout, List<SpoilerEffect> spoilers, Canvas canvas, boolean useParentWidth) {
@@ -916,18 +801,6 @@ public class SpoilerEffect extends Drawable {
     }
 
 
-    /**
-     * Optimized version of text layout double-render
-     *  @param v                        View to use as a parent view
-     * @param invalidateSpoilersParent Set to invalidate parent or not
-     * @param spoilersColor            Spoilers' color
-     * @param verticalOffset           Additional vertical offset
-     * @param patchedLayoutRef         Patched layout reference
-     * @param textLayout               Layout to render
-     * @param spoilers                 Spoilers list to render
-     * @param canvas                   Canvas to render
-     * @param useParentWidth
-     */
     @SuppressLint("WrongConstant")
     @MainThread
     public static void renderWithRipple(View v, boolean invalidateSpoilersParent, int spoilersColor, int verticalOffset, AtomicReference<CachedStaticLayout> patchedLayoutRef, CachedStaticLayout textLayout, List<SpoilerEffect> spoilers, Canvas canvas, boolean useParentWidth) {

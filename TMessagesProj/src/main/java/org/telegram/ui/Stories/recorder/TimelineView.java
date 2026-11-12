@@ -55,7 +55,6 @@ import java.util.Collections;
 
 public class TimelineView extends View {
 
-    // milliseconds when timeline goes out of the box
     public long getMaxScrollDuration() {
         if (collageTracks.isEmpty()) {
             return Math.max(120 * 1000L, (long) (maxSelectDuration() * 1.5f));
@@ -63,9 +62,7 @@ public class TimelineView extends View {
             return 70 * 1000L;
         }
     }
-    // minimal allowed duration to select
     public static final long MIN_SELECT_DURATION = 1 * 1000L;
-    // maximum allowed duration to select
     public static final long MAX_SELECT_DURATION = (long) (59 * 1000L);
 
     public interface TimelineDelegate {
@@ -527,10 +524,6 @@ public class TimelineView extends View {
         Collections.sort(collageTracks, (a, b) -> (int) (b.duration - a.duration));
         collageMain = collageTracks.isEmpty() ? null : collageTracks.get(0);
         if (collageMain != null && collageMain.offset != 0) {
-//            collageMain.offset = 0;
-//            if (delegate != null) {
-//                delegate.onVideoOffsetChange(collageMain.index, 0);
-//            }
         }
     }
 
@@ -1121,10 +1114,6 @@ public class TimelineView extends View {
                     if (pressHandle == HANDLE_AUDIO_REGION) {
                         float minLeft = Math.max(0, scroll - audioOffset) / (float) audioDuration;
                         float maxRight = Math.min(1, Math.max(0, scroll - audioOffset + videoScrollDuration) / (float) audioDuration);
-//                        if (collageMain != null) {
-//                            minLeft = Math.max(minLeft, (collageMain.left * collageMain.duration + scroll - audioOffset) / (float) audioDuration);
-//                            maxRight = Math.min(maxRight, (collageMain.right * collageMain.duration + scroll - audioOffset) / (float) audioDuration);
-//                        }
                         if (d > 0) {
                             d = Math.min(Math.max(0, maxRight - audioRight), d);
                         } else {
@@ -1204,10 +1193,6 @@ public class TimelineView extends View {
                     if (pressHandle == HANDLE_ROUND_REGION) {
                         float minLeft = Math.max(0, scroll - roundOffset) / (float) roundDuration;
                         float maxRight = Math.min(1, Math.max(0, scroll - roundOffset + videoScrollDuration) / (float) roundDuration);
-//                        if (collageMain != null) {
-//                            minLeft = Math.max(minLeft, (collageMain.left * collageMain.duration + scroll - roundOffset) / (float) roundDuration);
-//                            maxRight = Math.min(maxRight, (collageMain.right * collageMain.duration + scroll - roundOffset) / (float) roundDuration);
-//                        }
                         if (d > 0) {
                             d = Math.min(maxRight - roundRight, d);
                         } else {
@@ -1248,9 +1233,6 @@ public class TimelineView extends View {
                                 pressHandle = HANDLE_COLLAGE_REGION;
                             }
                         }
-//                        else if (collageMain != null) {
-//                            minValue = Math.max(minValue, (collageMain.left * collageMain.duration + scroll - track.offset) / (float) track.duration);
-//                        }
                         float wasTrackLeft = track.left;
                         track.left = Utilities.clamp(track.left + d, maxValue, minValue);
                         if (Math.abs(wasTrackLeft - track.left) > 0.01f) {
@@ -1271,9 +1253,6 @@ public class TimelineView extends View {
                                 pressHandle = HANDLE_COLLAGE_REGION;
                             }
                         }
-//                        else if (collageMain != null) {
-//                            maxValue = Math.min(maxValue, (collageMain.right * collageMain.duration + scroll - track.offset) / (float) track.duration);
-//                        }
                         float wasTrackRight = track.right;
                         track.right = Utilities.clamp(track.right + d, maxValue, minValue);
                         if (Math.abs(wasTrackRight - track.right) > 0.01f) {
@@ -1286,10 +1265,6 @@ public class TimelineView extends View {
                     if (pressHandle == HANDLE_COLLAGE_REGION) {
                         float minLeft = Math.max(0, scroll - track.offset) / (float) track.duration;
                         float maxRight = Math.min(1, Math.max(0, scroll - track.offset + videoScrollDuration) / (float) track.duration);
-//                        if (track != collageMain) {
-//                            minLeft = Math.max(minLeft, (collageMain.left * collageMain.duration + scroll - track.offset) / (float) track.duration);
-//                            maxRight = Math.min(maxRight, (collageMain.right * collageMain.duration + scroll - track.offset) / (float) track.duration);
-//                        }
                         if (d > 0) {
                             d = Math.min(maxRight - track.right, d);
                         } else {
@@ -1307,13 +1282,6 @@ public class TimelineView extends View {
                             delegate.onProgressDragChange(true);
                         }
                     }
-//                    if (collageMain == track) {
-//                        progress = (long) (track.left * track.duration);
-//                        if (delegate != null) {
-//                            delegate.onProgressDragChange(true);
-//                            delegate.onProgressChange(progress, false);
-//                        }
-//                    }
                     invalidate();
                     if (!dragged) dragSpeed = 1.0f;
                     dragged = true;
@@ -1686,18 +1654,9 @@ public class TimelineView extends View {
     private void moveCollageOffset(Track track, final float d) {
         if (track == null) return;
         if (collageMain == track || collageMain == null) {
-//            long wasAudioOffset = track.offset;
-//            track.offset = Utilities.clamp(track.offset + (long) d, 0, (long) -(track.duration - Math.min(getBaseDuration(), getMaxScrollDuration())));
-//            long rd = track.offset - wasAudioOffset;
-//            track.left = Utilities.clamp(track.left - (float) rd / track.duration, 1, 0);
-//            track.right = Utilities.clamp(track.right - (float) rd / track.duration, 1, 0);
-//            if (delegate != null) {
-//                delegate.onVideoLeftChange(track.index, track.left);
-//                delegate.onVideoRightChange(track.index, track.right);
-//            }
         } else if (collageSelected == collageTracks.indexOf(track)) {
-            long mx = (long) ((1.0f/*collageMain.right*/ * collageMain.duration) - (track.right * track.duration));
-            long mn = (long) ((0.0f/*collageMain.left*/ * collageMain.duration) - (track.left * track.duration));
+            long mx = (long) ((1.0f                      * collageMain.duration) - (track.right * track.duration));
+            long mn = (long) ((0.0f                     * collageMain.duration) - (track.left * track.duration));
             final float wasDuration = Math.min(track.right - track.left, (collageMain.right - collageMain.left) * collageMain.duration / (float) track.duration);
             if (track.offset + (long) d > mx) {
                 track.right = Utilities.clamp((collageMain.right * collageMain.duration - track.offset - (long) d) / (float) track.duration, 1, wasDuration);
@@ -2074,7 +2033,6 @@ public class TimelineView extends View {
                     paint.setAlpha((int) (0x40));
                 }
                 final float maxBar = timelineWaveformMax.set(WaveformPath.getMaxBar(collageWaveforms));
-//                final float animatedLoaded = timelineWaveformLoaded.set(WaveformPath.getMaxLoadedCount(collageWaveforms));
                 final float start = px + ph + (audioOffset - scroll) / (float) scrollDuration * sw;
                 timelineWaveformPath.check(start, timelineBounds.left, timelineBounds.right, 0.0f, dp(28), maxBar, timelineBounds.bottom, collageWaveforms);
                 canvas.drawPath(timelineWaveformPath, paint);
@@ -2105,7 +2063,6 @@ public class TimelineView extends View {
 
             final float p = dp(4);
             final float video = videoSelected;
-            // draw video thumbs
             if (videoTrack != null) {
                 canvas.save();
                 videoHeight = getVideoHeight();
@@ -2224,11 +2181,7 @@ public class TimelineView extends View {
                         float x = trackStartX;
                         final int frameWidth = track.thumbs.getFrameWidth();
                         final float L;
-//                        if (videoTrack != null) {
                             L = px + ph + (track.offset - scroll) / (float) scrollDuration * sw;
-//                        } else {
-//                            L = px;
-//                        }
                         final int fromFrame = (int) Math.max(0, Math.floor((trackStartX - L) / frameWidth));
                         final int toFrame = (int) Math.min(track.thumbs.count, Math.ceil((trackEndX - trackStartX) / frameWidth) + 1);
 
@@ -2391,7 +2344,6 @@ public class TimelineView extends View {
                 canvas.restore();
             }
 
-            // draw audio
             float audioT = this.audioT.set(hasAudio);
             float audioSelected = this.audioSelectedT.set(hasAudio && this.audioSelected);
             final float audioHeight = getAudioHeight() * audioT;
@@ -2505,7 +2457,6 @@ public class TimelineView extends View {
                 canvas.restore();
             }
 
-            // draw region
             float leftX = px + ph + (left - scroll) / (float) scrollDuration * sw;
             float rightX = px + ph + (right - scroll) / (float) scrollDuration * sw;
             float progressAlpha = !collageTracks.isEmpty() ? collageT : (hasAudio && videoTrack == null ? audioT : Math.max(videoT, roundT));
@@ -2554,7 +2505,6 @@ public class TimelineView extends View {
                     }
                 }
 
-                // draw progress
                 float loopT = loopProgress.set(0);
                 final float y1 = h - getContentHeight() + py - dpf2(2.3f);
                 final float y2 = h - py + dpf2(4.3f);
@@ -2880,7 +2830,6 @@ public class TimelineView extends View {
         private long nextFrame;
         private boolean loading = false;
 
-        // (ui) load() -> (themeQueue) retrieveFrame() -> (ui) receiveFrame()
         public void load() {
             if (loading || metadataRetriever == null || frames.size() >= count) {
                 return;
@@ -3084,7 +3033,6 @@ public class TimelineView extends View {
                         } else {
                             outputBuffer = decoder.getOutputBuffer(outputBufferIndex);
                         }
-                        // Ensure that the data is placed at the start of the buffer
                         outputBuffer.position(0);
                     }
 

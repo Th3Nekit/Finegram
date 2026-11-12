@@ -28,24 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Helper class that can enqueue and process adapter update operations.
- * <p>
- * To support animations, RecyclerView presents an older version the Adapter to best represent
- * previous state of the layout. Sometimes, this is not trivial when items are removed that were
- * not laid out, in which case, RecyclerView has no way of providing that item's view for
- * animations.
- * <p>
- * AdapterHelper creates an UpdateOp for each adapter data change then pre-processes them. During
- * pre processing, AdapterHelper finds out which UpdateOps can be deferred to second layout pass
- * and which cannot. For the UpdateOps that cannot be deferred, AdapterHelper will change them
- * according to previously deferred operation and dispatch them before the first layout pass. It
- * also takes care of updating deferred UpdateOps since order of operations is changed by this
- * process.
- * <p>
- * Although operations may be forwarded to LayoutManager in different orders, resulting data set
- * is guaranteed to be the consistent.
- */
 class AdapterHelper implements OpReorderer.Callback {
 
     static final int POSITION_TYPE_INVISIBLE = 0;
@@ -159,8 +141,6 @@ class AdapterHelper implements OpReorderer.Callback {
     }
 
     private void applyMove(UpdateOp op) {
-        // MOVE ops are pre-processed so at this point, we know that item is still in the adapter.
-        // otherwise, it would be converted into a REMOVE operation
         postponeAndUpdateViewHolders(op);
     }
 
@@ -173,26 +153,14 @@ class AdapterHelper implements OpReorderer.Callback {
             boolean typeChanged = false;
             RecyclerView.ViewHolder vh = mCallback.findViewHolder(position);
             if (vh != null || canFindInPreLayout(position)) {
-                // If a ViewHolder exists or this is a newly added item, we can defer this update
-                // to post layout stage.
-                // * For existing ViewHolders, we'll fake its existence in the pre-layout phase.
-                // * For items that are added and removed in the same process cycle, they won't
-                // have any effect in pre-layout since their add ops are already deferred to
-                // post-layout pass.
                 if (type == POSITION_TYPE_INVISIBLE) {
-                    // Looks like we have other updates that we cannot merge with this one.
-                    // Create an UpdateOp and dispatch it to LayoutManager.
                     UpdateOp newOp = obtainUpdateOp(UpdateOp.REMOVE, tmpStart, tmpCount, null);
                     dispatchAndUpdateViewHolders(newOp);
                     typeChanged = true;
                 }
                 type = POSITION_TYPE_NEW_OR_LAID_OUT;
             } else {
-                // This update cannot be recovered because we don't have a ViewHolder representing
-                // this position. Instead, post it to LayoutManager immediately
                 if (type == POSITION_TYPE_NEW_OR_LAID_OUT) {
-                    // Looks like we have other updates that we cannot merge with this one.
-                    // Create UpdateOp op and dispatch it to LayoutManager.
                     UpdateOp newOp = obtainUpdateOp(UpdateOp.REMOVE, tmpStart, tmpCount, null);
                     postponeAndUpdateViewHolders(newOp);
                     typeChanged = true;
@@ -200,14 +168,14 @@ class AdapterHelper implements OpReorderer.Callback {
                 type = POSITION_TYPE_INVISIBLE;
             }
             if (typeChanged) {
-                position -= tmpCount; // also equal to tmpStart
+                position -= tmpCount;
                 tmpEnd -= tmpCount;
                 tmpCount = 1;
             } else {
                 tmpCount++;
             }
         }
-        if (tmpCount != op.itemCount) { // all 1 effect
+        if (tmpCount != op.itemCount) {
             recycleUpdateOp(op);
             op = obtainUpdateOp(UpdateOp.REMOVE, tmpStart, tmpCount, null);
         }
@@ -225,7 +193,7 @@ class AdapterHelper implements OpReorderer.Callback {
         int type = -1;
         for (int position = op.positionStart; position < tmpEnd; position++) {
             RecyclerView.ViewHolder vh = mCallback.findViewHolder(position);
-            if (vh != null || canFindInPreLayout(position)) { // deferred
+            if (vh != null || canFindInPreLayout(position)) {
                 if (type == POSITION_TYPE_INVISIBLE) {
                     UpdateOp newOp = obtainUpdateOp(UpdateOp.UPDATE, tmpStart, tmpCount,
                             op.payload);
@@ -234,7 +202,7 @@ class AdapterHelper implements OpReorderer.Callback {
                     tmpStart = position;
                 }
                 type = POSITION_TYPE_NEW_OR_LAID_OUT;
-            } else { // applied
+            } else {
                 if (type == POSITION_TYPE_NEW_OR_LAID_OUT) {
                     UpdateOp newOp = obtainUpdateOp(UpdateOp.UPDATE, tmpStart, tmpCount,
                             op.payload);
@@ -246,7 +214,7 @@ class AdapterHelper implements OpReorderer.Callback {
             }
             tmpCount++;
         }
-        if (tmpCount != op.itemCount) { // all 1 effect
+        if (tmpCount != op.itemCount) {
             Object payload = op.payload;
             recycleUpdateOp(op);
             op = obtainUpdateOp(UpdateOp.UPDATE, tmpStart, tmpCount, payload);
@@ -259,9 +227,6 @@ class AdapterHelper implements OpReorderer.Callback {
     }
 
     private void dispatchAndUpdateViewHolders(UpdateOp op) {
-        // tricky part.
-        // traverse all postpones and revert their changes on this op if necessary, apply updated
-        // dispatch to them since now they are after this op.
         if (op.cmd == UpdateOp.ADD || op.cmd == UpdateOp.MOVE) {
             throw new IllegalArgumentException("should not dispatch add or move for pre layout");
         }
@@ -274,8 +239,6 @@ class AdapterHelper implements OpReorderer.Callback {
             Log.d(TAG, "----");
         }
 
-        // handle each pos 1 by 1 to ensure continuity. If it breaks, dispatch partial
-        // TODO Since move ops are pushed to end, we should not need this anymore
         int tmpStart = updatePositionWithPostponed(op.positionStart, op.cmd);
         if (DEBUG) {
             Log.d(TAG, "pos:" + op.positionStart + ",updatedPos:" + tmpStart);
@@ -311,7 +274,6 @@ class AdapterHelper implements OpReorderer.Callback {
             if (continuous) {
                 tmpCnt++;
             } else {
-                // need to dispatch this separately
                 UpdateOp tmp = obtainUpdateOp(op.cmd, tmpStart, tmpCnt, op.payload);
                 if (DEBUG) {
                     Log.d(TAG, "need to dispatch separately " + tmp);
@@ -321,7 +283,7 @@ class AdapterHelper implements OpReorderer.Callback {
                 if (op.cmd == UpdateOp.UPDATE) {
                     offsetPositionForPartial += tmpCnt;
                 }
-                tmpStart = updatedPos; // need to remove previously dispatched
+                tmpStart = updatedPos;
                 tmpCnt = 1;
             }
         }
@@ -374,14 +336,12 @@ class AdapterHelper implements OpReorderer.Callback {
                     end = postponed.positionStart;
                 }
                 if (pos >= start && pos <= end) {
-                    //i'm affected
                     if (start == postponed.positionStart) {
                         if (cmd == UpdateOp.ADD) {
                             postponed.itemCount++;
                         } else if (cmd == UpdateOp.REMOVE) {
                             postponed.itemCount--;
                         }
-                        // op moved to left, move it right to revert
                         pos++;
                     } else {
                         if (cmd == UpdateOp.ADD) {
@@ -389,11 +349,9 @@ class AdapterHelper implements OpReorderer.Callback {
                         } else if (cmd == UpdateOp.REMOVE) {
                             postponed.positionStart--;
                         }
-                        // op was moved right, move left to revert
                         pos--;
                     }
                 } else if (pos < postponed.positionStart) {
-                    // postponed MV is outside the dispatched OP. if it is before, offset
                     if (cmd == UpdateOp.ADD) {
                         postponed.positionStart++;
                         postponed.itemCount++;
@@ -450,7 +408,6 @@ class AdapterHelper implements OpReorderer.Callback {
                     return true;
                 }
             } else if (op.cmd == UpdateOp.ADD) {
-                // TODO optimize.
                 final int end = op.positionStart + op.itemCount;
                 for (int pos = op.positionStart; pos < end; pos++) {
                     if (findPositionOffset(pos, i + 1) == position) {
@@ -511,10 +468,10 @@ class AdapterHelper implements OpReorderer.Callback {
                     position = op.itemCount;
                 } else {
                     if (op.positionStart < position) {
-                        position--; // like a remove
+                        position--;
                     }
                     if (op.itemCount <= position) {
-                        position++; // like an add
+                        position++;
                     }
                 }
             } else if (op.positionStart <= position) {
@@ -531,9 +488,6 @@ class AdapterHelper implements OpReorderer.Callback {
         return position;
     }
 
-    /**
-     * @return True if updates should be processed.
-     */
     boolean onItemRangeChanged(int positionStart, int itemCount, Object payload) {
         if (itemCount < 1) {
             return false;
@@ -546,9 +500,6 @@ class AdapterHelper implements OpReorderer.Callback {
         return mPendingUpdates.size() == 1;
     }
 
-    /**
-     * @return True if updates should be processed.
-     */
     boolean onItemRangeInserted(int positionStart, int itemCount) {
         if (itemCount < 1) {
             return false;
@@ -561,9 +512,6 @@ class AdapterHelper implements OpReorderer.Callback {
         return mPendingUpdates.size() == 1;
     }
 
-    /**
-     * @return True if updates should be processed.
-     */
     boolean onItemRangeRemoved(int positionStart, int itemCount) {
         if (itemCount < 1) {
             return false;
@@ -576,12 +524,9 @@ class AdapterHelper implements OpReorderer.Callback {
         return mPendingUpdates.size() == 1;
     }
 
-    /**
-     * @return True if updates should be processed.
-     */
     boolean onItemRangeMoved(int from, int to, int itemCount) {
         if (from == to) {
-            return false; // no-op
+            return false;
         }
         if (itemCount != 1) {
             throw new IllegalArgumentException("Moving more than 1 item is not supported yet");
@@ -594,12 +539,7 @@ class AdapterHelper implements OpReorderer.Callback {
         return mPendingUpdates.size() == 1;
     }
 
-    /**
-     * Skips pre-processing and applies all updates in one pass.
-     */
     void consumeUpdatesInOnePass() {
-        // we still consume postponed updates (if there is) in case there was a pre-process call
-        // w/o a matching consumePostponedUpdates.
         consumePostponedUpdates();
         final int count = mPendingUpdates.size();
         for (int i = 0; i < count; i++) {
@@ -651,7 +591,7 @@ class AdapterHelper implements OpReorderer.Callback {
                     break;
                 case UpdateOp.MOVE:
                     if (op.positionStart == position) {
-                        position = op.itemCount; //position end
+                        position = op.itemCount;
                     } else {
                         if (op.positionStart < position) {
                             position -= 1;
@@ -670,9 +610,6 @@ class AdapterHelper implements OpReorderer.Callback {
         return !mPostponedList.isEmpty() && !mPendingUpdates.isEmpty();
     }
 
-    /**
-     * Queued operation to happen when child views are updated.
-     */
     static class UpdateOp {
 
         static final int ADD = 1;
@@ -691,7 +628,6 @@ class AdapterHelper implements OpReorderer.Callback {
 
         Object payload;
 
-        // holds the target position if this is a MOVE
         int itemCount;
 
         UpdateOp(int cmd, int positionStart, int itemCount, Object payload) {
@@ -737,7 +673,6 @@ class AdapterHelper implements OpReorderer.Callback {
                 return false;
             }
             if (cmd == MOVE && Math.abs(itemCount - positionStart) == 1) {
-                // reverse of this is also true
                 if (itemCount == op.positionStart && positionStart == op.itemCount) {
                     return true;
                 }
@@ -798,9 +733,6 @@ class AdapterHelper implements OpReorderer.Callback {
         ops.clear();
     }
 
-    /**
-     * Contract between AdapterHelper and RecyclerView.
-     */
     interface Callback {
 
         RecyclerView.ViewHolder findViewHolder(int position);

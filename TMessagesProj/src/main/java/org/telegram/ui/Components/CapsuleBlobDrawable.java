@@ -26,63 +26,16 @@ import org.telegram.ui.ActionBar.Theme;
 
 import java.util.Random;
 
-/**
- * A self-animating {@link Drawable} that draws a "breathing" blob wobbling around a
- * rounded rectangle. When the corner radius equals half the height the base shape is a
- * capsule (two semicircular caps), which is the intended look for a voice-recording bar.
- *
- * The blob is composed of two overlapping layers (a faint outer one and a denser inner
- * one) that share the base outline but use different push, wave depth and breathing so the
- * result has a bit of parallax.
- *
- * Model (and how it differs from {@link BlobDrawable}, which wobbles around a circle):
- *
- *  - Points are spaced by *curvature-weighted* arc length. Straight sides get weight 1, the
- *    caps get {@link #curvatureBoost}, so the tightly curved caps receive proportionally
- *    more points. On a stretched shape, plain angle stepping (as in BlobDrawable) starves
- *    the long sides and bunches points at the ends.
- *  - The number of points is derived from the outline perimeter
- *    rather than being fixed, so a wider bar automatically gets more points.
- *  - Each point is displaced along the outline normal, not by scaling a radius, so the wave
- *    depth is uniform around the whole outline.
- *  - Bezier control arms follow the outline tangent with length |P(i)P(i+1)| / 3. The
- *    L = 4/3 * tan(PI / 2N) constant of BlobDrawable is only correct for a circle sampled at
- *    equal angles.
- *  - progress is passed through smootherstep (quintic, zero first and second derivative at
- *    the ends) before interpolation, so the instant when a point's target is swapped is not
- *    visible as a velocity snap.
- *  - The next per-point target is a bounded random walk from the current value, so crests
- *    drift instead of flickering between independent samples.
- *  - On top of that per-point texture there is a single coherent breathing term shared by
- *    all points, which is what actually reads as "breathing".
- *
- * The outline is evaluated analytically in {@link #pointAt}, so resizing costs nothing and
- * there is no per-frame allocation once the point count is stable.
- *
- * Usage:
- * <pre>
- *     CapsuleBlobDrawable blob = new CapsuleBlobDrawable();
- *     blob.setState(CapsuleBlobDrawable.STATE_UNMUTE);
- *     view.setBackground(blob);   // or draw it manually in onDraw
- *     blob.start();
- *     // feed audio:
- *     blob.setAmplitude(level01, true);
- * </pre>
- */
 public class CapsuleBlobDrawable extends Drawable {
 
     public static float MAX_SPEED = 8.2f;
     public static float MIN_SPEED = 0.8f;
 
-    // Voice-state colors, mirroring FragmentContextViewWavesDrawable. Each state's radial
-    // gradient is collapsed to a single blended color (the same blend the old code used when
-    // LiteMode disabled the gradient).
-    public static final int STATE_UNMUTE = 0;          // green
-    public static final int STATE_MUTE = 1;            // blue
-    public static final int STATE_CONNECTING = 2;      // gray
-    public static final int STATE_MUTED_BY_ADMIN = 3;  // muted-by-admin gradient
+    public static final int STATE_UNMUTE = 0;
+    public static final int STATE_MUTE = 1;
+    public static final int STATE_CONNECTING = 2;
+    public static final int STATE_MUTED_BY_ADMIN = 3;
 
-    // Amplitude smoothing, copied from BlobDrawable so audio feels the same.
     private static final float ANIMATION_SPEED_WAVE_HUGE = 0.65f;
     private static final float ANIMATION_SPEED_WAVE_SMALL = 0.45f;
     private static final float animationSpeed = 1f - ANIMATION_SPEED_WAVE_HUGE;
@@ -90,15 +43,10 @@ public class CapsuleBlobDrawable extends Drawable {
 
     private static final TimeInterpolator SMOOTHER = t -> t * t * t * (t * (t * 6f - 15f) + 10f);
 
-    // Fraction of the wave depth present at zero amplitude; the rest is driven by amplitude.
-    // Lower value => the waves respond more strongly to the voice level.
     private static final float WAVE_IDLE_FRACTION = 0f;
-    // How much the breathing recedes at full amplitude (0 = unaffected, 1 = fully gone).
     private static final float BREATH_AMPLITUDE_FALLOFF = 0.7f;
-    // Number of ring-Laplacian passes applied to point depths for spatial coherence.
     private static final int SMOOTHING_ITERATIONS = 2;
 
-    // ---- configuration ----
     private float cornerRadius = dp(18);
     private float targetSpacing = dp(22);
     private float curvatureBoost = 2.4f;
@@ -106,9 +54,8 @@ public class CapsuleBlobDrawable extends Drawable {
     private float waveDepth = dp(12f);
     private float breathDepth = dp(1.5f);
     private float breathPeriodMs = 3600f;
-    private float neighborCoherence = 0.25f; // 0 = independent points, 1 = strongly smoothed toward neighbors
+    private float neighborCoherence = 0.25f;
 
-    // ---- geometry (px, relative to bounds center), rebuilt on bounds change ----
     private float halfWidth;
     private float halfHeight;
     private float radius;
@@ -116,11 +63,10 @@ public class CapsuleBlobDrawable extends Drawable {
     private float innerY;
     private float straightH;
     private float straightV;
-    private float weightedArc;   // weighted length of one quarter arc
+    private float weightedArc;
     private float weightedTotal;
     private float perimeter;
 
-    // ---- animation ----
     private final Layer big;
     private final Layer small;
     private float breathPhase;
@@ -132,7 +78,7 @@ public class CapsuleBlobDrawable extends Drawable {
     private float animateAmplitudeDiff;
 
     private final Path path = new Path();
-    private final float[] sample = new float[4]; // x, y, tangentX, tangentY
+    private final float[] sample = new float[4];
 
     public CapsuleBlobDrawable() {
         big = new Layer();
@@ -142,7 +88,7 @@ public class CapsuleBlobDrawable extends Drawable {
         big.pushMax = dp(8.5f);
         big.waveScale = 1f;
         big.breathScale = 1f;
-        big.baseAlpha = 61; // ~0.24
+        big.baseAlpha = 61;
 
         small = new Layer();
         small.speedScale = 0.82f;
@@ -151,35 +97,23 @@ public class CapsuleBlobDrawable extends Drawable {
         small.pushMax = dp(4.25f);
         small.waveScale = 0.55f;
         small.breathScale = 0.55f;
-        small.baseAlpha = 128; // ~0.5
+        small.baseAlpha = 128;
 
         setState(STATE_UNMUTE);
     }
 
-    // ---- public configuration ----
 
     private int colorState = -1;
     private int currentColor;
     private int fromColor;
     private int toColor;
-    private float colorProgress = 1f; // 1 == settled on currentColor
+    private float colorProgress = 1f;
     private static final float COLOR_TRANSITION_MS = 250f;
 
-    /**
-     * Apply the color for a voice state, resolving it from the current theme and collapsing
-     * that state's gradient to a single blended color. Call {@link #updateColors()} after a
-     * theme change to re-resolve.
-     */
     public void setState(int state) {
         setState(state, false);
     }
 
-    /**
-     * Apply a voice state, optionally cross-fading the color from the current one over
-     * {@link #COLOR_TRANSITION_MS}. Mirrors the animated state switch of
-     * FragmentContextViewWavesDrawable, but on a single collapsed color instead of two
-     * cross-faded gradients.
-     */
     public void setState(int state, boolean animated) {
         if (state == colorState && colorProgress >= 1f) {
             return;
@@ -197,16 +131,7 @@ public class CapsuleBlobDrawable extends Drawable {
         invalidateSelf();
     }
 
-    /*
-    public int getState() {
-        return colorState >= 0 ? colorState : STATE_UNMUTE;
-    }
-    */
 
-    /**
-     * Resolve the voice state from the active {@link VoIPService} and apply it, mirroring
-     * FragmentContextViewWavesDrawable#updateState. No-op when there is no active service.
-     */
     public void updateState(boolean animated) {
         VoIPService voIPService = VoIPService.getSharedInstance();
         if (voIPService == null) {
@@ -235,7 +160,6 @@ public class CapsuleBlobDrawable extends Drawable {
         }
     }
 
-    /** Re-resolve the current state color from the theme (e.g. after a theme switch). */
     public void updateColors() {
         if (colorState >= 0) {
             colorProgress = 1f;
@@ -265,7 +189,6 @@ public class CapsuleBlobDrawable extends Drawable {
         }
     }
 
-    /** Set a flat color directly, cancelling any in-flight state transition. */
     public void setColor(int color) {
         colorProgress = 1f;
         applyColor(color);
@@ -300,12 +223,6 @@ public class CapsuleBlobDrawable extends Drawable {
         rebuildGeometry();
     }
 
-    /**
-     * The largest distance (px) a point can sit outside the base outline: floor + breathing
-     * + full wave, taken over both layers. The bounds must be at least this much larger than
-     * the desired capsule on every side, or crests will clip. Size bounds as
-     * {@code capsuleSize + 2 * getRequiredInset()}.
-     */
     public int getRequiredInset() {
         return (int) maxOutwardExcursion() + dp(1);
     }
@@ -316,11 +233,6 @@ public class CapsuleBlobDrawable extends Drawable {
         return Math.max(bigOff, smallOff);
     }
 
-    /**
-     * Spatial coherence between neighboring points, in [0, 1]. Higher values pull each
-     * point's depth toward the average of its two neighbors, preventing adjacent points from
-     * sitting at opposite extremes at large waveDepth. 0 disables smoothing.
-     */
     public void setNeighborCoherence(float coherence) {
         neighborCoherence = Math.max(0f, Math.min(1f, coherence));
     }
@@ -331,7 +243,6 @@ public class CapsuleBlobDrawable extends Drawable {
         rebuildGeometry();
     }
 
-    // ---- lifecycle ----
 
     private final Runnable mInvalidateSelf = () -> {
         if (LiteMode.isEnabled(LiteMode.FLAG_CALLS_ANIMATIONS)) {
@@ -364,7 +275,6 @@ public class CapsuleBlobDrawable extends Drawable {
         setAmplitude(value, false);
     }
 
-    /** Feed an audio level in [0, 1]. isBig selects the smoothing curve, as in BlobDrawable. */
     public void setAmplitude(float value, boolean isBig) {
         animateToAmplitude = value;
         if (!LiteMode.isEnabled(LiteMode.FLAG_CALLS_ANIMATIONS)) {
@@ -378,7 +288,6 @@ public class CapsuleBlobDrawable extends Drawable {
         }
     }
 
-    // ---- Drawable ----
 
     @Override
     protected void onBoundsChange(@NonNull Rect bounds) {
@@ -391,9 +300,6 @@ public class CapsuleBlobDrawable extends Drawable {
         if (b.isEmpty()) {
             return;
         }
-        // Reserve room for the largest possible outward excursion (floor + breath + wave) so
-        // crests never clip. If the bounds are too small to hold it, clamp so the geometry
-        // stays valid (waves will clip) rather than collapsing.
         float inset = maxOutwardExcursion() + dp(1);
         float maxInset = Math.min(b.width(), b.height()) / 2f - dp(2);
         if (inset > maxInset) {
@@ -453,8 +359,6 @@ public class CapsuleBlobDrawable extends Drawable {
         float cX = b.exactCenterX();
         float cY = b.exactCenterY();
 
-        // Breathing recedes as the voice level rises, so at speech the amplitude-driven
-        // waves dominate and at idle the breathing carries the motion.
         float breathFade = 1f - BREATH_AMPLITUDE_FALLOFF * amplitude;
         float breathBig = breathDepth * big.breathScale * breathFade
                 * (0.5f + 0.5f * (float) Math.sin(breathPhase));
@@ -477,7 +381,6 @@ public class CapsuleBlobDrawable extends Drawable {
         float push = layer.pushMin + (layer.pushMax - layer.pushMin) * amplitude;
         float wave = waveDepth * layer.waveScale * (WAVE_IDLE_FRACTION + (1f - WAVE_IDLE_FRACTION) * amplitude);
 
-        // Pass 1: effective depth and tangential offset for this frame.
         float[] dEff = layer.depthEff;
         float[] dTmp = layer.depthTmp;
         float[] oEff = layer.offsetEff;
@@ -487,10 +390,6 @@ public class CapsuleBlobDrawable extends Drawable {
             oEff[i] = layer.offset[i] * (1f - pr) + layer.offsetNext[i] * pr;
         }
 
-        // Spatial smoothing: a ring Laplacian pulls each depth toward the average of its two
-        // neighbors, so adjacent points can't sit at opposite extremes. This removes the
-        // high-frequency jaggedness that appears at large waveDepth without flattening the
-        // low-frequency lumpiness that gives the blob its organic shape.
         if (neighborCoherence > 0f) {
             for (int it = 0; it < SMOOTHING_ITERATIONS; it++) {
                 for (int i = 0; i < n; i++) {
@@ -505,16 +404,11 @@ public class CapsuleBlobDrawable extends Drawable {
             }
         }
 
-        // Pass 2: place points and build the path.
         for (int i = 0; i < n; i++) {
             pointAt((float) i / n + oEff[i], sample);
 
-            float nx = sample[3];   // outward normal = (tangentY, -tangentX)
+            float nx = sample[3];
             float ny = -sample[2];
-            // Waves bulge outward from the floor (push + breath). The floor grows with
-            // amplitude, so at high volume every point is lifted well clear of the base
-            // rectangle and the whole ring inflates roughly uniformly, instead of some
-            // points dipping inward to the rectangle as inward troughs would.
             float off = push + breath + dEff[i] * wave;
 
             layer.px[i] = cX + sample[0] + nx * off;
@@ -540,16 +434,9 @@ public class CapsuleBlobDrawable extends Drawable {
         canvas.drawPath(path, layer.paint);
     }
 
-    /**
-     * Position and unit tangent on the base outline at the curvature-weighted fraction f,
-     * measured clockwise from the left end of the top edge.
-     * out = { x, y, tangentX, tangentY }, relative to the center.
-     * The outward normal is (tangentY, -tangentX).
-     */
     private void pointAt(float f, float[] out) {
         float t = (f - (float) Math.floor(f)) * weightedTotal;
 
-        // 1. top straight
         if (t < straightH) {
             out[0] = -innerX + t;
             out[1] = -halfHeight;
@@ -558,13 +445,11 @@ public class CapsuleBlobDrawable extends Drawable {
             return;
         }
         t -= straightH;
-        // 2. top-right arc
         if (t < weightedArc) {
             arc(innerX, -innerY, -(float) (Math.PI / 2.0) + t / (curvatureBoost * radius), out);
             return;
         }
         t -= weightedArc;
-        // 3. right straight
         if (t < straightV) {
             out[0] = halfWidth;
             out[1] = -innerY + t;
@@ -573,13 +458,11 @@ public class CapsuleBlobDrawable extends Drawable {
             return;
         }
         t -= straightV;
-        // 4. bottom-right arc
         if (t < weightedArc) {
             arc(innerX, innerY, t / (curvatureBoost * radius), out);
             return;
         }
         t -= weightedArc;
-        // 5. bottom straight
         if (t < straightH) {
             out[0] = innerX - t;
             out[1] = halfHeight;
@@ -588,13 +471,11 @@ public class CapsuleBlobDrawable extends Drawable {
             return;
         }
         t -= straightH;
-        // 6. bottom-left arc
         if (t < weightedArc) {
             arc(-innerX, innerY, (float) (Math.PI / 2.0) + t / (curvatureBoost * radius), out);
             return;
         }
         t -= weightedArc;
-        // 7. left straight
         if (t < straightV) {
             out[0] = -halfWidth;
             out[1] = innerY - t;
@@ -603,7 +484,6 @@ public class CapsuleBlobDrawable extends Drawable {
             return;
         }
         t -= straightV;
-        // 8. top-left arc
         arc(-innerX, -innerY, (float) Math.PI + t / (curvatureBoost * radius), out);
     }
 
@@ -660,7 +540,6 @@ public class CapsuleBlobDrawable extends Drawable {
         return PixelFormat.TRANSLUCENT;
     }
 
-    /** One blob layer: its own point arrays, animation state and paint. */
     private static final class Layer {
         float speedScale;
         float phaseOffset;
@@ -686,9 +565,9 @@ public class CapsuleBlobDrawable extends Drawable {
         float[] tx;
         float[] ty;
 
-        float[] depthEff;   // scratch: effective depth this frame (before/after smoothing)
-        float[] depthTmp;   // scratch: ping-pong buffer for the Laplacian
-        float[] offsetEff;  // scratch: effective tangential offset this frame
+        float[] depthEff;
+        float[] depthTmp;
+        float[] offsetEff;
 
         private int n;
         private static final float WALK_STEP = 0.35f;

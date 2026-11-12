@@ -1,6 +1,5 @@
 package org.telegram.ui.Wallet;
 
-/** Conservative scissor for the filtered QR mask, without changing its geometry or UVs. */
 final class WalletCardQrBounds {
     private static final double CARD_HEIGHT = 1.219512;
 
@@ -19,9 +18,6 @@ final class WalletCardQrBounds {
         result[3] = height;
         if (width <= 0 || height <= 0) return;
 
-        // Homography from the shader's card UV to clip X, Y, W on the visible
-        // negative-X face. Do not use layout/design Y: the shader's mapping is
-        // slightly different from the exported mesh bounds.
         double x = -WalletCardGeometry.HALF_THICKNESS;
         double a = 2.0 * m[8], b = -CARD_HEIGHT * m[4];
         double c = x * m[0] + CARD_HEIGHT * 0.5 * m[4] - m[8] + m[12];
@@ -32,7 +28,6 @@ final class WalletCardQrBounds {
         double determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
         if (Math.abs(determinant) < 1e-12) return;
 
-        // Inverse: UV = (A*screenX + B*screenY + C) / denominator.
         double ua = (e * i - f * h) / determinant;
         double ub = (c * h - b * i) / determinant;
         double uc = (b * f - c * e) / determinant;
@@ -43,8 +38,6 @@ final class WalletCardQrBounds {
         double db = (b * g - a * h) / determinant;
         double dc = (a * e - b * d) / determinant;
 
-        // Bound derivatives over the entire viewport plus helper fragments.
-        // A grazing/singular projection falls back to the full front mesh.
         double sx = 1.0 + 4.0 / width, sy = 1.0 + 4.0 / height;
         double denominator = dc - Math.abs(da) * sx - Math.abs(db) * sy;
         if (denominator <= 1e-9) return;
@@ -57,14 +50,9 @@ final class WalletCardQrBounds {
                 / denominatorSquared;
         uvFootprint[0] = (float) du;
         uvFootprint[1] = (float) dv;
-        // Two source texels cover mask rasterization and bilinear support.
-        // Double the derivative bound as a guard for floating-point rounding.
         double guardU = 2.0 / textureWidth + Math.max(1.0 / textureWidth, du * 1.5);
         double guardV = 2.0 / textureHeight + Math.max(1.0 / textureHeight, dv * 1.5);
         if (mipmapped) {
-            // Isotropic mip selection uses the larger texel-space derivative
-            // for BOTH axes. Include the coarser trilinear level's box/bilinear
-            // support as well as the shader's explicit diagonal filter taps.
             double footprint = Math.max(1.0, Math.max(du * textureWidth, dv * textureHeight));
             guardU += 4.0 * footprint / textureWidth;
             guardV += 4.0 * footprint / textureHeight;

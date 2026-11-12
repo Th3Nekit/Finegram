@@ -54,10 +54,6 @@ class HwFrameLayout extends FrameLayout {
         disableHwAcceleration(true);
     }
 
-    /**
-     * Used for early transition {@link ImageReceiver#checkAlphaAnimation} from blurred preview to normal for high-end devices.
-     * The flag {@link View#LAYER_TYPE_HARDWARE} still keeping. With the flag it will be faster with redraws than without.
-     */
     @UiThread
     public void checkHwAcceleration(float progress) {
         if (progress > 0.6f && hwEnabled && isFastDevice) {

@@ -1,6 +1,3 @@
-/*
- https://github.com/leolin310148/ShortcutBadger
- */
 
 package org.telegram.messenger;
 

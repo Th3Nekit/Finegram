@@ -231,10 +231,6 @@ public class WalletActionLayout {
         cardBackdropAnimation = new AnimatedFloat(1f, parentView::invalidate, 0, 400, CubicBezierInterpolator.EASE_OUT_QUINT);
     }
 
-    /**
-     * Colors the card with the wallet card backdrop of the given user, or keeps it stock blue for 0.
-     * Waits for the user full to load if it isn't cached yet.
-     */
     public void setCardUser(int account, long userId, boolean animated) {
         cardAccount = account;
         cardUserId = userId;
@@ -258,7 +254,7 @@ public class WalletActionLayout {
         }
         observingAccount = account;
         if (account >= 0) {
-            NotificationCenter.getInstance(account).addObserver(userInfoObserver, NotificationCenter.userInfoDidLoad);
+            NotificationCenter.getInstance(account).addWeakObserver(userInfoObserver, NotificationCenter.userInfoDidLoad);
         }
     }
 
@@ -305,14 +301,12 @@ public class WalletActionLayout {
     }
 
     private static Shader createBackdropShader(TL_stars.starGiftAttributeBackdrop backdrop) {
-        // The 2D wallet card's backdrop surface, centered on the card.
         final int dark = WalletGiftPalette.surface(0xFF088FEE, backdrop.center_color, backdrop.edge_color);
         final int light = WalletGiftPalette.surface(0xFF16ABF9, backdrop.center_color, backdrop.edge_color);
         final Shader sweep = new SweepGradient(0, 0, new int[]{ dark, light, dark, light, dark }, new float[]{ 0f, .25f, .5f, .75f, 1f });
         if (SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW) {
             return sweep;
         }
-        // Softens the sweep's hard center; the bitmap spans the drawn square, see drawBackdrop().
         final Bitmap bitmap = Bitmap.createBitmap(BACKDROP_BITMAP_SIZE, BACKDROP_BITMAP_SIZE, Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
         final Paint paint = new Paint();
@@ -383,7 +377,6 @@ public class WalletActionLayout {
         final boolean sending = out && sendState == MessageObject.MESSAGE_SEND_STATE_SENDING;
         if (wasSending && out && sendState == MessageObject.MESSAGE_SEND_STATE_SENT) {
             animateSentBounce();
-            // Advance the previous pose before adding momentum, avoiding an angle jump.
             getDiamondRestingYaw();
             sentSpinMomentum = 18f;
             sentParticles.sent(0f, 0f);
@@ -414,6 +407,7 @@ public class WalletActionLayout {
         }
         final int newRibbonColor = failed ? Theme.getColor(Theme.key_text_RedBold, resourcesProvider)
             : out ? RIBBON_SENT_COLOR : 0xFF4BB9FE;
+        ribbonFailed = failed;
         if (ribbonColorTo == 0) {
             ribbonColorFrom = ribbonColorTo = ribbonColorCurrent = newRibbonColor;
         } else if (newRibbonColor != ribbonColorTo) {
@@ -422,7 +416,6 @@ public class WalletActionLayout {
             ribbonColorAnimation.force(0);
             parentView.invalidate();
         }
-        // The sending state has no ribbon text to transition from.
         final String ribbonText = failed ? LocaleController.getString(R.string.WalletTransferStatusFailed)
             : out ? LocaleController.getString(R.string.WalletTransferStatusSent)
             : LocaleController.getString(R.string.WalletTransferStatusReceived);
@@ -545,7 +538,6 @@ public class WalletActionLayout {
     }
 
     private void invalidateCardBackground() {
-        // ChatActionCell's gradient background is recorded in its parent's canvas.
         if (parentView.getParent() instanceof View) {
             ((View) parentView.getParent()).invalidate();
         }
@@ -574,8 +566,6 @@ public class WalletActionLayout {
         canvas.translate(cardRect.centerX() + dp(10) * cardMotion.x, cardRect.centerY() + dp(8) * cardMotion.y);
         updateSendingGradient();
         canvas.rotate(cardMotion.x * 14f + cardMotion.y * 6f + sendingGradientRotation);
-        // Keep the rectangular asset's aspect ratio, with its shorter side covering
-        // the card's diagonal plus parallax at every angle of a full rotation.
         final float gradientHalf = (float) Math.hypot(cardRect.width(), cardRect.height()) / 2f + dp(16);
         final int gradientWidth = Math.max(1, cardDrawable.getIntrinsicWidth());
         final int gradientHeight = Math.max(1, cardDrawable.getIntrinsicHeight());
@@ -584,7 +574,6 @@ public class WalletActionLayout {
         final int gradientHalfHeight = (int) Math.ceil(gradientHeight * gradientScale);
         final float backdropProgress = cardBackdropAnimation.set(1f);
         final boolean fromVisible = cardBackdropFrom != null && backdropProgress < 1f;
-        // The stock gradient would bleed through the antialiased clip edge under an opaque backdrop.
         final boolean stockCovered = cardBackdrop != null && (backdropProgress >= 1f || fromVisible);
         if (!stockCovered) {
             cardDrawable.setBounds(-gradientHalfWidth, -gradientHalfHeight, gradientHalfWidth, gradientHalfHeight);
@@ -606,8 +595,6 @@ public class WalletActionLayout {
         final int iconLeft = Math.round(cardRect.centerX() - iconSize / 2f);
         final float enlargement = Math.max(0f, Math.min(1f, (diamondScale - 1f) / 2f));
         final float restingTop = cardRect.top + dp(8);
-        // Preserve the original icon/amount order at rest; center only the
-        // enlarged icon. Device tilt never changes the icon's position.
         final int iconTop = Math.round(restingTop
                 + (cardRect.centerY() - iconSize / 2f - restingTop) * enlargement);
         gramDrawable.setBounds(iconLeft, iconTop, iconLeft + iconSize, iconTop + iconSize);
@@ -708,11 +695,12 @@ public class WalletActionLayout {
         }
 
         if (commentText != null) {
+            final int commentColor = Theme.isCompactMode(resourcesProvider) ? Theme.getColor(Theme.key_chat_compact_actionText, resourcesProvider) : 0xFFFFFFFF;
             if ((action.comment_encrypted || action.comment_encrypted_preparing) && !preparingCommentRevealed) {
                 canvas.save();
                 canvas.translate((getWidth() - commentText.getWidth()) / 2.0f, dp(143));
                 for (SpoilerEffect spoiler : commentSpoilers) {
-                    spoiler.setColor(0xFFFFFFFF);
+                    spoiler.setColor(commentColor);
                     spoiler.draw(canvas);
                 }
                 canvas.restore();
@@ -721,7 +709,7 @@ public class WalletActionLayout {
                     canvas,
                     (getWidth() - commentText.getWidth()) / 2.0f,
                     dp(143),
-                    0xFFFFFFFF,
+                    commentColor,
                     1.0f
                 );
             }
@@ -778,7 +766,6 @@ public class WalletActionLayout {
 
     void playLanding(float velocityDpPerSecond) {
         resetLanding();
-        // Match the impact impulse and squash of the wallet transaction row.
         landingSpring = new SpringAnimation(new FloatValueHolder(0));
         landingSpring.setSpring(new SpringForce(0).setDampingRatio(.65f).setStiffness(200f));
         landingSpring.setMinimumVisibleChange(.001f);
@@ -802,7 +789,6 @@ public class WalletActionLayout {
         sentSpring = new SpringAnimation(new FloatValueHolder(sentScale));
         sentSpring.setSpring(new SpringForce(1f).setDampingRatio(.55f).setStiffness(280f));
         sentSpring.setMinimumVisibleChange(.001f);
-        // Compress from the current scale instead of jumping straight to 0.9.
         sentSpring.setStartVelocity(-3f);
         sentSpring.addUpdateListener((animation, value, velocity) -> {
             sentScale = value;
@@ -953,7 +939,6 @@ public class WalletActionLayout {
     private void updateSendingGradient() {
         if (!wasSending || sendingGradientUpdated == 0) return;
         final long now = SystemClock.elapsedRealtime();
-        // One full turn every four seconds; retain the final angle once sending ends.
         sendingGradientRotation = (sendingGradientRotation + (now - sendingGradientUpdated) * 360f / 4000f) % 360f;
         sendingGradientUpdated = now;
     }
@@ -962,7 +947,6 @@ public class WalletActionLayout {
         sendingClockPaint.setAlpha(Math.round(255 * alpha));
         final float centerX = cardRect.right - dpf2(10 + 5.5f);
         final float centerY = cardRect.top + dpf2(10 + 5.5f);
-        // Account for the stroke so the outside diameter is exactly 11dp.
         canvas.drawCircle(centerX, centerY, dpf2(5), sendingClockPaint);
         final long elapsed = SystemClock.elapsedRealtime() - sendingClockStarted;
         final float minuteAngle = (elapsed % 2000L) / 2000f * 360f;
@@ -1008,7 +992,6 @@ public class WalletActionLayout {
         canvas.save();
         canvas.translate(bounds.right - dp(48), bounds.top);
         canvas.clipPath(ribbonInnerStrokePath);
-        // Sweep along the same diagonal used by the center-out reveal.
         canvas.rotate(45);
         final float halfWidth = dp(10);
         final float length = dp(48) * (float) Math.sqrt(2);
@@ -1018,7 +1001,12 @@ public class WalletActionLayout {
         parentView.postInvalidateOnAnimation();
     }
 
+    private boolean ribbonFailed;
+
     private void drawRibbon(Canvas canvas, float revealProgress) {
+        if (ribbonFailed && ribbonColorAnimation.get() >= 1f) {
+            ribbonColorTo = Theme.getColor(Theme.key_text_RedBold, resourcesProvider);
+        }
         final float colorProgress = ribbonColorAnimation.set(1);
         ribbonColorCurrent = colorProgress >= 1f
             ? ribbonColorTo
@@ -1034,7 +1022,6 @@ public class WalletActionLayout {
         if (revealProgress < 1f) {
             final float centerX = ribbon.getBounds().exactCenterX();
             final float centerY = ribbon.getBounds().exactCenterY();
-            // Clip along the ribbon's diagonal, expanding equally toward both ends.
             final float halfLength = dp(48) * (float) Math.sqrt(0.5) * revealProgress;
             canvas.rotate(45, centerX, centerY);
             canvas.clipRect(centerX - halfLength, centerY - dp(48), centerX + halfLength, centerY + dp(48));

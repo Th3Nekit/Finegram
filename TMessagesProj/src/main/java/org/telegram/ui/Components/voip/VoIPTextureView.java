@@ -445,7 +445,6 @@ public class VoIPTextureView extends FrameLayout {
         } else if (scaleType == SCALE_TYPE_FILL) {
             scaleTextureToFill = Math.max(getMeasuredHeight() / (float) renderer.getMeasuredHeight(), getMeasuredWidth() / (float) renderer.getMeasuredWidth());
         } else if (scaleType == SCALE_TYPE_ADAPTIVE) {
-            //sqaud view
             if (Math.abs(getMeasuredHeight() / (float) getMeasuredWidth() - 1f) < 0.02f) {
                 scaleTextureToFill = Math.max(getMeasuredHeight() / (float) renderer.getMeasuredHeight(), getMeasuredWidth() / (float) renderer.getMeasuredWidth());
             } else {
@@ -679,7 +678,6 @@ public class VoIPTextureView extends FrameLayout {
     public void updateRotation() {
         if (!applyRotation) {
             Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-//            renderer.setScreenRotation(display.getRotation());
         }
     }
 }

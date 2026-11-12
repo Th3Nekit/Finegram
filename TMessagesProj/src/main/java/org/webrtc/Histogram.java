@@ -10,15 +10,6 @@
 
 package org.webrtc;
 
-/**
- * Class for holding the native pointer of a histogram. Since there is no way to destroy a
- * histogram, please don't create unnecessary instances of this object. This class is thread safe.
- *
- * Usage example:
- * private static final Histogram someMetricHistogram =
- *     Histogram.createCounts("WebRTC.Video.SomeMetric", 1, 10000, 50);
- * someMetricHistogram.addSample(someVariable);
- */
 class Histogram {
   private final long handle;
 

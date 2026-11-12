@@ -186,7 +186,6 @@ public class VoIpSwitchLayout extends FrameLayout {
                 }
                 break;
             case VIDEO:
-                //R.drawable.calls_sharescreen screencast is not used in the design
                 if (this.type != Type.VIDEO) {
                     voIpButtonView.unSelectedIcon = new RLottieDrawable(R.raw.video_stop, size, size, true, null);
                     voIpButtonView.selectedIcon = new RLottieDrawable(R.raw.video_stop, size, size, true, null);
@@ -309,7 +308,7 @@ public class VoIpSwitchLayout extends FrameLayout {
                         animator.addListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animation) {
-                                unselectedRadius = 0; //switched to selected state
+                                unselectedRadius = 0;
                                 invalidate();
                             }
                         });
@@ -327,7 +326,7 @@ public class VoIpSwitchLayout extends FrameLayout {
                         animator.addListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animation) {
-                                selectedRadius = 0; //switched to NOT selected state
+                                selectedRadius = 0;
                                 invalidate();
                             }
                         });
@@ -408,9 +407,9 @@ public class VoIpSwitchLayout extends FrameLayout {
                     whiteCirclePaint.setAlpha((int) (255 * singleIconBackgroundAlphaPercent / 100f));
                     canvas.drawCircle(cx, cy, maxRadius, whiteCirclePaint);
                     singleIcon.draw(canvas, maskPaint);
-                    singleIcon.draw(canvas, darkPaint); //dimming icons
+                    singleIcon.draw(canvas, darkPaint);
                 } else {
-                    canvas.drawCircle(cx, cy, maxRadius, backgroundProvider.getLightPaint()); //add a light background
+                    canvas.drawCircle(cx, cy, maxRadius, backgroundProvider.getLightPaint());
                     if(backgroundProvider.isReveal()) {
                         canvas.drawCircle(cx, cy, maxRadius, backgroundProvider.getRevealPaint());
                     }
@@ -424,24 +423,22 @@ public class VoIpSwitchLayout extends FrameLayout {
             boolean isSelected = selectedRadius == maxRadius && unselectedRadius == 0;
 
             if (selectedRadius == maxRadius && unselectedRadius > 0 && unselectedRadius != maxRadius) {
-                //in the process of changing from selected to NOT selected.
                 canvas.drawCircle(cx, cy, selectedRadius, whiteCirclePaint);
                 canvas.drawCircle(cx, cy, unselectedRadius, maskPaint);
 
                 selectedIcon.setAlpha(255);
                 selectedIcon.draw(canvas, maskPaint);
                 selectedIcon.setAlpha((int) (255 * VoIPBackgroundProvider.DARK_LIGHT_PERCENT));
-                selectedIcon.draw(canvas); //dimming icons
+                selectedIcon.draw(canvas);
 
                 clipPath.reset();
                 clipPath.addCircle(cx, cy, unselectedRadius, Path.Direction.CW);
                 canvas.clipPath(clipPath);
-                canvas.drawCircle(cx, cy, unselectedRadius, maskPaint); //remove all background
+                canvas.drawCircle(cx, cy, unselectedRadius, maskPaint);
             }
 
             if (isUnSelected || unselectedRadius > 0) {
-                //not selected or in the process of changing from selected to NOT selected
-                canvas.drawCircle(cx, cy, unselectedRadius, backgroundProvider.getLightPaint()); //add a light background
+                canvas.drawCircle(cx, cy, unselectedRadius, backgroundProvider.getLightPaint());
                 if (backgroundProvider.isReveal()) {
                     canvas.drawCircle(cx, cy, unselectedRadius, backgroundProvider.getRevealPaint());
                 }
@@ -449,15 +446,14 @@ public class VoIpSwitchLayout extends FrameLayout {
             }
 
             if (isSelected || (selectedRadius > 0 && unselectedRadius == maxRadius)) {
-                //selected and not in the process of changing or in the process of changing from NOT selected to selected.
                 clipPath.reset();
                 clipPath.addCircle(cx, cy, selectedRadius, Path.Direction.CW);
                 canvas.clipPath(clipPath);
-                canvas.drawCircle(cx, cy, selectedRadius, whiteCirclePaint); //circular background
+                canvas.drawCircle(cx, cy, selectedRadius, whiteCirclePaint);
                 selectedIcon.setAlpha(255);
                 selectedIcon.draw(canvas, maskPaint);
                 selectedIcon.setAlpha((int) (255 * VoIPBackgroundProvider.DARK_LIGHT_PERCENT));
-                selectedIcon.draw(canvas); //dimming icons
+                selectedIcon.draw(canvas);
             }
             canvas.restore();
         }

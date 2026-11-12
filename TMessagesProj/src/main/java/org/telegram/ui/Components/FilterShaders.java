@@ -1748,7 +1748,6 @@ public class FilterShaders {
                 skinTextureCreated = true;
             }
 
-            //green blue pass
             GLES20.glUseProgram(greenAndBlueChannelOverlayProgram);
             GLES20.glUniform1i(greenAndBlueChannelOverlaySourceImageHandle, 0);
             GLES20.glEnableVertexAttribArray(greenAndBlueChannelOverlayInputTexCoordHandle);
@@ -1772,7 +1771,6 @@ public class FilterShaders {
             }
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-            //blur pass
             GLES20.glUseProgram(skinBlurProgram.blurShaderProgram);
             GLES20.glUniform1i(skinBlurProgram.blurSourceImageHandle, 0);
             GLES20.glEnableVertexAttribArray(skinBlurProgram.blurInputTexCoordHandle);
@@ -1796,7 +1794,6 @@ public class FilterShaders {
             GLES20.glUniform1f(skinBlurProgram.blurHeightHandle, 0.0f);
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-            //high pass
             GLES20.glUseProgram(highPassProgram);
             GLES20.glUniform1i(highPassSourceImageHandle, 0);
             GLES20.glUniform1i(highPassInputImageHandle, 1);
@@ -1813,7 +1810,6 @@ public class FilterShaders {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, renderTexture[3]);
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-            //boost pass
             GLES20.glUseProgram(boostProgram);
             GLES20.glUniform1i(boostSourceImageHandle, 0);
             GLES20.glEnableVertexAttribArray(boostInputTexCoordHandle);
@@ -1947,12 +1943,7 @@ public class FilterShaders {
 
     public void onVideoFrameUpdate(float[] m) {
         videoMatrix = m;
-        //videoFramesCount++;
         hsvGenerated = false;
-        /*if (videoFramesCount >= 30) {
-            hsvGenerated = false;
-            videoFramesCount = 0;
-        }*/
     }
 
     private Bitmap createBitmap(Bitmap bitmap, int orientation, float scale) {

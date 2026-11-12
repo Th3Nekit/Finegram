@@ -12,9 +12,6 @@ package org.webrtc;
 
 import java.nio.ByteBuffer;
 
-/**
- * This class wraps a webrtc::I420BufferInterface into a VideoFrame.I420Buffer.
- */
 class WrappedNativeI420Buffer implements VideoFrame.I420Buffer {
   private final int width;
   private final int height;
@@ -54,19 +51,16 @@ class WrappedNativeI420Buffer implements VideoFrame.I420Buffer {
 
   @Override
   public ByteBuffer getDataY() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataY.slice();
   }
 
   @Override
   public ByteBuffer getDataU() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataU.slice();
   }
 
   @Override
   public ByteBuffer getDataV() {
-    // Return a slice to prevent relative reads from changing the position.
     return dataV.slice();
   }
 

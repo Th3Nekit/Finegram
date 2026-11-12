@@ -450,7 +450,6 @@ public class CheckBoxBase {
 
         if (drawUnchecked && backgroundType >= 0) {
             if (backgroundType == 12 || backgroundType == 13) {
-                //draw nothing
             } else if (backgroundType == 8 || backgroundType == 10 || backgroundType == 14) {
                 if (customRadius > 0) {
                     final float r = rad - dp(1.5f);

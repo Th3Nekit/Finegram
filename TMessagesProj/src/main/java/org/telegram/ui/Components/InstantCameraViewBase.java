@@ -45,7 +45,7 @@ public abstract class InstantCameraViewBase extends FrameLayout {
             Theme.ResourcesProvider resourcesProvider,
             boolean isNewDesign
     ) {
-        return isUsingCamera2Implementation()
+        return isCamera2Enabled(UserConfig.selectedAccount)
                 ? new InstantCameraView2(context, delegate, resourcesProvider, isNewDesign)
                 : new InstantCameraView(context, delegate, resourcesProvider, isNewDesign);
     }
@@ -55,9 +55,7 @@ public abstract class InstantCameraViewBase extends FrameLayout {
     }
 
     public static boolean isUsingCamera2Implementation() {
-        return SharedSettings.roundVideoCamera2Enabled.isSet() ?
-            SharedSettings.roundVideoCamera2Enabled.get() :
-            AppGlobalConfig.getInstance(UserConfig.selectedAccount).roundVideoRecorder2Allowed.get();
+        return isCamera2Enabled(UserConfig.selectedAccount);
     }
 
     public View getZoomControlView() {
@@ -68,6 +66,14 @@ public abstract class InstantCameraViewBase extends FrameLayout {
         return null;
     }
 
+    /** Returns whether the Camera2 implementation is used: the local choice, else the server flag. */
+    public static boolean isCamera2Enabled(int account) {
+        return SharedSettings.roundVideoCamera2Enabled.isSet() ?
+            SharedSettings.roundVideoCamera2Enabled.get() :
+            !AppGlobalConfig.getInstance(account).roundVideoRecorderV2Disabled.get();
+    }
+
+    /** Sets the host animation callback. */
     public final void setAnimationCallback(AnimationCallback animationCallback) {
         this.animationCallback = animationCallback;
     }

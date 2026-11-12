@@ -14,19 +14,16 @@ import androidx.annotation.Nullable;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-/** Helper class that combines HW and SW encoders. */
 public class DefaultVideoEncoderFactory implements VideoEncoderFactory {
   private final VideoEncoderFactory hardwareVideoEncoderFactory;
   private final VideoEncoderFactory softwareVideoEncoderFactory = new SoftwareVideoEncoderFactory();
 
-  /** Create encoder factory using default hardware encoder factory. */
   public DefaultVideoEncoderFactory(
       EglBase.Context eglContext, boolean enableIntelVp8Encoder, boolean enableH264HighProfile) {
     this.hardwareVideoEncoderFactory =
         new HardwareVideoEncoderFactory(eglContext, enableIntelVp8Encoder, enableH264HighProfile);
   }
 
-  /** Create encoder factory using explicit hardware encoder factory. */
   DefaultVideoEncoderFactory(VideoEncoderFactory hardwareVideoEncoderFactory) {
     this.hardwareVideoEncoderFactory = hardwareVideoEncoderFactory;
   }
@@ -37,9 +34,8 @@ public class DefaultVideoEncoderFactory implements VideoEncoderFactory {
     final VideoEncoder softwareEncoder = softwareVideoEncoderFactory.createEncoder(info);
     final VideoEncoder hardwareEncoder = hardwareVideoEncoderFactory.createEncoder(info);
     if (hardwareEncoder != null && softwareEncoder != null) {
-      // Both hardware and software supported, wrap it in a software fallback
       return new VideoEncoderFallback(
-          /* fallback= */ softwareEncoder, /* primary= */ hardwareEncoder);
+                          softwareEncoder,                hardwareEncoder);
     }
     return hardwareEncoder != null ? hardwareEncoder : softwareEncoder;
   }

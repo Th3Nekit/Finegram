@@ -178,9 +178,6 @@ public class BotSensors {
         stopAccelerometer();
     }
 
-    // SENSOR_DELAY_NORMAL — 160ms
-    // SENSOR_DELAY_UI — 60ms
-    // SENSOR_DELAY_GAME — 20ms
     private static int getSensorDelay(long refresh_rate) {
         if (refresh_rate >= 160) return SensorManager.SENSOR_DELAY_NORMAL;
         if (refresh_rate >= 60) return SensorManager.SENSOR_DELAY_UI;
@@ -326,10 +323,6 @@ public class BotSensors {
                 eventData.put("x", xyz[0]);
                 eventData.put("y", xyz[1]);
                 eventData.put("z", xyz[2]);
-                // web api:
-//                eventData.put("x", xyz[2]);
-//                eventData.put("y", xyz[0]);
-//                eventData.put("z", xyz[1]);
                 webView.evaluateJS("window.Telegram.WebView.receiveEvent('" + "gyroscope_changed" + "', " + eventData + ");");
             } catch (Exception e) {}
             captured[0] = 0;
@@ -433,10 +426,6 @@ public class BotSensors {
                 mTruncatedRotationVector = new float[4];
             }
             if (values.length > 4) {
-                // On some Samsung devices SensorManager.getRotationMatrixFromVector
-                // appears to throw an exception if rotation vector has length > 4.
-                // For the purposes of this class the first 4 values of the
-                // rotation vector are sufficient (see crbug.com/335298 for details).
                 System.arraycopy(values, 0, mTruncatedRotationVector, 0, 4);
                 SensorManager.getRotationMatrixFromVector(mDeviceRotationMatrix, mTruncatedRotationVector);
             } else {

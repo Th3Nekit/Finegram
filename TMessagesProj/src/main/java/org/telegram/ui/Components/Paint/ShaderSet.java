@@ -121,7 +121,6 @@ public class ShaderSet {
         "   gl_FragColor = texture2D(texture, varTexcoord.st, 0.0);" +
         "}";
 
-    // neon shaders
     private static final String PAINT_BRUSHLIGHT_FSH =
         "precision highp float;" +
 
@@ -169,7 +168,6 @@ public class ShaderSet {
         "   gl_FragColor.a = outAlpha;" +
         "}";
 
-    // eraser
     private static final String PAINT_BLITWITHMASKERASER_FSH =
         "precision highp float;" +
         "varying vec2 varTexcoord;" +
@@ -199,22 +197,6 @@ public class ShaderSet {
         "   gl_FragColor = texture2D(otexture, varTexcoord.st, 0.0) * (preview + (1.0 - preview) * outAlpha);" +
         "   gl_FragColor.rgb *= gl_FragColor.a;" +
         "}";
-//
-//
-//        "precision highp float;" +
-//                "varying vec2 varTexcoord;" +
-//                "uniform sampler2D texture;" +
-//                "uniform sampler2D otexture;" +
-//                "uniform sampler2D mask;" +
-//                "uniform vec4 color;" +
-//                "uniform float preview;" +
-//                "void main (void) {" +
-//                "   vec4 dst = texture2D(texture, varTexcoord.st, 0.0);" +
-//                "   float srcAlpha = color.a * texture2D(mask, varTexcoord.st, 0.0).a;" +
-//                "   float outAlpha = srcAlpha + dst.a * (1.0 - srcAlpha);" +
-//                "   gl_FragColor = texture2D(otexture, varTexcoord.st, 0.0) * (preview + (1.0 - preview) * outAlpha);" +
-//                "   gl_FragColor.rgb *= gl_FragColor.a;" +
-//                "}";
     private static final String PAINT_COMPOSITEWITHMASKERASER_FSH =
         "precision highp float;" +
         "varying vec2 varTexcoord;" +
@@ -228,7 +210,6 @@ public class ShaderSet {
         "   if (gl_FragColor.a <= 0.) gl_FragColor.rgb = vec3(0.);" +
         "}";
 
-    // blurer
     private static final String PAINT_BLITWITHMASKBLURER_FSH =
         "precision highp float;" +
         "varying vec2 varTexcoord;" +
@@ -281,7 +262,6 @@ public class ShaderSet {
         "   }" +
         "}";
 
-    // shapes
     private static final String PAINT_SHAPE_FSH =
         "precision highp float;" +
         "varying vec2 varTexcoord;" +
@@ -302,7 +282,6 @@ public class ShaderSet {
         "uniform bool fill;" +
         "uniform bool clear;" +
 
-        // iq, i <3 you! https://iquilezles.org/articles/distfunctions2d/
         "float sdTriangle( in vec2 p, in vec2 p0, in vec2 p1, in vec2 p2 ) {" +
         "   vec2 e0 = p1 - p0, e1 = p2 - p1, e2 = p0 - p2, v0 = p - p0, v1 = p - p1, v2 = p - p2;" +
         "   vec2 pq0 = v0 - e0*clamp( dot(v0,e0)/dot(e0,e0), 0.0, 1.0 ), pq1 = v1 - e1*clamp( dot(v1,e1)/dot(e1,e1), 0.0, 1.0 ), pq2 = v2 - e2*clamp( dot(v2,e2)/dot(e2,e2), 0.0, 1.0 );" +
@@ -341,12 +320,12 @@ public class ShaderSet {
         "   float sdf;" +
         "   vec2 pp = p;" +
         "   p *= mat2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));" +
-        "   if (type == 0) {" + // CIRCLE
+        "   if (type == 0) {" +
         "       sdf = length(p) - min(radius.x, radius.y);" +
-        "   } else if (type == 1 || type == 3) {" + // ROUNDED RECT (+ BUBBLE)
+        "   } else if (type == 1 || type == 3) {" +
         "       vec2 q = abs(p) - abs(radius) + rounding;" +
         "       sdf = min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - rounding;" +
-        "   } else if (type == 2) {" + // STAR
+        "   } else if (type == 2) {" +
         "       float n = 5.;" +
         "       float an = 3.141593 / float(n);" +
         "       vec2  acs = vec2(cos(an), sin(an)), ecs = vec2(cos(1.), sin(1.));" +
@@ -355,7 +334,7 @@ public class ShaderSet {
         "       p -= min(radius.x, radius.y) * acs;" +
         "       p += ecs*clamp( -dot(p, ecs), 0.0, min(radius.x, radius.y) * acs.y / ecs.y);" +
         "       sdf = length(p) * sign(p.x);" +
-        "   } else if (type == 4) {" + // ARROW
+        "   } else if (type == 4) {" +
         "       p += center;" +
         "       sdf = sdBezier(center, middle, radius, p) - thickness;" +
         "       vec2 ba = center - middle;" +
@@ -364,7 +343,7 @@ public class ShaderSet {
         "       sdf = min(sdf, max(0., sdTriangle(p, ac, ac+vec2(cos(a+3.14-g), sin(a+3.14-g))*ar, ac+vec2(cos(a+3.14+g), sin(a+3.14+g))*ar)));" +
         "       sdf += thickness;" +
         "   }" +
-        "   if (type == 3) {" + // BUBBLE
+        "   if (type == 3) {" +
         "       vec2 c = middle-center;" +
         "       float a = atan(c.x, -c.y), r = min(radius.x, radius.y) / 2.;" +
         "       float k = rounding/2., bsdf = sdTriangle(pp+center, center-vec2(cos(a),sin(a))*r, center-vec2(cos(a-3.14),sin(a-3.14))*r, middle);" +
@@ -426,7 +405,6 @@ public class ShaderSet {
         shader.put(UNIFORMS, new String[]{"mvpMatrix", "texture", "mask", "color"});
         result.put("compositeWithMask", Collections.unmodifiableMap(shader));
 
-        // blurer
         shader = new HashMap<>();
         shader.put(VERTEX, PAINT_BLIT_VSH);
         shader.put(FRAGMENT, PAINT_BLITWITHMASKBLURER_FSH);
@@ -448,7 +426,6 @@ public class ShaderSet {
         shader.put(UNIFORMS, new String[]{"mvpMatrix", "texture", "blured", "eraser", "mask", "flipy"});
         result.put("videoBlur", Collections.unmodifiableMap(shader));
 
-        // neon
         shader = new HashMap<>();
         shader.put(VERTEX, PAINT_BRUSH_VSH);
         shader.put(FRAGMENT, PAINT_BRUSHLIGHT_FSH);
@@ -470,7 +447,6 @@ public class ShaderSet {
         shader.put(UNIFORMS, new String[]{"mvpMatrix", "texture", "mask", "color"});
         result.put("compositeWithMaskLight", Collections.unmodifiableMap(shader));
 
-        // eraser
         shader = new HashMap<>();
         shader.put(VERTEX, PAINT_BLIT_VSH);
         shader.put(FRAGMENT, PAINT_BLITWITHMASKERASER_FSH);
@@ -492,7 +468,6 @@ public class ShaderSet {
         shader.put(UNIFORMS, new String[]{"mvpMatrix", "texture", "mask", "color"});
         result.put("compositeWithMaskEraser", Collections.unmodifiableMap(shader));
 
-        // undo
         shader = new HashMap<>();
         shader.put(VERTEX, PAINT_BLIT_VSH);
         shader.put(FRAGMENT, PAINT_NONPREMULTIPLIEDBLIT_FSH);
@@ -500,7 +475,6 @@ public class ShaderSet {
         shader.put(UNIFORMS, new String[]{"mvpMatrix", "texture"});
         result.put("nonPremultipliedBlit", Collections.unmodifiableMap(shader));
 
-        // shapes
         shader = new HashMap<>();
         shader.put(VERTEX, PAINT_BLIT_VSH);
         shader.put(FRAGMENT, PAINT_SHAPE_FSH);

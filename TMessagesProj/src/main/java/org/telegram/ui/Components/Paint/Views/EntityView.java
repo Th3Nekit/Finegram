@@ -339,7 +339,6 @@ public class EntityView extends FrameLayout {
                 delegate.getTransformedTouch(event.getRawX(1), event.getRawY(1), xy2);
             } else {
                 isMultitouch = false;
-                // TODO
             }
         }
         if (isMultitouch) {
@@ -367,7 +366,6 @@ public class EntityView extends FrameLayout {
         boolean handled = false;
 
         switch (action) {
-//            case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN: {
                 hadMultitouch = false;
                 previousLocationX = xy[0];
@@ -394,7 +392,6 @@ public class EntityView extends FrameLayout {
             }
             break;
 
-//            case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
                 onTouchUp(action == MotionEvent.ACTION_CANCEL);
@@ -616,7 +613,6 @@ public class EntityView extends FrameLayout {
         }
         setScaleX(newScale);
         setScaleY(newScale);
-//        updateSelectionView();
     }
 
     protected boolean allowHaptic() {
@@ -875,7 +871,6 @@ public class EntityView extends FrameLayout {
                     delegate.getTransformedTouch(event.getRawX(1), event.getRawY(1), xy2);
                 } else {
                     isMultitouch = false;
-                    // TODO
                 }
             }
             if (isMultitouch) {
@@ -898,7 +893,6 @@ public class EntityView extends FrameLayout {
             float x = cxy[0];
             float y = cxy[1];
             switch (action) {
-//                case MotionEvent.ACTION_POINTER_DOWN:
                 case MotionEvent.ACTION_DOWN: {
                     hadMultitouch = false;
                     int handle = pointInsideHandle(event.getX(), event.getY());

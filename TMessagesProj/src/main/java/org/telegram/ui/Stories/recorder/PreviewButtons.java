@@ -230,14 +230,12 @@ public class PreviewButtons extends FrameLayout {
             super(context);
             this.arrow = withArrow;
 
-//            buttonPaint.setColor(0xffffffff);
             buttonPaint.setColor(0xff199cff);
             darkenPaint.setColor(0x60000000);
 
             textPaint.setTextSize(dp(13));
             textPaint.setColor(0xffffffff);
             textPaint.setTypeface(AndroidUtilities.bold());
-//            textPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
 
             CharSequence text2;
             if (withArrow) {

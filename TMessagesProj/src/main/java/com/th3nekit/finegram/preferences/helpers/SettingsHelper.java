@@ -12,16 +12,19 @@ import static org.telegram.messenger.AndroidUtilities.dp;
 
 import android.text.SpannableStringBuilder;
 import android.view.View;
+import android.view.ViewParent;
 
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.NotificationsCheckCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
+import org.telegram.ui.Cells.TextCheckCell2;
 import org.telegram.ui.Cells.TextDetailSettingsCell;
 import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.UItem;
 import org.telegram.ui.Components.UniversalAdapter;
+import org.telegram.ui.Components.UniversalRecyclerView;
 import org.telegram.ui.FilterCreateActivity;
 import org.telegram.ui.SettingsActivity;
 
@@ -123,13 +126,30 @@ public class SettingsHelper {
             notificationsCheckCell.setChecked(isChecked);
         } else if (view instanceof TextCheckCell textCheckCell) {
             textCheckCell.setChecked(isChecked);
+        } else if (view instanceof TextCheckCell2 textCheckCell) {
+            textCheckCell.setChecked(isChecked);
         } else {
             if (view != null) {
                 FinegramLogger.e(() -> "Unknown view type for setChecked: " + view.getClass().getName());
             } else {
                 FinegramLogger.e(() -> "Attempted to update check state on a NULL view");
             }
+            return;
         }
+        UItem item = boundItem(view);
+        if (item != null) item.setChecked(isChecked);
+    }
+
+    private static UItem boundItem(View view) {
+        View child = view;
+        while (child != null) {
+            ViewParent parent = child.getParent();
+            if (parent instanceof UniversalRecyclerView list) {
+                return list.adapter == null ? null : list.adapter.getItem(list.getChildAdapterPosition(child));
+            }
+            child = parent instanceof View ? (View) parent : null;
+        }
+        return null;
     }
 
     public static void updateButtonValue(View view, String value) {
@@ -147,7 +167,10 @@ public class SettingsHelper {
             } else {
                 FinegramLogger.e(() -> "Attempted to update check state on a NULL view");
             }
+            return;
         }
+        UItem item = boundItem(view);
+        if (item != null) item.textValue = value;
     }
 
     public static CharSequence applyNewSpan(CharSequence str) {

@@ -458,20 +458,6 @@ public class ProfileMetaballView extends View {
             }
         }
 
-        /*if (!isClose) {
-            float scale = 1f - (vr - dp(32)) / dp(40 - 32);
-            float top = -dp(14);
-            float r2 = dp(12) * scale;
-            float r1 = r * 0.9f;
-            c1.x = c2.x = cx;
-            c1.y = -r1 + dp(1);
-            c2.y = top + r2;
-            if (createMetaballPath(r1, r2, 0.6f)) {
-                path.addCircle(cx, top + r2, r2, Path.Direction.CCW);
-                canvas.drawPath(path, connectorPaint);
-                canvas.drawCircle(cx, -r1 + dp(1), r1, circlePaint);
-            }
-        }*/
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)

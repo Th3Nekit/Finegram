@@ -144,7 +144,6 @@ public class StoriesListPlaceProvider implements StoryViewer.PlaceProvider {
                     } else {
                         holder.drawClip = null;
                     }
-                 //   updateClip(holder);
                     return true;
                 }
             } else if (child instanceof DialogCell) {
